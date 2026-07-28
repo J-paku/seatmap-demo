@@ -1,0 +1,722 @@
+[
+  {
+    "id": "seat-001",
+    "teamId": "team-01",
+    "x": 42,
+    "y": 14,
+    "width": 105,
+    "height": 75,
+    "rotation": 0,
+    "employeeId": "emp-001"
+  },
+  {
+    "id": "seat-002",
+    "teamId": "team-01",
+    "x": 165,
+    "y": 14,
+    "width": 105,
+    "height": 75,
+    "rotation": 0,
+    "employeeId": "emp-002"
+  },
+  {
+    "id": "seat-003",
+    "teamId": "team-01",
+    "x": 288,
+    "y": 14,
+    "width": 105,
+    "height": 75,
+    "rotation": 0,
+    "employeeId": "emp-003"
+  },
+  {
+    "id": "seat-004",
+    "teamId": "team-01",
+    "x": 411,
+    "y": 14,
+    "width": 105,
+    "height": 75,
+    "rotation": 0,
+    "employeeId": "emp-004"
+  },
+  {
+    "id": "seat-005",
+    "teamId": "team-01",
+    "x": 534,
+    "y": 14,
+    "width": 105,
+    "height": 75,
+    "rotation": 0,
+    "employeeId": "emp-005"
+  },
+  {
+    "id": "seat-006",
+    "teamId": "team-01",
+    "x": 657,
+    "y": 14,
+    "width": 105,
+    "height": 75,
+    "rotation": 0,
+    "employeeId": "emp-006"
+  },
+  {
+    "id": "seat-007",
+    "teamId": "team-01",
+    "x": 780,
+    "y": 14,
+    "width": 105,
+    "height": 75,
+    "rotation": 0,
+    "employeeId": "emp-007"
+  },
+  {
+    "id": "seat-008",
+    "teamId": "team-01",
+    "x": 903,
+    "y": 14,
+    "width": 105,
+    "height": 75,
+    "rotation": 0,
+    "employeeId": "emp-008"
+  },
+  {
+    "id": "seat-009",
+    "teamId": "team-01",
+    "x": 42,
+    "y": 99,
+    "width": 105,
+    "height": 75,
+    "rotation": 0,
+    "employeeId": null
+  },
+  {
+    "id": "seat-010",
+    "teamId": "team-01",
+    "x": 165,
+    "y": 99,
+    "width": 105,
+    "height": 75,
+    "rotation": 0,
+    "employeeId": null
+  },
+  {
+    "id": "seat-011",
+    "teamId": "team-01",
+    "x": 288,
+    "y": 99,
+    "width": 105,
+    "height": 75,
+    "rotation": 0,
+    "employeeId": null
+  },
+  {
+    "id": "seat-012",
+    "teamId": "team-01",
+    "x": 411,
+    "y": 99,
+    "width": 105,
+    "height": 75,
+    "rotation": 0,
+    "employeeId": null
+  },
+  {
+    "id": "seat-013",
+    "teamId": "team-01",
+    "x": 534,
+    "y": 99,
+    "width": 105,
+    "height": 75,
+    "rotation": 0,
+    "employeeId": null
+  },
+  {
+    "id": "seat-014",
+    "teamId": "team-01",
+    "x": 657,
+    "y": 99,
+    "width": 105,
+    "height": 75,
+    "rotation": 0,
+    "employeeId": null
+  },
+  {
+    "id": "seat-015",
+    "teamId": "team-01",
+    "x": 780,
+    "y": 99,
+    "width": 105,
+    "height": 75,
+    "rotation": 0,
+    "employeeId": null
+  },
+  {
+    "id": "seat-016",
+    "teamId": "team-01",
+    "x": 903,
+    "y": 99,
+    "width": 105,
+    "height": 75,
+    "rotation": 0,
+    "employeeId": null
+  },
+  {
+    "id": "seat-017",
+    "teamId": "team-02",
+    "x": 42,
+    "y": 192,
+    "width": 105,
+    "height": 75,
+    "rotation": 0,
+    "employeeId": "emp-009"
+  },
+  {
+    "id": "seat-018",
+    "teamId": "team-02",
+    "x": 165,
+    "y": 192,
+    "width": 105,
+    "height": 75,
+    "rotation": 0,
+    "employeeId": "emp-010"
+  },
+  {
+    "id": "seat-019",
+    "teamId": "team-02",
+    "x": 288,
+    "y": 192,
+    "width": 105,
+    "height": 75,
+    "rotation": 0,
+    "employeeId": "emp-011"
+  },
+  {
+    "id": "seat-020",
+    "teamId": "team-02",
+    "x": 411,
+    "y": 192,
+    "width": 105,
+    "height": 75,
+    "rotation": 0,
+    "employeeId": "emp-012"
+  },
+  {
+    "id": "seat-021",
+    "teamId": "team-02",
+    "x": 534,
+    "y": 192,
+    "width": 105,
+    "height": 75,
+    "rotation": 0,
+    "employeeId": "emp-013"
+  },
+  {
+    "id": "seat-022",
+    "teamId": "team-02",
+    "x": 657,
+    "y": 192,
+    "width": 105,
+    "height": 75,
+    "rotation": 0,
+    "employeeId": "emp-014"
+  },
+  {
+    "id": "seat-023",
+    "teamId": "team-02",
+    "x": 780,
+    "y": 192,
+    "width": 105,
+    "height": 75,
+    "rotation": 0,
+    "employeeId": "emp-015"
+  },
+  {
+    "id": "seat-024",
+    "teamId": "team-02",
+    "x": 903,
+    "y": 192,
+    "width": 105,
+    "height": 75,
+    "rotation": 0,
+    "employeeId": "emp-016"
+  },
+  {
+    "id": "seat-025",
+    "teamId": "team-02",
+    "x": 42,
+    "y": 277,
+    "width": 105,
+    "height": 75,
+    "rotation": 0,
+    "employeeId": null
+  },
+  {
+    "id": "seat-026",
+    "teamId": "team-02",
+    "x": 165,
+    "y": 277,
+    "width": 105,
+    "height": 75,
+    "rotation": 0,
+    "employeeId": null
+  },
+  {
+    "id": "seat-027",
+    "teamId": "team-02",
+    "x": 288,
+    "y": 277,
+    "width": 105,
+    "height": 75,
+    "rotation": 0,
+    "employeeId": null
+  },
+  {
+    "id": "seat-028",
+    "teamId": "team-02",
+    "x": 411,
+    "y": 277,
+    "width": 105,
+    "height": 75,
+    "rotation": 0,
+    "employeeId": null
+  },
+  {
+    "id": "seat-029",
+    "teamId": "team-02",
+    "x": 534,
+    "y": 277,
+    "width": 105,
+    "height": 75,
+    "rotation": 0,
+    "employeeId": null
+  },
+  {
+    "id": "seat-030",
+    "teamId": "team-02",
+    "x": 657,
+    "y": 277,
+    "width": 105,
+    "height": 75,
+    "rotation": 0,
+    "employeeId": null
+  },
+  {
+    "id": "seat-031",
+    "teamId": "team-02",
+    "x": 780,
+    "y": 277,
+    "width": 105,
+    "height": 75,
+    "rotation": 0,
+    "employeeId": null
+  },
+  {
+    "id": "seat-032",
+    "teamId": "team-02",
+    "x": 903,
+    "y": 277,
+    "width": 105,
+    "height": 75,
+    "rotation": 0,
+    "employeeId": null
+  },
+  {
+    "id": "seat-033",
+    "teamId": "team-03",
+    "x": 42,
+    "y": 370,
+    "width": 105,
+    "height": 75,
+    "rotation": 0,
+    "employeeId": "emp-017"
+  },
+  {
+    "id": "seat-034",
+    "teamId": "team-03",
+    "x": 165,
+    "y": 370,
+    "width": 105,
+    "height": 75,
+    "rotation": 0,
+    "employeeId": "emp-018"
+  },
+  {
+    "id": "seat-035",
+    "teamId": "team-03",
+    "x": 288,
+    "y": 370,
+    "width": 105,
+    "height": 75,
+    "rotation": 0,
+    "employeeId": "emp-019"
+  },
+  {
+    "id": "seat-036",
+    "teamId": "team-03",
+    "x": 411,
+    "y": 370,
+    "width": 105,
+    "height": 75,
+    "rotation": 0,
+    "employeeId": "emp-020"
+  },
+  {
+    "id": "seat-037",
+    "teamId": "team-03",
+    "x": 534,
+    "y": 370,
+    "width": 105,
+    "height": 75,
+    "rotation": 0,
+    "employeeId": "emp-021"
+  },
+  {
+    "id": "seat-038",
+    "teamId": "team-03",
+    "x": 657,
+    "y": 370,
+    "width": 105,
+    "height": 75,
+    "rotation": 0,
+    "employeeId": "emp-022"
+  },
+  {
+    "id": "seat-039",
+    "teamId": "team-03",
+    "x": 780,
+    "y": 370,
+    "width": 105,
+    "height": 75,
+    "rotation": 0,
+    "employeeId": "emp-023"
+  },
+  {
+    "id": "seat-040",
+    "teamId": "team-03",
+    "x": 42,
+    "y": 455,
+    "width": 105,
+    "height": 75,
+    "rotation": 0,
+    "employeeId": null
+  },
+  {
+    "id": "seat-041",
+    "teamId": "team-03",
+    "x": 165,
+    "y": 455,
+    "width": 105,
+    "height": 75,
+    "rotation": 0,
+    "employeeId": null
+  },
+  {
+    "id": "seat-042",
+    "teamId": "team-03",
+    "x": 288,
+    "y": 455,
+    "width": 105,
+    "height": 75,
+    "rotation": 0,
+    "employeeId": null
+  },
+  {
+    "id": "seat-043",
+    "teamId": "team-03",
+    "x": 411,
+    "y": 455,
+    "width": 105,
+    "height": 75,
+    "rotation": 0,
+    "employeeId": null
+  },
+  {
+    "id": "seat-044",
+    "teamId": "team-03",
+    "x": 534,
+    "y": 455,
+    "width": 105,
+    "height": 75,
+    "rotation": 0,
+    "employeeId": null
+  },
+  {
+    "id": "seat-045",
+    "teamId": "team-03",
+    "x": 657,
+    "y": 455,
+    "width": 105,
+    "height": 75,
+    "rotation": 0,
+    "employeeId": null
+  },
+  {
+    "id": "seat-046",
+    "teamId": "team-03",
+    "x": 780,
+    "y": 455,
+    "width": 105,
+    "height": 75,
+    "rotation": 0,
+    "employeeId": null
+  },
+  {
+    "id": "seat-047",
+    "teamId": "team-04",
+    "x": 42,
+    "y": 548,
+    "width": 105,
+    "height": 75,
+    "rotation": 0,
+    "employeeId": "emp-024"
+  },
+  {
+    "id": "seat-048",
+    "teamId": "team-04",
+    "x": 165,
+    "y": 548,
+    "width": 105,
+    "height": 75,
+    "rotation": 0,
+    "employeeId": "emp-025"
+  },
+  {
+    "id": "seat-049",
+    "teamId": "team-04",
+    "x": 288,
+    "y": 548,
+    "width": 105,
+    "height": 75,
+    "rotation": 0,
+    "employeeId": "emp-026"
+  },
+  {
+    "id": "seat-050",
+    "teamId": "team-04",
+    "x": 411,
+    "y": 548,
+    "width": 105,
+    "height": 75,
+    "rotation": 0,
+    "employeeId": "emp-027"
+  },
+  {
+    "id": "seat-051",
+    "teamId": "team-04",
+    "x": 534,
+    "y": 548,
+    "width": 105,
+    "height": 75,
+    "rotation": 0,
+    "employeeId": "emp-028"
+  },
+  {
+    "id": "seat-052",
+    "teamId": "team-04",
+    "x": 657,
+    "y": 548,
+    "width": 105,
+    "height": 75,
+    "rotation": 0,
+    "employeeId": "emp-029"
+  },
+  {
+    "id": "seat-053",
+    "teamId": "team-04",
+    "x": 780,
+    "y": 548,
+    "width": 105,
+    "height": 75,
+    "rotation": 0,
+    "employeeId": "emp-030"
+  },
+  {
+    "id": "seat-054",
+    "teamId": "team-04",
+    "x": 42,
+    "y": 633,
+    "width": 105,
+    "height": 75,
+    "rotation": 0,
+    "employeeId": null
+  },
+  {
+    "id": "seat-055",
+    "teamId": "team-04",
+    "x": 165,
+    "y": 633,
+    "width": 105,
+    "height": 75,
+    "rotation": 0,
+    "employeeId": null
+  },
+  {
+    "id": "seat-056",
+    "teamId": "team-04",
+    "x": 288,
+    "y": 633,
+    "width": 105,
+    "height": 75,
+    "rotation": 0,
+    "employeeId": null
+  },
+  {
+    "id": "seat-057",
+    "teamId": "team-04",
+    "x": 411,
+    "y": 633,
+    "width": 105,
+    "height": 75,
+    "rotation": 0,
+    "employeeId": null
+  },
+  {
+    "id": "seat-058",
+    "teamId": "team-04",
+    "x": 534,
+    "y": 633,
+    "width": 105,
+    "height": 75,
+    "rotation": 0,
+    "employeeId": null
+  },
+  {
+    "id": "seat-059",
+    "teamId": "team-04",
+    "x": 657,
+    "y": 633,
+    "width": 105,
+    "height": 75,
+    "rotation": 0,
+    "employeeId": null
+  },
+  {
+    "id": "seat-060",
+    "teamId": "team-04",
+    "x": 780,
+    "y": 633,
+    "width": 105,
+    "height": 75,
+    "rotation": 0,
+    "employeeId": null
+  },
+  {
+    "id": "seat-061",
+    "teamId": "team-05",
+    "x": 42,
+    "y": 726,
+    "width": 105,
+    "height": 75,
+    "rotation": 0,
+    "employeeId": "emp-031"
+  },
+  {
+    "id": "seat-062",
+    "teamId": "team-05",
+    "x": 165,
+    "y": 726,
+    "width": 105,
+    "height": 75,
+    "rotation": 0,
+    "employeeId": "emp-032"
+  },
+  {
+    "id": "seat-063",
+    "teamId": "team-05",
+    "x": 288,
+    "y": 726,
+    "width": 105,
+    "height": 75,
+    "rotation": 0,
+    "employeeId": "emp-033"
+  },
+  {
+    "id": "seat-064",
+    "teamId": "team-05",
+    "x": 411,
+    "y": 726,
+    "width": 105,
+    "height": 75,
+    "rotation": 0,
+    "employeeId": "emp-034"
+  },
+  {
+    "id": "seat-065",
+    "teamId": "team-05",
+    "x": 534,
+    "y": 726,
+    "width": 105,
+    "height": 75,
+    "rotation": 0,
+    "employeeId": "emp-035"
+  },
+  {
+    "id": "seat-066",
+    "teamId": "team-05",
+    "x": 657,
+    "y": 726,
+    "width": 105,
+    "height": 75,
+    "rotation": 0,
+    "employeeId": "emp-036"
+  },
+  {
+    "id": "seat-067",
+    "teamId": "team-05",
+    "x": 42,
+    "y": 811,
+    "width": 105,
+    "height": 75,
+    "rotation": 0,
+    "employeeId": null
+  },
+  {
+    "id": "seat-068",
+    "teamId": "team-05",
+    "x": 165,
+    "y": 811,
+    "width": 105,
+    "height": 75,
+    "rotation": 0,
+    "employeeId": null
+  },
+  {
+    "id": "seat-069",
+    "teamId": "team-05",
+    "x": 288,
+    "y": 811,
+    "width": 105,
+    "height": 75,
+    "rotation": 0,
+    "employeeId": null
+  },
+  {
+    "id": "seat-070",
+    "teamId": "team-05",
+    "x": 411,
+    "y": 811,
+    "width": 105,
+    "height": 75,
+    "rotation": 0,
+    "employeeId": null
+  },
+  {
+    "id": "seat-071",
+    "teamId": "team-05",
+    "x": 534,
+    "y": 811,
+    "width": 105,
+    "height": 75,
+    "rotation": 0,
+    "employeeId": null
+  },
+  {
+    "id": "seat-072",
+    "teamId": "team-05",
+    "x": 657,
+    "y": 811,
+    "width": 105,
+    "height": 75,
+    "rotation": 0,
+    "employeeId": null
+  }
+]

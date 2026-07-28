@@ -1,0 +1,305 @@
+/* 04-date-navigator: 日付ナビゲーターバー・カレンダーポップオーバー・スワイプステージ */
+
+.date-navigator {
+  margin-bottom: 12px;
+}
+
+.date-navigator-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.date-nav-btn {
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  border-radius: 9999px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface-muted);
+  color: var(--color-text-secondary);
+  font-size: 20px;
+  cursor: pointer;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.date-nav-btn:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+.date-label-btn {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 44px;
+  border-radius: 12px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface-elevated);
+  cursor: pointer;
+  padding: 0 12px;
+  overflow: hidden;
+}
+.date-label-btn:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+.date-year-chip {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+
+.date-label-text {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  white-space: nowrap;
+  animation: date-label-enter 220ms ease-out;
+}
+.date-label-sat {
+  color: var(--color-weekend-sat);
+}
+.date-label-sun {
+  color: var(--color-weekend-sun);
+}
+
+.date-calendar-icon {
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+@keyframes date-label-enter {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.date-today-return-row {
+  display: flex;
+  justify-content: center;
+  margin-top: 6px;
+}
+
+.date-today-return-btn {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-accent);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 6px 10px;
+  min-height: 32px;
+}
+.date-today-return-btn:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+/* カレンダーポップオーバー: 詳細シート(--z-index-modal+3まで使用)より前面に出す必要があるため
+   ポップオーバー層(--z-index-popover)にシートの積層分を加算する */
+.calendar-popover {
+  position: fixed;
+  z-index: calc(var(--z-index-modal) + var(--z-index-popover));
+  width: min(384px, calc(100vw - 16px));
+  background: var(--color-surface-elevated);
+  border: 1px solid var(--color-border);
+  border-radius: 16px;
+  box-shadow: var(--shadow-modal);
+  padding: 12px;
+}
+
+.calendar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.calendar-nav-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 9999px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface-muted);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+}
+.calendar-nav-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.calendar-header-label {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 6px 10px;
+  border-radius: 8px;
+}
+.calendar-header-label:hover {
+  background: var(--color-surface-muted);
+}
+
+.calendar-weekday-row {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  margin-bottom: 4px;
+}
+.calendar-weekday {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--color-text-muted);
+  text-align: center;
+}
+.calendar-weekday-sun {
+  color: var(--color-weekend-sun);
+}
+.calendar-weekday-sat {
+  color: var(--color-weekend-sat);
+}
+
+/* 6週分(42マス)の高さを常に確保しヘッダー位置を固定 */
+.calendar-day-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  grid-template-rows: repeat(6, 1fr);
+  gap: 2px;
+  height: 240px;
+}
+
+.calendar-day-cell {
+  border: none;
+  background: none;
+  border-radius: 9999px;
+  font-size: 13px;
+  color: var(--color-text-primary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.calendar-day-cell:hover {
+  background: var(--color-surface-muted);
+}
+.calendar-day-cell:disabled {
+  color: var(--color-text-disabled);
+  cursor: default;
+}
+.calendar-day-cell:disabled:hover {
+  background: none;
+}
+.calendar-day-outside {
+  color: var(--color-text-disabled);
+}
+.calendar-day-sun {
+  color: var(--color-weekend-sun);
+}
+.calendar-day-sat {
+  color: var(--color-weekend-sat);
+}
+.calendar-day-selected {
+  background: var(--color-accent);
+  color: var(--color-text-on-accent) !important;
+}
+.calendar-day-today {
+  box-shadow: inset 0 0 0 1.5px var(--color-accent);
+}
+
+.calendar-year-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  height: 240px;
+  align-content: center;
+}
+.calendar-year-cell {
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  background: var(--color-surface);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  cursor: pointer;
+  padding: 12px 0;
+}
+.calendar-year-cell:hover {
+  background: var(--color-surface-muted);
+}
+.calendar-year-cell:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+.calendar-year-cell-selected {
+  border-color: var(--color-accent);
+  background: var(--color-accent-soft);
+  color: var(--color-accent);
+}
+
+/* スワイプステージ(カード領域) */
+.swipe-stage {
+  position: relative;
+  overflow: hidden;
+}
+
+.swipe-depth-card {
+  position: absolute;
+  inset: 8px;
+  z-index: 0;
+  border-radius: 16px;
+  background: var(--color-surface-muted);
+  pointer-events: none;
+  will-change: transform, opacity;
+}
+
+.swipe-front-card {
+  position: relative;
+  z-index: 1;
+  min-height: 300px;
+  touch-action: pan-y;
+  will-change: transform, opacity;
+}
+
+.swipe-stamp {
+  position: absolute;
+  top: 50%;
+  z-index: 20;
+  transform: translateY(-50%) scale(0.85);
+  padding: 8px 16px;
+  border-radius: 9999px;
+  border: 2px solid var(--color-accent);
+  background: var(--color-surface-elevated);
+  color: var(--color-accent);
+  font-size: 14px;
+  font-weight: 800;
+  pointer-events: none;
+  will-change: transform, opacity;
+}
+.swipe-stamp-prev {
+  left: 16px;
+}
+.swipe-stamp-next {
+  right: 16px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .date-label-text {
+    animation: none;
+  }
+}

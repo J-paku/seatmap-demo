@@ -1,0 +1,356 @@
+/* 03-detail-panel: 共通シェル・スワイプ・各詳細のスタイル */
+
+.sheet-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: var(--z-index-modal);
+  animation: sheet-fade-in 0.2s ease-out;
+}
+
+.sheet {
+  position: fixed;
+  z-index: calc(var(--z-index-modal) + 1);
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  box-shadow: var(--shadow-modal);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* モバイル: 下端密着ボトムシート・全幅・上部のみラウンド */
+.sheet {
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: 20px 20px 0 0;
+  animation: sheet-slide-up 0.2s ease-out;
+}
+
+.sheet-employee {
+  height: 95dvh;
+}
+
+.sheet-facility,
+.sheet-schedule {
+  max-height: 90dvh;
+}
+
+/* デスクトップ: 中央モーダル・最大448px・全ラウンド */
+@media (min-width: 640px) {
+  .sheet {
+    left: 50%;
+    right: auto;
+    bottom: auto;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 100%;
+    max-width: 448px;
+    border-radius: 16px;
+    animation: sheet-fade-in 0.2s ease-out;
+  }
+  .sheet-employee {
+    height: 90dvh;
+  }
+}
+
+.sheet-stack-top .sheet-backdrop {
+  z-index: calc(var(--z-index-modal) + 2);
+}
+.sheet-stack-top .sheet {
+  z-index: calc(var(--z-index-modal) + 3);
+}
+
+.sheet-handle-strip {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 96px;
+  display: flex;
+  justify-content: center;
+  padding-top: 10px;
+  z-index: 1;
+}
+@media (min-width: 640px) {
+  .sheet-handle-strip {
+    display: none;
+  }
+}
+
+.sheet-handle-bar {
+  width: 40px;
+  height: 6px;
+  border-radius: 9999px;
+  background: var(--color-border-strong);
+}
+
+.sheet-scroll {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  touch-action: pan-x pan-y;
+  padding: 16px 20px 32px;
+  flex: 1;
+}
+
+.sheet-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.sheet-title {
+  font-size: 18px;
+  font-weight: 700;
+  margin: 0;
+}
+
+.sheet-close {
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  border-radius: 9999px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface-muted);
+  color: var(--color-text-secondary);
+  font-size: 16px;
+  cursor: pointer;
+  position: relative;
+  z-index: 2;
+}
+.sheet-close:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+/* 社員詳細 */
+.profile-card {
+  display: flex;
+  gap: 14px;
+  padding: 14px;
+  border-radius: 16px;
+  background: var(--color-surface-muted);
+}
+.profile-avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 12px;
+  overflow: hidden;
+  flex-shrink: 0;
+  background: var(--color-surface-elevated);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.profile-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.profile-name-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.profile-name {
+  font-size: 16px;
+  font-weight: 700;
+}
+.profile-kana {
+  font-size: 12px;
+  color: var(--color-text-muted);
+}
+.profile-position {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-accent);
+}
+.profile-team,
+.profile-email {
+  font-size: 13px;
+  color: var(--color-text-secondary);
+}
+
+.section-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-text-secondary);
+  margin: 20px 0 8px;
+}
+
+.schedule-section {
+  margin-top: 4px;
+}
+
+.schedule-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.schedule-row {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface-elevated);
+  cursor: pointer;
+  text-align: left;
+  min-height: 44px;
+}
+.schedule-row:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+.schedule-time {
+  font-size: 12px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+}
+.schedule-title {
+  font-size: 14px;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.detail-empty {
+  font-size: 14px;
+  color: var(--color-text-muted);
+  padding: 8px 0;
+}
+
+.detail-row {
+  display: flex;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--color-border);
+  align-items: center;
+}
+.detail-label {
+  width: 72px;
+  font-size: 13px;
+  color: var(--color-text-muted);
+}
+.detail-value {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* 社員行(予定詳細内) */
+.employee-row {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  margin-top: 12px;
+  border-radius: 12px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface-elevated);
+  cursor: pointer;
+  text-align: left;
+  min-height: 44px;
+}
+.employee-row-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  overflow: hidden;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.employee-row-info {
+  display: flex;
+  flex-direction: column;
+}
+.employee-row-name {
+  font-size: 14px;
+  font-weight: 700;
+}
+.employee-row-sub {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+
+/* ステータスチップ・カテゴリチップ */
+.status-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 10px;
+  border-radius: 9999px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--status-color);
+  background: var(--color-surface-elevated);
+  border: 1px solid var(--color-border);
+}
+.status-chip-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 9999px;
+  background: var(--status-color);
+}
+
+.category-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.cat-meeting {
+  color: var(--color-status-meeting);
+  background: var(--color-accent-soft);
+}
+.cat-out {
+  color: var(--color-status-out);
+  background: var(--color-warning-soft);
+}
+.cat-vacation {
+  color: var(--color-status-vacation);
+  background: var(--color-surface-muted);
+}
+
+@keyframes sheet-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes sheet-slide-up {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sheet,
+  .sheet-backdrop {
+    animation: none;
+  }
+}

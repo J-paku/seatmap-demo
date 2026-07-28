@@ -1,0 +1,79 @@
+[
+  {
+    "id": "fac-01",
+    "name": "会議室A",
+    "kind": "meeting",
+    "capacity": 4,
+    "x": 1030,
+    "y": 15,
+    "width": 250,
+    "height": 130
+  },
+  {
+    "id": "fac-02",
+    "name": "会議室B",
+    "kind": "meeting",
+    "capacity": 6,
+    "x": 1030,
+    "y": 165,
+    "width": 250,
+    "height": 150
+  },
+  {
+    "id": "fac-03",
+    "name": "会議室C",
+    "kind": "meeting",
+    "capacity": 8,
+    "x": 1030,
+    "y": 335,
+    "width": 250,
+    "height": 175
+  },
+  {
+    "id": "fac-04",
+    "name": "会議室D",
+    "kind": "meeting",
+    "capacity": 12,
+    "x": 1030,
+    "y": 530,
+    "width": 250,
+    "height": 210
+  },
+  {
+    "id": "fac-05",
+    "name": "応接室",
+    "kind": "meeting",
+    "capacity": 6,
+    "x": 1030,
+    "y": 760,
+    "width": 250,
+    "height": 120
+  },
+  {
+    "id": "fac-06",
+    "name": "電話ブース1",
+    "kind": "booth",
+    "x": 1310,
+    "y": 15,
+    "width": 120,
+    "height": 110
+  },
+  {
+    "id": "fac-07",
+    "name": "電話ブース2",
+    "kind": "booth",
+    "x": 1310,
+    "y": 145,
+    "width": 120,
+    "height": 110
+  },
+  {
+    "id": "fac-08",
+    "name": "リフレッシュスペース",
+    "kind": "common",
+    "x": 1310,
+    "y": 285,
+    "width": 270,
+    "height": 220
+  }
+]

@@ -1,0 +1,29 @@
+@import 'tailwindcss';
+
+/* ダークモードはクラス方式(.dark 配下を dark バリアントとして扱う) */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* パート別CSS はここに直接 @import で列挙する(CSS バレル禁止・Turbopack 対策) */
+@import './tokens.css';
+@import './seatmap.css';
+@import './team-overlay.css';
+@import './detail-panel.css';
+@import './date-navigator.css';
+@import './employee-directory.css';
+@import './admin-edit.css';
+@import './avatar-customizer.css';
+
+html,
+body {
+  padding: 0;
+  margin: 0;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}

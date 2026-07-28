@@ -1,0 +1,335 @@
+[
+  {
+    "id": "ev-0001",
+    "employeeId": "emp-001",
+    "title": "休暇",
+    "category": "vacation",
+    "start": "2026-07-27T00:00:00+09:00",
+    "end": "2026-07-27T23:59:00+09:00",
+    "isAllDay": true
+  },
+  {
+    "id": "ev-0002",
+    "employeeId": "emp-002",
+    "title": "休暇",
+    "category": "vacation",
+    "start": "2026-07-27T00:00:00+09:00",
+    "end": "2026-07-27T23:59:00+09:00",
+    "isAllDay": true
+  },
+  {
+    "id": "ev-0003",
+    "employeeId": "emp-003",
+    "title": "打ち合わせ",
+    "category": "meeting",
+    "start": "2026-07-27T09:00:00+09:00",
+    "end": "2026-07-27T10:00:00+09:00",
+    "isAllDay": false
+  },
+  {
+    "id": "ev-0004",
+    "employeeId": "emp-004",
+    "title": "休暇",
+    "category": "vacation",
+    "start": "2026-07-27T00:00:00+09:00",
+    "end": "2026-07-27T23:59:00+09:00",
+    "isAllDay": true
+  },
+  {
+    "id": "ev-0005",
+    "employeeId": "emp-005",
+    "title": "打ち合わせ",
+    "category": "meeting",
+    "start": "2026-07-27T14:00:00+09:00",
+    "end": "2026-07-27T15:00:00+09:00",
+    "isAllDay": false
+  },
+  {
+    "id": "ev-0006",
+    "employeeId": "emp-006",
+    "title": "定例ミーティング",
+    "category": "meeting",
+    "start": "2026-07-27T17:00:00+09:00",
+    "end": "2026-07-27T18:00:00+09:00",
+    "isAllDay": false
+  },
+  {
+    "id": "ev-0007",
+    "employeeId": "emp-006",
+    "title": "定例ミーティング",
+    "category": "meeting",
+    "start": "2026-07-27T14:00:00+09:00",
+    "end": "2026-07-27T15:00:00+09:00",
+    "isAllDay": false
+  },
+  {
+    "id": "ev-0008",
+    "employeeId": "emp-006",
+    "title": "外出打ち合わせ",
+    "category": "out",
+    "start": "2026-07-27T10:00:00+09:00",
+    "end": "2026-07-27T11:00:00+09:00",
+    "isAllDay": false
+  },
+  {
+    "id": "ev-0009",
+    "employeeId": "emp-007",
+    "title": "銀行手続き",
+    "category": "out",
+    "start": "2026-07-27T17:00:00+09:00",
+    "end": "2026-07-27T18:00:00+09:00",
+    "isAllDay": false
+  },
+  {
+    "id": "ev-0010",
+    "employeeId": "emp-008",
+    "title": "休暇",
+    "category": "vacation",
+    "start": "2026-07-27T00:00:00+09:00",
+    "end": "2026-07-27T23:59:00+09:00",
+    "isAllDay": true
+  },
+  {
+    "id": "ev-0011",
+    "employeeId": "emp-009",
+    "title": "有給休暇",
+    "category": "vacation",
+    "start": "2026-07-27T00:00:00+09:00",
+    "end": "2026-07-27T23:59:00+09:00",
+    "isAllDay": true
+  },
+  {
+    "id": "ev-0012",
+    "employeeId": "emp-010",
+    "title": "休暇",
+    "category": "vacation",
+    "start": "2026-07-27T00:00:00+09:00",
+    "end": "2026-07-27T23:59:00+09:00",
+    "isAllDay": true
+  },
+  {
+    "id": "ev-0013",
+    "employeeId": "emp-011",
+    "title": "現地調査",
+    "category": "out",
+    "start": "2026-07-27T15:00:00+09:00",
+    "end": "2026-07-27T16:00:00+09:00",
+    "isAllDay": false
+  },
+  {
+    "id": "ev-0014",
+    "employeeId": "emp-012",
+    "title": "プロジェクト会議",
+    "category": "meeting",
+    "start": "2026-07-27T12:00:00+09:00",
+    "end": "2026-07-27T13:00:00+09:00",
+    "isAllDay": false
+  },
+  {
+    "id": "ev-0015",
+    "employeeId": "emp-012",
+    "title": "外出打ち合わせ",
+    "category": "out",
+    "start": "2026-07-27T09:00:00+09:00",
+    "end": "2026-07-27T10:00:00+09:00",
+    "isAllDay": false
+  },
+  {
+    "id": "ev-0016",
+    "employeeId": "emp-013",
+    "title": "休暇",
+    "category": "vacation",
+    "start": "2026-07-27T00:00:00+09:00",
+    "end": "2026-07-27T23:59:00+09:00",
+    "isAllDay": true
+  },
+  {
+    "id": "ev-0017",
+    "employeeId": "emp-016",
+    "title": "プロジェクト会議",
+    "category": "meeting",
+    "start": "2026-07-27T09:00:00+09:00",
+    "end": "2026-07-27T10:00:00+09:00",
+    "isAllDay": false
+  },
+  {
+    "id": "ev-0018",
+    "employeeId": "emp-017",
+    "title": "休暇",
+    "category": "vacation",
+    "start": "2026-07-27T00:00:00+09:00",
+    "end": "2026-07-27T23:59:00+09:00",
+    "isAllDay": true
+  },
+  {
+    "id": "ev-0019",
+    "employeeId": "emp-018",
+    "title": "週次レビュー",
+    "category": "meeting",
+    "start": "2026-07-27T15:00:00+09:00",
+    "end": "2026-07-27T16:00:00+09:00",
+    "isAllDay": false
+  },
+  {
+    "id": "ev-0020",
+    "employeeId": "emp-021",
+    "title": "プロジェクト会議",
+    "category": "meeting",
+    "start": "2026-07-27T10:00:00+09:00",
+    "end": "2026-07-27T11:00:00+09:00",
+    "isAllDay": false
+  },
+  {
+    "id": "ev-0021",
+    "employeeId": "emp-021",
+    "title": "週次レビュー",
+    "category": "meeting",
+    "start": "2026-07-27T15:00:00+09:00",
+    "end": "2026-07-27T16:00:00+09:00",
+    "isAllDay": false
+  },
+  {
+    "id": "ev-0022",
+    "employeeId": "emp-022",
+    "title": "プロジェクト会議",
+    "category": "meeting",
+    "start": "2026-07-27T12:00:00+09:00",
+    "end": "2026-07-27T13:00:00+09:00",
+    "isAllDay": false
+  },
+  {
+    "id": "ev-0023",
+    "employeeId": "emp-022",
+    "title": "客先訪問",
+    "category": "out",
+    "start": "2026-07-27T15:00:00+09:00",
+    "end": "2026-07-27T16:00:00+09:00",
+    "isAllDay": false
+  },
+  {
+    "id": "ev-0024",
+    "employeeId": "emp-023",
+    "title": "銀行手続き",
+    "category": "out",
+    "start": "2026-07-27T09:00:00+09:00",
+    "end": "2026-07-27T10:00:00+09:00",
+    "isAllDay": false
+  },
+  {
+    "id": "ev-0025",
+    "employeeId": "emp-026",
+    "title": "部門会議",
+    "category": "meeting",
+    "start": "2026-07-27T16:00:00+09:00",
+    "end": "2026-07-27T17:00:00+09:00",
+    "isAllDay": false
+  },
+  {
+    "id": "ev-0026",
+    "employeeId": "emp-027",
+    "title": "客先訪問",
+    "category": "out",
+    "start": "2026-07-27T14:00:00+09:00",
+    "end": "2026-07-27T15:00:00+09:00",
+    "isAllDay": false
+  },
+  {
+    "id": "ev-0027",
+    "employeeId": "emp-027",
+    "title": "プロジェクト会議",
+    "category": "meeting",
+    "start": "2026-07-27T13:00:00+09:00",
+    "end": "2026-07-27T14:00:00+09:00",
+    "isAllDay": false
+  },
+  {
+    "id": "ev-0028",
+    "employeeId": "emp-030",
+    "title": "有給休暇",
+    "category": "vacation",
+    "start": "2026-07-27T00:00:00+09:00",
+    "end": "2026-07-27T23:59:00+09:00",
+    "isAllDay": true
+  },
+  {
+    "id": "ev-0029",
+    "employeeId": "emp-031",
+    "title": "有給休暇",
+    "category": "vacation",
+    "start": "2026-07-27T00:00:00+09:00",
+    "end": "2026-07-27T23:59:00+09:00",
+    "isAllDay": true
+  },
+  {
+    "id": "ev-0030",
+    "employeeId": "emp-033",
+    "title": "休暇",
+    "category": "vacation",
+    "start": "2026-07-27T00:00:00+09:00",
+    "end": "2026-07-27T23:59:00+09:00",
+    "isAllDay": true
+  },
+  {
+    "id": "ev-0031",
+    "employeeId": "emp-034",
+    "title": "定例ミーティング",
+    "category": "meeting",
+    "start": "2026-07-27T17:00:00+09:00",
+    "end": "2026-07-27T18:00:00+09:00",
+    "isAllDay": false
+  },
+  {
+    "id": "ev-0032",
+    "employeeId": "emp-034",
+    "title": "客先訪問",
+    "category": "out",
+    "start": "2026-07-27T10:00:00+09:00",
+    "end": "2026-07-27T11:00:00+09:00",
+    "isAllDay": false
+  },
+  {
+    "id": "ev-0033",
+    "employeeId": "emp-034",
+    "title": "プロジェクト会議",
+    "category": "meeting",
+    "start": "2026-07-27T11:00:00+09:00",
+    "end": "2026-07-27T12:00:00+09:00",
+    "isAllDay": false
+  },
+  {
+    "id": "ev-0034",
+    "employeeId": "emp-035",
+    "title": "定例ミーティング",
+    "category": "meeting",
+    "start": "2026-07-27T12:00:00+09:00",
+    "end": "2026-07-27T13:00:00+09:00",
+    "isAllDay": false
+  },
+  {
+    "id": "ev-0035",
+    "employeeId": "emp-036",
+    "title": "プロジェクト会議",
+    "category": "meeting",
+    "start": "2026-07-27T14:00:00+09:00",
+    "end": "2026-07-27T15:00:00+09:00",
+    "isAllDay": false
+  },
+  {
+    "id": "ev-0036",
+    "employeeId": "emp-036",
+    "title": "定例ミーティング",
+    "category": "meeting",
+    "start": "2026-07-27T12:00:00+09:00",
+    "end": "2026-07-27T13:00:00+09:00",
+    "isAllDay": false
+  },
+  {
+    "id": "ev-0037",
+    "employeeId": "emp-036",
+    "title": "客先訪問",
+    "category": "out",
+    "start": "2026-07-27T17:00:00+09:00",
+    "end": "2026-07-27T18:00:00+09:00",
+    "isAllDay": false
+  }
+]
