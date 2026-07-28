@@ -275,6 +275,47 @@ employees.forEach((emp) => {
   }
 })
 
+// ── 会議室の予定システム連携 + 会議データ ───────────────────
+// 会議室に facilityId を付与(応接室 fac-05 のみ未連携=施設未連携デモ)
+facilities.forEach((f) => {
+  if (f.kind === 'meeting' && f.id !== 'fac-05') f.facilityId = `F-${f.id.slice(-2)}`
+})
+
+// 会議室会議(時刻=分のみ・日付非依存でいつ見ても活性)。参加者は社員から抽選
+const FACILITY_MEETING_TITLES = ['定例会議', 'プロジェクト進捗', '部門ミーティング', '1on1', 'レビュー会', '打ち合わせ', 'ブレスト']
+const empIds = employees.map((e) => e.id)
+const facilityMeetings = []
+let fmSeq = 1
+facilities
+  .filter((f) => f.facilityId)
+  .forEach((f) => {
+    const rand = mulberry32(hashString(`fm-${f.id}`))
+    const n = 1 + Math.floor(rand() * 3) // 1..3件
+    const usedHours = new Set()
+    for (let i = 0; i < n; i++) {
+      let hour = 9 + Math.floor(rand() * 8) // 9..16 開始
+      let guard = 0
+      while (usedHours.has(hour) && guard < 10) {
+        hour = 9 + Math.floor(rand() * 8)
+        guard++
+      }
+      usedHours.add(hour)
+      const pcount = 2 + Math.floor(rand() * 4) // 2..5名
+      const picked = new Set()
+      for (let k = 0; k < pcount; k++) picked.add(empIds[Math.floor(rand() * empIds.length)])
+      const participantIds = [...picked]
+      facilityMeetings.push({
+        id: `fm-${pad4(fmSeq++)}`,
+        facilityId: f.facilityId,
+        title: FACILITY_MEETING_TITLES[Math.floor(rand() * FACILITY_MEETING_TITLES.length)],
+        startMin: hour * 60,
+        endMin: (hour + 1) * 60,
+        organizerId: participantIds[0],
+        participantIds,
+      })
+    }
+  })
+
 // ── 書き出し ────────────────────────────────────────────
 
 mkdirSync(MOCKS_DIR, { recursive: true })
@@ -286,6 +327,7 @@ dump('employees.json', employees)
 dump('seats.json', seats)
 dump('facilities.json', facilities)
 dump('schedules.json', schedules)
+dump('facility-meetings.json', facilityMeetings)
 
 const occupied = seats.filter((s) => s.employeeId).length
-console.log(`teams=${teams.length} employees=${employees.length} seats=${seats.length}(着席${occupied}/空席${seats.length - occupied}) facilities=${facilities.length} schedules=${schedules.length}`)
+console.log(`teams=${teams.length} employees=${employees.length} seats=${seats.length}(着席${occupied}/空席${seats.length - occupied}) facilities=${facilities.length} schedules=${schedules.length} facilityMeetings=${facilityMeetings.length}`)

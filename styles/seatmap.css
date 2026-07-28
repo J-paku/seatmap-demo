@@ -84,6 +84,22 @@
   opacity: 0.85;
 }
 
+.facility-status {
+  font-weight: 700;
+}
+
+.facility-meeting-title {
+  opacity: 0.65;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.facility-meeting-parts {
+  opacity: 0.6;
+}
+
 /* 座席カード */
 .seat-card {
   position: absolute;

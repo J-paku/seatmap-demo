@@ -7,7 +7,8 @@
     "x": 1030,
     "y": 15,
     "width": 250,
-    "height": 130
+    "height": 130,
+    "facilityId": "F-01"
   },
   {
     "id": "fac-02",
@@ -17,7 +18,8 @@
     "x": 1030,
     "y": 165,
     "width": 250,
-    "height": 150
+    "height": 150,
+    "facilityId": "F-02"
   },
   {
     "id": "fac-03",
@@ -27,7 +29,8 @@
     "x": 1030,
     "y": 335,
     "width": 250,
-    "height": 175
+    "height": 175,
+    "facilityId": "F-03"
   },
   {
     "id": "fac-04",
@@ -37,7 +40,8 @@
     "x": 1030,
     "y": 530,
     "width": 250,
-    "height": 210
+    "height": 210,
+    "facilityId": "F-04"
   },
   {
     "id": "fac-05",

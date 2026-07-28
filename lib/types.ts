@@ -52,6 +52,22 @@ export type Facility = {
   y: number
   width: number
   height: number
+  // 11: 予定システムの施設ID。無ければ 施設未連携(会議が付かない)
+  facilityId?: string
+}
+
+// 10/11: 会議室の予約状態(available=空室 / in_meeting=会議中 / upcoming=まもなく / unlinked=施設未連携)
+export type FacilityStatus = 'available' | 'in_meeting' | 'upcoming' | 'unlinked'
+
+// 会議室に紐づく会議。時刻(分)のみ持ち日付非依存で、いつ見てもデモが活性になる
+export type FacilityMeeting = {
+  id: string
+  facilityId: string
+  title: string
+  startMin: number
+  endMin: number
+  organizerId: string
+  participantIds: string[]
 }
 
 // フロアレイアウト(ローダーが teams+seats+facilities を合成)
@@ -81,4 +97,12 @@ export const PRESENCE_LABEL: Record<PresenceStatus, string> = {
   meeting: '会議',
   out: '外出',
   vacation: '休暇',
+}
+
+// 会議室状態の表示ラベル
+export const FACILITY_STATUS_LABEL: Record<FacilityStatus, string> = {
+  available: '空室',
+  in_meeting: '会議中',
+  upcoming: 'まもなく',
+  unlinked: '施設未連携',
 }

@@ -1,10 +1,11 @@
 import useSWR from 'swr'
-import type { Employee, Facility, ScheduleEvent, Seat, SeatLayout, Team } from './types'
+import type { Employee, Facility, FacilityMeeting, ScheduleEvent, Seat, SeatLayout, Team } from './types'
 import employeesJson from '../mocks/employees.json'
 import teamsJson from '../mocks/teams.json'
 import seatsJson from '../mocks/seats.json'
 import facilitiesJson from '../mocks/facilities.json'
 import schedulesJson from '../mocks/schedules.json'
+import facilityMeetingsJson from '../mocks/facility-meetings.json'
 
 // JSON 由来の緩い型を、union フィールドを持つ確定型へ整形(このファイルが唯一の import 点)
 const EMPLOYEES: Employee[] = employeesJson.map((e) => ({
@@ -25,6 +26,7 @@ const SCHEDULES: ScheduleEvent[] = schedulesJson.map((s) => ({
   ...s,
   category: s.category as ScheduleEvent['category'],
 }))
+const FACILITY_MEETINGS: FacilityMeeting[] = facilityMeetingsJson
 
 // デモは 1フロア固定
 const FLOOR_ID = 'floor-1'
@@ -91,6 +93,8 @@ export const useSeats = () => useCached('seats', SEATS)
 export const useFacilities = () => useCached('facilities', FACILITIES)
 
 export const useSchedules = () => useCached('schedules', SCHEDULES)
+
+export const useFacilityMeetings = () => useCached('facility-meetings', FACILITY_MEETINGS)
 
 // SeatLayout はローダーが teams+seats+facilities を合成
 export const useSeatLayout = () => {

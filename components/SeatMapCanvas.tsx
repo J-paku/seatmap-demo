@@ -12,6 +12,7 @@ import { SeatCard } from './SeatCard'
 import type { Lod } from './SeatCard'
 import { TeamArea } from './TeamArea'
 import type { TeamOverlayPayload } from './TeamOverlay'
+import type { FacilityState } from '@/lib/facility-status'
 import { FacilityBlock } from './FacilityBlock'
 import { ZoomControls } from './ZoomControls'
 import { SEATMAP_BG_ID } from './SheetShell'
@@ -47,6 +48,8 @@ type Props = {
   onFacilitySelect?: (facilityId: string) => void
   // 10: チームバウンダリのタップで大型オーバーレイを開く(画面座標 rect を親へ渡す)
   onTeamBoundaryClick?: (payload: TeamOverlayPayload) => void
+  // 会議室状態(facilityId → 状態)
+  facilityStateById?: Map<string, FacilityState>
   // 07: 編集モード中のみ有効。未指定(閲覧モード)では以下の分岐へ一切到達しない
   isEditMode?: boolean
   onSeatMove?: (seatId: string, x: number, y: number) => void
@@ -125,6 +128,7 @@ export const SeatMapCanvas = forwardRef<SeatMapCanvasHandle, Props>(function Sea
     onSeatSelect,
     onFacilitySelect,
     onTeamBoundaryClick,
+    facilityStateById,
     isEditMode,
     onSeatMove,
     onTeamMove,
@@ -1017,7 +1021,14 @@ export const SeatMapCanvas = forwardRef<SeatMapCanvasHandle, Props>(function Sea
           )
         })}
         {layout.facilities.map((f) => (
-          <FacilityBlock key={f.id} facility={f} counterScale={counterScale} onSelect={handleFacilitySelect} />
+          <FacilityBlock
+              key={f.id}
+              facility={f}
+              counterScale={counterScale}
+              onSelect={handleFacilitySelect}
+              state={facilityStateById?.get(f.id)}
+              lod={lod}
+            />
         ))}
         {/* 10: 座席は常時レンダー。詳細度は LOD のみで変わる(チームクリックはオーバーレイを開くだけ) */}
         {layout.seats

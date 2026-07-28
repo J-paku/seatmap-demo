@@ -16,7 +16,9 @@ import { TeamChangeSheet } from '@/components/edit/TeamChangeSheet'
 import { TeamRelayoutModal } from '@/components/edit/TeamRelayoutModal'
 import { EditErrorToast } from '@/components/edit/EditErrorToast'
 import { DetailPanelProvider, useDetailPanel } from '@/lib/detail-panel-context'
-import { useEmployees, useSchedules, useSeatLayout } from '@/lib/mock-loader'
+import { useEmployees, useFacilityMeetings, useSchedules, useSeatLayout } from '@/lib/mock-loader'
+import { deriveFacilityState } from '@/lib/facility-status'
+import type { FacilityState } from '@/lib/facility-status'
 import { computePresenceMap } from '@/lib/presence'
 import { useQuantizedClock } from '@/lib/use-quantized-clock'
 import { useLayoutEditor } from '@/lib/use-layout-editor'
@@ -33,6 +35,7 @@ const SeatMapView = () => {
   const { layout } = useSeatLayout()
   const { data: employees } = useEmployees()
   const { data: schedules } = useSchedules()
+  const { data: facilityMeetings } = useFacilityMeetings()
   const { debouncedDate, isTodaySelected } = useSelectedDate()
   const teamColorMap = useTeamColorMap()
   // 08: 本人アバターの共有状態(localStorage override + 編集モーダル起動)
@@ -98,6 +101,26 @@ const SeatMapView = () => {
     }
     return counts
   }, [effectiveLayout, effectivePresenceMap])
+
+  // 会議室状態(今日表示中のみ現在時刻で導出。他日は連携有無だけ)
+  const nowMin = useMemo(() => {
+    const d = new Date(nowMs)
+    return d.getHours() * 60 + d.getMinutes()
+  }, [nowMs])
+  const facilityStateById = useMemo(() => {
+    const map = new Map<string, FacilityState>()
+    if (!effectiveLayout) return map
+    const meetings = facilityMeetings ?? []
+    for (const f of effectiveLayout.facilities) {
+      map.set(
+        f.id,
+        isTodaySelected
+          ? deriveFacilityState(f, meetings, nowMin)
+          : { status: f.facilityId ? 'available' : 'unlinked' }
+      )
+    }
+    return map
+  }, [effectiveLayout, facilityMeetings, nowMin, isTodaySelected])
 
   const ready = layout && employees && schedules
 
@@ -204,6 +227,7 @@ const SeatMapView = () => {
           onSeatSelect={openSeatDetail}
           onFacilitySelect={openFacilityDetail}
           onTeamBoundaryClick={setTeamOverlay}
+          facilityStateById={facilityStateById}
           isEditMode={editor.isEditMode}
           onSeatMove={editor.moveSeat}
           onTeamMove={editor.moveTeam}
