@@ -452,7 +452,8 @@ export const SeatMapCanvas = forwardRef<SeatMapCanvasHandle, Props>(function Sea
       const dx = x - panRef.current.lastX
       const dy = y - panRef.current.lastY
       if (!panRef.current.moved) {
-        if (Math.hypot(x - panRef.current.startX, y - panRef.current.startY) > 3) {
+        // 10: タップ距離閾値は仕様の8pxに合わせる(3pxだと微振動でタップが潰れる)
+        if (Math.hypot(x - panRef.current.startX, y - panRef.current.startY) > 8) {
           panRef.current.moved = true
           // ドラッグ確定時のみ capture: タップは click を実要素へ届けるため遅延取得
           containerRef.current?.setPointerCapture(e.pointerId)

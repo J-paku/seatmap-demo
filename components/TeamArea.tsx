@@ -1,7 +1,10 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { hexToRgba } from '@/lib/color'
 import type { TeamColorEntry } from '@/lib/team-colors'
 import type { Team } from '@/lib/types'
+
+// 10: ロングプレス(押し続け)判定のしきい値。これを超えて発火した後は click を無視する
+const LONG_PRESS_MS = 300
 
 type Lod = 'detail' | 'mid' | 'overview'
 
@@ -39,6 +42,13 @@ export const TeamArea = ({
 }: Props) => {
   const [hovered, setHovered] = useState(false)
   const [pressed, setPressed] = useState(false)
+  const longPressTimerRef = useRef(0)
+  // 300ms 経過でロングプレス発火済みを示す。true の間は続く click を無視する
+  const longPressedRef = useRef(false)
+
+  const clearLongPress = () => {
+    window.clearTimeout(longPressTimerRef.current)
+  }
 
   // 開くのは click で行う(キャンバスが pointer capture を取るため pointerup はここへ来ない)。
   // ドラッグ後の合成 click はキャンバス側の onClickCapture が抑制する
@@ -46,6 +56,10 @@ export const TeamArea = ({
     e.stopPropagation()
     setPressed(false)
     if (isEditMode) return
+    if (longPressedRef.current) {
+      longPressedRef.current = false
+      return
+    }
     onBoundaryOpen(team.id, e.currentTarget.getBoundingClientRect())
   }
 
@@ -74,8 +88,26 @@ export const TeamArea = ({
         data-team-id={team.idPrefix}
         onClick={handleClick}
         onPointerEnter={() => setHovered(true)}
-        onPointerLeave={() => { setHovered(false); setPressed(false) }}
-        onPointerDown={() => { if (!isEditMode) setPressed(true) }}
+        onPointerLeave={() => {
+          setHovered(false)
+          setPressed(false)
+          // 途中離脱では click が来ないためここでフラグも破棄する
+          clearLongPress()
+          longPressedRef.current = false
+        }}
+        onPointerDown={() => {
+          if (!isEditMode) setPressed(true)
+          clearLongPress()
+          longPressTimerRef.current = window.setTimeout(() => {
+            longPressedRef.current = true
+          }, LONG_PRESS_MS)
+        }}
+        onPointerUp={clearLongPress}
+        onPointerCancel={() => {
+          setPressed(false)
+          clearLongPress()
+          longPressedRef.current = false
+        }}
         style={{
           position: 'absolute',
           left: inner.x,
