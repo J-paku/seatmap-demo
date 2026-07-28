@@ -5,6 +5,8 @@ import type { SeatMapCanvasHandle, TeamPresenceCounts } from '@/components/SeatM
 import { DetailPanels } from '@/components/DetailPanels'
 import { TeamOverlay } from '@/components/TeamOverlay'
 import type { TeamOverlayPayload } from '@/components/TeamOverlay'
+import { FacilityHoverCard } from '@/components/FacilityHoverCard'
+import type { FacilityHoverPayload } from '@/components/FacilityHoverCard'
 import { EmployeeDirectory } from '@/components/EmployeeDirectory'
 import { AvatarCustomizer } from '@/components/AvatarCustomizer'
 import { PixelAvatar } from '@/components/PixelAvatar'
@@ -46,6 +48,7 @@ const SeatMapView = () => {
   const [isDirectoryOpen, setIsDirectoryOpen] = useState(false)
   // 10: チームバウンダリのタップで開く大型オーバーレイ(payload=null で閉)
   const [teamOverlay, setTeamOverlay] = useState<TeamOverlayPayload | null>(null)
+  const [hoverFacility, setHoverFacility] = useState<FacilityHoverPayload | null>(null)
   // 05: 座席未設定(防御分岐)時の一時通知文言
   const [unassignedNotice, setUnassignedNotice] = useState<string | null>(null)
 
@@ -228,6 +231,7 @@ const SeatMapView = () => {
           onFacilitySelect={openFacilityDetail}
           onTeamBoundaryClick={setTeamOverlay}
           facilityStateById={facilityStateById}
+          onFacilityHover={setHoverFacility}
           isEditMode={editor.isEditMode}
           onSeatMove={editor.moveSeat}
           onTeamMove={editor.moveTeam}
@@ -255,6 +259,11 @@ const SeatMapView = () => {
           onSeatClick={openSeatDetail}
         />
       )}
+      {!editor.isEditMode && hoverFacility && effectiveLayout && (() => {
+        const f = effectiveLayout.facilities.find((x) => x.id === hoverFacility.facilityId)
+        const st = facilityStateById.get(hoverFacility.facilityId)
+        return f && st ? <FacilityHoverCard facility={f} state={st} empById={employeeById} rect={hoverFacility.rect} /> : null
+      })()}
       {!editor.isEditMode && <DetailPanels />}
 
       {editor.isEditMode && (

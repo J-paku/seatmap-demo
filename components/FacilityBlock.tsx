@@ -2,6 +2,7 @@ import type { Facility } from '@/lib/types'
 import { FACILITY_STATUS_LABEL } from '@/lib/types'
 import { FACILITY_COLOR } from '@/lib/facility-status'
 import type { FacilityState } from '@/lib/facility-status'
+import type { FacilityHoverPayload } from './FacilityHoverCard'
 
 type Props = {
   facility: Facility
@@ -9,9 +10,10 @@ type Props = {
   onSelect: (facilityId: string) => void
   state?: FacilityState
   lod?: 'detail' | 'mid' | 'overview'
+  onHover?: (payload: FacilityHoverPayload | null) => void
 }
 
-export const FacilityBlock = ({ facility, counterScale, onSelect, state, lod = 'detail' }: Props) => {
+export const FacilityBlock = ({ facility, counterScale, onSelect, state, lod = 'detail', onHover }: Props) => {
   const isMeeting = facility.kind === 'meeting'
   const color = isMeeting && state ? FACILITY_COLOR[state.status] : null
 
@@ -23,6 +25,10 @@ export const FacilityBlock = ({ facility, counterScale, onSelect, state, lod = '
       role='button'
       tabIndex={-1}
       onClick={() => onSelect(facility.id)}
+      onPointerEnter={(e) => {
+        if (isMeeting && e.pointerType === 'mouse') onHover?.({ facilityId: facility.id, rect: e.currentTarget.getBoundingClientRect() })
+      }}
+      onPointerLeave={() => onHover?.(null)}
       style={{
         left: facility.x,
         top: facility.y,
