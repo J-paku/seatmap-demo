@@ -418,7 +418,6 @@ export const SeatMapCanvas = forwardRef<SeatMapCanvasHandle, Props>(function Sea
     const x = e.clientX - r.left
     const y = e.clientY - r.top
     pointersRef.current.set(e.pointerId, { x, y })
-    ;(e.currentTarget as HTMLElement).setPointerCapture(e.pointerId)
 
     if (pointersRef.current.size === 2) {
       // ピンチ開始
@@ -482,6 +481,8 @@ export const SeatMapCanvas = forwardRef<SeatMapCanvasHandle, Props>(function Sea
       if (!panRef.current.moved) {
         if (Math.hypot(x - panRef.current.startX, y - panRef.current.startY) > 3) {
           panRef.current.moved = true
+          // ドラッグ確定時のみ capture: タップは click を実要素へ届けるため遅延取得
+          containerRef.current?.setPointerCapture(e.pointerId)
         }
       }
       if (panRef.current.moved) {
