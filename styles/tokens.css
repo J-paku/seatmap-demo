@@ -29,12 +29,13 @@
   --color-danger-soft: #ffd8cc;
   --color-seatmap-bg: #f5efe9;
   --color-team-bg-opacity: 0.1;
-  --color-meeting-room-busy-bg: #ffe0d6;
-  --color-meeting-room-busy-text: #8b2f18;
-  --color-meeting-room-busy-border: #e8a788;
-  --color-meeting-room-empty-bg: #e8f0dd;
-  --color-meeting-room-empty-text: #3e5e32;
-  --color-meeting-room-empty-border: #bacfa8;
+  /* 会議室カード=原本実測のインディゴ系(空室=薄インディゴ / 会議中=薄ブルー・濃紺文字) */
+  --color-meeting-room-busy-bg: #dbeafe;
+  --color-meeting-room-busy-text: #1e40af;
+  --color-meeting-room-busy-border: #93c5fd;
+  --color-meeting-room-empty-bg: #eef2ff;
+  --color-meeting-room-empty-text: #4338ca;
+  --color-meeting-room-empty-border: #a5b4fc;
   --shadow-card: 0 1px 0 #d4c7b6, 0 4px 12px rgba(74, 60, 48, 0.06);
   --shadow-modal: 0 20px 48px rgba(74, 60, 48, 0.2);
   --glass-bg: rgba(255, 255, 255, 0.78);
@@ -168,8 +169,9 @@
 
 /* 状態チップ色(present/meeting/out/vacation) */
 .seat-map-root {
-  --color-status-present: #6b8e5a;
-  --color-status-meeting: #c76a4a;
-  --color-status-out: #c68f2a;
-  --color-status-vacation: #9c8e80;
+  /* 状態表示=原本実測(在席=緑/会議中=青/外出=琥珀/休み=グレー・全テーマ共通) */
+  --color-status-present: #16a34a;
+  --color-status-meeting: #2563eb;
+  --color-status-out: #d97706;
+  --color-status-vacation: #6b7280;
 }

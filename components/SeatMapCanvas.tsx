@@ -1053,36 +1053,7 @@ export const SeatMapCanvas = forwardRef<SeatMapCanvasHandle, Props>(function Sea
           <AlignmentGuides guides={snapGuides} viewBoxW={layout.viewBox.width} viewBoxH={layout.viewBox.height} />
         )}
       </div>
-      <div className='team-legend'>
-        <div className='team-legend-title'>凡例</div>
-        {layout.teams.map((team) => {
-          const colorEntry = resolveTeamColor(teamColorMap, team.id, team.name)
-          const count = assignedCountByTeam.get(team.id) ?? 0
-          const counts = teamPresenceCounts.get(team.id)
-          return (
-            <button
-              key={team.id}
-              type='button'
-              className={`team-legend-row${expandedTeamIds.has(team.id) ? ' is-selected' : ''}`}
-              onClick={(e) => {
-                e.stopPropagation()
-                handleLegendSelect(team.id)
-              }}
-            >
-                <span className='team-legend-chip' style={{ background: colorEntry.background }} />
-                <span className='team-legend-name'>{team.name}</span>
-                {counts && (
-                  <span className='team-legend-breakdown'>
-                    在{counts.present}/会{counts.meeting}/外{counts.out}/休{counts.vacation}
-                  </span>
-                )}
-                <span className='team-legend-count' style={{ color: colorEntry.background }}>
-                  {count}名
-                </span>
-              </button>
-            )
-          })}
-      </div>
+      {/* 原本には常時表示の凡例パネルは無い(チーム名は各アイランドのラベル板で表示) */}
       <ZoomControls onZoomIn={() => zoomButton(1)} onZoomOut={() => zoomButton(-1)} onReset={resetView} />
       {isEditMode && seatActionBarPos && editSelectedSeatId && (
         <SeatActionBar

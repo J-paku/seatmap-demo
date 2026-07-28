@@ -12,6 +12,8 @@ const nextConfig = {
   // 静的export では画像最適化サーバーが無いため無効化
   images: { unoptimized: true },
   trailingSlash: true,
+  // 親フォルダの lockfile によるワークスペースルート誤検出を防ぐ(このフォルダを明示)
+  turbopack: { root: import.meta.dirname },
   ...(isPages ? { basePath: repoBase, assetPrefix: repoBase } : {}),
 }
 

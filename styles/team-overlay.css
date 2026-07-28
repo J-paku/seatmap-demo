@@ -27,6 +27,7 @@
   width: 6px;
 }
 
+/* 原本実測: チーム名ラベルは白地・2px黒枠・オフセット黒影のネオブルータル「ラベル板」(色チップ│チーム名│人数バッジ) */
 .team-area-label {
   position: absolute;
   top: 12px;
@@ -34,23 +35,24 @@
   transform: translateX(-50%);
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   max-width: calc(100% - 24px);
-  padding: 4px 10px 4px 4px;
-  border-radius: 9999px;
-  background: var(--color-surface-elevated);
-  box-shadow: var(--shadow-card);
-  font-weight: 700;
-  color: var(--color-text-primary);
+  padding: 5px 8px 5px 8px;
+  border-radius: 14px;
+  background: #ffffff;
+  border: 2px solid #111827;
+  box-shadow: 4px 4px 0 #111827;
+  font-weight: 800;
+  color: #111827;
   white-space: nowrap;
   font-variant-numeric: tabular-nums;
 }
 
 .team-area-label-strip {
   flex-shrink: 0;
-  width: 8px;
-  height: 8px;
-  border-radius: 9999px;
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
 }
 
 .team-area-label-name {
@@ -63,9 +65,10 @@
 .team-area-label-badge {
   flex-shrink: 0;
   padding: 1px 8px;
-  border-radius: 9999px;
+  border-radius: 8px;
+  /* 背景・文字色はチーム色をインラインで付与(TeamArea.tsx) */
   font-size: 0.85em;
-  font-weight: 700;
+  font-weight: 800;
 }
 
 /* 「チーム表示」トグルボタン(キャンバス上部ツールバー) */
