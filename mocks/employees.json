@@ -11,9 +11,9 @@
       "face": "smile",
       "outfit": "suit",
       "palette": {
-        "hair": "#3B2B20",
-        "skin": "#F1C9A5",
-        "outfit": "#2F3B52"
+        "hair": "#2A1A0F",
+        "skin": "#F0C49A",
+        "outfit": "#3B6EA8"
       }
     }
   },
@@ -28,9 +28,9 @@
       "face": "closed",
       "outfit": "shirt",
       "palette": {
-        "hair": "#4A3728",
+        "hair": "#3B2B20",
         "skin": "#F6D7B8",
-        "outfit": "#7C9E6F"
+        "outfit": "#2F3B52"
       }
     }
   },
@@ -47,7 +47,7 @@
       "palette": {
         "hair": "#241C16",
         "skin": "#E8B48C",
-        "outfit": "#8A5A5A"
+        "outfit": "#4A5A6E"
       }
     }
   },
@@ -63,9 +63,9 @@
       "face": "wink",
       "outfit": "knit",
       "palette": {
-        "hair": "#6B4A2E",
+        "hair": "#4A3728",
         "skin": "#FAE0C8",
-        "outfit": "#4A5A6E"
+        "outfit": "#7C9E6F"
       }
     }
   },
@@ -81,8 +81,8 @@
       "outfit": "suit",
       "palette": {
         "hair": "#1F1A17",
-        "skin": "#F1C9A5",
-        "outfit": "#B5843F"
+        "skin": "#F0C49A",
+        "outfit": "#8A5A5A"
       }
     }
   },
@@ -97,7 +97,7 @@
       "face": "closed",
       "outfit": "shirt",
       "palette": {
-        "hair": "#3B2B20",
+        "hair": "#2A1A0F",
         "skin": "#F6D7B8",
         "outfit": "#5C5470"
       }
@@ -114,9 +114,9 @@
       "face": "serious",
       "outfit": "hoodie",
       "palette": {
-        "hair": "#4A3728",
+        "hair": "#3B2B20",
         "skin": "#E8B48C",
-        "outfit": "#2F3B52"
+        "outfit": "#3B6EA8"
       }
     }
   },
@@ -133,7 +133,7 @@
       "palette": {
         "hair": "#241C16",
         "skin": "#FAE0C8",
-        "outfit": "#7C9E6F"
+        "outfit": "#2F3B52"
       }
     }
   },
@@ -149,9 +149,9 @@
       "face": "smile",
       "outfit": "suit",
       "palette": {
-        "hair": "#6B4A2E",
-        "skin": "#F1C9A5",
-        "outfit": "#8A5A5A"
+        "hair": "#4A3728",
+        "skin": "#F0C49A",
+        "outfit": "#4A5A6E"
       }
     }
   },
@@ -168,7 +168,7 @@
       "palette": {
         "hair": "#1F1A17",
         "skin": "#F6D7B8",
-        "outfit": "#4A5A6E"
+        "outfit": "#7C9E6F"
       }
     }
   },
@@ -183,9 +183,9 @@
       "face": "serious",
       "outfit": "hoodie",
       "palette": {
-        "hair": "#3B2B20",
+        "hair": "#2A1A0F",
         "skin": "#E8B48C",
-        "outfit": "#B5843F"
+        "outfit": "#8A5A5A"
       }
     }
   },
@@ -201,7 +201,7 @@
       "face": "wink",
       "outfit": "knit",
       "palette": {
-        "hair": "#4A3728",
+        "hair": "#3B2B20",
         "skin": "#FAE0C8",
         "outfit": "#5C5470"
       }
@@ -219,8 +219,8 @@
       "outfit": "suit",
       "palette": {
         "hair": "#241C16",
-        "skin": "#F1C9A5",
-        "outfit": "#2F3B52"
+        "skin": "#F0C49A",
+        "outfit": "#3B6EA8"
       }
     }
   },
@@ -235,9 +235,9 @@
       "face": "closed",
       "outfit": "shirt",
       "palette": {
-        "hair": "#6B4A2E",
+        "hair": "#4A3728",
         "skin": "#F6D7B8",
-        "outfit": "#7C9E6F"
+        "outfit": "#2F3B52"
       }
     }
   },
@@ -254,7 +254,7 @@
       "palette": {
         "hair": "#1F1A17",
         "skin": "#E8B48C",
-        "outfit": "#8A5A5A"
+        "outfit": "#4A5A6E"
       }
     }
   },
@@ -269,9 +269,9 @@
       "face": "wink",
       "outfit": "knit",
       "palette": {
-        "hair": "#3B2B20",
+        "hair": "#2A1A0F",
         "skin": "#FAE0C8",
-        "outfit": "#4A5A6E"
+        "outfit": "#7C9E6F"
       }
     }
   },
@@ -287,9 +287,9 @@
       "face": "smile",
       "outfit": "suit",
       "palette": {
-        "hair": "#4A3728",
-        "skin": "#F1C9A5",
-        "outfit": "#B5843F"
+        "hair": "#3B2B20",
+        "skin": "#F0C49A",
+        "outfit": "#8A5A5A"
       }
     }
   },
@@ -321,9 +321,9 @@
       "face": "serious",
       "outfit": "hoodie",
       "palette": {
-        "hair": "#6B4A2E",
+        "hair": "#4A3728",
         "skin": "#E8B48C",
-        "outfit": "#2F3B52"
+        "outfit": "#3B6EA8"
       }
     }
   },
@@ -341,7 +341,7 @@
       "palette": {
         "hair": "#1F1A17",
         "skin": "#FAE0C8",
-        "outfit": "#7C9E6F"
+        "outfit": "#2F3B52"
       }
     }
   },
@@ -356,9 +356,9 @@
       "face": "smile",
       "outfit": "suit",
       "palette": {
-        "hair": "#3B2B20",
-        "skin": "#F1C9A5",
-        "outfit": "#8A5A5A"
+        "hair": "#2A1A0F",
+        "skin": "#F0C49A",
+        "outfit": "#4A5A6E"
       }
     }
   },
@@ -373,9 +373,9 @@
       "face": "closed",
       "outfit": "shirt",
       "palette": {
-        "hair": "#4A3728",
+        "hair": "#3B2B20",
         "skin": "#F6D7B8",
-        "outfit": "#4A5A6E"
+        "outfit": "#7C9E6F"
       }
     }
   },
@@ -392,7 +392,7 @@
       "palette": {
         "hair": "#241C16",
         "skin": "#E8B48C",
-        "outfit": "#B5843F"
+        "outfit": "#8A5A5A"
       }
     }
   },
@@ -408,7 +408,7 @@
       "face": "wink",
       "outfit": "knit",
       "palette": {
-        "hair": "#6B4A2E",
+        "hair": "#4A3728",
         "skin": "#FAE0C8",
         "outfit": "#5C5470"
       }
@@ -426,8 +426,8 @@
       "outfit": "suit",
       "palette": {
         "hair": "#1F1A17",
-        "skin": "#F1C9A5",
-        "outfit": "#2F3B52"
+        "skin": "#F0C49A",
+        "outfit": "#3B6EA8"
       }
     }
   },
@@ -442,9 +442,9 @@
       "face": "closed",
       "outfit": "shirt",
       "palette": {
-        "hair": "#3B2B20",
+        "hair": "#2A1A0F",
         "skin": "#F6D7B8",
-        "outfit": "#7C9E6F"
+        "outfit": "#2F3B52"
       }
     }
   },
@@ -460,9 +460,9 @@
       "face": "serious",
       "outfit": "hoodie",
       "palette": {
-        "hair": "#4A3728",
+        "hair": "#3B2B20",
         "skin": "#E8B48C",
-        "outfit": "#8A5A5A"
+        "outfit": "#4A5A6E"
       }
     }
   },
@@ -479,7 +479,7 @@
       "palette": {
         "hair": "#241C16",
         "skin": "#FAE0C8",
-        "outfit": "#4A5A6E"
+        "outfit": "#7C9E6F"
       }
     }
   },
@@ -494,9 +494,9 @@
       "face": "smile",
       "outfit": "suit",
       "palette": {
-        "hair": "#6B4A2E",
-        "skin": "#F1C9A5",
-        "outfit": "#B5843F"
+        "hair": "#4A3728",
+        "skin": "#F0C49A",
+        "outfit": "#8A5A5A"
       }
     }
   },
@@ -529,9 +529,9 @@
       "face": "serious",
       "outfit": "hoodie",
       "palette": {
-        "hair": "#3B2B20",
+        "hair": "#2A1A0F",
         "skin": "#E8B48C",
-        "outfit": "#2F3B52"
+        "outfit": "#3B6EA8"
       }
     }
   },
@@ -546,9 +546,9 @@
       "face": "wink",
       "outfit": "knit",
       "palette": {
-        "hair": "#4A3728",
+        "hair": "#3B2B20",
         "skin": "#FAE0C8",
-        "outfit": "#7C9E6F"
+        "outfit": "#2F3B52"
       }
     }
   },
@@ -564,8 +564,8 @@
       "outfit": "suit",
       "palette": {
         "hair": "#241C16",
-        "skin": "#F1C9A5",
-        "outfit": "#8A5A5A"
+        "skin": "#F0C49A",
+        "outfit": "#4A5A6E"
       }
     }
   },
@@ -581,9 +581,9 @@
       "face": "closed",
       "outfit": "shirt",
       "palette": {
-        "hair": "#6B4A2E",
+        "hair": "#4A3728",
         "skin": "#F6D7B8",
-        "outfit": "#4A5A6E"
+        "outfit": "#7C9E6F"
       }
     }
   },
@@ -600,7 +600,7 @@
       "palette": {
         "hair": "#1F1A17",
         "skin": "#E8B48C",
-        "outfit": "#B5843F"
+        "outfit": "#8A5A5A"
       }
     }
   },
@@ -615,7 +615,7 @@
       "face": "wink",
       "outfit": "knit",
       "palette": {
-        "hair": "#3B2B20",
+        "hair": "#2A1A0F",
         "skin": "#FAE0C8",
         "outfit": "#5C5470"
       }

@@ -47,9 +47,10 @@ const TEAM_DEFS = [
 const HAIRS = ['short', 'long', 'bob', 'ponytail', 'bald']
 const FACES = ['smile', 'closed', 'serious', 'wink']
 const OUTFITS = ['suit', 'shirt', 'hoodie', 'knit']
-const HAIR_COLORS = ['#3B2B20', '#4A3728', '#241C16', '#6B4A2E', '#1F1A17']
-const SKIN_COLORS = ['#F1C9A5', '#F6D7B8', '#E8B48C', '#FAE0C8']
-const OUTFIT_COLORS = ['#2F3B52', '#7C9E6F', '#8A5A5A', '#4A5A6E', '#B5843F', '#5C5470']
+// 原本実測: 基本アバターの髪#2A1A0F/肌#F0C49A/上衣#3B6EA8 を先頭に(多様性は維持)
+const HAIR_COLORS = ['#2A1A0F', '#3B2B20', '#241C16', '#4A3728', '#1F1A17']
+const SKIN_COLORS = ['#F0C49A', '#F6D7B8', '#E8B48C', '#FAE0C8']
+const OUTFIT_COLORS = ['#3B6EA8', '#2F3B52', '#4A5A6E', '#7C9E6F', '#8A5A5A', '#5C5470']
 
 // ── ユーティリティ ──────────────────────────────────────
 

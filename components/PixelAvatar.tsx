@@ -2,7 +2,8 @@ import { useMemo } from 'react'
 import type { AvatarConfig } from '@/lib/types'
 
 // AvatarConfig を 8×8 グリッド(コード配列)へ合成する
-// コード: H=髪 / S=肌 / O=衣装 / E=目 / M=口 / .=空
+// コード: H=髪 / S=肌 / O=上衣 / I=上衣の内側(濃色2トーン) / E=目 / M=口 / .=空
+// 配置は原本実測(髪が上部フレーム・目は col3/col5・下2段が上衣で最下段中央が内側濃色)
 
 type Props = {
   config: AvatarConfig
@@ -19,48 +20,59 @@ const OUTLINE_OFFSETS: Array<[number, number]> = [
   [0.16, 0.16], [-0.16, 0.16], [0.16, -0.16], [-0.16, -0.16],
 ]
 
+// 上衣色から内側の濃色トーンを生成(暗さ32%)
+const darken = (hex: string, factor: number): string => {
+  const n = parseInt(hex.replace('#', ''), 16)
+  const r = Math.round(((n >> 16) & 255) * (1 - factor))
+  const g = Math.round(((n >> 8) & 255) * (1 - factor))
+  const b = Math.round((n & 255) * (1 - factor))
+  return `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)}`
+}
+
 const buildGrid = (c: AvatarConfig): string[] => {
-  // ベース(肌の顔+衣装の肩)
+  // ベース(髪フレーム+肌の顔+上衣2トーン肩)
   const g: string[][] = [
-    ['.', '.', '.', '.', '.', '.', '.', '.'],
+    ['.', '.', 'H', 'H', 'H', 'H', '.', '.'],
+    ['.', 'H', 'H', 'H', 'H', 'H', 'H', '.'],
+    ['.', 'H', 'S', 'S', 'S', 'S', 'H', '.'],
+    ['.', 'H', 'S', 'E', 'S', 'E', 'H', '.'],
+    ['.', '.', 'S', 'S', 'S', 'S', '.', '.'],
     ['.', 'S', 'S', 'S', 'S', 'S', 'S', '.'],
-    ['.', 'S', 'S', 'S', 'S', 'S', 'S', '.'],
-    ['.', 'S', 'S', 'S', 'S', 'S', 'S', '.'],
-    ['.', 'S', 'S', 'S', 'S', 'S', 'S', '.'],
-    ['.', '.', 'O', 'O', 'O', 'O', '.', '.'],
     ['O', 'O', 'O', 'O', 'O', 'O', 'O', 'O'],
-    ['O', 'O', 'O', 'O', 'O', 'O', 'O', 'O'],
+    ['O', 'O', 'I', 'I', 'I', 'I', 'O', 'O'],
   ]
   const set = (r: number, col: number, v: string) => {
     g[r][col] = v
   }
 
-  // 髪パーツ
-  if (c.hair !== 'bald') {
-    for (let col = 1; col <= 6; col++) set(0, col, 'H')
-    set(1, 1, 'H')
-    set(1, 6, 'H')
+  // 髪型バリエーション
+  if (c.hair === 'bald') {
+    // 上部フレーム・側面の髪を除去(顔の輪郭のみ)
+    for (let col = 0; col < 8; col++) {
+      if (g[0][col] === 'H') set(0, col, '.')
+      if (g[1][col] === 'H') set(1, col, '.')
+    }
+    set(2, 1, 'S'); set(2, 6, 'S')
+    set(3, 1, 'S'); set(3, 6, 'S')
   }
   if (c.hair === 'long') {
-    set(0, 0, 'H'); set(0, 7, 'H')
-    set(1, 0, 'H'); set(1, 7, 'H')
-    set(2, 0, 'H'); set(2, 7, 'H')
-    set(3, 0, 'H'); set(3, 7, 'H')
+    // 側面を下方へ延長
+    set(4, 1, 'H'); set(4, 6, 'H')
+    set(5, 0, 'H'); set(5, 7, 'H')
   }
   if (c.hair === 'bob') {
-    set(1, 0, 'H'); set(1, 7, 'H')
-    set(2, 0, 'H'); set(2, 7, 'H')
+    set(4, 1, 'H'); set(4, 6, 'H')
   }
   if (c.hair === 'ponytail') {
-    set(1, 7, 'H'); set(2, 7, 'H'); set(3, 7, 'H')
+    // 右後方へ結い上げ
+    set(2, 7, 'H'); set(3, 7, 'H'); set(4, 7, 'H')
   }
 
-  // 顔パーツ(目・口)
-  set(2, 2, 'E')
-  set(2, 5, c.face === 'wink' ? 'S' : 'E')
+  // 表情バリエーション
+  if (c.face === 'wink') {
+    set(3, 5, 'S')
+  }
   if (c.face === 'smile') {
-    set(4, 2, 'M'); set(4, 3, 'M'); set(4, 4, 'M'); set(4, 5, 'M')
-  } else {
     set(4, 3, 'M'); set(4, 4, 'M')
   }
 
@@ -71,6 +83,7 @@ const buildGrid = (c: AvatarConfig): string[] => {
 type Rect = { x: number; y: number; w: number; fill: string }
 
 const mergeRuns = (grid: string[], palette: AvatarConfig['palette']): Rect[] => {
+  const innerColor = darken(palette.outfit, 0.32)
   const colorOf = (ch: string): string | null => {
     switch (ch) {
       case 'H':
@@ -79,6 +92,8 @@ const mergeRuns = (grid: string[], palette: AvatarConfig['palette']): Rect[] => 
         return palette.skin
       case 'O':
         return palette.outfit
+      case 'I':
+        return innerColor
       case 'E':
         return EYE_COLOR
       case 'M':
@@ -114,7 +129,7 @@ const mergeRuns = (grid: string[], palette: AvatarConfig['palette']): Rect[] => 
 
 export const PixelAvatar = ({ config, size }: Props) => {
   const rects = useMemo(() => mergeRuns(buildGrid(config), config.palette), [config])
-  // シルエット外郭: 前景 run を 8方向にオフセット複製して背面に敷く
+  // シルエット外郭: 前景 run(目・口を除く)を 8方向にオフセット複製して背面に敷く
   const silhouette = useMemo(() => rects.filter((r) => r.fill !== EYE_COLOR && r.fill !== MOUTH_COLOR), [rects])
 
   return (
