@@ -76,11 +76,14 @@ const useCached = <T,>(name: string, data: T) =>
   useSWR<T>(
     `mock/${name}`,
     async () => {
+      // キャッシュヒットは即返す(fetcherはマウント後実行なのでSSR不整合は起きない)
+      const cached = readCache<T>(name)
+      if (cached !== undefined) return cached
       const fresh = await fetchWithRetry(data)
       writeCache(name, fresh)
       return fresh
     },
-    { fallbackData: readCache<T>(name), revalidateOnFocus: false }
+    { revalidateOnFocus: false }
   )
 
 // 各データの SWR フック(キャッシュ優先・失敗時リトライ付き)
