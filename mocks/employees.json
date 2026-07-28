@@ -5,7 +5,8 @@
     "nameKana": "営業部1",
     "teamId": "team-01",
     "position": "部長",
-    "email": "アオヤマ001@example.co.jp",
+    "email": "aoyama001@example.co.jp",
+    "phone": "07020304264",
     "avatar": {
       "hair": "short",
       "face": "smile",
@@ -22,7 +23,8 @@
     "name": "営業部2",
     "nameKana": "営業部2",
     "teamId": "team-01",
-    "email": "シライシ002@example.co.jp",
+    "email": "shiraishi002@example.co.jp",
+    "phone": "07065554145",
     "avatar": {
       "hair": "long",
       "face": "closed",
@@ -39,7 +41,8 @@
     "name": "営業部3",
     "nameKana": "営業部3",
     "teamId": "team-01",
-    "email": "タカハシ003@example.co.jp",
+    "email": "takahashi003@example.co.jp",
+    "phone": "07080478090",
     "avatar": {
       "hair": "bob",
       "face": "serious",
@@ -57,7 +60,8 @@
     "nameKana": "営業部4",
     "teamId": "team-01",
     "position": "課長",
-    "email": "タナカ004@example.co.jp",
+    "email": "tanaka004@example.co.jp",
+    "phone": "08060408363",
     "avatar": {
       "hair": "ponytail",
       "face": "wink",
@@ -74,7 +78,8 @@
     "name": "営業部5",
     "nameKana": "営業部5",
     "teamId": "team-01",
-    "email": "ナカムラ005@example.co.jp",
+    "email": "nakamura005@example.co.jp",
+    "phone": "09055676145",
     "avatar": {
       "hair": "bald",
       "face": "smile",
@@ -91,7 +96,7 @@
     "name": "営業部6",
     "nameKana": "営業部6",
     "teamId": "team-01",
-    "email": "フジイ006@example.co.jp",
+    "email": "fujii006@example.co.jp",
     "avatar": {
       "hair": "short",
       "face": "closed",
@@ -108,7 +113,8 @@
     "name": "営業部7",
     "nameKana": "営業部7",
     "teamId": "team-01",
-    "email": "マツモト007@example.co.jp",
+    "email": "matsumoto007@example.co.jp",
+    "phone": "08022212546",
     "avatar": {
       "hair": "long",
       "face": "serious",
@@ -125,7 +131,8 @@
     "name": "営業部8",
     "nameKana": "営業部8",
     "teamId": "team-01",
-    "email": "イノウエ008@example.co.jp",
+    "email": "inoue008@example.co.jp",
+    "phone": "07034261229",
     "avatar": {
       "hair": "bob",
       "face": "wink",
@@ -142,7 +149,8 @@
     "name": "営業部9",
     "nameKana": "営業部9",
     "teamId": "team-01",
-    "email": "キムラ009@example.co.jp",
+    "email": "kimura009@example.co.jp",
+    "phone": "08062147800",
     "avatar": {
       "hair": "ponytail",
       "face": "smile",
@@ -159,7 +167,8 @@
     "name": "営業部10",
     "nameKana": "営業部10",
     "teamId": "team-01",
-    "email": "ハヤシ010@example.co.jp",
+    "email": "hayashi010@example.co.jp",
+    "phone": "07077377856",
     "avatar": {
       "hair": "bald",
       "face": "closed",
@@ -177,7 +186,8 @@
     "nameKana": "開発部1",
     "teamId": "team-02",
     "position": "部長",
-    "email": "シミズ011@example.co.jp",
+    "email": "shimizu011@example.co.jp",
+    "phone": "07009636463",
     "avatar": {
       "hair": "short",
       "face": "serious",
@@ -194,7 +204,8 @@
     "name": "開発部2",
     "nameKana": "開発部2",
     "teamId": "team-02",
-    "email": "ヤマモト012@example.co.jp",
+    "email": "yamamoto012@example.co.jp",
+    "phone": "08015583129",
     "avatar": {
       "hair": "long",
       "face": "wink",
@@ -211,7 +222,8 @@
     "name": "開発部3",
     "nameKana": "開発部3",
     "teamId": "team-02",
-    "email": "モリタ013@example.co.jp",
+    "email": "morita013@example.co.jp",
+    "phone": "08068180014",
     "avatar": {
       "hair": "bob",
       "face": "smile",
@@ -229,7 +241,8 @@
     "nameKana": "開発部4",
     "teamId": "team-02",
     "position": "課長",
-    "email": "コバヤシ014@example.co.jp",
+    "email": "kobayashi014@example.co.jp",
+    "phone": "09058884577",
     "avatar": {
       "hair": "ponytail",
       "face": "closed",
@@ -246,7 +259,7 @@
     "name": "開発部5",
     "nameKana": "開発部5",
     "teamId": "team-02",
-    "email": "カトウ015@example.co.jp",
+    "email": "kato015@example.co.jp",
     "avatar": {
       "hair": "bald",
       "face": "serious",
@@ -263,7 +276,7 @@
     "name": "開発部6",
     "nameKana": "開発部6",
     "teamId": "team-02",
-    "email": "ヨシダ016@example.co.jp",
+    "email": "yoshida016@example.co.jp",
     "avatar": {
       "hair": "short",
       "face": "wink",
@@ -280,7 +293,8 @@
     "name": "開発部7",
     "nameKana": "開発部7",
     "teamId": "team-02",
-    "email": "ヤマダ017@example.co.jp",
+    "email": "yamada017@example.co.jp",
+    "phone": "07073217665",
     "avatar": {
       "hair": "long",
       "face": "smile",
@@ -297,7 +311,8 @@
     "name": "開発部8",
     "nameKana": "開発部8",
     "teamId": "team-02",
-    "email": "ササキ018@example.co.jp",
+    "email": "sasaki018@example.co.jp",
+    "phone": "08043618276",
     "avatar": {
       "hair": "bob",
       "face": "closed",
@@ -314,7 +329,8 @@
     "name": "開発部9",
     "nameKana": "開発部9",
     "teamId": "team-02",
-    "email": "ヤマグチ019@example.co.jp",
+    "email": "yamaguchi019@example.co.jp",
+    "phone": "09017811095",
     "avatar": {
       "hair": "ponytail",
       "face": "serious",
@@ -331,7 +347,8 @@
     "name": "開発部10",
     "nameKana": "開発部10",
     "teamId": "team-02",
-    "email": "サイトウ020@example.co.jp",
+    "email": "saito020@example.co.jp",
+    "phone": "07088817473",
     "avatar": {
       "hair": "bald",
       "face": "wink",
@@ -349,7 +366,8 @@
     "nameKana": "総務部1",
     "teamId": "team-03",
     "position": "部長",
-    "email": "イケダ021@example.co.jp",
+    "email": "ikeda021@example.co.jp",
+    "phone": "07057783320",
     "avatar": {
       "hair": "short",
       "face": "smile",
@@ -366,7 +384,8 @@
     "name": "総務部2",
     "nameKana": "総務部2",
     "teamId": "team-03",
-    "email": "ハシモト022@example.co.jp",
+    "email": "hashimoto022@example.co.jp",
+    "phone": "09032154708",
     "avatar": {
       "hair": "long",
       "face": "closed",
@@ -383,7 +402,8 @@
     "name": "総務部3",
     "nameKana": "総務部3",
     "teamId": "team-03",
-    "email": "イシカワ023@example.co.jp",
+    "email": "ishikawa023@example.co.jp",
+    "phone": "08081473887",
     "avatar": {
       "hair": "bob",
       "face": "serious",
@@ -401,7 +421,8 @@
     "nameKana": "総務部4",
     "teamId": "team-03",
     "position": "課長",
-    "email": "マエダ024@example.co.jp",
+    "email": "maeda024@example.co.jp",
+    "phone": "08017057776",
     "avatar": {
       "hair": "ponytail",
       "face": "wink",
@@ -418,7 +439,8 @@
     "name": "総務部5",
     "nameKana": "総務部5",
     "teamId": "team-03",
-    "email": "フジワラ025@example.co.jp",
+    "email": "fujiwara025@example.co.jp",
+    "phone": "08036924479",
     "avatar": {
       "hair": "bald",
       "face": "smile",
@@ -435,7 +457,8 @@
     "name": "総務部6",
     "nameKana": "総務部6",
     "teamId": "team-03",
-    "email": "オカダ026@example.co.jp",
+    "email": "okada026@example.co.jp",
+    "phone": "07071139990",
     "avatar": {
       "hair": "short",
       "face": "closed",
@@ -452,7 +475,8 @@
     "name": "総務部7",
     "nameKana": "総務部7",
     "teamId": "team-03",
-    "email": "ゴトウ027@example.co.jp",
+    "email": "goto027@example.co.jp",
+    "phone": "07067006389",
     "avatar": {
       "hair": "long",
       "face": "serious",
@@ -469,7 +493,7 @@
     "name": "総務部8",
     "nameKana": "総務部8",
     "teamId": "team-03",
-    "email": "ハセガワ028@example.co.jp",
+    "email": "hasegawa028@example.co.jp",
     "avatar": {
       "hair": "bob",
       "face": "wink",
@@ -486,7 +510,8 @@
     "name": "総務部9",
     "nameKana": "総務部9",
     "teamId": "team-03",
-    "email": "ムラカミ029@example.co.jp",
+    "email": "murakami029@example.co.jp",
+    "phone": "07069676969",
     "avatar": {
       "hair": "ponytail",
       "face": "smile",
@@ -504,7 +529,8 @@
     "nameKana": "経理部1",
     "teamId": "team-04",
     "position": "部長",
-    "email": "コンドウ030@example.co.jp",
+    "email": "kondo030@example.co.jp",
+    "phone": "09059397204",
     "avatar": {
       "hair": "bald",
       "face": "closed",
@@ -521,7 +547,8 @@
     "name": "経理部2",
     "nameKana": "経理部2",
     "teamId": "team-04",
-    "email": "アオヤマ031@example.co.jp",
+    "email": "aoyama031@example.co.jp",
+    "phone": "09076554346",
     "avatar": {
       "hair": "short",
       "face": "serious",
@@ -538,7 +565,8 @@
     "name": "経理部3",
     "nameKana": "経理部3",
     "teamId": "team-04",
-    "email": "シライシ032@example.co.jp",
+    "email": "shiraishi032@example.co.jp",
+    "phone": "09092991462",
     "avatar": {
       "hair": "long",
       "face": "wink",
@@ -556,7 +584,7 @@
     "nameKana": "経理部4",
     "teamId": "team-04",
     "position": "課長",
-    "email": "タカハシ033@example.co.jp",
+    "email": "takahashi033@example.co.jp",
     "avatar": {
       "hair": "bob",
       "face": "smile",
@@ -573,7 +601,8 @@
     "name": "経理部5",
     "nameKana": "経理部5",
     "teamId": "team-04",
-    "email": "タナカ034@example.co.jp",
+    "email": "tanaka034@example.co.jp",
+    "phone": "08041151655",
     "avatar": {
       "hair": "ponytail",
       "face": "closed",
@@ -590,7 +619,8 @@
     "name": "経理部6",
     "nameKana": "経理部6",
     "teamId": "team-04",
-    "email": "ナカムラ035@example.co.jp",
+    "email": "nakamura035@example.co.jp",
+    "phone": "09078395069",
     "avatar": {
       "hair": "bald",
       "face": "serious",
@@ -607,7 +637,7 @@
     "name": "経理部7",
     "nameKana": "経理部7",
     "teamId": "team-04",
-    "email": "フジイ036@example.co.jp",
+    "email": "fujii036@example.co.jp",
     "avatar": {
       "hair": "short",
       "face": "wink",
@@ -624,7 +654,8 @@
     "name": "経理部8",
     "nameKana": "経理部8",
     "teamId": "team-04",
-    "email": "マツモト037@example.co.jp",
+    "email": "matsumoto037@example.co.jp",
+    "phone": "09083429202",
     "avatar": {
       "hair": "long",
       "face": "smile",
@@ -642,7 +673,8 @@
     "nameKana": "企画部1",
     "teamId": "team-05",
     "position": "部長",
-    "email": "イノウエ038@example.co.jp",
+    "email": "inoue038@example.co.jp",
+    "phone": "09085779935",
     "avatar": {
       "hair": "bob",
       "face": "closed",
@@ -659,7 +691,8 @@
     "name": "企画部2",
     "nameKana": "企画部2",
     "teamId": "team-05",
-    "email": "キムラ039@example.co.jp",
+    "email": "kimura039@example.co.jp",
+    "phone": "09020128555",
     "avatar": {
       "hair": "ponytail",
       "face": "serious",
@@ -676,7 +709,8 @@
     "name": "企画部3",
     "nameKana": "企画部3",
     "teamId": "team-05",
-    "email": "ハヤシ040@example.co.jp",
+    "email": "hayashi040@example.co.jp",
+    "phone": "07056805725",
     "avatar": {
       "hair": "bald",
       "face": "wink",
@@ -694,7 +728,8 @@
     "nameKana": "企画部4",
     "teamId": "team-05",
     "position": "課長",
-    "email": "シミズ041@example.co.jp",
+    "email": "shimizu041@example.co.jp",
+    "phone": "08041515357",
     "avatar": {
       "hair": "short",
       "face": "smile",
@@ -711,7 +746,8 @@
     "name": "企画部5",
     "nameKana": "企画部5",
     "teamId": "team-05",
-    "email": "ヤマモト042@example.co.jp",
+    "email": "yamamoto042@example.co.jp",
+    "phone": "09076529094",
     "avatar": {
       "hair": "long",
       "face": "closed",
@@ -728,7 +764,7 @@
     "name": "企画部6",
     "nameKana": "企画部6",
     "teamId": "team-05",
-    "email": "モリタ043@example.co.jp",
+    "email": "morita043@example.co.jp",
     "avatar": {
       "hair": "bob",
       "face": "serious",
@@ -745,7 +781,8 @@
     "name": "企画部7",
     "nameKana": "企画部7",
     "teamId": "team-05",
-    "email": "コバヤシ044@example.co.jp",
+    "email": "kobayashi044@example.co.jp",
+    "phone": "09038651007",
     "avatar": {
       "hair": "ponytail",
       "face": "wink",

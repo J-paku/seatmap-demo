@@ -3,8 +3,9 @@
 .team-ovl-wrap {
   position: fixed;
   inset: 0;
-  /* 座席クリックで開く社員詳細(z-index-modal=700)より下に置く(詳細が上に重なる) */
-  z-index: var(--z-index-sidebar);
+  /* 12: 従来 --z-index-sidebar(500)をEmployeeDirectoryと共有していたため専用値へ分離。
+     ヘッダー(--z-index-sticky=200)より上・社員詳細(--z-index-modal=700)より下を維持する */
+  z-index: 550;
   display: flex;
   justify-content: center;
   align-items: center;

@@ -19,6 +19,8 @@ export type Employee = {
   teamId: string
   position?: string
   email?: string
+  // 携帯電話番号(数字のみ・ハイフン無し。tel:リンクはそのまま使い、表示側で整形する)
+  phone?: string
   avatar: AvatarConfig
 }
 

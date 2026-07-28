@@ -14,11 +14,14 @@ export const DetailPanels = () => {
 
   const anyOpen = seatDetailId !== null || facilityDetailId !== null
 
-  // ESC で最前面のみ閉じる
+  // ESC で最前面のみ閉じる。stopPropagation で window レベルの他リスナー(例: 背後の
+  // TeamOverlay 自身の ESC ハンドラ)への伝播を止め、2段スタック中の誤同時クローズを防ぐ
   useEffect(() => {
     if (!anyOpen) return
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') closeTop()
+      if (e.key !== 'Escape') return
+      e.stopPropagation()
+      closeTop()
     }
     document.addEventListener('keydown', onKey)
     return () => document.removeEventListener('keydown', onKey)

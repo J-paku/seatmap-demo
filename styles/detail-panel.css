@@ -4,6 +4,7 @@
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.4);
+  /* 12: モーダルスタック表の相対順(社員/施設詳細)。ヘッダー等の共有トークン列に揃えて z-index-modal を使う */
   z-index: var(--z-index-modal);
   animation: sheet-fade-in 0.2s ease-out;
 }
@@ -30,6 +31,8 @@
 
 .sheet-employee {
   height: 95dvh;
+  /* 12: 社員詳細のモバイル角丸(共有 .sheet の20pxとは異なる16px指定) */
+  border-radius: 16px 16px 0 0;
 }
 
 .sheet-facility,
@@ -56,6 +59,7 @@
 }
 
 .sheet-stack-top .sheet-backdrop {
+  /* 12: 予定詳細(社員詳細より上にスタック) */
   z-index: calc(var(--z-index-modal) + 2);
 }
 .sheet-stack-top .sheet {
@@ -125,102 +129,329 @@
   outline: 2px solid var(--color-accent);
   outline-offset: 2px;
 }
+.sheet-close:hover {
+  background: var(--color-surface-muted-hover);
+}
+
+/* 12: 社員詳細のスクロール余白(px-4 py-6 pt-8, PC pt-6) */
+.sheet-employee .sheet-scroll {
+  padding: 32px 16px 24px;
+}
+@media (min-width: 640px) {
+  .sheet-employee .sheet-scroll {
+    padding-top: 24px;
+  }
+}
 
 /* 社員詳細 */
-.profile-card {
+.employee-detail {
   display: flex;
-  gap: 14px;
-  padding: 14px;
-  border-radius: 16px;
-  background: var(--color-surface-muted);
+  flex-direction: column;
+  min-height: 100%;
 }
-.profile-avatar {
-  width: 64px;
-  height: 64px;
-  border-radius: 12px;
+
+.profile-card {
+  position: relative;
+  border-radius: 18px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface-sunken);
   overflow: hidden;
-  flex-shrink: 0;
+}
+
+/* ① カラーヘッダー帯 */
+.profile-band {
+  position: relative;
+  height: 64px;
+  background: linear-gradient(135deg, var(--color-accent), color-mix(in srgb, var(--color-accent) 42%, #ffffff));
+}
+.profile-status-badge {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+}
+
+/* ② アバター(帯に22px被る) */
+.profile-avatar-frame {
+  position: absolute;
+  left: 16px;
+  bottom: -22px;
+  width: 66px;
+  height: 66px;
+  border-radius: 16px;
   background: var(--color-surface-elevated);
+  box-shadow: 0 0 0 4px var(--color-surface-sunken), inset 0 0 0 1px var(--color-border);
   display: flex;
   align-items: center;
   justify-content: center;
+  overflow: hidden;
 }
-.profile-info {
+
+/* ③ 本文(アバターの被り分だけ上余白を大きく) */
+.profile-body {
+  padding: 30px 16px 12px;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+}
+
+.profile-text-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
   min-width: 0;
 }
-.profile-name-row {
+.profile-name-kana {
   display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
+  flex-direction: column;
+  gap: 0;
+  min-width: 0;
 }
 .profile-name {
-  font-size: 16px;
+  font-size: 20px;
   font-weight: 700;
+  letter-spacing: 0.015em;
+  color: var(--color-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .profile-kana {
   font-size: 12px;
+  font-weight: 500;
+  letter-spacing: -0.04em;
   color: var(--color-text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
-.profile-position {
-  font-size: 12px;
+.profile-role {
+  font-size: 14px;
   font-weight: 600;
+  letter-spacing: -0.04em;
+  color: var(--color-accent);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.profile-dept {
+  font-size: 14px;
+  letter-spacing: -0.04em;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ④ 連絡先(メール・電話のいずれかがある時だけ表示) */
+.profile-contacts {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.contact-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.contact-icon {
+  font-size: 18px;
+  color: var(--color-text-muted);
+  flex-shrink: 0;
+}
+.contact-value {
+  font-size: 14px;
+  color: var(--color-text-primary);
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.contact-value-link {
   color: var(--color-accent);
 }
-.profile-team,
-.profile-email {
-  font-size: 13px;
-  color: var(--color-text-secondary);
+/* 視覚は16pxアイコンだが margin -8 でヒット領域を44×44へ拡張 */
+.contact-copy-btn {
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  margin: -8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  background: transparent;
+  border-radius: 9999px;
+  color: var(--color-text-muted);
+  cursor: pointer;
 }
-
-.section-title {
-  font-size: 13px;
+.contact-copy-btn:hover {
+  background: var(--color-surface-muted);
+}
+.contact-copy-btn.is-copied {
+  color: var(--color-success);
+}
+.contact-copy-bubble {
+  position: absolute;
+  top: -28px;
+  right: 0;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: var(--color-text-primary);
+  color: var(--color-surface);
+  font-size: 11px;
   font-weight: 700;
-  color: var(--color-text-secondary);
-  margin: 20px 0 8px;
+  white-space: nowrap;
+  pointer-events: none;
+  animation: contact-copy-fade 0.15s ease-out;
+}
+@keyframes contact-copy-fade {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
+/* スケジュールセクション(プロフィールカードの下 gap16。PCでは残り縦幅を埋める) */
 .schedule-section {
-  margin-top: 4px;
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+}
+@media (min-width: 640px) {
+  .schedule-section {
+    flex: 1;
+  }
+}
+
+.schedule-section-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+.schedule-section-icon {
+  font-size: 18px;
+  color: var(--color-accent);
+}
+.schedule-section-title {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+}
+.schedule-section-hairline {
+  flex: 1;
+  height: 1px;
+  background: var(--color-border);
+}
+
+.schedule-swipe-wrap {
+  margin-top: 8px;
+  min-height: 300px;
+  display: flex;
+  flex-direction: column;
+}
+/* SwipeDateStage(04文書所有)の内部段を高さいっぱいに伸ばすスコープ限定の上書き */
+.schedule-swipe-wrap .swipe-stage {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+.schedule-swipe-wrap .swipe-front-card {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.schedule-card {
+  position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  border-radius: 8px;
+  padding: 12px;
+  background: var(--color-surface-sunken);
+}
+
+.schedule-refresh-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 44px;
+  height: 44px;
+  border-radius: 9999px;
+  border: 0;
+  background: var(--color-surface-elevated);
+  color: var(--color-text-secondary);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  cursor: pointer;
+}
+.schedule-refresh-btn:hover:not(:disabled) {
+  background: var(--color-surface-muted-hover);
+}
+.schedule-refresh-btn:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+.schedule-refresh-cooldown {
+  font-size: 9px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
 }
 
 .schedule-list {
   list-style: none;
   margin: 0;
   padding: 0;
+  padding-right: 48px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 2px;
 }
 .schedule-row {
   width: 100%;
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 10px 12px;
-  border-radius: 12px;
-  border: 1px solid var(--color-border);
-  background: var(--color-surface-elevated);
+  gap: 8px;
+  padding: 6px 4px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
   cursor: pointer;
   text-align: left;
-  min-height: 44px;
+}
+.schedule-row:hover {
+  background: var(--color-surface-muted);
 }
 .schedule-row:focus-visible {
   outline: 2px solid var(--color-accent);
   outline-offset: 2px;
 }
 .schedule-time {
+  font-family: ui-monospace, 'SFMono-Regular', Consolas, monospace;
   font-size: 12px;
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
   color: var(--color-text-secondary);
   white-space: nowrap;
+  flex-shrink: 0;
+}
+.schedule-time.is-allday {
+  color: var(--color-accent);
 }
 .schedule-title {
   font-size: 14px;
+  color: var(--color-text-primary);
   flex: 1;
   min-width: 0;
   overflow: hidden;
@@ -228,9 +459,59 @@
   white-space: nowrap;
 }
 
-.detail-empty {
+.schedule-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--color-text-secondary);
+}
+.schedule-loading-center {
+  flex: 1;
+}
+.schedule-loading-overlay {
+  position: absolute;
+  inset: 12px;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--color-surface-sunken) 72%, transparent);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+.schedule-spinner {
+  width: 22px;
+  height: 22px;
+  border-radius: 9999px;
+  border: 2px solid var(--color-border);
+  border-top-color: var(--color-accent);
+  animation: schedule-spin 0.8s linear infinite;
+}
+@keyframes schedule-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.schedule-empty {
+  margin: auto 0;
+  text-align: center;
   font-size: 14px;
-  color: var(--color-text-muted);
+  color: #9ca3af;
+}
+.schedule-error {
+  margin: auto 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 14px;
+  color: var(--color-danger);
+}
+
+.seat-vacant-notice {
+  font-size: 14px;
+  color: #6b7280;
   padding: 8px 0;
 }
 
@@ -294,10 +575,10 @@
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  padding: 2px 10px;
+  padding: 4px 12px;
   border-radius: 9999px;
-  font-size: 12px;
-  font-weight: 700;
+  font-size: 14px;
+  font-weight: 500;
   color: var(--status-color);
   background: var(--color-surface-elevated);
   border: 1px solid var(--color-border);
@@ -307,6 +588,41 @@
   height: 8px;
   border-radius: 9999px;
   background: var(--status-color);
+}
+
+/* 12: 状態バッジ優先度2(読み込み中)・優先度4(使用中/空席フォールバック) */
+.status-chip-loading {
+  color: #6b7280;
+  background: #f3f4f6;
+  border-color: transparent;
+  animation: status-chip-pulse 1.6s ease-in-out infinite;
+}
+.status-chip-loading .material-symbols-outlined {
+  animation: status-chip-spin 1s linear infinite;
+}
+.status-chip-inuse {
+  color: #1e40af;
+  background: #dbeafe;
+  border-color: transparent;
+}
+.status-chip-vacant {
+  color: #4b5563;
+  background: #f3f4f6;
+  border-color: transparent;
+}
+@keyframes status-chip-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.55;
+  }
+}
+@keyframes status-chip-spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .category-chip {
