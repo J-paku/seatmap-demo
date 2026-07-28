@@ -55,7 +55,6 @@ const aiIndexOf = (text: string): number => {
   return sum % AI_CANDIDATES.length
 }
 
-type AiView = 'home' | 'compose' | 'loading'
 
 // ── ミニプレビュー付きパーツチップ行 ───────────────────
 
@@ -126,9 +125,7 @@ type ModalProps = {
 
 const AvatarCustomizerModal = ({ initial, onSave, onClose }: ModalProps) => {
   const [draft, setDraft] = useState<AvatarConfig>(() => cloneAvatar(initial))
-  const [aiView, setAiView] = useState<AiView>('home')
   const [aiRequestText, setAiRequestText] = useState('')
-  const [loadingPhase, setLoadingPhase] = useState(0)
   const [toast, setToast] = useState<string | null>(null)
   const dialogRef = useRef<HTMLDivElement>(null)
   const closeBtnRef = useRef<HTMLButtonElement>(null)
@@ -191,7 +188,6 @@ const AvatarCustomizerModal = ({ initial, onSave, onClose }: ModalProps) => {
 
   const runReset = () => {
     setDraft(cloneAvatar(initial))
-    setAiView('home')
     setAiRequestText('')
   }
 
@@ -201,22 +197,13 @@ const AvatarCustomizerModal = ({ initial, onSave, onClose }: ModalProps) => {
     window.setTimeout(onClose, 700)
   }
 
-  // AI生成モック(1.5秒の演出→固定候補適用)
+  // AI生成モック: 入力を打てば即座に固定候補から反映(ステップ・ローディングなし)
   const runGenerate = () => {
     if (!aiRequestText.trim()) return
-    setAiView('loading')
-    setLoadingPhase(0)
-    window.setTimeout(() => setLoadingPhase(1), 750)
-    window.setTimeout(() => {
-      const picked = AI_CANDIDATES[aiIndexOf(aiRequestText)]
-      setDraft(cloneAvatar(picked))
-      setAiView('home')
-      setToast('生成しました')
-      window.setTimeout(() => setToast(null), 1400)
-    }, 1500)
+    setDraft(cloneAvatar(AI_CANDIDATES[aiIndexOf(aiRequestText)]))
+    setToast('生成しました')
+    window.setTimeout(() => setToast(null), 1400)
   }
-
-  const isLoading = aiView === 'loading'
 
   // モバイル下方スワイプで閉じる(ハンドル起点)
   const onHandleDown = (e: React.PointerEvent) => {
@@ -287,44 +274,25 @@ const AvatarCustomizerModal = ({ initial, onSave, onClose }: ModalProps) => {
                 ))}
               </div>
 
-              {/* AIスタジオ(モック) */}
+              {/* AIスタジオ(モック): チャットを打てば即座に生成 */}
               <div className='ac-ai-studio'>
-                {aiView === 'home' && (
-                  <button type='button' className='ac-ai-cta' onClick={() => setAiView('compose')}>
-                    <span className='ac-ai-badge'>AI</span>
-                    AIキャラを作る（Beta）
-                  </button>
-                )}
-                {aiView === 'compose' && (
-                  <div className='ac-ai-compose'>
-                    <p className='ac-ai-title'>どんなキャラクターにしたいですか？</p>
-                    <textarea
-                      className='ac-ai-textarea'
-                      value={aiRequestText}
-                      onChange={(e) => setAiRequestText(e.target.value)}
-                      placeholder='ここに希望するアバターの雰囲気・髪型・表情などを直接書いてください'
-                    />
-                    <div className='ac-ai-actions'>
-                      <button type='button' className='ac-btn-ghost' onClick={() => setAiView('home')}>
-                        戻る
-                      </button>
-                      <button
-                        type='button'
-                        className='ac-btn-primary'
-                        disabled={!aiRequestText.trim()}
-                        onClick={runGenerate}
-                      >
-                        生成する
-                      </button>
-                    </div>
-                  </div>
-                )}
-                {aiView === 'loading' && (
-                  <div className='ac-ai-loading'>
-                    <span className='ac-spinner' />
-                    <span>{loadingPhase === 0 ? 'イメージを解析中…' : 'ドットを配置中…'}</span>
-                  </div>
-                )}
+                <div className='ac-ai-head'>
+                  <span className='ac-ai-badge'>AI</span>
+                  <span className='ac-ai-title'>AIキャラを作る（Beta）</span>
+                </div>
+                <textarea
+                  className='ac-ai-textarea'
+                  value={aiRequestText}
+                  onChange={(e) => setAiRequestText(e.target.value)}
+                  onKeyDown={(e) => {
+                    // Enter(Shift無し)で即生成
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault()
+                      runGenerate()
+                    }
+                  }}
+                  placeholder='希望する雰囲気・髪型・表情を打つとすぐ生成(例: クールな短髪)'
+                />
               </div>
             </div>
 
@@ -375,10 +343,10 @@ const AvatarCustomizerModal = ({ initial, onSave, onClose }: ModalProps) => {
 
         {/* フッター(スクロール外・常時固定) */}
         <div className='ac-footer'>
-          <button type='button' className='ac-btn-ghost' onClick={runReset} disabled={isLoading}>
+          <button type='button' className='ac-btn-ghost' onClick={runReset}>
             リセット
           </button>
-          <button type='button' className='ac-btn-primary' onClick={runSave} disabled={isLoading}>
+          <button type='button' className='ac-btn-primary' onClick={runSave}>
             保存
           </button>
         </div>

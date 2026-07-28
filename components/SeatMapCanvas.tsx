@@ -157,10 +157,8 @@ export const SeatMapCanvas = forwardRef<SeatMapCanvasHandle, Props>(function Sea
   const [selectedSeatId, setSelectedSeatId] = useState<string | null>(null)
   // 05: ディレクトリからのジャンプ着地時に強調パルスさせる座席
   const [pulsingSeatId, setPulsingSeatId] = useState<string | null>(null)
-  // 06: オーバーレイ表示(初期値true・セッション内メモリ保存のみ)
-  const [overlayVisible, setOverlayVisible] = useState(true)
-  // 06: 選択中チーム(null=非選択。常に0または1チーム)
-  const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null)
+  // チームテーブルをクリックして展開中(=メンバー座席を表示する)チーム集合。ズーム段階とは無関係
+  const [expandedTeamIds, setExpandedTeamIds] = useState<Set<string>>(() => new Set())
 
   // 07: 編集モード中のドラッグ状態(座席/チームラベル共用)。view モードでは常に不使用
   type EditDrag =
@@ -946,32 +944,37 @@ export const SeatMapCanvas = forwardRef<SeatMapCanvasHandle, Props>(function Sea
     [applyTransform, cancelAnim, commitSnap]
   )
 
-  // 06: チーム選択トグル(同チーム再選択で解除)
+  // チームテーブルのクリックで、そのチームのメンバー表示を開閉(同チーム再クリックで閉じる)
   const toggleTeamSelect = useCallback((teamId: string) => {
-    setSelectedTeamId((cur) => (cur === teamId ? null : teamId))
+    setExpandedTeamIds((cur) => {
+      const next = new Set(cur)
+      if (next.has(teamId)) next.delete(teamId)
+      else next.add(teamId)
+      return next
+    })
   }, [])
 
-  // 06: 凡例行クリック→選択+該当エリアまでパン
+  // 06: 凡例行クリック→展開トグル+該当エリアまでパン
   const handleLegendSelect = useCallback(
     (teamId: string) => {
-      setSelectedTeamId((cur) => (cur === teamId ? null : teamId))
+      toggleTeamSelect(teamId)
       const r = teamAreas.get(teamId)
       if (r) panToRect(r)
     },
-    [panToRect, teamAreas]
+    [toggleTeamSelect, panToRect, teamAreas]
   )
 
-  // 06: キャンバス空き領域クリックで選択解除(座席・施設・チームエリア自体は各要素側で stopPropagation 済み)
+  // 空き領域クリックで全チームを閉じる(座席・施設・チームエリア自体は各要素側で stopPropagation 済み)
   // 07: 編集モード中は座席の編集選択(フローティングアクションバー)も併せて解除
   const handleCanvasBackgroundClick = useCallback(() => {
-    setSelectedTeamId(null)
+    setExpandedTeamIds((cur) => (cur.size ? new Set() : cur))
     if (isEditMode) handleEditCanvasBackgroundClick()
   }, [isEditMode, handleEditCanvasBackgroundClick])
 
-  // 06: Escapeキーで選択解除
+  // Escapeキーで全チームを閉じる
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setSelectedTeamId(null)
+      if (e.key === 'Escape') setExpandedTeamIds((cur) => (cur.size ? new Set() : cur))
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
@@ -991,38 +994,39 @@ export const SeatMapCanvas = forwardRef<SeatMapCanvasHandle, Props>(function Sea
       onContextMenu={(e) => e.preventDefault()}
     >
       <div ref={layerRef} className='seat-map-transform'>
-        {/* z順: チームエリア → 施設 → 座席 */}
-        {overlayVisible &&
-          layout.teams.map((team) => {
-            const colorEntry = resolveTeamColor(teamColorMap, team.id, team.name)
-            const baseArea = teamAreas.get(team.id) ?? team.area
-            // 07: 編集ドラッグ中のチームはライブ座標を優先表示(確定は pointerup 時)
-            const area =
-              liveTeamPos && liveTeamPos.id === team.id
-                ? { ...baseArea, x: liveTeamPos.x, y: liveTeamPos.y }
-                : baseArea
-            return (
-              <TeamArea
-                key={team.id}
-                team={team}
-                area={area}
-                colorEntry={colorEntry}
-                presentCount={assignedCountByTeam.get(team.id) ?? 0}
-                counterScale={counterScale}
-                selected={team.id === selectedTeamId}
-                dimmed={selectedTeamId !== null && team.id !== selectedTeamId}
-                onSelect={toggleTeamSelect}
-                isEditMode={isEditMode}
-                onLabelEditPointerDown={onTeamLabelEditPointerDown}
-                onLabelTap={onTeamLabelTap}
-              />
-            )
-          })}
+        {/* z順: チームエリア → 施設 → 座席。チームは常時表示(トグル廃止) */}
+        {layout.teams.map((team) => {
+          const colorEntry = resolveTeamColor(teamColorMap, team.id, team.name)
+          const baseArea = teamAreas.get(team.id) ?? team.area
+          // 07: 編集ドラッグ中のチームはライブ座標を優先表示(確定は pointerup 時)
+          const area =
+            liveTeamPos && liveTeamPos.id === team.id
+              ? { ...baseArea, x: liveTeamPos.x, y: liveTeamPos.y }
+              : baseArea
+          return (
+            <TeamArea
+              key={team.id}
+              team={team}
+              area={area}
+              colorEntry={colorEntry}
+              presentCount={assignedCountByTeam.get(team.id) ?? 0}
+              counterScale={counterScale}
+              selected={expandedTeamIds.has(team.id)}
+              dimmed={false}
+              onSelect={toggleTeamSelect}
+              isEditMode={isEditMode}
+              onLabelEditPointerDown={onTeamLabelEditPointerDown}
+              onLabelTap={onTeamLabelTap}
+            />
+          )
+        })}
         {layout.facilities.map((f) => (
           <FacilityBlock key={f.id} facility={f} counterScale={counterScale} onSelect={handleFacilitySelect} />
         ))}
-        {lod !== 'overview' &&
-          layout.seats.map((seat) => {
+        {/* メンバー座席は「展開中チーム」のみ表示。ズーム段階では出し入れしない */}
+        {layout.seats
+          .filter((seat) => expandedTeamIds.has(seat.teamId))
+          .map((seat) => {
             const emp = seat.employeeId ? employeeById.get(seat.employeeId) ?? null : null
             const status = emp ? presenceMap.get(emp.id) ?? 'present' : 'present'
             // 07: 編集ドラッグ中の座席はライブ座標を優先表示(確定は pointerup 時)
@@ -1049,37 +1053,22 @@ export const SeatMapCanvas = forwardRef<SeatMapCanvasHandle, Props>(function Sea
           <AlignmentGuides guides={snapGuides} viewBoxW={layout.viewBox.width} viewBoxH={layout.viewBox.height} />
         )}
       </div>
-      <div className='team-overlay-toolbar'>
-        <button
-          type='button'
-          className={`team-overlay-toggle${overlayVisible ? ' is-on' : ''}`}
-          aria-pressed={overlayVisible}
-          onClick={(e) => {
-            e.stopPropagation()
-            setOverlayVisible((v) => !v)
-          }}
-        >
-          <span className='team-overlay-toggle-dot' />
-          チーム表示
-        </button>
-      </div>
-      {overlayVisible && (
-        <div className='team-legend'>
-          <div className='team-legend-title'>凡例</div>
-          {layout.teams.map((team) => {
-            const colorEntry = resolveTeamColor(teamColorMap, team.id, team.name)
-            const count = assignedCountByTeam.get(team.id) ?? 0
-            const counts = teamPresenceCounts.get(team.id)
-            return (
-              <button
-                key={team.id}
-                type='button'
-                className={`team-legend-row${team.id === selectedTeamId ? ' is-selected' : ''}`}
-                onClick={(e) => {
-                  e.stopPropagation()
-                  handleLegendSelect(team.id)
-                }}
-              >
+      <div className='team-legend'>
+        <div className='team-legend-title'>凡例</div>
+        {layout.teams.map((team) => {
+          const colorEntry = resolveTeamColor(teamColorMap, team.id, team.name)
+          const count = assignedCountByTeam.get(team.id) ?? 0
+          const counts = teamPresenceCounts.get(team.id)
+          return (
+            <button
+              key={team.id}
+              type='button'
+              className={`team-legend-row${expandedTeamIds.has(team.id) ? ' is-selected' : ''}`}
+              onClick={(e) => {
+                e.stopPropagation()
+                handleLegendSelect(team.id)
+              }}
+            >
                 <span className='team-legend-chip' style={{ background: colorEntry.background }} />
                 <span className='team-legend-name'>{team.name}</span>
                 {counts && (
@@ -1093,8 +1082,7 @@ export const SeatMapCanvas = forwardRef<SeatMapCanvasHandle, Props>(function Sea
               </button>
             )
           })}
-        </div>
-      )}
+      </div>
       <ZoomControls onZoomIn={() => zoomButton(1)} onZoomOut={() => zoomButton(-1)} onReset={resetView} />
       {isEditMode && seatActionBarPos && editSelectedSeatId && (
         <SeatActionBar

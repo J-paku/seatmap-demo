@@ -162,9 +162,34 @@ const SeatMapView = () => {
 
   return (
     <div className='seat-map-page'>
-      <div className='role-toggle-fixed'>
-        <EditModeToggle isEditMode={editor.isEditMode} onEnterEdit={editor.enterEditMode} />
-      </div>
+      {!editor.isEditMode && (
+        <header className='app-header'>
+          <button
+            type='button'
+            className='app-header-btn'
+            aria-label='メニュー'
+            onClick={() => setIsDirectoryOpen(true)}
+          >
+            <span className='material-symbols-outlined' aria-hidden='true'>
+              menu
+            </span>
+          </button>
+          <span className='app-header-title'>座席マップ</span>
+          <div className='app-header-right'>
+            <EditModeToggle isEditMode={editor.isEditMode} onEnterEdit={editor.enterEditMode} />
+            {selfAvatar && (
+              <button
+                type='button'
+                className='app-header-avatar'
+                aria-label='アバターを編集'
+                onClick={handleOpenAvatarEditor}
+              >
+                <PixelAvatar config={selfAvatar} size={30} />
+              </button>
+            )}
+          </div>
+        </header>
+      )}
       {ready && effectiveLayout && (
         <SeatMapCanvas
           ref={canvasRef}
@@ -183,26 +208,6 @@ const SeatMapView = () => {
           onUndo={editor.undo}
           canUndo={editor.canUndo}
         />
-      )}
-      {!editor.isEditMode && (
-        <button
-          type='button'
-          className='emp-dir-open-fab'
-          aria-label='社員ディレクトリを開く'
-          onClick={() => setIsDirectoryOpen(true)}
-        >
-          社員検索
-        </button>
-      )}
-      {!editor.isEditMode && selfAvatar && (
-        <button
-          type='button'
-          className='self-avatar-fab'
-          aria-label='アバターを編集'
-          onClick={handleOpenAvatarEditor}
-        >
-          <PixelAvatar config={selfAvatar} size={32} />
-        </button>
       )}
       <EmployeeDirectory
         isOpen={isDirectoryOpen}

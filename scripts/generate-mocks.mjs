@@ -165,10 +165,12 @@ TEAM_DEFS.forEach((def, ti) => {
         outfit: OUTFIT_COLORS[gi % OUTFIT_COLORS.length],
       },
     }
+    // 表示名は実名ではなく「部署名+連番」(例: 営業部1)。検索用 nameKana も同値
+    const displayName = `${def.name}${local + 1}`
     const emp = {
       id,
-      name: `${sk}${gk}`,
-      nameKana: `${skk}${gkk}`,
+      name: displayName,
+      nameKana: displayName,
       teamId,
       ...(position ? { position } : {}),
       email: `${surnameRoman}${pad3(empSeq)}@example.co.jp`,
