@@ -1,6 +1,6 @@
 // mocks/ の JSON 5ファイル(employees/teams/seats/schedules/facilities)を決定論的に再生成する
 // 実行: node scripts/generate-mocks.mjs
-// 乱数は社員ID ハッシュ由来の seeded PRNG のみ。日付は BASE_DATE 固定で再現性を担保する
+// 乱数は社員ID/チームidPrefix ハッシュ由来の seeded PRNG のみ。日付は BASE_DATE 固定で再現性を担保する
 
 import { writeFileSync, mkdirSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
@@ -36,12 +36,15 @@ const GIVENS = [
 ]
 
 // チーム定義(名称順が定義順 team-01..05)
+// idPrefix: 座席ID接頭辞(11-layout-pipeline.md — seat.id.startsWith(idPrefix + '-') が唯一の結束キー)
+// size: 箱幅算出専用の想定列数(座席2行化に合わせて箱高だけ変更・幅はここを据え置いて7/7/6/6/5列を維持)
+// empCount: 実際の社員数(再席率70%前後に合わせて size とは独立に増員)
 const TEAM_DEFS = [
-  { name: '営業部', size: 8 },
-  { name: '開発部', size: 8 },
-  { name: '総務部', size: 7 },
-  { name: '経理部', size: 7 },
-  { name: '企画部', size: 6 },
+  { name: '営業部', size: 8, empCount: 10, idPrefix: 'dept-sales' },
+  { name: '開発部', size: 8, empCount: 10, idPrefix: 'dept-dev' },
+  { name: '総務部', size: 7, empCount: 9, idPrefix: 'dept-general' },
+  { name: '経理部', size: 7, empCount: 8, idPrefix: 'dept-account' },
+  { name: '企画部', size: 6, empCount: 7, idPrefix: 'dept-planning' },
 ]
 
 const HAIRS = ['short', 'long', 'bob', 'ponytail', 'bald']
@@ -97,41 +100,63 @@ const pad4 = (n) => String(n).padStart(4, '0')
 
 // ── チーム生成 ──────────────────────────────────────────
 
-// 座席サイズ・水平ピッチ(幅105+間隔18)。垂直は対面ペアを縦に積むため専用値を使う
+// 座席サイズ・列ピッチ(幅105+間隔18)
 const SEAT_W = 105
 const SEAT_H = 75
-const PITCH_X = SEAT_W + 18
-// 各チーム=2行アイランド(前列=着席/後列=空席)。5帯を縦に積んで 900 に収めるため対面間隔を圧縮
-const PAD_X = 12 // 水平内側パディング
-const INNER_V = 8 // 上下内側パディング
-const ROW_GAP = 10 // 対面ペアの行間
-const ROW_PITCH = SEAT_H + ROW_GAP // 行ピッチ
-const AREA_H = INNER_V * 2 + SEAT_H * 2 + ROW_GAP // アイランド高さ = 176
+const PITCH_X = SEAT_W + 18 // 123(11-layout-pipeline.md の列ピッチ)
+
+// 箱幅算出専用(座席の内側余白ではない・幅は size を据え置いて7/7/6/6/5列を維持する)
+const BOX_PAD_X = 12
+
+// 座席配置は 11-layout-pipeline.md の固定値に従う(LAYOUT_PADDING=20 / 行ピッチ95)
+const LAYOUT_PADDING = 20 // 箱内壁の余白(上下左右とも20)
+const LAYOUT_ROW_GAP = 20
+const PITCH_Y = SEAT_H + LAYOUT_ROW_GAP // 95(スペック行ピッチ)
+
+// 箱の高さ = 2行分の座席を20px内壁余白で収める最小値(20+95+75+20=210)+ 余裕10
+const AREA_H_MIN = LAYOUT_PADDING * 2 + PITCH_Y + SEAT_H
+const AREA_H_SLACK = 10
+const AREA_H = AREA_H_MIN + AREA_H_SLACK // 220
 const BAND_TOP = 6
-const BAND_PITCH = 178 // 帯ピッチ(AREA_H より大きく重なりなし)
+const BAND_GAP = 2 // 帯同士の隙間(旧レイアウトと同じ2pxを踏襲)
+const BAND_PITCH = AREA_H + BAND_GAP // 帯ピッチ(AREA_H より大きく重なりなし)
 
 const teams = []
 const seats = []
-let seatSeq = 1
+const seatCountReport = [] // 検証・報告用: 座席数が変化したチームを記録
+const seatGeometryReport = [] // 検証・報告用: チームごとの列数×行数×収容数
 
 TEAM_DEFS.forEach((def, i) => {
   const teamId = `team-${pad2(i + 1)}`
+  const idPrefix = def.idPrefix
   // HSL 色相環を5等分(隣接衝突回避のオフセット12°付与)
   const color = hslToHex((i * 72 + 12) % 360, 0.5, 0.55)
-  const cols = def.size // 前列 col 数 = メンバー数
-  const areaW = cols * PITCH_X - 18 + PAD_X * 2
+  const cols = def.size // 箱幅算出用の想定列数(メンバー数)
+  const areaW = cols * PITCH_X - 18 + BOX_PAD_X * 2
   const areaX = 30
   const areaY = BAND_TOP + i * BAND_PITCH
-  teams.push({ id: teamId, name: def.name, color, area: { x: areaX, y: areaY, w: areaW, h: AREA_H } })
+  const area = { x: areaX, y: areaY, w: areaW, h: AREA_H }
+  teams.push({ id: teamId, idPrefix, name: def.name, color, area })
 
-  // 2行 × cols 列。row0=前列(着席)、row1=後列(空席)
-  for (let row = 0; row < 2; row++) {
-    for (let col = 0; col < cols; col++) {
+  // 余白20・列ピッチ123・行ピッチ95で実際に入る列数/行数を capacity 式から算出
+  const colsMax = Math.floor((areaW - 2 * LAYOUT_PADDING + 18) / PITCH_X)
+  const rowsMax = Math.floor((AREA_H - 2 * LAYOUT_PADDING + LAYOUT_ROW_GAP) / PITCH_Y)
+  const actualCols = Math.min(cols, Math.max(colsMax, 0))
+  const actualRows = Math.min(2, Math.max(rowsMax, 0)) // 元設計は前列(着席)+後列(空席)の2行
+
+  const before = cols * 2
+  const after = actualCols * actualRows
+  if (after !== before) seatCountReport.push({ team: def.name, before, after })
+
+  // row0(前列)・row1(後列)とも座席を生成する。着席/空席の割当は後段でチームごとに分散させる
+  let seatSeq = 1 // 座席ID連番はチームごとに再スタート
+  for (let row = 0; row < actualRows; row++) {
+    for (let col = 0; col < actualCols; col++) {
       seats.push({
-        id: `seat-${pad3(seatSeq++)}`,
+        id: `${idPrefix}-${pad3(seatSeq++)}`,
         teamId,
-        x: areaX + PAD_X + col * PITCH_X,
-        y: areaY + INNER_V + row * ROW_PITCH,
+        x: areaX + LAYOUT_PADDING + col * PITCH_X,
+        y: areaY + LAYOUT_PADDING + row * PITCH_Y,
         width: SEAT_W,
         height: SEAT_H,
         rotation: 0,
@@ -140,6 +165,8 @@ TEAM_DEFS.forEach((def, i) => {
       })
     }
   }
+
+  seatGeometryReport.push({ team: def.name, cols: actualCols, rows: actualRows, capacity: actualCols * actualRows })
 })
 
 // ── 社員生成 ────────────────────────────────────────────
@@ -149,7 +176,7 @@ let empSeq = 1
 // チームごとにメンバーを順次割当。チーム内 local index 0=部長 / 3=課長
 TEAM_DEFS.forEach((def, ti) => {
   const teamId = `team-${pad2(ti + 1)}`
-  for (let local = 0; local < def.size; local++) {
+  for (let local = 0; local < def.empCount; local++) {
     const gi = empSeq - 1 // 通し index
     const [sk, skk] = SURNAMES[gi % SURNAMES.length]
     const [gk, gkk] = GIVENS[gi % GIVENS.length]
@@ -182,40 +209,109 @@ TEAM_DEFS.forEach((def, ti) => {
   }
 })
 
-// 前列(row0)の座席へ、チーム順に社員を割当
+// 座席へ社員を割当。前列だけを埋めると空席が後列に固まるため、
+// チーム固有シード(idPrefix ハッシュ)でチーム内の座席順をシャッフルしてから詰め、空席を両行に分散させる
 {
   const empByTeam = {}
   employees.forEach((e) => {
     ;(empByTeam[e.teamId] ||= []).push(e.id)
   })
-  const cursor = {}
+  const seatsByTeam = {}
   seats.forEach((s) => {
-    // row0 = 前列のみ着席対象
-    const team = teams.find((t) => t.id === s.teamId)
-    const isFrontRow = s.y < team.area.y + INNER_V + ROW_PITCH - 1
-    if (!isFrontRow) return
-    const idx = (cursor[s.teamId] ||= 0)
-    const pool = empByTeam[s.teamId]
-    if (idx < pool.length) {
-      s.employeeId = pool[idx]
-      cursor[s.teamId] = idx + 1
+    ;(seatsByTeam[s.teamId] ||= []).push(s)
+  })
+  teams.forEach((team) => {
+    const teamSeats = seatsByTeam[team.id] || []
+    const pool = empByTeam[team.id] || []
+    const rand = mulberry32(hashString(team.idPrefix))
+    const order = teamSeats.map((_, i) => i)
+    for (let i = order.length - 1; i > 0; i--) {
+      const j = Math.floor(rand() * (i + 1))
+      ;[order[i], order[j]] = [order[j], order[i]]
     }
+    pool.forEach((empId, idx) => {
+      teamSeats[order[idx]].employeeId = empId
+    })
   })
 }
 
 // ── 施設生成 ────────────────────────────────────────────
 
-// 右側ゾーン(x>=1030)に配置
-const facilities = [
-  { id: 'fac-01', name: '会議室A', kind: 'meeting', capacity: 4, x: 1030, y: 15, width: 250, height: 130 },
-  { id: 'fac-02', name: '会議室B', kind: 'meeting', capacity: 6, x: 1030, y: 165, width: 250, height: 150 },
-  { id: 'fac-03', name: '会議室C', kind: 'meeting', capacity: 8, x: 1030, y: 335, width: 250, height: 175 },
-  { id: 'fac-04', name: '会議室D', kind: 'meeting', capacity: 12, x: 1030, y: 530, width: 250, height: 210 },
-  { id: 'fac-05', name: '応接室', kind: 'meeting', capacity: 6, x: 1030, y: 760, width: 250, height: 120 },
-  { id: 'fac-06', name: '電話ブース1', kind: 'booth', x: 1310, y: 15, width: 120, height: 110 },
-  { id: 'fac-07', name: '電話ブース2', kind: 'booth', x: 1310, y: 145, width: 120, height: 110 },
-  { id: 'fac-08', name: 'リフレッシュスペース', kind: 'common', x: 1310, y: 285, width: 270, height: 220 },
-]
+// チームゾーンの実測境界(箱が縦に伸びたぶん、これを起点に通路・施設列を組み立てる)
+const teamZoneRight = Math.max(...teams.map((t) => t.area.x + t.area.w))
+const teamZoneTop = Math.min(...teams.map((t) => t.area.y))
+const teamZoneBottom = Math.max(...teams.map((t) => t.area.y + t.area.h))
+
+// viewBox: 幅は1600固定、高さは最下端オブジェクト(=teamZoneBottom)+余白から算出(ハードコードしない)
+const VIEWBOX_W = 1600
+const VIEWBOX_MARGIN_BOTTOM = 40
+const VIEWBOX_H = teamZoneBottom + VIEWBOX_MARGIN_BOTTOM
+
+const AISLE_WIDTH = 60
+const FACILITY_MARGIN_TOP = 15
+const FACILITY_MARGIN_BOTTOM = 15
+const FACILITY_COL_GAP = 30 // 会議室サブ列とブース/共用サブ列の間隔
+const MEETING_ROOM_WIDTH = 250
+
+const facilityColAX = teamZoneRight + AISLE_WIDTH
+const facilityColBX = facilityColAX + MEETING_ROOM_WIDTH + FACILITY_COL_GAP
+
+// 縦方向に等間隔で敷き詰める(先頭上端を top、末尾下端を bottom に一致させ、上だけに固まらないようにする)
+const distributeVertical = (items, top, bottom) => {
+  const totalH = items.reduce((sum, it) => sum + it.height, 0)
+  const gap = items.length > 1 ? (bottom - top - totalH) / (items.length - 1) : 0
+  let y = top
+  return items.map((it) => {
+    const placed = { ...it, y: Math.round(y) }
+    y += it.height + gap
+    return placed
+  })
+}
+
+const facilityRangeTop = FACILITY_MARGIN_TOP
+const facilityRangeBottom = teamZoneBottom - FACILITY_MARGIN_BOTTOM
+
+const meetingRooms = distributeVertical(
+  [
+    { id: 'fac-01', name: '会議室A', kind: 'meeting', capacity: 4, width: MEETING_ROOM_WIDTH, height: 130 },
+    { id: 'fac-02', name: '会議室B', kind: 'meeting', capacity: 6, width: MEETING_ROOM_WIDTH, height: 150 },
+    { id: 'fac-03', name: '会議室C', kind: 'meeting', capacity: 8, width: MEETING_ROOM_WIDTH, height: 175 },
+    { id: 'fac-04', name: '会議室D', kind: 'meeting', capacity: 12, width: MEETING_ROOM_WIDTH, height: 210 },
+    { id: 'fac-05', name: '応接室', kind: 'meeting', capacity: 6, width: MEETING_ROOM_WIDTH, height: 120 },
+  ].map((f) => ({ ...f, x: facilityColAX })),
+  facilityRangeTop,
+  facilityRangeBottom
+)
+
+const boothsAndCommon = distributeVertical(
+  [
+    { id: 'fac-06', name: '電話ブース1', kind: 'booth', width: 120, height: 110 },
+    { id: 'fac-07', name: '電話ブース2', kind: 'booth', width: 120, height: 110 },
+    { id: 'fac-08', name: 'リフレッシュスペース', kind: 'common', width: 240, height: 220 },
+  ].map((f) => ({ ...f, x: facilityColBX })),
+  facilityRangeTop,
+  facilityRangeBottom
+)
+
+const facilities = [...meetingRooms, ...boothsAndCommon]
+
+// 通路: チームゾーン右端〜施設ゾーン左端の60px隙間を縦通路として埋める(kind: 'aisle', facilityId なし)
+facilities.push({
+  id: 'aisle-01',
+  name: '通路',
+  kind: 'aisle',
+  capacity: 0,
+  x: teamZoneRight,
+  y: teamZoneTop,
+  width: AISLE_WIDTH,
+  height: teamZoneBottom - teamZoneTop,
+})
+
+// viewBox からはみ出す施設が無いかを検査(はみ出す場合は黙って切り詰めず報告する)
+const facilityOverflow = facilities.filter((f) => f.x < 0 || f.y < 0 || f.x + f.width > VIEWBOX_W || f.y + f.height > VIEWBOX_H)
+if (facilityOverflow.length > 0) {
+  console.error(`viewBox(${VIEWBOX_W}x${VIEWBOX_H})に収まらない施設: ${facilityOverflow.map((f) => f.id).join(',')}`)
+}
 
 // ── 予定生成 ────────────────────────────────────────────
 
@@ -330,4 +426,15 @@ dump('schedules.json', schedules)
 dump('facility-meetings.json', facilityMeetings)
 
 const occupied = seats.filter((s) => s.employeeId).length
-console.log(`teams=${teams.length} employees=${employees.length} seats=${seats.length}(着席${occupied}/空席${seats.length - occupied}) facilities=${facilities.length} schedules=${schedules.length} facilityMeetings=${facilityMeetings.length}`)
+const occupancyPct = ((occupied / seats.length) * 100).toFixed(1)
+console.log(`teams=${teams.length} employees=${employees.length} seats=${seats.length}(着席${occupied}/空席${seats.length - occupied}, 再席率${occupancyPct}%) facilities=${facilities.length} schedules=${schedules.length} facilityMeetings=${facilityMeetings.length}`)
+if (seatCountReport.length > 0) {
+  console.log('座席数変化(20px余白適用により箱幅を変えず座席数を調整):')
+  seatCountReport.forEach((r) => console.log(`  ${r.team}: ${r.before} -> ${r.after}`))
+}
+console.log('チーム別 列数×行数(収容数):')
+seatGeometryReport.forEach((r) => console.log(`  ${r.team}: ${r.cols}×${r.rows} = ${r.capacity}`))
+console.log(`teamZone: right=${teamZoneRight} top=${teamZoneTop} bottom=${teamZoneBottom}`)
+console.log(`viewBox(算出): ${VIEWBOX_W}×${VIEWBOX_H}`)
+const aisle = facilities.find((f) => f.kind === 'aisle')
+console.log(`aisle: x=${aisle.x} y=${aisle.y} width=${aisle.width} height=${aisle.height}`)

@@ -25,6 +25,8 @@ export type Employee = {
 // チーム(部署)
 export type Team = {
   id: string
+  // 11: 座席ID接頭辞。seat.id.startsWith(idPrefix + '-') が座席↔チーム結束の唯一のキー
+  idPrefix: string
   name: string
   color: string
   area: { x: number; y: number; w: number; h: number }
@@ -46,7 +48,8 @@ export type Seat = {
 export type Facility = {
   id: string
   name: string
-  kind: 'meeting' | 'booth' | 'common'
+  // 11: aisle は通路(会議室として扱わない・facilityId を持たない)
+  kind: 'meeting' | 'booth' | 'common' | 'aisle'
   capacity?: number
   x: number
   y: number

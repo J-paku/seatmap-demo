@@ -41,14 +41,18 @@ export const rectsIntersect = (a: Rect, b: Rect): boolean =>
 export const pointInRect = (px: number, py: number, r: Rect): boolean =>
   px >= r.x && px <= r.x + r.w && py >= r.y && py <= r.y + r.h
 
-// 次の座席id(既存最大連番+1。id形式は 'seat-<n>' を想定し非マッチは無視)
-const nextSeatId = (seats: Seat[]): string => {
+// 対象チームの idPrefix を正規表現用にエスケープ
+const escapeRegExp = (s: string): string => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+
+// 次の座席id(11: id形式は '${idPrefix}-NNN'。対象チームの既存連番の最大値+1を3桁ゼロ埋めで採番)
+const nextSeatId = (seats: Seat[], idPrefix: string): string => {
+  const pattern = new RegExp(`^${escapeRegExp(idPrefix)}-(\\d+)$`)
   let max = 0
   for (const s of seats) {
-    const m = /^seat-(\d+)$/.exec(s.id)
+    const m = pattern.exec(s.id)
     if (m) max = Math.max(max, parseInt(m[1], 10))
   }
-  return `seat-${max + 1}`
+  return `${idPrefix}-${String(max + 1).padStart(3, '0')}`
 }
 
 // y→x 順ソート(グリッドリファク用)
@@ -152,7 +156,7 @@ export const applyLayoutAction = (layout: SeatLayout, action: LayoutAction): Sea
         }
       }
       const newSeat: Seat = {
-        id: nextSeatId(layout.seats),
+        id: nextSeatId(layout.seats, team.idPrefix),
         teamId: action.teamId,
         x,
         y,

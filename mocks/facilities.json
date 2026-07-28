@@ -4,10 +4,10 @@
     "name": "会議室A",
     "kind": "meeting",
     "capacity": 4,
-    "x": 1030,
-    "y": 15,
     "width": 250,
     "height": 130,
+    "x": 1080,
+    "y": 15,
     "facilityId": "F-01"
   },
   {
@@ -15,10 +15,10 @@
     "name": "会議室B",
     "kind": "meeting",
     "capacity": 6,
-    "x": 1030,
-    "y": 165,
     "width": 250,
     "height": 150,
+    "x": 1080,
+    "y": 220,
     "facilityId": "F-02"
   },
   {
@@ -26,10 +26,10 @@
     "name": "会議室C",
     "kind": "meeting",
     "capacity": 8,
-    "x": 1030,
-    "y": 335,
     "width": 250,
     "height": 175,
+    "x": 1080,
+    "y": 445,
     "facilityId": "F-03"
   },
   {
@@ -37,10 +37,10 @@
     "name": "会議室D",
     "kind": "meeting",
     "capacity": 12,
-    "x": 1030,
-    "y": 530,
     "width": 250,
     "height": 210,
+    "x": 1080,
+    "y": 694,
     "facilityId": "F-04"
   },
   {
@@ -48,36 +48,46 @@
     "name": "応接室",
     "kind": "meeting",
     "capacity": 6,
-    "x": 1030,
-    "y": 760,
     "width": 250,
-    "height": 120
+    "height": 120,
+    "x": 1080,
+    "y": 979
   },
   {
     "id": "fac-06",
     "name": "電話ブース1",
     "kind": "booth",
-    "x": 1310,
-    "y": 15,
     "width": 120,
-    "height": 110
+    "height": 110,
+    "x": 1360,
+    "y": 15
   },
   {
     "id": "fac-07",
     "name": "電話ブース2",
     "kind": "booth",
-    "x": 1310,
-    "y": 145,
     "width": 120,
-    "height": 110
+    "height": 110,
+    "x": 1360,
+    "y": 447
   },
   {
     "id": "fac-08",
     "name": "リフレッシュスペース",
     "kind": "common",
-    "x": 1310,
-    "y": 285,
-    "width": 270,
-    "height": 220
+    "width": 240,
+    "height": 220,
+    "x": 1360,
+    "y": 879
+  },
+  {
+    "id": "aisle-01",
+    "name": "通路",
+    "kind": "aisle",
+    "capacity": 0,
+    "x": 1020,
+    "y": 6,
+    "width": 60,
+    "height": 1108
   }
 ]

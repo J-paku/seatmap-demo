@@ -3,7 +3,8 @@
 export type Transform = { scale: number; translateX: number; translateY: number }
 
 export const VIEWBOX_W = 1600
-export const VIEWBOX_H = 900
+// 座席2行化で箱高が伸びた分、実測ジオメトリ(teamZoneBottom=1114)+余白40から算出(scripts/generate-mocks.mjs 実行結果と同期)
+export const VIEWBOX_H = 1154
 export const MAX_SCALE = 5
 
 export const clamp = (v: number, lo: number, hi: number) =>

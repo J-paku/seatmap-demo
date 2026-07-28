@@ -8,8 +8,7 @@ import {
   useRef,
   useState,
 } from 'react'
-import { SeatCard } from './SeatCard'
-import type { Lod } from './SeatCard'
+import { SeatMirrorLayer } from './SeatMirrorLayer'
 import { TeamArea } from './TeamArea'
 import type { TeamOverlayPayload } from './TeamOverlay'
 import type { FacilityState } from '@/lib/facility-status'
@@ -66,37 +65,11 @@ type Props = {
 
 type Rect = { x: number; y: number; w: number; h: number }
 
-// 06: 所属座席のバウンディングボックス→パディング20→中心維持で1.2倍→最小200×100 でクランプ
-const deriveTeamArea = (seats: Seat[], fallback: Rect): Rect => {
-  if (seats.length === 0) return fallback
-  let minX = Infinity
-  let minY = Infinity
-  let maxX = -Infinity
-  let maxY = -Infinity
-  for (const s of seats) {
-    minX = Math.min(minX, s.x)
-    minY = Math.min(minY, s.y)
-    maxX = Math.max(maxX, s.x + s.width)
-    maxY = Math.max(maxY, s.y + s.height)
-  }
-  const padding = 20
-  const px0 = minX - padding
-  const py0 = minY - padding
-  const px1 = maxX + padding
-  const py1 = maxY + padding
-  const cx = (px0 + px1) / 2
-  const cy = (py0 + py1) / 2
-  const w = (px1 - px0) * 1.2
-  const h = (py1 - py0) * 1.2
-  const clampedW = Math.max(w, 200)
-  const clampedH = Math.max(h, 100)
-  return {
-    x: cx - clampedW / 2,
-    y: cy - clampedH / 2,
-    w: clampedW,
-    h: clampedH,
-  }
-}
+// LOD(詳細度)。座席の視覚カードは廃止したが施設・チームの詳細度切替には引き続き使用
+type Lod = 'detail' | 'mid' | 'overview'
+
+// 11: チーム箱は team.area(サーバ座標)をそのまま描画する。座席からの逆算(旧 deriveTeamArea)は
+// 箱同士の重なりを生む原因だったため廃止(編集モードの自動整列は lib/layout-actions.ts 側で完結)
 
 // 05: ディレクトリからの「座席へジャンプ」命令(親が ref 経由で呼び出す)
 export type SeatMapCanvasHandle = {
@@ -690,34 +663,16 @@ export const SeatMapCanvas = forwardRef<SeatMapCanvasHandle, Props>(function Sea
   const lod = lodOf(scaleSnap)
   const counterScale = useMemo(() => clamp(0.8 / scaleSnap, 1, 2), [scaleSnap])
 
-  // 06: チームid→所属座席の一覧(バウンディングボックス導出用)
-  const seatsByTeam = useMemo(() => {
-    const map = new Map<string, Seat[]>()
-    for (const seat of layout.seats) {
-      const arr = map.get(seat.teamId)
-      if (arr) arr.push(seat)
-      else map.set(seat.teamId, [seat])
-    }
-    return map
-  }, [layout.seats])
-
-  // 06: チームid→導出済み表示領域(座席0件時は Team.area をフォールバック使用)
-  const teamAreas = useMemo(() => {
-    const map = new Map<string, Rect>()
-    for (const team of layout.teams) {
-      map.set(team.id, deriveTeamArea(seatsByTeam.get(team.id) ?? [], team.area))
-    }
-    return map
-  }, [layout.teams, seatsByTeam])
-
-  // 06: ラベル・凡例の人数表示はemployeeIdが非nullの所属座席数(在席状態は反映しない・比範囲外)
+  // 11: チームラベルの N名 は「seat.id が team.idPrefix + '-' で始まり employeeId が非null」の件数
   const assignedCountByTeam = useMemo(() => {
     const map = new Map<string, number>()
-    for (const [teamId, seats] of seatsByTeam) {
-      map.set(teamId, seats.filter((s) => s.employeeId !== null).length)
+    for (const team of layout.teams) {
+      const prefix = `${team.idPrefix}-`
+      const count = layout.seats.filter((s) => s.id.startsWith(prefix) && s.employeeId !== null).length
+      map.set(team.id, count)
     }
     return map
-  }, [seatsByTeam])
+  }, [layout.teams, layout.seats])
 
   // ── 07: 編集モード ドラッグ移動(座席/チームラベル) ─────────────
   // ドラッグ中はキャンバスパンを抑制(pointerdown を stopPropagation 済みの各要素側から呼ばれる)
@@ -997,16 +952,15 @@ export const SeatMapCanvas = forwardRef<SeatMapCanvasHandle, Props>(function Sea
       onClick={handleCanvasBackgroundClick}
       onContextMenu={(e) => e.preventDefault()}
     >
-      <div ref={layerRef} className='seat-map-transform'>
-        {/* z順: チームエリア → 施設 → 座席。チームは常時表示(トグル廃止) */}
+      <div ref={layerRef} className='seat-map-transform' data-canvas-transform-layer='true'>
+        {/* z順: チームエリア → 施設/通路。原本は個人座席カードを描かず sr-only ミラーのみで表現する */}
         {layout.teams.map((team) => {
           const colorEntry = resolveTeamColor(teamColorMap, team.id, team.name)
-          const baseArea = teamAreas.get(team.id) ?? team.area
-          // 07: 編集ドラッグ中のチームはライブ座標を優先表示(確定は pointerup 時)
+          // 11: 閲覧モードの座標は team.area(サーバ絶対座標)をそのまま使う。座席逆算はしない
           const area =
             liveTeamPos && liveTeamPos.id === team.id
-              ? { ...baseArea, x: liveTeamPos.x, y: liveTeamPos.y }
-              : baseArea
+              ? { ...team.area, x: liveTeamPos.x, y: liveTeamPos.y }
+              : team.area
           return (
             <TeamArea
               key={team.id}
@@ -1036,35 +990,12 @@ export const SeatMapCanvas = forwardRef<SeatMapCanvasHandle, Props>(function Sea
               onHover={onFacilityHover}
             />
         ))}
-        {/* 10: 座席は常時レンダー。詳細度は LOD のみで変わる(チームクリックはオーバーレイを開くだけ) */}
-        {layout.seats
-          .map((seat) => {
-            const emp = seat.employeeId ? employeeById.get(seat.employeeId) ?? null : null
-            const status = emp ? presenceMap.get(emp.id) ?? 'present' : 'present'
-            // 07: 編集ドラッグ中の座席はライブ座標を優先表示(確定は pointerup 時)
-            const displaySeat =
-              liveSeatPos && liveSeatPos.id === seat.id ? { ...seat, x: liveSeatPos.x, y: liveSeatPos.y } : seat
-            return (
-              <SeatCard
-                key={seat.id}
-                seat={displaySeat}
-                employee={emp}
-                status={status}
-                selected={seat.id === selectedSeatId}
-                pulsing={seat.id === pulsingSeatId}
-                lod={lod}
-                counterScale={counterScale}
-                onSelect={handleSeatSelect}
-                isEditMode={isEditMode}
-                isEditDragging={liveSeatPos?.id === seat.id}
-                onEditPointerDown={onSeatEditPointerDown}
-              />
-            )
-          })}
         {isEditMode && snapGuides.length > 0 && (
           <AlignmentGuides guides={snapGuides} viewBoxW={layout.viewBox.width} viewBoxH={layout.viewBox.height} />
         )}
       </div>
+      {/* 座席は個人カードとして描画しない。sr-only ミラー層のみがキーボード/スクリーンリーダー経路を提供する */}
+      <SeatMirrorLayer seats={layout.seats} employeeById={employeeById} teams={layout.teams} onSelect={handleSeatSelect} />
       {/* 原本には常時表示の凡例パネルは無い(チーム名は各アイランドのラベル板で表示) */}
       <ZoomControls onZoomIn={() => zoomButton(1)} onZoomOut={() => zoomButton(-1)} onReset={resetView} />
       {isEditMode && seatActionBarPos && editSelectedSeatId && (

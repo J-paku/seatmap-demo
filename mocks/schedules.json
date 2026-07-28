@@ -331,5 +331,86 @@
     "start": "2026-07-27T17:00:00+09:00",
     "end": "2026-07-27T18:00:00+09:00",
     "isAllDay": false
+  },
+  {
+    "id": "ev-0038",
+    "employeeId": "emp-037",
+    "title": "休暇",
+    "category": "vacation",
+    "start": "2026-07-27T00:00:00+09:00",
+    "end": "2026-07-27T23:59:00+09:00",
+    "isAllDay": true
+  },
+  {
+    "id": "ev-0039",
+    "employeeId": "emp-038",
+    "title": "有給休暇",
+    "category": "vacation",
+    "start": "2026-07-27T00:00:00+09:00",
+    "end": "2026-07-27T23:59:00+09:00",
+    "isAllDay": true
+  },
+  {
+    "id": "ev-0040",
+    "employeeId": "emp-039",
+    "title": "週次レビュー",
+    "category": "meeting",
+    "start": "2026-07-27T16:00:00+09:00",
+    "end": "2026-07-27T17:00:00+09:00",
+    "isAllDay": false
+  },
+  {
+    "id": "ev-0041",
+    "employeeId": "emp-039",
+    "title": "週次レビュー",
+    "category": "meeting",
+    "start": "2026-07-27T17:00:00+09:00",
+    "end": "2026-07-27T18:00:00+09:00",
+    "isAllDay": false
+  },
+  {
+    "id": "ev-0042",
+    "employeeId": "emp-039",
+    "title": "客先訪問",
+    "category": "out",
+    "start": "2026-07-27T12:00:00+09:00",
+    "end": "2026-07-27T13:00:00+09:00",
+    "isAllDay": false
+  },
+  {
+    "id": "ev-0043",
+    "employeeId": "emp-040",
+    "title": "現地調査",
+    "category": "out",
+    "start": "2026-07-27T15:00:00+09:00",
+    "end": "2026-07-27T16:00:00+09:00",
+    "isAllDay": false
+  },
+  {
+    "id": "ev-0044",
+    "employeeId": "emp-042",
+    "title": "客先訪問",
+    "category": "out",
+    "start": "2026-07-27T14:00:00+09:00",
+    "end": "2026-07-27T15:00:00+09:00",
+    "isAllDay": false
+  },
+  {
+    "id": "ev-0045",
+    "employeeId": "emp-042",
+    "title": "部門会議",
+    "category": "meeting",
+    "start": "2026-07-27T16:00:00+09:00",
+    "end": "2026-07-27T17:00:00+09:00",
+    "isAllDay": false
+  },
+  {
+    "id": "ev-0046",
+    "employeeId": "emp-044",
+    "title": "現地調査",
+    "category": "out",
+    "start": "2026-07-27T14:00:00+09:00",
+    "end": "2026-07-27T15:00:00+09:00",
+    "isAllDay": false
   }
 ]

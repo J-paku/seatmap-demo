@@ -1,5 +1,6 @@
 import useSWR from 'swr'
 import type { Employee, Facility, FacilityMeeting, ScheduleEvent, Seat, SeatLayout, Team } from './types'
+import { VIEWBOX_W, VIEWBOX_H } from './geometry'
 import employeesJson from '../mocks/employees.json'
 import teamsJson from '../mocks/teams.json'
 import seatsJson from '../mocks/seats.json'
@@ -31,7 +32,8 @@ const FACILITY_MEETINGS: FacilityMeeting[] = facilityMeetingsJson
 // デモは 1フロア固定
 const FLOOR_ID = 'floor-1'
 const FLOOR_NAME = '本社1F'
-const VIEWBOX = { width: 1600, height: 900 }
+// lib/geometry.ts の定数から生成(数値を重複させず、キャンバス側と乖離しないようにする)
+const VIEWBOX = { width: VIEWBOX_W, height: VIEWBOX_H }
 
 // キャッシュ+再試行(stale-while-revalidate 模倣)
 const CACHE_PREFIX = 'seatmap::'

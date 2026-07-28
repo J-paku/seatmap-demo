@@ -14,6 +14,23 @@ type Props = {
 }
 
 export const FacilityBlock = ({ facility, counterScale, onSelect, state, lod = 'detail', onHover }: Props) => {
+  // 11: 通路は会議室コードパスから完全除外(data-facility無し・クリック無し・破線コリドー表示のみ)
+  if (facility.kind === 'aisle') {
+    const isVertical = facility.height > facility.width
+    return (
+      <div
+        className='aisle-block'
+        data-kind='aisle'
+        data-furniture-id={facility.id}
+        style={{ left: facility.x, top: facility.y, width: facility.width, height: facility.height }}
+      >
+        <span className='aisle-label' style={{ transform: isVertical ? 'rotate(90deg)' : undefined }}>
+          ── 通路 ──
+        </span>
+      </div>
+    )
+  }
+
   const isMeeting = facility.kind === 'meeting'
   const color = isMeeting && state ? FACILITY_COLOR[state.status] : null
 
@@ -21,6 +38,7 @@ export const FacilityBlock = ({ facility, counterScale, onSelect, state, lod = '
     <div
       className='facility-block'
       data-kind={facility.kind}
+      data-furniture-id={facility.id}
       data-facility={isMeeting ? 'true' : undefined}
       role='button'
       tabIndex={-1}

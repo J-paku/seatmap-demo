@@ -71,7 +71,7 @@ export const TeamArea = ({
       <div
         role='button'
         tabIndex={-1}
-        data-team-id={team.id}
+        data-team-id={team.idPrefix}
         onClick={handleClick}
         onPointerEnter={() => setHovered(true)}
         onPointerLeave={() => { setHovered(false); setPressed(false) }}
