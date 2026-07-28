@@ -53,6 +53,7 @@ export const TeamOverlay = ({
   const [clickLocked, setClickLocked] = useState(true)
   const [syncedAt, setSyncedAt] = useState<string>('')
   const panelRef = useRef<HTMLDivElement>(null)
+  const bodyRef = useRef<HTMLDivElement>(null)
 
   // オープン時: ローディングシミュレーション(300〜600ms)+ 350ms クリックロック
   useEffect(() => {
@@ -70,6 +71,12 @@ export const TeamOverlay = ({
       clearTimeout(t1)
       clearTimeout(t2)
     }
+  }, [payload])
+
+  // 開くたびに本文スクロールを先頭へ戻す
+  useEffect(() => {
+    if (!payload) return
+    if (bodyRef.current) bodyRef.current.scrollTop = 0
   }, [payload])
 
   // body スクロールロック + ESC で閉じる
@@ -144,7 +151,7 @@ export const TeamOverlay = ({
         </header>
 
         {/* 本文 — 座席配置セクション */}
-        <div className='team-ovl-body'>
+        <div ref={bodyRef} className='team-ovl-body'>
           <section className='team-ovl-section'>
             <div className='team-ovl-section-head'>
               <span className='material-symbols-outlined team-ovl-section-icon'>grid_view</span>

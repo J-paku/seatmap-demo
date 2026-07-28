@@ -130,6 +130,7 @@ const AvatarCustomizerModal = ({ initial, onSave, onClose }: ModalProps) => {
   const dialogRef = useRef<HTMLDivElement>(null)
   const closeBtnRef = useRef<HTMLButtonElement>(null)
   const backdropRef = useRef<HTMLDivElement>(null)
+  const scrollRef = useRef<HTMLDivElement>(null)
   const swipe = useRef({ startY: 0, active: false })
 
   useBodyScrollLock(true)
@@ -139,6 +140,11 @@ const AvatarCustomizerModal = ({ initial, onSave, onClose }: ModalProps) => {
   useEffect(() => {
     const id = requestAnimationFrame(() => closeBtnRef.current?.focus())
     return () => cancelAnimationFrame(id)
+  }, [])
+
+  // マウント時に必ずスクロール位置を先頭へ戻す
+  useEffect(() => {
+    if (scrollRef.current) scrollRef.current.scrollTop = 0
   }, [])
 
   // Escape で閉じる
@@ -250,7 +256,7 @@ const AvatarCustomizerModal = ({ initial, onSave, onClose }: ModalProps) => {
           </button>
         </div>
 
-        <div className='ac-scroll'>
+        <div ref={scrollRef} className='ac-scroll'>
           <div className='ac-columns'>
             <div className='ac-col-left'>
               {/* プレビュー */}

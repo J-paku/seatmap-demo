@@ -57,6 +57,11 @@ export const SheetShell = ({ title, variant, active, showHandle, onClose, childr
     return () => cancelAnimationFrame(id)
   }, [])
 
+  // マウント時に必ずスクロール位置を先頭へ戻す
+  useEffect(() => {
+    if (scrollRef.current) scrollRef.current.scrollTop = 0
+  }, [])
+
   // フォーカストラップ(最前面のみ)
   useEffect(() => {
     if (!active) return

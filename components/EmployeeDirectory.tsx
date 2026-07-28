@@ -69,6 +69,7 @@ export const EmployeeDirectory = ({ isOpen, onClose, onSelectEmployee, onOpenAva
   const [favoriteDeptNames, setFavoriteDeptNames] = useState<Set<string>>(new Set())
 
   const panelRef = useRef<HTMLDivElement>(null)
+  const treeRef = useRef<HTMLDivElement>(null)
   const closeBtnRef = useRef<HTMLButtonElement>(null)
   const searchInputRef = useRef<HTMLInputElement>(null)
   const debounceTimerRef = useRef(0)
@@ -111,6 +112,12 @@ export const EmployeeDirectory = ({ isOpen, onClose, onSelectEmployee, onOpenAva
     }, DEBOUNCE_MS)
     return () => window.clearTimeout(debounceTimerRef.current)
   }, [searchQuery])
+
+  // 表示された瞬間にリストのスクロールを先頭へ戻す
+  useEffect(() => {
+    if (!isVisible) return
+    if (treeRef.current) treeRef.current.scrollTop = 0
+  }, [isVisible])
 
   // 出現直後にフォーカス(閉じるボタン優先・モバイルは検索欄)
   useEffect(() => {
@@ -410,7 +417,7 @@ export const EmployeeDirectory = ({ isOpen, onClose, onSelectEmployee, onOpenAva
           </button>
         </div>
 
-        <div className='emp-dir-tree' role='tree' aria-label='部署と社員ツリー'>
+        <div ref={treeRef} className='emp-dir-tree' role='tree' aria-label='部署と社員ツリー'>
           {emptyResult ? (
             <p className='emp-dir-empty'>該当する社員がいません</p>
           ) : (
