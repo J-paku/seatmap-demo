@@ -1,5 +1,9 @@
 // @ts-check
 
+// GitHub Pages(プロジェクトサイト /seatmap-demo/)配信時のみ basePath を付与。ローカル/Vercel は無効
+const isPages = process.env.GITHUB_PAGES === 'true'
+const repoBase = '/seatmap-demo'
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
@@ -8,6 +12,7 @@ const nextConfig = {
   // 静的export では画像最適化サーバーが無いため無効化
   images: { unoptimized: true },
   trailingSlash: true,
+  ...(isPages ? { basePath: repoBase, assetPrefix: repoBase } : {}),
 }
 
 export default nextConfig
