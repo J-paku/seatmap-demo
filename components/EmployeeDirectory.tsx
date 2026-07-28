@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { PixelAvatar } from './PixelAvatar'
 import { useBodyScrollLock } from '@/lib/use-body-scroll-lock'
+import { useSwipeDismiss } from '@/lib/use-swipe-dismiss'
 import { useEmployees, useSeats, useTeams } from '@/lib/mock-loader'
 import { normalizeForSearch } from '@/lib/kana'
 import { useSelfAvatar } from '@/lib/self-avatar-context'
@@ -68,12 +69,12 @@ export const EmployeeDirectory = ({ isOpen, onClose, onSelectEmployee, onOpenAva
   const [favoriteIds, setFavoriteIds] = useState<Set<string>>(new Set())
   const [favoriteDeptNames, setFavoriteDeptNames] = useState<Set<string>>(new Set())
 
-  const panelRef = useRef<HTMLDivElement>(null)
   const treeRef = useRef<HTMLDivElement>(null)
   const closeBtnRef = useRef<HTMLButtonElement>(null)
   const searchInputRef = useRef<HTMLInputElement>(null)
   const debounceTimerRef = useRef(0)
-  const dragRef = useRef({ active: false, startY: 0, currentY: 0 })
+
+  const { sheetRef: panelRef, bind } = useSwipeDismiss({ onClose, scrollGateRef: treeRef })
 
   useBodyScrollLock(isVisible)
 
@@ -268,24 +269,6 @@ export const EmployeeDirectory = ({ isOpen, onClose, onSelectEmployee, onOpenAva
     [seatByEmployeeId, onSelectEmployee]
   )
 
-  // モバイル下スワイプで閉じる
-  const onHandlePointerDown = (e: React.PointerEvent) => {
-    dragRef.current = { active: true, startY: e.clientY, currentY: e.clientY }
-  }
-  const onHandlePointerMove = (e: React.PointerEvent) => {
-    if (!dragRef.current.active) return
-    dragRef.current.currentY = e.clientY
-    const dy = Math.max(0, e.clientY - dragRef.current.startY)
-    if (panelRef.current) panelRef.current.style.transform = `translateY(${dy}px)`
-  }
-  const onHandlePointerUp = () => {
-    if (!dragRef.current.active) return
-    const dy = dragRef.current.currentY - dragRef.current.startY
-    dragRef.current.active = false
-    if (panelRef.current) panelRef.current.style.transform = ''
-    if (dy > 80) onClose()
-  }
-
   if (!isVisible) return null
 
   const emptyResult = isSearching && filteredGroups.length === 0
@@ -371,15 +354,10 @@ export const EmployeeDirectory = ({ isOpen, onClose, onSelectEmployee, onOpenAva
         role='dialog'
         aria-modal='true'
         aria-label='社員ディレクトリ'
+        {...bind}
       >
-        <div
-          className='emp-dir-handle-strip'
-          onPointerDown={onHandlePointerDown}
-          onPointerMove={onHandlePointerMove}
-          onPointerUp={onHandlePointerUp}
-          onPointerCancel={onHandlePointerUp}
-        >
-          <span className='emp-dir-handle-bar' />
+        <div className='emp-dir-handle-strip' data-handle='true'>
+          <span className='emp-dir-handle-bar' data-handle='true' />
         </div>
 
         <div className='emp-dir-header'>

@@ -1,6 +1,7 @@
 // 07-admin-edit: チームレイアウトエディタ(チームラベルタップ時のモーダル) — 行・列ステッパー+適用/閉じる
 import { useState } from 'react'
 import type { Team } from '@/lib/types'
+import { useSwipeDismiss } from '@/lib/use-swipe-dismiss'
 
 type Props = {
   team: Team
@@ -16,6 +17,8 @@ export const TeamRelayoutModal = ({ team, seatCount, onApply, onClose }: Props) 
   const [cols, setCols] = useState(() => initialCols(seatCount))
   const [rows, setRows] = useState(() => Math.max(1, Math.ceil(seatCount / initialCols(seatCount))))
   const [error, setError] = useState<string | null>(null)
+  // 下スワイプで閉じる(スクロール領域なし)
+  const { sheetRef, bind } = useSwipeDismiss({ onClose })
 
   const clampStep = (v: number) => Math.max(1, Math.min(20, v))
 
@@ -31,11 +34,13 @@ export const TeamRelayoutModal = ({ team, seatCount, onApply, onClose }: Props) 
   return (
     <div className='edit-dialog-backdrop' onClick={onClose}>
       <div
+        ref={sheetRef}
         className='edit-sheet edit-relayout-modal'
         role='dialog'
         aria-modal='true'
         aria-label='チームレイアウト編集'
         onClick={(e) => e.stopPropagation()}
+        {...bind}
       >
         <h3 className='edit-sheet-title'>{team.name}のレイアウト</h3>
         <p className='edit-relayout-count'>現在の座席数: {seatCount}席</p>

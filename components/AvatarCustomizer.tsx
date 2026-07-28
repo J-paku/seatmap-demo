@@ -5,6 +5,7 @@ import type { AvatarConfig } from '@/lib/types'
 import { useSelfAvatar } from '@/lib/self-avatar-context'
 import { useBodyScrollLock } from '@/lib/use-body-scroll-lock'
 import { useBackgroundInert } from '@/lib/use-background-inert'
+import { useSwipeDismiss } from '@/lib/use-swipe-dismiss'
 
 // ── 定数(パーツ候補・色・プリセット・AI候補) ──────────────
 
@@ -127,11 +128,11 @@ const AvatarCustomizerModal = ({ initial, onSave, onClose }: ModalProps) => {
   const [draft, setDraft] = useState<AvatarConfig>(() => cloneAvatar(initial))
   const [aiRequestText, setAiRequestText] = useState('')
   const [toast, setToast] = useState<string | null>(null)
-  const dialogRef = useRef<HTMLDivElement>(null)
   const closeBtnRef = useRef<HTMLButtonElement>(null)
   const backdropRef = useRef<HTMLDivElement>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
-  const swipe = useRef({ startY: 0, active: false })
+
+  const { sheetRef: dialogRef, bind } = useSwipeDismiss({ onClose, scrollGateRef: scrollRef })
 
   useBodyScrollLock(true)
   useBackgroundInert(true, SEATMAP_BG_ID)
@@ -211,25 +212,6 @@ const AvatarCustomizerModal = ({ initial, onSave, onClose }: ModalProps) => {
     window.setTimeout(() => setToast(null), 1400)
   }
 
-  // モバイル下方スワイプで閉じる(ハンドル起点)
-  const onHandleDown = (e: React.PointerEvent) => {
-    if (e.pointerType === 'mouse') return
-    swipe.current = { startY: e.clientY, active: true }
-    ;(e.currentTarget as HTMLElement).setPointerCapture(e.pointerId)
-  }
-  const onHandleMove = (e: React.PointerEvent) => {
-    if (!swipe.current.active) return
-    const dy = e.clientY - swipe.current.startY
-    if (dialogRef.current) dialogRef.current.style.transform = dy > 0 ? `translateY(${dy}px)` : ''
-  }
-  const onHandleUp = (e: React.PointerEvent) => {
-    if (!swipe.current.active) return
-    swipe.current.active = false
-    const dy = e.clientY - swipe.current.startY
-    if (dialogRef.current) dialogRef.current.style.transform = ''
-    if (dy > 90) onClose()
-  }
-
   return (
     <div className='ac-overlay'>
       <div ref={backdropRef} className='ac-backdrop' onClick={onClose} />
@@ -239,15 +221,10 @@ const AvatarCustomizerModal = ({ initial, onSave, onClose }: ModalProps) => {
         role='dialog'
         aria-modal='true'
         aria-label='アバター編集'
+        {...bind}
       >
-        <div
-          className='ac-handle-strip'
-          data-handle='true'
-          onPointerDown={onHandleDown}
-          onPointerMove={onHandleMove}
-          onPointerUp={onHandleUp}
-        >
-          <span className='ac-handle-bar' />
+        <div className='ac-handle-strip' data-handle='true'>
+          <span className='ac-handle-bar' data-handle='true' />
         </div>
         <div className='ac-header'>
           <h2 className='ac-title'>アバター編集</h2>

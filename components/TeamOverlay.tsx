@@ -3,6 +3,7 @@ import { PixelAvatar } from './PixelAvatar'
 import { hexToRgba } from '@/lib/color'
 import { PRESENCE_LABEL } from '@/lib/types'
 import type { Employee, PresenceStatus, Seat } from '@/lib/types'
+import { useSwipeDismiss } from '@/lib/use-swipe-dismiss'
 
 // 10: チームバウンダリクリックで開く大型オーバーレイ(座席グリッド全体)
 // クリックしたバウンダリ中心から膨らむように開く。中央固定拡大ではない
@@ -52,8 +53,9 @@ export const TeamOverlay = ({
   const [loading, setLoading] = useState(true)
   const [clickLocked, setClickLocked] = useState(true)
   const [syncedAt, setSyncedAt] = useState<string>('')
-  const panelRef = useRef<HTMLDivElement>(null)
   const bodyRef = useRef<HTMLDivElement>(null)
+  // 表示中のみ有効化(下スワイプで閉じる)
+  const { sheetRef, bind } = useSwipeDismiss({ onClose, enabled: payload !== null, scrollGateRef: bodyRef })
 
   // オープン時: ローディングシミュレーション(300〜600ms)+ 350ms クリックロック
   useEffect(() => {
@@ -120,7 +122,7 @@ export const TeamOverlay = ({
     >
       <div className='team-ovl-backdrop' onClick={onClose} />
       <div
-        ref={panelRef}
+        ref={sheetRef}
         className='team-ovl-panel'
         role='dialog'
         aria-modal='true'
@@ -130,6 +132,7 @@ export const TeamOverlay = ({
           pointerEvents: clickLocked ? 'none' : 'auto',
         }}
         onClick={(e) => e.stopPropagation()}
+        {...bind}
       >
         {loading && <div className='team-ovl-loadbar' style={{ background: teamColor }} />}
         {/* ヘッダー */}
