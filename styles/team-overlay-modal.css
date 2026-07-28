@@ -1,0 +1,346 @@
+/* 10-main-interactions: チームバウンダリクリックで開く大型オーバーレイ(座席グリッド) */
+
+.team-ovl-wrap {
+  position: fixed;
+  inset: 0;
+  /* 座席クリックで開く社員詳細(z-index-modal=700)より下に置く(詳細が上に重なる) */
+  z-index: var(--z-index-sidebar);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: max(8px, env(safe-area-inset-top));
+}
+
+.team-ovl-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.34);
+  backdrop-filter: blur(12px);
+  animation: team-ovl-fade 0.2s ease-out;
+}
+
+.team-ovl-panel {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  width: min(100vw - 16px, 1420px);
+  height: min(85dvh, 980px);
+  border-radius: 20px;
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-modal);
+  background: var(--color-surface-overlay);
+  backdrop-filter: blur(18px);
+  overflow: hidden;
+  animation: team-ovl-fade 0.2s ease-out, team-ovl-expand 0.3s cubic-bezier(0.2, 0.9, 0.2, 1);
+}
+
+@keyframes team-ovl-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes team-ovl-expand {
+  from {
+    transform: scale(0.94);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .team-ovl-panel,
+  .team-ovl-backdrop {
+    animation: none;
+  }
+}
+
+.team-ovl-loadbar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 3px;
+  width: 40%;
+  border-radius: 0 3px 3px 0;
+  animation: team-ovl-load 1s ease-in-out infinite;
+}
+
+@keyframes team-ovl-load {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(350%);
+  }
+}
+
+/* ヘッダー */
+.team-ovl-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px 10px;
+  border-bottom: 1px solid var(--color-border);
+  flex-shrink: 0;
+}
+
+.team-ovl-dot {
+  flex-shrink: 0;
+  width: 10px;
+  height: 10px;
+  border-radius: 9999px;
+}
+
+.team-ovl-title {
+  flex: 1;
+  min-width: 0;
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.team-ovl-count {
+  flex-shrink: 0;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 10px;
+  border: 1px solid;
+  border-radius: 9999px;
+}
+
+.team-ovl-close {
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  border-radius: 9999px;
+  border: 0;
+  background: transparent;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.team-ovl-close:hover {
+  background: var(--color-surface-muted);
+}
+
+/* 本文 */
+.team-ovl-body {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+  padding: 12px;
+}
+
+.team-ovl-section {
+  border-radius: 14px;
+  border: 1px solid var(--color-border);
+  background: linear-gradient(165deg, var(--color-surface) 0%, var(--color-surface-sunken) 100%);
+  padding: 12px;
+}
+
+.team-ovl-section-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+
+.team-ovl-section-icon {
+  font-size: 18px;
+  color: var(--color-text-secondary);
+}
+
+.team-ovl-section-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-text-secondary);
+}
+
+.team-ovl-section-count {
+  margin-left: auto;
+  font-size: 11px;
+  color: var(--color-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.team-ovl-sync {
+  font-size: 11px;
+  color: var(--color-text-muted);
+  margin-bottom: 10px;
+}
+
+.team-ovl-grid {
+  overflow-x: auto;
+  overflow-y: hidden;
+  transition: opacity 0.2s ease;
+}
+
+.team-ovl-grid.is-loading {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.team-ovl-grid-inner {
+  display: grid;
+  gap: 10px;
+  width: fit-content;
+  margin: 0 auto;
+}
+
+/* 座席カード(PC) */
+.team-ovl-card {
+  position: relative;
+  height: 88px;
+  border-radius: 12px;
+  padding: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-align: left;
+  cursor: pointer;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface-elevated);
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+}
+
+.team-ovl-card.is-empty {
+  border: 1px dashed var(--color-border);
+  background: var(--color-surface-sunken);
+  box-shadow: none;
+  cursor: default;
+}
+
+.team-ovl-card.is-hit {
+  border: 2px solid #e9a93d;
+  box-shadow: 0 0 0 4px rgba(242, 193, 78, 0.22), 0 10px 24px rgba(233, 169, 61, 0.18);
+}
+
+.team-ovl-card-accent {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--color-accent);
+  border-radius: 12px 12px 0 0;
+}
+
+.team-ovl-card-avatar {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 6px;
+  background: var(--color-surface-sunken);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.team-ovl-card-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.team-ovl-card-name {
+  height: 28.8px;
+  display: flex;
+  align-items: center;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--color-text-primary);
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.team-ovl-card-position {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--color-accent);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.team-ovl-card-dept {
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  opacity: 0.75;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.team-ovl-card-status {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.team-ovl-card-statusdot {
+  width: 6px;
+  height: 6px;
+  border-radius: 0;
+}
+
+.team-ovl-card-dir {
+  flex-shrink: 0;
+  width: 14px;
+  height: 14px;
+  border-radius: 9999px;
+}
+
+.team-ovl-hit {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  padding: 1px 6px;
+  border-radius: 8px;
+  background: #f2c14e;
+  color: #6b4a12;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+/* モバイル */
+@media (max-width: 760px) {
+  .team-ovl-wrap {
+    align-items: flex-end;
+    padding: 0;
+  }
+  .team-ovl-panel {
+    width: 100vw;
+    height: 95dvh;
+    border-radius: 20px 20px 0 0;
+    border: 0;
+    box-shadow: none;
+  }
+  .team-ovl-close {
+    display: none;
+  }
+  .team-ovl-card-statusdot {
+    border-radius: 9999px;
+  }
+}

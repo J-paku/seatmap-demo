@@ -11,6 +11,7 @@ import {
 import { SeatCard } from './SeatCard'
 import type { Lod } from './SeatCard'
 import { TeamArea } from './TeamArea'
+import type { TeamOverlayPayload } from './TeamOverlay'
 import { FacilityBlock } from './FacilityBlock'
 import { ZoomControls } from './ZoomControls'
 import { SEATMAP_BG_ID } from './SheetShell'
@@ -44,6 +45,8 @@ type Props = {
   teamPresenceCounts: Map<string, TeamPresenceCounts>
   onSeatSelect?: (seatId: string) => void
   onFacilitySelect?: (facilityId: string) => void
+  // 10: チームバウンダリのタップで大型オーバーレイを開く(画面座標 rect を親へ渡す)
+  onTeamBoundaryClick?: (payload: TeamOverlayPayload) => void
   // 07: 編集モード中のみ有効。未指定(閲覧モード)では以下の分岐へ一切到達しない
   isEditMode?: boolean
   onSeatMove?: (seatId: string, x: number, y: number) => void
@@ -121,6 +124,7 @@ export const SeatMapCanvas = forwardRef<SeatMapCanvasHandle, Props>(function Sea
     teamPresenceCounts,
     onSeatSelect,
     onFacilitySelect,
+    onTeamBoundaryClick,
     isEditMode,
     onSeatMove,
     onTeamMove,
@@ -944,25 +948,17 @@ export const SeatMapCanvas = forwardRef<SeatMapCanvasHandle, Props>(function Sea
     [applyTransform, cancelAnim, commitSnap]
   )
 
-  // チームテーブルのクリックで、そのチームのメンバー表示を開閉(同チーム再クリックで閉じる)
-  const toggleTeamSelect = useCallback((teamId: string) => {
-    setExpandedTeamIds((cur) => {
-      const next = new Set(cur)
-      if (next.has(teamId)) next.delete(teamId)
-      else next.add(teamId)
-      return next
-    })
-  }, [])
-
-  // 06: 凡例行クリック→展開トグル+該当エリアまでパン
-  const handleLegendSelect = useCallback(
-    (teamId: string) => {
-      toggleTeamSelect(teamId)
-      const r = teamAreas.get(teamId)
-      if (r) panToRect(r)
+  // 10: チームバウンダリのタップ→画面座標 rect + チーム色を親へ渡してオーバーレイを開く
+  const handleTeamBoundaryOpen = useCallback(
+    (teamId: string, rect: DOMRect) => {
+      const team = layout.teams.find((t) => t.id === teamId)
+      if (!team) return
+      const colorEntry = resolveTeamColor(teamColorMap, team.id, team.name)
+      onTeamBoundaryClick?.({ teamId, teamName: team.name, teamColor: colorEntry.background, rect })
     },
-    [toggleTeamSelect, panToRect, teamAreas]
+    [layout.teams, teamColorMap, onTeamBoundaryClick]
   )
+
 
   // 空き領域クリックで全チームを閉じる(座席・施設・チームエリア自体は各要素側で stopPropagation 済み)
   // 07: 編集モード中は座席の編集選択(フローティングアクションバー)も併せて解除
@@ -1011,9 +1007,9 @@ export const SeatMapCanvas = forwardRef<SeatMapCanvasHandle, Props>(function Sea
               colorEntry={colorEntry}
               presentCount={assignedCountByTeam.get(team.id) ?? 0}
               counterScale={counterScale}
-              selected={expandedTeamIds.has(team.id)}
+              selected={false}
               dimmed={false}
-              onSelect={toggleTeamSelect}
+              onBoundaryOpen={handleTeamBoundaryOpen}
               isEditMode={isEditMode}
               onLabelEditPointerDown={onTeamLabelEditPointerDown}
               onLabelTap={onTeamLabelTap}
@@ -1023,9 +1019,8 @@ export const SeatMapCanvas = forwardRef<SeatMapCanvasHandle, Props>(function Sea
         {layout.facilities.map((f) => (
           <FacilityBlock key={f.id} facility={f} counterScale={counterScale} onSelect={handleFacilitySelect} />
         ))}
-        {/* メンバー座席は「展開中チーム」のみ表示。ズーム段階では出し入れしない */}
+        {/* 10: 座席は常時レンダー。詳細度は LOD のみで変わる(チームクリックはオーバーレイを開くだけ) */}
         {layout.seats
-          .filter((seat) => expandedTeamIds.has(seat.teamId))
           .map((seat) => {
             const emp = seat.employeeId ? employeeById.get(seat.employeeId) ?? null : null
             const status = emp ? presenceMap.get(emp.id) ?? 'present' : 'present'

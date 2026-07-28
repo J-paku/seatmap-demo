@@ -3,6 +3,8 @@ import { useCallback, useMemo, useRef, useState } from 'react'
 import { SeatMapCanvas } from '@/components/SeatMapCanvas'
 import type { SeatMapCanvasHandle, TeamPresenceCounts } from '@/components/SeatMapCanvas'
 import { DetailPanels } from '@/components/DetailPanels'
+import { TeamOverlay } from '@/components/TeamOverlay'
+import type { TeamOverlayPayload } from '@/components/TeamOverlay'
 import { EmployeeDirectory } from '@/components/EmployeeDirectory'
 import { AvatarCustomizer } from '@/components/AvatarCustomizer'
 import { PixelAvatar } from '@/components/PixelAvatar'
@@ -39,6 +41,8 @@ const SeatMapView = () => {
   const nowMs = useQuantizedClock(isTodaySelected)
   const canvasRef = useRef<SeatMapCanvasHandle>(null)
   const [isDirectoryOpen, setIsDirectoryOpen] = useState(false)
+  // 10: チームバウンダリのタップで開く大型オーバーレイ(payload=null で閉)
+  const [teamOverlay, setTeamOverlay] = useState<TeamOverlayPayload | null>(null)
   // 05: 座席未設定(防御分岐)時の一時通知文言
   const [unassignedNotice, setUnassignedNotice] = useState<string | null>(null)
 
@@ -199,6 +203,7 @@ const SeatMapView = () => {
           teamPresenceCounts={teamPresenceCounts}
           onSeatSelect={openSeatDetail}
           onFacilitySelect={openFacilityDetail}
+          onTeamBoundaryClick={setTeamOverlay}
           isEditMode={editor.isEditMode}
           onSeatMove={editor.moveSeat}
           onTeamMove={editor.moveTeam}
@@ -216,6 +221,16 @@ const SeatMapView = () => {
         onOpenAvatarEditor={handleOpenAvatarEditor}
       />
       {unassignedNotice && <div className='emp-dir-unassigned-toast'>{unassignedNotice}</div>}
+      {!editor.isEditMode && effectiveLayout && (
+        <TeamOverlay
+          payload={teamOverlay}
+          seats={effectiveLayout.seats}
+          employeeById={employeeById}
+          presenceMap={effectivePresenceMap}
+          onClose={() => setTeamOverlay(null)}
+          onSeatClick={openSeatDetail}
+        />
+      )}
       {!editor.isEditMode && <DetailPanels />}
 
       {editor.isEditMode && (
