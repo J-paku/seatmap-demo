@@ -1011,6 +1011,7 @@ export const SeatMapCanvas = forwardRef<SeatMapCanvasHandle, Props>(function Sea
               colorEntry={colorEntry}
               presentCount={assignedCountByTeam.get(team.id) ?? 0}
               counterScale={counterScale}
+              lod={lod}
               selected={false}
               dimmed={false}
               onBoundaryOpen={handleTeamBoundaryOpen}
