@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useState } from 'react'
 import { hexToRgba } from '@/lib/color'
 import type { TeamColorEntry } from '@/lib/team-colors'
 import type { Team } from '@/lib/types'
@@ -22,8 +22,6 @@ type Props = {
 }
 
 const ISLAND_INSET = 4
-const TAP_DISTANCE_THRESHOLD = 8
-const OBJECT_LONG_PRESS_MS = 300
 
 const clamp = (min: number, v: number, max: number) => Math.min(max, Math.max(min, v))
 
@@ -42,56 +40,13 @@ export const TeamArea = ({
   const [hovered, setHovered] = useState(false)
   const [pressed, setPressed] = useState(false)
 
-  const startRef = useRef<{ x: number; y: number } | null>(null)
-  const movedRef = useRef(false)
-  const lpTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const lpFiredRef = useRef(false)
-
-  const clearLongPress = () => {
-    if (lpTimerRef.current) {
-      clearTimeout(lpTimerRef.current)
-      lpTimerRef.current = null
-    }
-  }
-
-  const handlePointerDown = (e: React.PointerEvent) => {
-    setPressed(true)
-    if (isEditMode || !e.isPrimary) return
-    startRef.current = { x: e.clientX, y: e.clientY }
-    movedRef.current = false
-    lpFiredRef.current = false
-    clearLongPress()
-    lpTimerRef.current = setTimeout(() => {
-      lpTimerRef.current = null
-      lpFiredRef.current = true
-    }, OBJECT_LONG_PRESS_MS)
-  }
-
-  const handlePointerMove = (e: React.PointerEvent) => {
-    if (isEditMode || !startRef.current) return
-    if (Math.hypot(e.clientX - startRef.current.x, e.clientY - startRef.current.y) > TAP_DISTANCE_THRESHOLD) {
-      movedRef.current = true
-      clearLongPress()
-    }
-  }
-
-  const handlePointerUp = (e: React.PointerEvent) => {
+  // 開くのは click で行う(キャンバスが pointer capture を取るため pointerup はここへ来ない)。
+  // ドラッグ後の合成 click はキャンバス側の onClickCapture が抑制する
+  const handleClick = (e: React.MouseEvent) => {
+    e.stopPropagation()
     setPressed(false)
-    clearLongPress()
     if (isEditMode) return
-    if (lpFiredRef.current || movedRef.current || !startRef.current) {
-      startRef.current = null
-      return
-    }
-    startRef.current = null
     onBoundaryOpen(team.id, e.currentTarget.getBoundingClientRect())
-  }
-
-  const handlePointerLeave = () => {
-    setHovered(false)
-    setPressed(false)
-    clearLongPress()
-    startRef.current = null
   }
 
   const inner = { x: area.x + ISLAND_INSET, y: area.y + ISLAND_INSET, w: area.w - ISLAND_INSET * 2, h: area.h - ISLAND_INSET * 2 }
@@ -117,12 +72,10 @@ export const TeamArea = ({
         role='button'
         tabIndex={-1}
         data-team-id={team.id}
-        onClick={(e) => e.stopPropagation()}
+        onClick={handleClick}
         onPointerEnter={() => setHovered(true)}
-        onPointerLeave={handlePointerLeave}
-        onPointerDown={handlePointerDown}
-        onPointerMove={handlePointerMove}
-        onPointerUp={handlePointerUp}
+        onPointerLeave={() => { setHovered(false); setPressed(false) }}
+        onPointerDown={() => { if (!isEditMode) setPressed(true) }}
         style={{
           position: 'absolute',
           left: inner.x,
