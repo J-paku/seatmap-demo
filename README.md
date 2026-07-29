@@ -1,40 +1,72 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/pages/api-reference/create-next-app).
+# seat-map デモ
 
-## Getting Started
+企業向け座席マップアプリを、モックデータのみで忠実に再現した公開ポートフォリオです。バックエンドは一切持たず、全ての動作がクライアント側で完結します。
 
-First, run the development server:
+**公開URL**: https://j-paku.github.io/seatmap-demo/
+
+## これは何か
+
+フロアの座席・チーム区画・会議室配置を表示し、社員検索や在席状況の確認、座席レイアウトの編集(ドラッグ移動・チーム変更・削除)、自分のアバターのカスタマイズができる座席マップアプリです。データは全て `mocks/` 配下の決定論的な生成データで、実在の組織・個人情報は含みません。
+
+## 技術スタック
+
+| 分類 | 技術 | バージョン |
+|---|---|---|
+| フレームワーク | Next.js (Pages Router) | 16.2.12 |
+| UI | React / React DOM | 19.2.4 |
+| 言語 | TypeScript | 5.9.3 |
+| スタイル | Tailwind CSS (PostCSSプラグイン方式) | 4.3.3 |
+| データ取得 | SWR | 2.4.2 |
+| ユーティリティ | clsx / tailwind-merge | 2.1.1 / 3.6.0 |
+| Lint | ESLint | 9.39.5 |
+
+出力は静的export(`next build` → `out/`)で、GitHub Pages のプロジェクトサイト(`/seatmap-demo` サブパス)にそのまま配信しています。
+
+## ローカルでの実行
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+http://localhost:3000 で表示を確認できます。
 
-You can start editing the page by modifying `pages/index.tsx`. The page auto-updates as you edit the file.
+```bash
+npm run build   # 静的export(out/ を生成)
+npm run start   # next start(SSRサーバー。参考用。実配信はout/の静的ホスティング)
+npm run lint
+```
 
-[API routes](https://nextjs.org/docs/pages/building-your-application/routing/api-routes) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.ts`.
+GitHub Pages 向けの basePath 付きビルドを手元で再現する場合は次のように環境変数を付けます。
 
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/pages/building-your-application/routing/api-routes) instead of React pages.
+```bash
+GITHUB_PAGES=true npm run build
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/pages/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## ディレクトリ構成
 
-## Learn More
+```text
+seatmap-demo/
+├── pages/          # ルーティングエントリ(index.tsx など)。ページ単位の組み立てのみ担当
+├── components/     # UIコンポーネント(座席マップキャンバス・各種パネル・編集用UIなど表示専用)
+├── lib/            # 通信・副作用層(モックfetchラッパー・状態管理フックなど)
+├── mocks/          # モックデータ(社員・チーム・座席・スケジュール・会議室のJSON)。実データは含まない
+├── styles/         # 全体CSS(globals.css)とパート別CSS
+├── public/         # 静的アセット(favicon など)
+├── scripts/        # モックデータ生成・検証スクリプト
+├── next.config.mjs
+├── postcss.config.mjs
+└── tsconfig.json
+```
 
-To learn more about Next.js, take a look at the following resources:
+## デモ上の意図的な代替実装
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn-pages-router) - an interactive Next.js tutorial.
+実サービスであればサーバー側で担う機能を、デモとして以下のように代替しています。
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- **レイアウト・アバターの永続化**: サーバー保存の代わりに `localStorage` に保存。ブラウザを変えると保存内容は引き継がれない
+- **アバターのAI生成**: 実際の画像生成APIは呼ばず、入力テキストのハッシュ値から固定候補12件の中の1つを選ぶモック。ネットワーク通信は発生しない
+- **管理者権限**: 実際の認証・権限管理の代わりに、画面右上の役割トグル(閲覧⇄編集)で編集モードの有無を切り替えるのみ
 
-## Deploy on Vercel
+## 補足
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/pages/building-your-application/deploying) for more details.
+このリポジトリ自体の作業ルール(コミット規約・コーディング規約など)は `CLAUDE.md` を参照してください。

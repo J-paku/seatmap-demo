@@ -11,6 +11,9 @@
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
+    // Next生成のvalidator.ts(.next/types と .next/dev/types)は非module形式で
+    // 同名の型を宣言するため、force指定でファイル毎にモジュールスコープ化し衝突を防ぐ
+    "moduleDetection": "force",
     "jsx": "react-jsx",
     "incremental": true,
     "paths": {
