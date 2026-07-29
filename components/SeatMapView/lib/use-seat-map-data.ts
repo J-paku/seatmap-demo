@@ -1,0 +1,88 @@
+import { useMemo, useRef } from 'react'
+import type { LayoutEditor } from '../type'
+import { deriveFacilityState } from '@/lib/facility-status'
+import type { FacilityState } from '@/lib/facility-status'
+import { useEmployees, useFacilityMeetings, useSchedules, useSeatLayout } from '@/lib/mock-loader'
+import { computePresenceMap } from '@/lib/presence'
+import { jstDateKey, jstKeyFromIso, useSelectedDate } from '@/lib/selected-date-context'
+import { SELF_EMPLOYEE_ID, useSelfAvatar } from '@/lib/self-avatar-context'
+import { useQuantizedClock } from '@/lib/use-quantized-clock'
+import type { Employee, PresenceStatus, SeatLayout } from '@/lib/types'
+
+// 表示に必要なデータの合成。編集モード中は在席状態を凍結し、レイアウトも編集中のものへ切り替える
+
+type SeatMapData = {
+  ready: boolean
+  employeeById: Map<string, Employee>
+  effectiveLayout: SeatLayout | undefined
+  effectivePresenceMap: Map<string, PresenceStatus>
+  facilityStateById: Map<string, FacilityState>
+}
+
+export const useSeatMapData = (editor: LayoutEditor): SeatMapData => {
+  const { layout } = useSeatLayout()
+  const { data: employees } = useEmployees()
+  const { data: schedules } = useSchedules()
+  const { data: facilityMeetings } = useFacilityMeetings()
+  const { debouncedDate, isTodaySelected } = useSelectedDate()
+  // 08: 本人アバターの共有状態(localStorage override)
+  const { override: selfAvatarOverride } = useSelfAvatar()
+  // 現在時刻の進行中判定は「今日」を表示中の時だけ稼働
+  const nowMs = useQuantizedClock(isTodaySelected)
+
+  // 08: 本人(emp-001)の表示アバターは保存済み override を優先
+  const employeeById = useMemo(
+    () =>
+      new Map(
+        (employees ?? []).map((e) =>
+          selfAvatarOverride && e.id === SELF_EMPLOYEE_ID ? [e.id, { ...e, avatar: selfAvatarOverride }] : [e.id, e]
+        )
+      ),
+    [employees, selfAvatarOverride]
+  )
+
+  // debouncedDate 当日分のイベントに絞ってから在席判定
+  const schedulesForDate = useMemo(() => {
+    const key = jstDateKey(debouncedDate)
+    return (schedules ?? []).filter((s) => jstKeyFromIso(s.start) === key)
+  }, [schedules, debouncedDate])
+
+  // 07: 編集モード中は在席状態の再計算を停止(baseline時点のスナップショットで固定)
+  const presenceMap = useMemo(
+    () => computePresenceMap(schedulesForDate, nowMs, isTodaySelected),
+    [schedulesForDate, nowMs, isTodaySelected]
+  )
+  const frozenPresenceMapRef = useRef(presenceMap)
+  if (!editor.isEditMode) frozenPresenceMapRef.current = presenceMap
+  const effectivePresenceMap = editor.isEditMode ? frozenPresenceMapRef.current : presenceMap
+
+  // 07: 表示ソース切り替え(編集中はeditingLayout・それ以外は通常ロード分)
+  const effectiveLayout = editor.isEditMode ? editor.editingLayout ?? layout : layout
+
+  // 会議室状態(今日表示中のみ現在時刻で導出。他日は連携有無だけ)
+  const nowMin = useMemo(() => {
+    const d = new Date(nowMs)
+    return d.getHours() * 60 + d.getMinutes()
+  }, [nowMs])
+
+  const facilityStateById = useMemo(() => {
+    const map = new Map<string, FacilityState>()
+    if (!effectiveLayout) return map
+    const meetings = facilityMeetings ?? []
+    for (const f of effectiveLayout.facilities) {
+      map.set(
+        f.id,
+        isTodaySelected ? deriveFacilityState(f, meetings, nowMin) : { status: f.facilityId ? 'available' : 'unlinked' }
+      )
+    }
+    return map
+  }, [effectiveLayout, facilityMeetings, nowMin, isTodaySelected])
+
+  return {
+    ready: Boolean(layout && employees && schedules),
+    employeeById,
+    effectiveLayout,
+    effectivePresenceMap,
+    facilityStateById,
+  }
+}

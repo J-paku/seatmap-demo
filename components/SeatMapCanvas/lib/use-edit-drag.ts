@@ -1,0 +1,222 @@
+import { useCallback, useEffect, useRef, useState } from 'react'
+import type { PointerEvent as ReactPointerEvent } from 'react'
+import type { Viewport } from './use-viewport'
+import { siblingRectsForSeat, siblingRectsForTeam } from '../utils/sibling-rects'
+import type { EditDrag, LivePosition, Rect } from '../type'
+import { SNAP_THRESHOLD_SCREEN_PX, computeSnap } from '@/lib/snap-guides'
+import type { SnapGuide } from '@/lib/snap-guides'
+import type { SeatLayout } from '@/lib/types'
+
+// 07: 編集モードの座席/チームラベルのドラッグ移動。閲覧モードではこのロジックへ一切到達しない
+
+// ドラッグとみなす最小移動量
+const DRAG_THRESHOLD_PX = 3
+// 「元に戻す」チップの自動消去
+const UNDO_CHIP_MS = 5000
+// チップは対象の少し下に出す
+const UNDO_CHIP_OFFSET_Y = 40
+
+type Options = {
+  viewport: Viewport
+  layout: SeatLayout
+  isEditMode: boolean
+  onSeatMove?: (seatId: string, x: number, y: number) => void
+  onTeamMove?: (teamId: string, x: number, y: number) => void
+  onSeatEditSelect?: (seatId: string | null) => void
+}
+
+type EditDragState = {
+  liveSeatPos: LivePosition | null
+  liveTeamPos: LivePosition | null
+  snapGuides: SnapGuide[]
+  editSelectedSeatId: string | null
+  undoChipPos: { x: number; y: number } | null
+  onSeatEditPointerDown: (seatId: string, e: ReactPointerEvent) => void
+  onTeamLabelEditPointerDown: (teamId: string, e: ReactPointerEvent) => void
+  clearSelection: () => void
+  dismissUndoChip: () => void
+}
+
+export const useEditDrag = ({
+  viewport,
+  layout,
+  isEditMode,
+  onSeatMove,
+  onTeamMove,
+  onSeatEditSelect,
+}: Options): EditDragState => {
+  const { transformRef } = viewport
+  const editDragRef = useRef<EditDrag>({ kind: 'none' })
+  const undoChipTimeoutRef = useRef(0)
+
+  // ライブ座標(ドラッグ中のみ描画反映。確定はpointerup時に親へ1回通知)
+  const [liveSeatPos, setLiveSeatPos] = useState<LivePosition | null>(null)
+  const [liveTeamPos, setLiveTeamPos] = useState<LivePosition | null>(null)
+  const [snapGuides, setSnapGuides] = useState<SnapGuide[]>([])
+  // 07: 編集モード中に選択された座席1件(フローティングアクションバー表示用)
+  const [editSelectedSeatId, setEditSelectedSeatId] = useState<string | null>(null)
+  // 07: 「元に戻す」チップの表示位置(直前アクション対象直下)。次操作または5秒経過で消去
+  const [undoChipPos, setUndoChipPos] = useState<{ x: number; y: number } | null>(null)
+
+  const scheduleUndoChipDismiss = useCallback(() => {
+    window.clearTimeout(undoChipTimeoutRef.current)
+    undoChipTimeoutRef.current = window.setTimeout(() => setUndoChipPos(null), UNDO_CHIP_MS)
+  }, [])
+
+  const dismissUndoChip = useCallback(() => {
+    setUndoChipPos(null)
+    window.clearTimeout(undoChipTimeoutRef.current)
+  }, [])
+
+  const onSeatEditPointerDown = useCallback(
+    (seatId: string, e: ReactPointerEvent) => {
+      if (!isEditMode) return
+      e.stopPropagation()
+      const seat = layout.seats.find((s) => s.id === seatId)
+      if (!seat) return
+      setEditSelectedSeatId(seatId)
+      onSeatEditSelect?.(seatId)
+      dismissUndoChip()
+      editDragRef.current = {
+        kind: 'seat',
+        seatId,
+        pointerId: e.pointerId,
+        startScreenX: e.clientX,
+        startScreenY: e.clientY,
+        startLogicalX: seat.x,
+        startLogicalY: seat.y,
+        liveX: seat.x,
+        liveY: seat.y,
+        moved: false,
+      }
+      ;(e.target as HTMLElement).setPointerCapture(e.pointerId)
+    },
+    [isEditMode, layout.seats, onSeatEditSelect, dismissUndoChip]
+  )
+
+  const onTeamLabelEditPointerDown = useCallback(
+    (teamId: string, e: ReactPointerEvent) => {
+      if (!isEditMode) return
+      e.stopPropagation()
+      const team = layout.teams.find((t) => t.id === teamId)
+      if (!team) return
+      dismissUndoChip()
+      editDragRef.current = {
+        kind: 'team',
+        teamId,
+        pointerId: e.pointerId,
+        startScreenX: e.clientX,
+        startScreenY: e.clientY,
+        startLogicalX: team.area.x,
+        startLogicalY: team.area.y,
+        liveX: team.area.x,
+        liveY: team.area.y,
+        moved: false,
+      }
+      ;(e.target as HTMLElement).setPointerCapture(e.pointerId)
+    },
+    [isEditMode, layout.teams, dismissUndoChip]
+  )
+
+  // 編集ドラッグの document 追従(pointerId ベース)
+  useEffect(() => {
+    if (!isEditMode) return
+
+    const showUndoChipAt = (x: number, y: number) => {
+      const t = transformRef.current
+      setUndoChipPos({ x: x * t.scale + t.translateX, y: (y + UNDO_CHIP_OFFSET_Y) * t.scale + t.translateY })
+      scheduleUndoChipDismiss()
+    }
+
+    const onMove = (e: PointerEvent) => {
+      const drag = editDragRef.current
+      if (drag.kind === 'none' || drag.pointerId !== e.pointerId) return
+      const scale = transformRef.current.scale
+      const dxScreen = e.clientX - drag.startScreenX
+      const dyScreen = e.clientY - drag.startScreenY
+      if (!drag.moved && Math.hypot(dxScreen, dyScreen) > DRAG_THRESHOLD_PX) drag.moved = true
+      const rawX = drag.startLogicalX + dxScreen / scale
+      const rawY = drag.startLogicalY + dyScreen / scale
+      const thresholdViewBox = SNAP_THRESHOLD_SCREEN_PX / scale
+
+      if (drag.kind === 'seat') {
+        const seat = layout.seats.find((s) => s.id === drag.seatId)
+        if (!seat) return
+        const candidate: Rect = { x: rawX, y: rawY, w: seat.width, h: seat.height }
+        const snap = computeSnap(candidate, siblingRectsForSeat(layout, drag.seatId), thresholdViewBox)
+        drag.liveX = snap.x
+        drag.liveY = snap.y
+        setLiveSeatPos({ id: drag.seatId, x: snap.x, y: snap.y })
+        setSnapGuides(snap.guides)
+      } else {
+        const team = layout.teams.find((t) => t.id === drag.teamId)
+        if (!team) return
+        const candidate: Rect = { x: rawX, y: rawY, w: team.area.w, h: team.area.h }
+        const snap = computeSnap(candidate, siblingRectsForTeam(layout, drag.teamId), thresholdViewBox)
+        drag.liveX = snap.x
+        drag.liveY = snap.y
+        setLiveTeamPos({ id: drag.teamId, x: snap.x, y: snap.y })
+        setSnapGuides(snap.guides)
+      }
+    }
+
+    const onUp = (e: PointerEvent) => {
+      const drag = editDragRef.current
+      if (drag.kind === 'none' || drag.pointerId !== e.pointerId) return
+      editDragRef.current = { kind: 'none' }
+      setSnapGuides([])
+      if (drag.kind === 'seat') {
+        setLiveSeatPos(null)
+        if (drag.moved) {
+          onSeatMove?.(drag.seatId, drag.liveX, drag.liveY)
+          showUndoChipAt(drag.liveX, drag.liveY)
+        }
+      } else {
+        setLiveTeamPos(null)
+        if (drag.moved) {
+          onTeamMove?.(drag.teamId, drag.liveX, drag.liveY)
+          showUndoChipAt(drag.liveX, drag.liveY)
+        }
+      }
+    }
+
+    window.addEventListener('pointermove', onMove)
+    window.addEventListener('pointerup', onUp)
+    window.addEventListener('pointercancel', onUp)
+    return () => {
+      window.removeEventListener('pointermove', onMove)
+      window.removeEventListener('pointerup', onUp)
+      window.removeEventListener('pointercancel', onUp)
+    }
+  }, [isEditMode, layout, transformRef, onSeatMove, onTeamMove, scheduleUndoChipDismiss])
+
+  useEffect(() => () => window.clearTimeout(undoChipTimeoutRef.current), [])
+
+  // 編集モードOFFへ遷移した瞬間に編集専用の状態を掃除(view 側の状態には影響しない)
+  useEffect(() => {
+    if (isEditMode) return
+    setEditSelectedSeatId(null)
+    setLiveSeatPos(null)
+    setLiveTeamPos(null)
+    setSnapGuides([])
+    setUndoChipPos(null)
+    editDragRef.current = { kind: 'none' }
+  }, [isEditMode])
+
+  const clearSelection = useCallback(() => {
+    setEditSelectedSeatId(null)
+    onSeatEditSelect?.(null)
+  }, [onSeatEditSelect])
+
+  return {
+    liveSeatPos,
+    liveTeamPos,
+    snapGuides,
+    editSelectedSeatId,
+    undoChipPos,
+    onSeatEditPointerDown,
+    onTeamLabelEditPointerDown,
+    clearSelection,
+    dismissUndoChip,
+  }
+}
