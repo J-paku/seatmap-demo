@@ -1,6 +1,8 @@
 import useSWR from 'swr'
+import { useCallback } from 'react'
 import type { Employee, Facility, FacilityMeeting, ScheduleEvent, Seat, SeatLayout, Team } from './types'
 import { VIEWBOX_W, VIEWBOX_H } from './geometry'
+import { clearStoredLayout, loadStoredLayout, saveStoredLayout } from './layout-persistence'
 import employeesJson from '../mocks/employees.json'
 import teamsJson from '../mocks/teams.json'
 import seatsJson from '../mocks/seats.json'
@@ -101,12 +103,17 @@ export const useSchedules = () => useCached('schedules', SCHEDULES)
 
 export const useFacilityMeetings = () => useCached('facility-meetings', FACILITY_MEETINGS)
 
-// SeatLayout はローダーが teams+seats+facilities を合成
+// 07: 保存済みレイアウトの上書き分を扱うSWRキー(mock/系に合わせ、mutateで表示即時更新できるようにする)
+const LAYOUT_OVERRIDE_SWR_KEY = 'mock/layout-override'
+
+// SeatLayout はローダーが teams+seats+facilities を合成(種データ側)。
+// その上に、あればlocalStorage保存分を上書き適用する。読み込みはSWRのfetcherが
+// マウント後に実行される既存の仕組み(useCached参照)に乗せるためSSR不整合は起きない
 export const useSeatLayout = () => {
   const { data: teams } = useTeams()
   const { data: seats } = useSeats()
   const { data: facilities } = useFacilities()
-  const layout: SeatLayout | undefined =
+  const composed: SeatLayout | undefined =
     teams && seats && facilities
       ? {
           floorId: FLOOR_ID,
@@ -117,5 +124,30 @@ export const useSeatLayout = () => {
           facilities,
         }
       : undefined
-  return { layout, isLoading: !layout }
+
+  const { data: override, mutate: mutateOverride } = useSWR<SeatLayout | null>(
+    LAYOUT_OVERRIDE_SWR_KEY,
+    async () => loadStoredLayout(),
+    { revalidateOnFocus: false }
+  )
+
+  // 保存分があればそちらを採用、無ければ種データ合成分にフォールバック
+  const layout = override ?? composed
+
+  // 完了時: 保存書き込み+SWRキャッシュへ直接反映(再取得を挟まず表示を即時更新)
+  const persistLayout = useCallback(
+    async (next: SeatLayout) => {
+      saveStoredLayout(next)
+      await mutateOverride(next, false)
+    },
+    [mutateOverride]
+  )
+
+  // 設定操作「レイアウトをリセット」: 保存分を削除して種データ合成分へ復帰
+  const resetLayout = useCallback(async () => {
+    clearStoredLayout()
+    await mutateOverride(null, false)
+  }, [mutateOverride])
+
+  return { layout, isLoading: !layout, persistLayout, resetLayout }
 }

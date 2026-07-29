@@ -1,5 +1,6 @@
 // 07-admin-edit: 編集モードの可変ワーキングコピー+undoスタック+アクション発行を司るフック
-// 永続化(localStorage/サーバ保存)は本デモの実装範囲外(セッションメモリのみ・リロードで消滅)
+// 永続化(localStorage保存)自体はこのフックの範囲外。呼び出し側(pages/index.tsx)が
+// finishEdit直前のeditingLayoutをlib/mock-loaderのpersistLayout経由で保存する
 import { useCallback, useMemo, useRef, useState } from 'react'
 import type { Facility, Seat, SeatLayout, Team } from './types'
 import type { LayoutAction, Rect } from './layout-actions'
@@ -84,7 +85,7 @@ export const useLayoutEditor = (sourceLayout: SeatLayout | undefined): UseLayout
     setChangedVersion((v) => v + 1)
   }, [])
 
-  // 完了: 差分は本デモではセッション内に留め永続化しない(01/02 非範囲の指示に従う)
+  // 完了: 保存(差分ありの場合)は呼び出し側で完了済みという前提でbaselineを畳む
   const finishEdit = useCallback(() => {
     restoreBaseline()
   }, [restoreBaseline])

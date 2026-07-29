@@ -19,6 +19,7 @@ import { TeamRelayoutModal } from '@/components/edit/TeamRelayoutModal'
 import { EditErrorToast } from '@/components/edit/EditErrorToast'
 import { DetailPanelProvider, useDetailPanel } from '@/lib/detail-panel-context'
 import { useEmployees, useFacilityMeetings, useSchedules, useSeatLayout } from '@/lib/mock-loader'
+import { fetchMock } from '@/lib/fetch-mock'
 import { deriveFacilityState } from '@/lib/facility-status'
 import type { FacilityState } from '@/lib/facility-status'
 import { computePresenceMap } from '@/lib/presence'
@@ -34,7 +35,7 @@ const FINISH_DELAY_MS = 400
 
 const SeatMapView = () => {
   const { openSeatDetail, openFacilityDetail } = useDetailPanel()
-  const { layout } = useSeatLayout()
+  const { layout, persistLayout, resetLayout } = useSeatLayout()
   const { data: employees } = useEmployees()
   const { data: schedules } = useSchedules()
   const { data: facilityMeetings } = useFacilityMeetings()
@@ -55,6 +56,9 @@ const SeatMapView = () => {
   // 07: 編集モード(ワーキングコピー+undoスタック+アクション発行)
   const editor = useLayoutEditor(layout)
   const [isSaving, setIsSaving] = useState(false)
+  // 07: 「完了」で保存が発生した時だけ表示する一過性トースト
+  const [saveToast, setSaveToast] = useState<string | null>(null)
+  const saveToastTimeoutRef = useRef<number | null>(null)
   // 座席1件のチーム変更シート対象(seatId)
   const [teamChangeSeatId, setTeamChangeSeatId] = useState<string | null>(null)
   // 座席削除確認ダイアログ対象(seatId)
@@ -145,22 +149,33 @@ const SeatMapView = () => {
   // 08: アバター編集モーダルを開く
   const handleOpenAvatarEditor = useCallback(() => openEditor(), [openEditor])
 
-  // 07: 「完了」— 差分なしならそのまま終了(本デモは永続化を行わずセッション内で完結)
+  // 07: 「完了」— baselineとの差分が無ければ何も保存せず終了。差分があればlocalStorageへ保存して終了
   const handleFinish = useCallback(() => {
-    if (editor.changedCount === 0) {
+    const layoutToSave = editor.editingLayout
+    if (editor.changedCount === 0 || !layoutToSave) {
       editor.finishEdit()
       return
     }
     setIsSaving(true)
-    window.setTimeout(() => {
+    // 400msの疑似遅延(01のfetchMock経由)。保存中は「完了」を無効化
+    fetchMock(true, FINISH_DELAY_MS).then(async () => {
+      await persistLayout(layoutToSave)
       setIsSaving(false)
       editor.finishEdit()
-    }, FINISH_DELAY_MS)
-  }, [editor])
+      setSaveToast('保存しました')
+      if (saveToastTimeoutRef.current !== null) window.clearTimeout(saveToastTimeoutRef.current)
+      saveToastTimeoutRef.current = window.setTimeout(() => setSaveToast(null), 2400)
+    })
+  }, [editor, persistLayout])
 
   const handleCancel = useCallback(() => {
     editor.cancelEdit()
   }, [editor])
+
+  // 07: 設定操作「レイアウトをリセット」— 保存分を削除して種データへ復帰
+  const handleResetLayout = useCallback(() => {
+    void resetLayout()
+  }, [resetLayout])
 
   // 07: 着席中は確認ダイアログを経由し、空席は即時削除(seat-delete発行)
   const handleSeatDeleteRequest = useCallback(
@@ -206,6 +221,17 @@ const SeatMapView = () => {
           </button>
           <span className='app-header-title'>座席マップ</span>
           <div className='app-header-right'>
+            {/* 07: レイアウトをリセット(保存分削除→種データ復元)。役割トグルの隣に設置 */}
+            <button
+              type='button'
+              className='app-header-btn'
+              aria-label='レイアウトをリセット'
+              onClick={handleResetLayout}
+            >
+              <span className='material-symbols-outlined' aria-hidden='true'>
+                restart_alt
+              </span>
+            </button>
             <EditModeToggle isEditMode={editor.isEditMode} onEnterEdit={editor.enterEditMode} />
             {selfAvatar && (
               <button
@@ -249,6 +275,7 @@ const SeatMapView = () => {
         onOpenAvatarEditor={handleOpenAvatarEditor}
       />
       {unassignedNotice && <div className='emp-dir-unassigned-toast'>{unassignedNotice}</div>}
+      {saveToast && <div className='emp-dir-unassigned-toast' role='status'>{saveToast}</div>}
       {!editor.isEditMode && effectiveLayout && (
         <TeamOverlay
           payload={teamOverlay}

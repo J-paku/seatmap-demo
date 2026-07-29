@@ -19,6 +19,7 @@ import { SEATMAP_BG_ID } from './SheetShell'
 import { AlignmentGuides } from './edit/AlignmentGuides'
 import { SeatActionBar } from './edit/SeatActionBar'
 import { UndoChip } from './edit/UndoChip'
+import { SeatCard } from './SeatCard'
 import { useTeamColorMap, resolveTeamColor } from '@/lib/team-colors'
 import type { Employee, PresenceStatus, Seat, SeatLayout } from '@/lib/types'
 import {
@@ -962,7 +963,9 @@ export const SeatMapCanvas = forwardRef<SeatMapCanvasHandle, Props>(function Sea
       onContextMenu={(e) => e.preventDefault()}
     >
       <div ref={layerRef} className='seat-map-transform' data-canvas-transform-layer='true'>
-        {/* z順: チームエリア → 施設/通路。原本は個人座席カードを描かず sr-only ミラーのみで表現する */}
+        {/* z順: チームエリア → 施設/通路 → (編集モードのみ)座席。閲覧モードは原本通り個人座席カードを描かず
+            sr-only ミラーのみで表現する。編集モードはドラッグ対象として座席カードを描画し、DOM順で
+            チーム箱より手前に置くことでクリック/ドラッグを座席側に優先させる */}
         {layout.teams.map((team) => {
           const colorEntry = resolveTeamColor(teamColorMap, team.id, team.name)
           // 11: 閲覧モードの座標は team.area(サーバ絶対座標)をそのまま使う。座席逆算はしない
@@ -999,6 +1002,31 @@ export const SeatMapCanvas = forwardRef<SeatMapCanvasHandle, Props>(function Sea
               onHover={onFacilityHover}
             />
         ))}
+        {/* 07: 座席カードは編集モード中のみ描画(ドラッグ対象を可視化)。閲覧モードは sr-only ミラーのみ */}
+        {isEditMode &&
+          layout.seats.map((seat) => {
+            const emp = seat.employeeId ? employeeById.get(seat.employeeId) ?? null : null
+            const status: PresenceStatus = emp ? presenceMap.get(emp.id) ?? 'present' : 'present'
+            // ドラッグ中の座席はライブ座標を優先表示(確定はpointerup時に1回のみ)
+            const displaySeat =
+              liveSeatPos && liveSeatPos.id === seat.id ? { ...seat, x: liveSeatPos.x, y: liveSeatPos.y } : seat
+            return (
+              <SeatCard
+                key={seat.id}
+                seat={displaySeat}
+                employee={emp}
+                status={status}
+                selected={seat.id === editSelectedSeatId}
+                pulsing={seat.id === pulsingSeatId}
+                lod={lod}
+                counterScale={counterScale}
+                onSelect={handleSeatSelect}
+                isEditMode={isEditMode}
+                isEditDragging={liveSeatPos?.id === seat.id}
+                onEditPointerDown={onSeatEditPointerDown}
+              />
+            )
+          })}
         {isEditMode && snapGuides.length > 0 && (
           <AlignmentGuides guides={snapGuides} viewBoxW={layout.viewBox.width} viewBoxH={layout.viewBox.height} />
         )}

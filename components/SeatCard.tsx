@@ -55,7 +55,11 @@ const SeatCardInner = ({
         height: seat.height,
         transform: seat.rotation ? `rotate(${seat.rotation}deg)` : undefined,
       }}
-      onClick={() => onSelect(seat.id)}
+      onClick={(e) => {
+        // 編集モードは選択がpointerdown側で確定済みのため、背景クリック(選択解除)への伝播を止める
+        if (isEditMode) e.stopPropagation()
+        onSelect(seat.id)
+      }}
       onPointerDown={isEditMode ? (e) => onEditPointerDown?.(seat.id, e) : undefined}
       role='button'
       tabIndex={-1}
