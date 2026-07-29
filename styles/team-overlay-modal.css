@@ -1,4 +1,7 @@
-/* 10-main-interactions: チームバウンダリクリックで開く大型オーバーレイ(座席グリッド) */
+/* 10-main-interactions: チームバウンダリクリックで開く大型オーバーレイ(座席グリッド)
+   形状分岐は JS の isCompactMobile(760px)が付ける .is-compact で行う。
+   閉じるボタン(640px)とドラッグハンドル(768px)だけは素の CSS ブレークポイントで、
+   結果として 641〜760px は「シート形状 + 閉じるボタン可視」が同時に成立する */
 
 .team-ovl-wrap {
   position: fixed;
@@ -9,7 +12,13 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: max(8px, env(safe-area-inset-top));
+  padding: max(8px, env(safe-area-inset-top)) max(8px, env(safe-area-inset-right))
+    max(8px, env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-left));
+}
+
+.team-ovl-wrap.is-compact {
+  align-items: flex-end;
+  padding: 0;
 }
 
 .team-ovl-backdrop {
@@ -33,7 +42,16 @@
   background: var(--color-surface-overlay);
   backdrop-filter: blur(18px);
   overflow: hidden;
+  overscroll-behavior: contain;
   animation: team-ovl-fade 0.2s ease-out, team-ovl-expand 0.3s cubic-bezier(0.2, 0.9, 0.2, 1);
+}
+
+.team-ovl-panel.is-compact {
+  width: 100vw;
+  height: 95dvh;
+  border-radius: 20px 20px 0 0;
+  border: 0;
+  box-shadow: none;
 }
 
 @keyframes team-ovl-fade {
@@ -77,6 +95,37 @@
   }
   100% {
     transform: translateX(350%);
+  }
+}
+
+/* ドラッグハンドル(Compact のみ描画・768px 以上では素の CSS でも消す) */
+.team-ovl-handle {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  touch-action: none;
+}
+
+.team-ovl-handle-bar {
+  width: 40px;
+  height: 4px;
+  border-radius: 9999px;
+  background: var(--color-border-strong);
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+@media (min-width: 768px) {
+  .team-ovl-handle {
+    display: none;
   }
 }
 
@@ -135,13 +184,24 @@
   background: var(--color-surface-muted);
 }
 
+/* 閉じるボタンは 640px 未満でのみ消える(isCompactMobile とは別ブレークポイント) */
+@media (max-width: 639px) {
+  .team-ovl-close {
+    display: none;
+  }
+}
+
 /* 本文 */
 .team-ovl-body {
   flex: 1;
   min-height: 0;
   overflow: auto;
   overscroll-behavior: contain;
-  padding: 12px;
+  padding: 14px;
+}
+
+.team-ovl-panel.is-compact .team-ovl-body {
+  padding: 14px 0;
 }
 
 .team-ovl-section {
@@ -149,6 +209,14 @@
   border: 1px solid var(--color-border);
   background: linear-gradient(165deg, var(--color-surface) 0%, var(--color-surface-sunken) 100%);
   padding: 12px;
+}
+
+.team-ovl-panel.is-compact .team-ovl-section {
+  border-radius: 0;
+  border-left: 0;
+  border-right: 0;
+  padding-left: 0;
+  padding-right: 0;
 }
 
 .team-ovl-section-head {
@@ -182,10 +250,26 @@
   margin-bottom: 10px;
 }
 
+/* グリッド枠(ヒントの配置基準) */
+.team-ovl-gridwrap {
+  position: relative;
+}
+
 .team-ovl-grid {
+  transition: opacity 0.2s ease;
+}
+
+/* Desktop: 縦横とも自前でスクロールする */
+.team-ovl-grid.is-desktop {
+  overflow: auto;
+}
+
+/* Compact: 横は自身で消費し、縦は親(シート本文)へ委譲する */
+.team-ovl-grid.is-compact {
   overflow-x: auto;
   overflow-y: hidden;
-  transition: opacity 0.2s ease;
+  touch-action: pan-x pan-y;
+  padding: 0 11px;
 }
 
 .team-ovl-grid.is-loading {
@@ -195,14 +279,44 @@
 
 .team-ovl-grid-inner {
   display: grid;
-  gap: 10px;
-  width: fit-content;
-  margin: 0 auto;
 }
 
-/* 座席カード(PC) */
+/* 横スクロールヒント */
+.team-ovl-hint {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 28px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 8px;
+  background: var(--color-surface-overlay);
+  color: var(--color-text-secondary);
+  box-shadow: var(--shadow-card);
+  pointer-events: none;
+}
+
+.team-ovl-hint.is-left {
+  left: 0;
+}
+
+.team-ovl-hint.is-right {
+  right: 0;
+}
+
+/* onNudge を受け取ったときだけ操作できる */
+.team-ovl-hint.is-button {
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+/* ── 座席カード(Desktop) ───────────────────────── */
 .team-ovl-card {
   position: relative;
+  width: 100%;
   height: 88px;
   border-radius: 12px;
   padding: 10px;
@@ -261,8 +375,6 @@
 
 .team-ovl-card-name {
   height: 28.8px;
-  display: flex;
-  align-items: center;
   font-size: 12px;
   font-weight: 700;
   line-height: 1.2;
@@ -306,10 +418,121 @@
   border-radius: 0;
 }
 
+/* 椅子(向きの可視化)。Compact には存在しない */
 .team-ovl-card-dir {
   flex-shrink: 0;
   width: 14px;
   height: 14px;
+  border-radius: 9999px;
+}
+
+/* ── 座席セル(Compact) ────────────────────────── */
+.team-ovl-cell {
+  position: relative;
+  width: 100%;
+  min-height: 96px;
+  border-radius: 10px;
+  padding: 8px 4px 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  cursor: pointer;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface-elevated);
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+  /* 押下中も縦横のパンを妨げない */
+  touch-action: pan-x pan-y;
+}
+
+.team-ovl-cell.is-empty {
+  border: 1px dashed var(--color-border);
+  background: var(--color-surface-sunken);
+  box-shadow: none;
+  justify-content: center;
+  cursor: default;
+}
+
+.team-ovl-cell.is-hit {
+  border: 2px solid #e9a93d;
+}
+
+.team-ovl-cell.is-glowing {
+  animation: team-ovl-glow 2200ms ease-out;
+}
+
+@keyframes team-ovl-glow {
+  0% {
+    box-shadow: 0 0 0 0 rgba(233, 169, 61, 0.55);
+  }
+  60% {
+    box-shadow: 0 0 0 6px rgba(233, 169, 61, 0.22);
+  }
+  100% {
+    box-shadow: var(--shadow-card);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .team-ovl-cell.is-glowing {
+    animation-duration: 420ms;
+  }
+}
+
+.team-ovl-cell-accent {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--color-accent);
+}
+
+.team-ovl-cell-avatar {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border-radius: 6px;
+  background: var(--color-surface-sunken);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.team-ovl-cell-name {
+  max-width: 100%;
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--color-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.team-ovl-cell-dept {
+  max-width: 100%;
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  opacity: 0.75;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.team-ovl-cell-status {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.team-ovl-cell-statusdot {
+  width: 6px;
+  height: 6px;
   border-radius: 9999px;
 }
 
@@ -323,25 +546,4 @@
   color: #6b4a12;
   font-size: 11px;
   font-weight: 800;
-}
-
-/* モバイル */
-@media (max-width: 760px) {
-  .team-ovl-wrap {
-    align-items: flex-end;
-    padding: 0;
-  }
-  .team-ovl-panel {
-    width: 100vw;
-    height: 95dvh;
-    border-radius: 20px 20px 0 0;
-    border: 0;
-    box-shadow: none;
-  }
-  .team-ovl-close {
-    display: none;
-  }
-  .team-ovl-card-statusdot {
-    border-radius: 9999px;
-  }
 }

@@ -1,12 +1,15 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { PixelAvatar } from './PixelAvatar'
+import { SeatGridFrame } from './team-overlay/SeatGridFrame'
+import { SheetDragHandle } from './team-overlay/SheetDragHandle'
 import { hexToRgba } from '@/lib/color'
-import { PRESENCE_LABEL } from '@/lib/types'
+import { COMPACT_SIDE_PADDING_PX, buildSeatGrid } from '@/lib/seat-grid'
 import type { Employee, PresenceStatus, Seat } from '@/lib/types'
+import { useIsCompactMobile } from '@/lib/use-compact-mobile'
 import { useSwipeDismiss } from '@/lib/use-swipe-dismiss'
 
 // 10: チームバウンダリクリックで開く大型オーバーレイ(座席グリッド全体)
 // クリックしたバウンダリ中心から膨らむように開く。中央固定拡大ではない
+// 幅 760px を境に、シェル形状・座席グリッド・入力モデルがまるごと切り替わる
 
 export type TeamOverlayPayload = {
   teamId: string
@@ -26,19 +29,7 @@ type Props = {
   onClearHighlight?: () => void
 }
 
-// 人の状態色(10-main-interactions の正本表・4種のみ保持)
-const STATUS_COLOR: Record<PresenceStatus, string> = {
-  present: '#16a34a',
-  meeting: '#2563eb',
-  out: '#d97706',
-  vacation: '#6b7280',
-}
-
-// PC グリッドの列数(座席数からおおよそ正方に近づける)
-const columnsFor = (count: number): number => {
-  if (count <= 1) return 1
-  return Math.min(count, Math.max(3, Math.ceil(Math.sqrt(count))))
-}
+const FOCUSABLE = 'a[href],button:not([disabled]),input:not([disabled]),textarea,select,[tabindex]:not([tabindex="-1"])'
 
 export const TeamOverlay = ({
   payload,
@@ -54,8 +45,13 @@ export const TeamOverlay = ({
   const [clickLocked, setClickLocked] = useState(true)
   const [syncedAt, setSyncedAt] = useState<string>('')
   const bodyRef = useRef<HTMLDivElement>(null)
-  // 表示中のみ有効化(下スワイプで閉じる)
-  const { sheetRef, bind } = useSwipeDismiss({ onClose, enabled: payload !== null, scrollGateRef: bodyRef })
+  const isCompactMobile = useIsCompactMobile()
+  // 表示中のみ有効化。下スワイプで閉じるのは Compact だけの挙動
+  const { sheetRef, bind } = useSwipeDismiss({
+    onClose,
+    enabled: payload !== null && isCompactMobile,
+    scrollGateRef: bodyRef,
+  })
 
   // オープン時: ローディングシミュレーション(300〜600ms)+ 350ms クリックロック
   useEffect(() => {
@@ -96,25 +92,48 @@ export const TeamOverlay = ({
     }
   }, [payload, onClose])
 
+  // フォーカストラップ(PC / モバイル共通)
+  useEffect(() => {
+    if (!payload) return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== 'Tab') return
+      const sheet = sheetRef.current
+      if (!sheet) return
+      const items = [...sheet.querySelectorAll<HTMLElement>(FOCUSABLE)].filter((el) => el.offsetParent !== null)
+      if (items.length === 0) return
+      const first = items[0]
+      const last = items[items.length - 1]
+      const activeEl = document.activeElement as HTMLElement | null
+      if (e.shiftKey && activeEl === first) {
+        e.preventDefault()
+        last.focus()
+      } else if (!e.shiftKey && activeEl === last) {
+        e.preventDefault()
+        first.focus()
+      }
+    }
+    document.addEventListener('keydown', onKey)
+    return () => document.removeEventListener('keydown', onKey)
+  }, [payload, sheetRef])
+
   const teamSeats = useMemo(
     () => (payload ? seats.filter((s) => s.teamId === payload.teamId) : []),
     [seats, payload]
   )
+  const grid = useMemo(() => buildSeatGrid(teamSeats), [teamSeats])
   const occupiedCount = useMemo(() => teamSeats.filter((s) => s.employeeId).length, [teamSeats])
-  const cols = columnsFor(teamSeats.length)
 
   if (!payload) return null
 
   const { teamColor, teamName, rect } = payload
-  // クリック位置から膨らむ拡大原点(8〜92%)
+  // クリック位置から膨らむ拡大原点(8〜92%)。PC / モバイル共通
   const originX = Math.min(92, Math.max(8, ((rect.left + rect.width / 2) / window.innerWidth) * 100))
   const originY = Math.min(92, Math.max(8, ((rect.top + rect.height / 2) / window.innerHeight) * 100))
-
-  const spotlight = highlightSeatId !== null
+  const sidePadding = isCompactMobile ? COMPACT_SIDE_PADDING_PX : 0
 
   return (
     <div
-      className='team-ovl-wrap'
+      className={`team-ovl-wrap${isCompactMobile ? ' is-compact' : ''}`}
       onClick={(e) => {
         // ラッパー余白クリックで閉じる(パネル自身のクリックは stopPropagation)
         if (e.target === e.currentTarget) onClose()
@@ -123,7 +142,7 @@ export const TeamOverlay = ({
       <div className='team-ovl-backdrop' onClick={onClose} />
       <div
         ref={sheetRef}
-        className='team-ovl-panel'
+        className={`team-ovl-panel${isCompactMobile ? ' is-compact' : ''}`}
         role='dialog'
         aria-modal='true'
         aria-label={`${teamName} 座席配置`}
@@ -135,10 +154,15 @@ export const TeamOverlay = ({
         {...bind}
       >
         {loading && <div className='team-ovl-loadbar' style={{ background: teamColor }} />}
+        {/* ハンドルは Compact のみ描画する */}
+        {isCompactMobile && <SheetDragHandle onClose={onClose} />}
         {/* ヘッダー */}
         <header
           className='team-ovl-header'
-          style={{ background: `linear-gradient(120deg, ${hexToRgba(teamColor, 0.13)} 0%, var(--color-surface) 42%, var(--color-surface) 100%)` }}
+          style={{
+            background: `linear-gradient(120deg, ${hexToRgba(teamColor, 0.13)} 0%, var(--color-surface) 42%, var(--color-surface) 100%)`,
+            paddingTop: isCompactMobile ? 28 : 12,
+          }}
         >
           <span
             className='team-ovl-dot'
@@ -156,73 +180,28 @@ export const TeamOverlay = ({
         {/* 本文 — 座席配置セクション */}
         <div ref={bodyRef} className='team-ovl-body'>
           <section className='team-ovl-section'>
-            <div className='team-ovl-section-head'>
+            {/* 中身は分岐しない。モバイルのときだけグリッド左右パディングに揃える */}
+            <div className='team-ovl-section-head' style={{ paddingLeft: sidePadding, paddingRight: sidePadding }}>
               <span className='material-symbols-outlined team-ovl-section-icon'>grid_view</span>
               <span className='team-ovl-section-title'>座席配置</span>
               <span className='team-ovl-section-count'>{teamSeats.length}席</span>
             </div>
-            <div className='team-ovl-sync'>
+            <div className='team-ovl-sync' style={{ paddingLeft: sidePadding, paddingRight: sidePadding }}>
               {loading ? '最新スケジュールを取得中…' : `最終取得 ${syncedAt}`}
             </div>
 
-            <div className={`team-ovl-grid${loading ? ' is-loading' : ''}`} aria-busy={loading}>
-              <div
-                className='team-ovl-grid-inner'
-                style={{ gridTemplateColumns: `repeat(${cols}, 180px)` }}
-              >
-                {teamSeats.map((seat) => {
-                  const emp = seat.employeeId ? employeeById.get(seat.employeeId) ?? null : null
-                  const status: PresenceStatus = emp ? presenceMap.get(emp.id) ?? 'present' : 'present'
-                  const isEmpty = !emp
-                  const isHit = highlightSeatId === seat.id
-                  const dimmed = spotlight && !isHit
-                  return (
-                    <button
-                      key={seat.id}
-                      type='button'
-                      className={`team-ovl-card${isEmpty ? ' is-empty' : ''}${isHit ? ' is-hit' : ''}`}
-                      disabled={isEmpty}
-                      style={{ opacity: dimmed ? 0.28 : 1 }}
-                      onClick={() => {
-                        if (isEmpty) return
-                        if (dimmed) {
-                          onClearHighlight?.()
-                          return
-                        }
-                        onSeatClick(seat.id)
-                      }}
-                    >
-                      {emp?.position && <span className='team-ovl-card-accent' />}
-                      <span className='team-ovl-card-avatar'>
-                        {emp ? <PixelAvatar config={emp.avatar} size={32} /> : null}
-                      </span>
-                      <span className='team-ovl-card-text'>
-                        <span className='team-ovl-card-name'>{emp ? emp.name : '空席'}</span>
-                        {emp?.position && <span className='team-ovl-card-position'>{emp.position}</span>}
-                        {emp && <span className='team-ovl-card-dept'>{teamName}</span>}
-                        {emp && (
-                          <span className='team-ovl-card-status'>
-                            <span className='team-ovl-card-statusdot' style={{ background: STATUS_COLOR[status] }} />
-                            <span style={{ color: STATUS_COLOR[status] }}>
-                              {loading ? '取得中…' : PRESENCE_LABEL[status]}
-                            </span>
-                          </span>
-                        )}
-                      </span>
-                      {isHit && <span className='team-ovl-hit'>HIT</span>}
-                      <span
-                        className='team-ovl-card-dir'
-                        style={{
-                          border: emp
-                            ? `1.5px solid ${hexToRgba(teamColor, 0.7)}`
-                            : '1.5px dashed var(--color-border-strong)',
-                        }}
-                      />
-                    </button>
-                  )
-                })}
-              </div>
-            </div>
+            <SeatGridFrame
+              isCompactMobile={isCompactMobile}
+              grid={grid}
+              employeeById={employeeById}
+              presenceMap={presenceMap}
+              teamName={teamName}
+              teamColor={teamColor}
+              loading={loading}
+              highlightSeatId={highlightSeatId}
+              onSeatClick={onSeatClick}
+              onClearHighlight={onClearHighlight}
+            />
           </section>
         </div>
       </div>
