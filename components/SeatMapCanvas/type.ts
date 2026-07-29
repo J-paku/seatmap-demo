@@ -82,7 +82,5 @@ export type Viewport = {
   startLoop: () => void
   lerpZoom: (deltaLevel: number, anchorX: number, anchorY: number) => void
   immediateZoom: (deltaLevel: number, anchorX: number, anchorY: number, overscroll?: boolean) => void
-  zoomButton: (delta: number) => void
-  resetView: () => void
   animateTo: (target: Transform, onDone?: () => void) => void
 }

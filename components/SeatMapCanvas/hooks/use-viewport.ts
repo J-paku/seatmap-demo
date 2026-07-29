@@ -145,23 +145,6 @@ export const useViewport = (): Viewport => {
     [applyTransform, commitSnap]
   )
 
-  const zoomButton = useCallback(
-    (delta: number) => {
-      const r = rect()
-      if (!r) return
-      cancelAnim()
-      lerpZoom(delta, r.width / 2, r.height / 2)
-    },
-    [rect, cancelAnim, lerpZoom]
-  )
-
-  const resetView = useCallback(() => {
-    cancelAnim()
-    const r = rect()
-    if (!r) return
-    animateTo(computeCompact(r.width, r.height))
-  }, [rect, cancelAnim, animateTo])
-
   // 初期コンパクト変換(マウント1回のみ)
   useLayoutEffect(() => {
     const el = containerRef.current
@@ -195,8 +178,6 @@ export const useViewport = (): Viewport => {
     startLoop,
     lerpZoom,
     immediateZoom,
-    zoomButton,
-    resetView,
     animateTo,
   }
 }

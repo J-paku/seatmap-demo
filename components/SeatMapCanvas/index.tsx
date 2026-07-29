@@ -7,6 +7,7 @@ import { useCanvasViewModel } from './hooks/use-canvas-view-model'
 import { useEditDrag } from './hooks/use-edit-drag'
 import { useSeatJump } from './hooks/use-seat-jump'
 import { useViewport } from './hooks/use-viewport'
+import { useZoomControls } from './hooks/use-zoom-controls'
 import type { SeatMapCanvasHandle, SeatMapCanvasProps } from './type'
 import { FacilityBlock } from '@/components/FacilityBlock'
 import { SeatMirrorLayer } from '@/components/SeatMirrorLayer'
@@ -47,6 +48,7 @@ export const SeatMapCanvas = forwardRef<SeatMapCanvasHandle, Props>(function Sea
   ref
 ) {
   const viewport = useViewport()
+  const zoom = useZoomControls(viewport)
   const { isPanningRef, handlers } = useCanvasPointer(viewport)
   const { pulsingSeatId, jumpToSeat } = useSeatJump(viewport)
   const edit = useEditDrag({ viewport, layout, isEditMode, onSeatMove, onTeamMove, onSeatEditSelect })
@@ -136,11 +138,7 @@ export const SeatMapCanvas = forwardRef<SeatMapCanvasHandle, Props>(function Sea
         onSelect={view.handleSeatSelect}
       />
       {/* 原本には常時表示の凡例パネルは無い(チーム名は各アイランドのラベル板で表示) */}
-      <ZoomControls
-        onZoomIn={() => viewport.zoomButton(1)}
-        onZoomOut={() => viewport.zoomButton(-1)}
-        onReset={viewport.resetView}
-      />
+      <ZoomControls onZoomIn={zoom.zoomIn} onZoomOut={zoom.zoomOut} onReset={zoom.reset} />
       {isEditMode && view.seatActionBarPos && edit.editSelectedSeatId && (
         <SeatActionBar
           x={view.seatActionBarPos.x}
