@@ -162,8 +162,14 @@
   outline-offset: 2px;
 }
 
-/* 05: ディレクトリジャンプ着地時の強調パルス(2200ms・アンバーグロー+軽微な浮上スケール) */
-.seat-card.is-jump-pulse {
+/* 05: ディレクトリジャンプ着地時の強調マーカー(座席カードは廃止済みのため、テキスト無し・
+   クリック不可の矩形のみをトランスフォーム層直下に描画してパルスさせる。2200ms・アンバー
+   グロー+軽微な浮上スケール) */
+.seat-jump-marker {
+  position: absolute;
+  box-sizing: border-box;
+  border-radius: 12px;
+  pointer-events: none;
   animation: seat-jump-pulse 2.2s ease-in-out;
 }
 
@@ -187,7 +193,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .seat-card.is-jump-pulse {
+  .seat-jump-marker {
     animation: seat-jump-pulse-reduced 0.42s ease-out;
   }
 }

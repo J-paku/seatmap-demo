@@ -28,12 +28,15 @@ const roleRank = (position?: string): number => {
 
 type DeptGroup = {
   teamName: string
+  // 部署名の読み(全角カタカナ)。かな検索でグループごと引っ掛けるための検索用フィールド(未所属は空文字)
+  teamKana: string
   members: Employee[]
 }
 
 // テンプレ: teamId→Team を解決し、teams.json 定義順+末尾「未所属」でグループ化
 const buildGroups = (employees: Employee[], teams: Team[]): DeptGroup[] => {
   const teamNameById = new Map(teams.map((t) => [t.id, t.name]))
+  const teamKanaByName = new Map(teams.map((t) => [t.name, t.kana]))
   const order = teams.map((t) => t.name)
   const buckets = new Map<string, Employee[]>()
   for (const emp of employees) {
@@ -48,7 +51,7 @@ const buildGroups = (employees: Employee[], teams: Team[]): DeptGroup[] => {
       if (r !== 0) return r
       return a.id.localeCompare(b.id)
     })
-    return { teamName, members }
+    return { teamName, teamKana: teamKanaByName.get(teamName) ?? '', members }
   })
 }
 
@@ -189,7 +192,9 @@ export const EmployeeDirectory = ({ isOpen, onClose, onSelectEmployee, onOpenAva
     if (!isSearching) return allGroups
     const result: DeptGroup[] = []
     for (const group of allGroups) {
-      const deptHit = normalizeForSearch(group.teamName).includes(normalizedQuery)
+      const deptHit =
+        normalizeForSearch(group.teamName).includes(normalizedQuery) ||
+        normalizeForSearch(group.teamKana).includes(normalizedQuery)
       if (deptHit) {
         result.push(group)
         continue
@@ -199,7 +204,7 @@ export const EmployeeDirectory = ({ isOpen, onClose, onSelectEmployee, onOpenAva
           normalizeForSearch(emp.name).includes(normalizedQuery) ||
           normalizeForSearch(emp.nameKana).includes(normalizedQuery)
       )
-      if (members.length > 0) result.push({ teamName: group.teamName, members })
+      if (members.length > 0) result.push({ teamName: group.teamName, teamKana: group.teamKana, members })
     }
     return result
   }, [allGroups, isSearching, normalizedQuery])

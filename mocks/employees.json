@@ -2,7 +2,7 @@
   {
     "id": "emp-001",
     "name": "営業部1",
-    "nameKana": "営業部1",
+    "nameKana": "エイギョウブ1",
     "teamId": "team-01",
     "position": "部長",
     "email": "aoyama001@example.co.jp",
@@ -21,7 +21,7 @@
   {
     "id": "emp-002",
     "name": "営業部2",
-    "nameKana": "営業部2",
+    "nameKana": "エイギョウブ2",
     "teamId": "team-01",
     "email": "shiraishi002@example.co.jp",
     "phone": "07065554145",
@@ -39,7 +39,7 @@
   {
     "id": "emp-003",
     "name": "営業部3",
-    "nameKana": "営業部3",
+    "nameKana": "エイギョウブ3",
     "teamId": "team-01",
     "email": "takahashi003@example.co.jp",
     "phone": "07080478090",
@@ -57,7 +57,7 @@
   {
     "id": "emp-004",
     "name": "営業部4",
-    "nameKana": "営業部4",
+    "nameKana": "エイギョウブ4",
     "teamId": "team-01",
     "position": "課長",
     "email": "tanaka004@example.co.jp",
@@ -76,7 +76,7 @@
   {
     "id": "emp-005",
     "name": "営業部5",
-    "nameKana": "営業部5",
+    "nameKana": "エイギョウブ5",
     "teamId": "team-01",
     "email": "nakamura005@example.co.jp",
     "phone": "09055676145",
@@ -94,7 +94,7 @@
   {
     "id": "emp-006",
     "name": "営業部6",
-    "nameKana": "営業部6",
+    "nameKana": "エイギョウブ6",
     "teamId": "team-01",
     "email": "fujii006@example.co.jp",
     "avatar": {
@@ -111,7 +111,7 @@
   {
     "id": "emp-007",
     "name": "営業部7",
-    "nameKana": "営業部7",
+    "nameKana": "エイギョウブ7",
     "teamId": "team-01",
     "email": "matsumoto007@example.co.jp",
     "phone": "08022212546",
@@ -129,7 +129,7 @@
   {
     "id": "emp-008",
     "name": "営業部8",
-    "nameKana": "営業部8",
+    "nameKana": "エイギョウブ8",
     "teamId": "team-01",
     "email": "inoue008@example.co.jp",
     "phone": "07034261229",
@@ -147,7 +147,7 @@
   {
     "id": "emp-009",
     "name": "営業部9",
-    "nameKana": "営業部9",
+    "nameKana": "エイギョウブ9",
     "teamId": "team-01",
     "email": "kimura009@example.co.jp",
     "phone": "08062147800",
@@ -165,7 +165,7 @@
   {
     "id": "emp-010",
     "name": "営業部10",
-    "nameKana": "営業部10",
+    "nameKana": "エイギョウブ10",
     "teamId": "team-01",
     "email": "hayashi010@example.co.jp",
     "phone": "07077377856",
@@ -183,7 +183,7 @@
   {
     "id": "emp-011",
     "name": "開発部1",
-    "nameKana": "開発部1",
+    "nameKana": "カイハツブ1",
     "teamId": "team-02",
     "position": "部長",
     "email": "shimizu011@example.co.jp",
@@ -202,7 +202,7 @@
   {
     "id": "emp-012",
     "name": "開発部2",
-    "nameKana": "開発部2",
+    "nameKana": "カイハツブ2",
     "teamId": "team-02",
     "email": "yamamoto012@example.co.jp",
     "phone": "08015583129",
@@ -220,7 +220,7 @@
   {
     "id": "emp-013",
     "name": "開発部3",
-    "nameKana": "開発部3",
+    "nameKana": "カイハツブ3",
     "teamId": "team-02",
     "email": "morita013@example.co.jp",
     "phone": "08068180014",
@@ -238,7 +238,7 @@
   {
     "id": "emp-014",
     "name": "開発部4",
-    "nameKana": "開発部4",
+    "nameKana": "カイハツブ4",
     "teamId": "team-02",
     "position": "課長",
     "email": "kobayashi014@example.co.jp",
@@ -257,7 +257,7 @@
   {
     "id": "emp-015",
     "name": "開発部5",
-    "nameKana": "開発部5",
+    "nameKana": "カイハツブ5",
     "teamId": "team-02",
     "email": "kato015@example.co.jp",
     "avatar": {
@@ -274,7 +274,7 @@
   {
     "id": "emp-016",
     "name": "開発部6",
-    "nameKana": "開発部6",
+    "nameKana": "カイハツブ6",
     "teamId": "team-02",
     "email": "yoshida016@example.co.jp",
     "avatar": {
@@ -291,7 +291,7 @@
   {
     "id": "emp-017",
     "name": "開発部7",
-    "nameKana": "開発部7",
+    "nameKana": "カイハツブ7",
     "teamId": "team-02",
     "email": "yamada017@example.co.jp",
     "phone": "07073217665",
@@ -309,7 +309,7 @@
   {
     "id": "emp-018",
     "name": "開発部8",
-    "nameKana": "開発部8",
+    "nameKana": "カイハツブ8",
     "teamId": "team-02",
     "email": "sasaki018@example.co.jp",
     "phone": "08043618276",
@@ -327,7 +327,7 @@
   {
     "id": "emp-019",
     "name": "開発部9",
-    "nameKana": "開発部9",
+    "nameKana": "カイハツブ9",
     "teamId": "team-02",
     "email": "yamaguchi019@example.co.jp",
     "phone": "09017811095",
@@ -345,7 +345,7 @@
   {
     "id": "emp-020",
     "name": "開発部10",
-    "nameKana": "開発部10",
+    "nameKana": "カイハツブ10",
     "teamId": "team-02",
     "email": "saito020@example.co.jp",
     "phone": "07088817473",
@@ -363,7 +363,7 @@
   {
     "id": "emp-021",
     "name": "総務部1",
-    "nameKana": "総務部1",
+    "nameKana": "ソウムブ1",
     "teamId": "team-03",
     "position": "部長",
     "email": "ikeda021@example.co.jp",
@@ -382,7 +382,7 @@
   {
     "id": "emp-022",
     "name": "総務部2",
-    "nameKana": "総務部2",
+    "nameKana": "ソウムブ2",
     "teamId": "team-03",
     "email": "hashimoto022@example.co.jp",
     "phone": "09032154708",
@@ -400,7 +400,7 @@
   {
     "id": "emp-023",
     "name": "総務部3",
-    "nameKana": "総務部3",
+    "nameKana": "ソウムブ3",
     "teamId": "team-03",
     "email": "ishikawa023@example.co.jp",
     "phone": "08081473887",
@@ -418,7 +418,7 @@
   {
     "id": "emp-024",
     "name": "総務部4",
-    "nameKana": "総務部4",
+    "nameKana": "ソウムブ4",
     "teamId": "team-03",
     "position": "課長",
     "email": "maeda024@example.co.jp",
@@ -437,7 +437,7 @@
   {
     "id": "emp-025",
     "name": "総務部5",
-    "nameKana": "総務部5",
+    "nameKana": "ソウムブ5",
     "teamId": "team-03",
     "email": "fujiwara025@example.co.jp",
     "phone": "08036924479",
@@ -455,7 +455,7 @@
   {
     "id": "emp-026",
     "name": "総務部6",
-    "nameKana": "総務部6",
+    "nameKana": "ソウムブ6",
     "teamId": "team-03",
     "email": "okada026@example.co.jp",
     "phone": "07071139990",
@@ -473,7 +473,7 @@
   {
     "id": "emp-027",
     "name": "総務部7",
-    "nameKana": "総務部7",
+    "nameKana": "ソウムブ7",
     "teamId": "team-03",
     "email": "goto027@example.co.jp",
     "phone": "07067006389",
@@ -491,7 +491,7 @@
   {
     "id": "emp-028",
     "name": "総務部8",
-    "nameKana": "総務部8",
+    "nameKana": "ソウムブ8",
     "teamId": "team-03",
     "email": "hasegawa028@example.co.jp",
     "avatar": {
@@ -508,7 +508,7 @@
   {
     "id": "emp-029",
     "name": "総務部9",
-    "nameKana": "総務部9",
+    "nameKana": "ソウムブ9",
     "teamId": "team-03",
     "email": "murakami029@example.co.jp",
     "phone": "07069676969",
@@ -526,7 +526,7 @@
   {
     "id": "emp-030",
     "name": "経理部1",
-    "nameKana": "経理部1",
+    "nameKana": "ケイリブ1",
     "teamId": "team-04",
     "position": "部長",
     "email": "kondo030@example.co.jp",
@@ -545,7 +545,7 @@
   {
     "id": "emp-031",
     "name": "経理部2",
-    "nameKana": "経理部2",
+    "nameKana": "ケイリブ2",
     "teamId": "team-04",
     "email": "aoyama031@example.co.jp",
     "phone": "09076554346",
@@ -563,7 +563,7 @@
   {
     "id": "emp-032",
     "name": "経理部3",
-    "nameKana": "経理部3",
+    "nameKana": "ケイリブ3",
     "teamId": "team-04",
     "email": "shiraishi032@example.co.jp",
     "phone": "09092991462",
@@ -581,7 +581,7 @@
   {
     "id": "emp-033",
     "name": "経理部4",
-    "nameKana": "経理部4",
+    "nameKana": "ケイリブ4",
     "teamId": "team-04",
     "position": "課長",
     "email": "takahashi033@example.co.jp",
@@ -599,7 +599,7 @@
   {
     "id": "emp-034",
     "name": "経理部5",
-    "nameKana": "経理部5",
+    "nameKana": "ケイリブ5",
     "teamId": "team-04",
     "email": "tanaka034@example.co.jp",
     "phone": "08041151655",
@@ -617,7 +617,7 @@
   {
     "id": "emp-035",
     "name": "経理部6",
-    "nameKana": "経理部6",
+    "nameKana": "ケイリブ6",
     "teamId": "team-04",
     "email": "nakamura035@example.co.jp",
     "phone": "09078395069",
@@ -635,7 +635,7 @@
   {
     "id": "emp-036",
     "name": "経理部7",
-    "nameKana": "経理部7",
+    "nameKana": "ケイリブ7",
     "teamId": "team-04",
     "email": "fujii036@example.co.jp",
     "avatar": {
@@ -652,7 +652,7 @@
   {
     "id": "emp-037",
     "name": "経理部8",
-    "nameKana": "経理部8",
+    "nameKana": "ケイリブ8",
     "teamId": "team-04",
     "email": "matsumoto037@example.co.jp",
     "phone": "09083429202",
@@ -670,7 +670,7 @@
   {
     "id": "emp-038",
     "name": "企画部1",
-    "nameKana": "企画部1",
+    "nameKana": "キカクブ1",
     "teamId": "team-05",
     "position": "部長",
     "email": "inoue038@example.co.jp",
@@ -689,7 +689,7 @@
   {
     "id": "emp-039",
     "name": "企画部2",
-    "nameKana": "企画部2",
+    "nameKana": "キカクブ2",
     "teamId": "team-05",
     "email": "kimura039@example.co.jp",
     "phone": "09020128555",
@@ -707,7 +707,7 @@
   {
     "id": "emp-040",
     "name": "企画部3",
-    "nameKana": "企画部3",
+    "nameKana": "キカクブ3",
     "teamId": "team-05",
     "email": "hayashi040@example.co.jp",
     "phone": "07056805725",
@@ -725,7 +725,7 @@
   {
     "id": "emp-041",
     "name": "企画部4",
-    "nameKana": "企画部4",
+    "nameKana": "キカクブ4",
     "teamId": "team-05",
     "position": "課長",
     "email": "shimizu041@example.co.jp",
@@ -744,7 +744,7 @@
   {
     "id": "emp-042",
     "name": "企画部5",
-    "nameKana": "企画部5",
+    "nameKana": "キカクブ5",
     "teamId": "team-05",
     "email": "yamamoto042@example.co.jp",
     "phone": "09076529094",
@@ -762,7 +762,7 @@
   {
     "id": "emp-043",
     "name": "企画部6",
-    "nameKana": "企画部6",
+    "nameKana": "キカクブ6",
     "teamId": "team-05",
     "email": "morita043@example.co.jp",
     "avatar": {
@@ -779,7 +779,7 @@
   {
     "id": "emp-044",
     "name": "企画部7",
-    "nameKana": "企画部7",
+    "nameKana": "キカクブ7",
     "teamId": "team-05",
     "email": "kobayashi044@example.co.jp",
     "phone": "09038651007",

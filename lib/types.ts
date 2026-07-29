@@ -30,6 +30,8 @@ export type Team = {
   // 11: 座席ID接頭辞。seat.id.startsWith(idPrefix + '-') が座席↔チーム結束の唯一のキー
   idPrefix: string
   name: string
+  // 部署名の読み(全角カタカナ)。かな検索で部署名グループを引っ掛けるための検索用フィールド
+  kana: string
   color: string
   area: { x: number; y: number; w: number; h: number }
 }

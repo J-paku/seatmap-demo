@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { MouseEvent as ReactMouseEvent, RefObject } from 'react'
 
 // スワイプ閉じ判定のしきい値(実測: SheetShellから移植)
@@ -16,15 +16,35 @@ type SwipeDismissBind = {
   onClickCapture: (e: ReactMouseEvent<HTMLDivElement>) => void
 }
 
+// callback refとして要素へ渡しつつ.currentで直接ノード参照もできるハイブリッド型。
+// 条件付きレンダーで要素が後からマウントされても、着脱をエフェクトの再実行に繋げるために使う
+type SheetRefCallback = {
+  (node: HTMLDivElement | null): void
+  current: HTMLDivElement | null
+}
+
 type UseSwipeDismissResult = {
-  sheetRef: RefObject<HTMLDivElement | null>
+  sheetRef: SheetRefCallback
   bind: SwipeDismissBind
 }
 
 // Pointer Eventはtouch-actionの判定でブラウザにスクロールを先取りされpointercancelが飛ぶため、
 // { passive: false }のネイティブtouchイベント + preventDefaultで確実にジェスチャーを主張する
 export const useSwipeDismiss = ({ onClose, enabled = true, scrollGateRef }: UseSwipeDismissOptions): UseSwipeDismissResult => {
-  const sheetRef = useRef<HTMLDivElement>(null)
+  // 通常のuseRefはReactがcurrentへ書き込んでも再レンダーを起こさないため、
+  // 要素が後からマウント/アンマウントされたことを検知できるようstateのtickも併用する
+  const [mountTick, setMountTick] = useState(0)
+
+  // callback ref本体はuseStateの初期化関数で一度だけ生成し、以後は同じ関数参照を保つ
+  // (レンダー中のref.current読み取りを避けつつ、呼び出し側のref={sheetRef}を安定させる)
+  const [sheetRef] = useState<SheetRefCallback>(() => {
+    const callback = ((node: HTMLDivElement | null) => {
+      callback.current = node
+      setMountTick((tick) => tick + 1)
+    }) as SheetRefCallback
+    callback.current = null
+    return callback
+  })
 
   const drag = useRef({
     active: false,
@@ -178,7 +198,10 @@ export const useSwipeDismiss = ({ onClose, enabled = true, scrollGateRef }: UseS
       el.removeEventListener('touchend', onTouchEnd)
       el.removeEventListener('touchcancel', onTouchCancel)
     }
-  }, [enabled, scrollGateRef])
+    // mountTickはcallback refが呼ばれるたび(要素の着脱時)に増分され、
+    // 後からマウントされた要素にもリスナーを付け直すためのトリガーとして依存に含める
+    // sheetRefは初回生成後に不変(useStateの遅延初期化で1回だけ生成)なので依存に含めても再実行は増えない
+  }, [enabled, scrollGateRef, mountTick, sheetRef])
 
   const onClickCapture = (e: ReactMouseEvent<HTMLDivElement>) => {
     if (drag.current.suppressClick) {

@@ -38,14 +38,15 @@ const GIVENS = [
 
 // チーム定義(名称順が定義順 team-01..05)
 // idPrefix: 座席ID接頭辞(11-layout-pipeline.md — seat.id.startsWith(idPrefix + '-') が唯一の結束キー)
+// kana: 部署名の読み(全角カタカナ)。かな検索用。社員 nameKana(=kana+連番)の元にもなる
 // size: 箱幅算出専用の想定列数(座席2行化に合わせて箱高だけ変更・幅はここを据え置いて7/7/6/6/5列を維持)
 // empCount: 実際の社員数(再席率70%前後に合わせて size とは独立に増員)
 const TEAM_DEFS = [
-  { name: '営業部', size: 8, empCount: 10, idPrefix: 'dept-sales' },
-  { name: '開発部', size: 8, empCount: 10, idPrefix: 'dept-dev' },
-  { name: '総務部', size: 7, empCount: 9, idPrefix: 'dept-general' },
-  { name: '経理部', size: 7, empCount: 8, idPrefix: 'dept-account' },
-  { name: '企画部', size: 6, empCount: 7, idPrefix: 'dept-planning' },
+  { name: '営業部', kana: 'エイギョウブ', size: 8, empCount: 10, idPrefix: 'dept-sales' },
+  { name: '開発部', kana: 'カイハツブ', size: 8, empCount: 10, idPrefix: 'dept-dev' },
+  { name: '総務部', kana: 'ソウムブ', size: 7, empCount: 9, idPrefix: 'dept-general' },
+  { name: '経理部', kana: 'ケイリブ', size: 7, empCount: 8, idPrefix: 'dept-account' },
+  { name: '企画部', kana: 'キカクブ', size: 6, empCount: 7, idPrefix: 'dept-planning' },
 ]
 
 // 携帯電話番号プレフィックス(070/080/090)
@@ -151,7 +152,7 @@ TEAM_DEFS.forEach((def, i) => {
   const areaX = 30
   const areaY = BAND_TOP + i * BAND_PITCH
   const area = { x: areaX, y: areaY, w: areaW, h: AREA_H }
-  teams.push({ id: teamId, idPrefix, name: def.name, color, area })
+  teams.push({ id: teamId, idPrefix, name: def.name, kana: def.kana, color, area })
 
   // 余白20・列ピッチ123・行ピッチ95で実際に入る列数/行数を capacity 式から算出
   const colsMax = Math.floor((areaW - 2 * LAYOUT_PADDING + 18) / PITCH_X)
@@ -209,12 +210,13 @@ TEAM_DEFS.forEach((def, ti) => {
         outfit: OUTFIT_COLORS[gi % OUTFIT_COLORS.length],
       },
     }
-    // 表示名は実名ではなく「部署名+連番」(例: 営業部1)。検索用 nameKana も同値
+    // 表示名は実名ではなく「部署名+連番」(例: 営業部1)。nameKana は「部署名の読み+同じ連番」(例: エイギョウブ1)
     const displayName = `${def.name}${local + 1}`
+    const nameKana = `${def.kana}${local + 1}`
     const emp = {
       id,
       name: displayName,
-      nameKana: displayName,
+      nameKana,
       teamId,
       ...(position ? { position } : {}),
       email: `${surnameRoman}${pad3(empSeq)}@example.co.jp`,

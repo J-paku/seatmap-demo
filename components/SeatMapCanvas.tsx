@@ -664,6 +664,14 @@ export const SeatMapCanvas = forwardRef<SeatMapCanvasHandle, Props>(function Sea
   const lod = lodOf(scaleSnap)
   const counterScale = useMemo(() => clamp(0.8 / scaleSnap, 1, 2), [scaleSnap])
 
+  // 05: パルス中の座席の絶対座標(sr-only化で個人カードが無いため、着地マーカーは座席の x/y/width/height から直接算出する)
+  const pulsingSeatRect = useMemo(() => {
+    if (!pulsingSeatId) return null
+    const seat = layout.seats.find((s) => s.id === pulsingSeatId)
+    if (!seat) return null
+    return { x: seat.x, y: seat.y, width: seat.width, height: seat.height }
+  }, [pulsingSeatId, layout.seats])
+
   // 11: チームラベルの N名 は「seat.id が team.idPrefix + '-' で始まり employeeId が非null」の件数
   const assignedCountByTeam = useMemo(() => {
     const map = new Map<string, number>()
@@ -993,6 +1001,20 @@ export const SeatMapCanvas = forwardRef<SeatMapCanvasHandle, Props>(function Sea
         ))}
         {isEditMode && snapGuides.length > 0 && (
           <AlignmentGuides guides={snapGuides} viewBoxW={layout.viewBox.width} viewBoxH={layout.viewBox.height} />
+        )}
+        {/* 05: ジャンプ着地パルス。テキスト無し・クリック不可の矩形のみ(座席カード復活ではない) */}
+        {pulsingSeatRect && (
+          <div
+            key={pulsingSeatId}
+            className='seat-jump-marker'
+            aria-hidden='true'
+            style={{
+              left: pulsingSeatRect.x,
+              top: pulsingSeatRect.y,
+              width: pulsingSeatRect.width,
+              height: pulsingSeatRect.height,
+            }}
+          />
         )}
       </div>
       {/* 座席は個人カードとして描画しない。sr-only ミラー層のみがキーボード/スクリーンリーダー経路を提供する */}
