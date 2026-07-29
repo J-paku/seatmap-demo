@@ -56,6 +56,9 @@ const aiIndexOf = (text: string): number => {
   return sum % AI_CANDIDATES.length
 }
 
+// ローディング演出中に切り替わる2種の文言(合計1.5秒を等分)
+const AI_LOADING_MESSAGES = ['イメージを解析中…', 'ドットを配置中…']
+const AI_LOADING_MS = 1500
 
 // ── ミニプレビュー付きパーツチップ行 ───────────────────
 
@@ -127,10 +130,14 @@ type ModalProps = {
 const AvatarCustomizerModal = ({ initial, onSave, onClose }: ModalProps) => {
   const [draft, setDraft] = useState<AvatarConfig>(() => cloneAvatar(initial))
   const [aiRequestText, setAiRequestText] = useState('')
+  // AIスタジオのステップ('home'=CTAのみ / 'compose'=入力 / 'loading'=演出中)
+  const [aiView, setAiView] = useState<'home' | 'compose' | 'loading'>('home')
+  const [aiLoadingPhase, setAiLoadingPhase] = useState(0)
   const [toast, setToast] = useState<string | null>(null)
   const closeBtnRef = useRef<HTMLButtonElement>(null)
   const backdropRef = useRef<HTMLDivElement>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
+  const aiTimersRef = useRef<number[]>([])
 
   const { sheetRef: dialogRef, bind } = useSwipeDismiss({ onClose, scrollGateRef: scrollRef })
 
@@ -193,9 +200,20 @@ const AvatarCustomizerModal = ({ initial, onSave, onClose }: ModalProps) => {
     return match?.id ?? null
   }, [draft])
 
+  // 予約済みの AI 演出タイマーを全解除
+  const clearAiTimers = () => {
+    aiTimersRef.current.forEach((id) => window.clearTimeout(id))
+    aiTimersRef.current = []
+  }
+
+  // アンマウント時(モーダルを閉じた時含む)に演出タイマーを掃除
+  useEffect(() => () => clearAiTimers(), [])
+
   const runReset = () => {
     setDraft(cloneAvatar(initial))
     setAiRequestText('')
+    clearAiTimers()
+    setAiView('home')
   }
 
   const runSave = () => {
@@ -204,12 +222,22 @@ const AvatarCustomizerModal = ({ initial, onSave, onClose }: ModalProps) => {
     window.setTimeout(onClose, 700)
   }
 
-  // AI生成モック: 入力を打てば即座に固定候補から反映(ステップ・ローディングなし)
+  // AI生成モック: compose→1.5秒のローディング演出(文言2段切替)→固定候補から反映
   const runGenerate = () => {
     if (!aiRequestText.trim()) return
-    setDraft(cloneAvatar(AI_CANDIDATES[aiIndexOf(aiRequestText)]))
-    setToast('生成しました')
-    window.setTimeout(() => setToast(null), 1400)
+    clearAiTimers()
+    setAiView('loading')
+    setAiLoadingPhase(0)
+    const half = AI_LOADING_MS / 2
+    const t1 = window.setTimeout(() => setAiLoadingPhase(1), half)
+    const t2 = window.setTimeout(() => {
+      setDraft(cloneAvatar(AI_CANDIDATES[aiIndexOf(aiRequestText)]))
+      setAiView('home')
+      setToast('生成しました')
+      const t3 = window.setTimeout(() => setToast(null), 1400)
+      aiTimersRef.current.push(t3)
+    }, AI_LOADING_MS)
+    aiTimersRef.current.push(t1, t2)
   }
 
   return (
@@ -257,25 +285,56 @@ const AvatarCustomizerModal = ({ initial, onSave, onClose }: ModalProps) => {
                 ))}
               </div>
 
-              {/* AIスタジオ(モック): チャットを打てば即座に生成 */}
+              {/* AIスタジオ(モック): home→compose→loading の3ビューで遷移 */}
               <div className='ac-ai-studio'>
-                <div className='ac-ai-head'>
-                  <span className='ac-ai-badge'>AI</span>
-                  <span className='ac-ai-title'>AIキャラを作る（Beta）</span>
-                </div>
-                <textarea
-                  className='ac-ai-textarea'
-                  value={aiRequestText}
-                  onChange={(e) => setAiRequestText(e.target.value)}
-                  onKeyDown={(e) => {
-                    // Enter(Shift無し)で即生成
-                    if (e.key === 'Enter' && !e.shiftKey) {
-                      e.preventDefault()
-                      runGenerate()
-                    }
-                  }}
-                  placeholder='希望する雰囲気・髪型・表情を打つとすぐ生成(例: クールな短髪)'
-                />
+                {aiView === 'home' && (
+                  <button type='button' className='ac-ai-cta' onClick={() => setAiView('compose')}>
+                    <span className='ac-ai-badge'>AI</span>
+                    AIキャラを作る（Beta）
+                  </button>
+                )}
+
+                {aiView === 'compose' && (
+                  <div className='ac-ai-compose'>
+                    <h3 className='ac-ai-title'>どんなキャラクターにしたいですか？</h3>
+                    <textarea
+                      className='ac-ai-textarea'
+                      value={aiRequestText}
+                      onChange={(e) => setAiRequestText(e.target.value)}
+                      placeholder='ここに希望するアバターの雰囲気・髪型・表情などを直接書いてください'
+                    />
+                    <div className='ac-ai-actions'>
+                      <button type='button' className='ac-btn-ghost' onClick={() => setAiView('home')}>
+                        戻る
+                      </button>
+                      <button
+                        type='button'
+                        className='ac-btn-primary'
+                        disabled={!aiRequestText.trim()}
+                        onClick={runGenerate}
+                      >
+                        生成する
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {aiView === 'loading' && (
+                  <div className='ac-ai-compose'>
+                    <div className='ac-ai-loading'>
+                      <span className='ac-spinner' aria-hidden='true' />
+                      <span>{AI_LOADING_MESSAGES[aiLoadingPhase]}</span>
+                    </div>
+                    <div className='ac-ai-actions'>
+                      <button type='button' className='ac-btn-ghost' disabled>
+                        戻る
+                      </button>
+                      <button type='button' className='ac-btn-primary' disabled>
+                        生成する
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 

@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useMemo, useState } from 'react'
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
 import type { AvatarConfig } from './types'
 import { useEmployees } from './mock-loader'
@@ -48,9 +48,16 @@ const readStored = (): AvatarConfig | null => {
 }
 
 export const SelfAvatarProvider = ({ children }: { children: ReactNode }) => {
-  const [override, setOverride] = useState<AvatarConfig | null>(() => readStored())
+  // 初回レンダーは SSR と一致させるため常に null(=シード表示)から始め、
+  // マウント後に1回だけ localStorage を読んで反映する(ハイドレーション不一致回避)
+  const [override, setOverride] = useState<AvatarConfig | null>(null)
   const [isEditorOpen, setEditorOpen] = useState(false)
   const { data: employees } = useEmployees()
+
+  useEffect(() => {
+    const stored = readStored()
+    if (stored) setOverride(stored)
+  }, [])
 
   // 本人のシードアバター(employees.json 由来)
   const seedSelf = useMemo(

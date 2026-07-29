@@ -272,14 +272,6 @@
   flex-direction: column;
   gap: 8px;
 }
-.ac-ai-head {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 14px;
-  font-weight: 700;
-  color: var(--color-accent-hover);
-}
 .ac-ai-cta {
   width: 100%;
   display: flex;
