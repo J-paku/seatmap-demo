@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { cloneAvatar } from '../utils/clone-avatar'
 import { matchPresetId } from '../utils/avatar-options'
-import type { AvatarConfig } from '@/lib/types'
+import type { AvatarConfig } from '@/types'
 
 // 編集中のアバター(draft)とパーツ・色の差し替え口
 

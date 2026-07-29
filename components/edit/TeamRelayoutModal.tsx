@@ -1,7 +1,7 @@
 // 07-admin-edit: チームレイアウトエディタ(チームラベルタップ時のモーダル) — 行・列ステッパー+適用/閉じる
 import { useState } from 'react'
-import type { Team } from '@/lib/types'
-import { useSwipeDismiss } from '@/lib/use-swipe-dismiss'
+import type { Team } from '@/types'
+import { useSwipeDismiss } from '@/hooks/use-swipe-dismiss'
 
 type Props = {
   team: Team

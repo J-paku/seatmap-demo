@@ -1,4 +1,4 @@
-import { useDateSwipe } from './lib/use-date-swipe'
+import { useDateSwipe } from './hooks/use-date-swipe'
 import type { SwipeDateStageProps } from './type'
 
 // 予定カードを左右スワイプで前日/翌日へ送る台。ジェスチャーと演出は useDateSwipe が持つ

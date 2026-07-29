@@ -1,5 +1,5 @@
-import { scheduleTimeLabel } from '@/lib/format'
-import type { ScheduleEvent } from '@/lib/types'
+import { scheduleTimeLabel } from '@/utils/format'
+import type { ScheduleEvent } from '@/types'
 
 // 予定カードの中身。エラー・一覧・空・ローディングの出し分けだけを持つ
 

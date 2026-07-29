@@ -1,6 +1,6 @@
 // 07-admin-edit: 編集レイアウトのlocalStorage永続化(原本のサーバ保存をデモ用に代替)
 // 「保存処理」自体はこのファイルに閉じ、mock-loaderのSWRキャッシュ連携から呼び出す
-import type { SeatLayout } from './types'
+import type { SeatLayout } from '@/types'
 
 // 仕様書07明記のキー
 export const LAYOUT_STORAGE_KEY = 'seatmap-demo/layout'

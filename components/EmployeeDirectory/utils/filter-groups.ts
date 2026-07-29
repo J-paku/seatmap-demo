@@ -1,4 +1,4 @@
-import { normalizeForSearch } from '@/lib/kana'
+import { normalizeForSearch } from '@/utils/kana'
 import type { DeptGroup } from '../type'
 
 // 部署名ヒットは全員維持・非ヒットは社員単位でフィルタ

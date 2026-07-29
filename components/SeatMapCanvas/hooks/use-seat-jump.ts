@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { Viewport } from './use-viewport'
 import { PULSE_DURATION_MS, PULSE_REDUCED_MS, prefersReducedMotion } from '../utils/canvas-metrics'
-import type { Seat } from '@/lib/types'
-import type { Transform } from '@/lib/geometry'
+import type { Seat } from '@/types'
+import type { Transform } from '@/utils/geometry'
 
 // 05: ディレクトリ選択 → 座席中心へパン+ズーム → パルス強調(reduced-motion 対応)
 

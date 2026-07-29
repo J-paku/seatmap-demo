@@ -1,5 +1,5 @@
-import type { Employee, PresenceStatus, Seat, SeatLayout } from '@/lib/types'
-import type { FacilityState } from '@/lib/facility-status'
+import type { Employee, PresenceStatus, Seat, SeatLayout } from '@/types'
+import type { FacilityState } from '@/utils/facility-status'
 import type { FacilityHoverPayload } from '@/components/FacilityHoverCard'
 import type { TeamOverlayPayload } from '@/components/TeamOverlay'
 

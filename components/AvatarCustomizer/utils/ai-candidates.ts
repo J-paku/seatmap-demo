@@ -1,4 +1,4 @@
-import type { AvatarConfig } from '@/lib/types'
+import type { AvatarConfig } from '@/types'
 
 // AI生成モックの固定候補12件(外見が重ならないようキュレーション)
 export const AI_CANDIDATES: AvatarConfig[] = [

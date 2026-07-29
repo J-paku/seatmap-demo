@@ -1,4 +1,4 @@
-import type { Employee, Seat } from '@/lib/types'
+import type { Employee, Seat } from '@/types'
 
 export type EmployeeDirectoryProps = {
   isOpen: boolean

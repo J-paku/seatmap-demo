@@ -1,6 +1,7 @@
 import { TeamArea } from '@/components/TeamArea'
-import { resolveTeamColor, useTeamColorMap } from '@/lib/team-colors'
-import type { SeatLayout } from '@/lib/types'
+import { resolveTeamColor } from '@/utils/team-colors'
+import { useTeamColorMap } from '@/hooks/use-team-color-map'
+import type { SeatLayout } from '@/types'
 import type { PointerEvent as ReactPointerEvent } from 'react'
 import type { Lod, LivePosition } from '../type'
 

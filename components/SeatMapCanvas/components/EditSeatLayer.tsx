@@ -1,5 +1,5 @@
 import { SeatCard } from '@/components/SeatCard'
-import type { Employee, PresenceStatus, SeatLayout } from '@/lib/types'
+import type { Employee, PresenceStatus, SeatLayout } from '@/types'
 import type { PointerEvent as ReactPointerEvent } from 'react'
 import type { Lod, LivePosition } from '../type'
 

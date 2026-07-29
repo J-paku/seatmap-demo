@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { AI_CANDIDATES, AI_LOADING_MS, aiIndexOf } from '../utils/ai-candidates'
 import { cloneAvatar } from '../utils/clone-avatar'
-import type { AvatarConfig } from '@/lib/types'
+import type { AvatarConfig } from '@/types'
 import type { AiView } from '../type'
 
 // AI生成モック。通信は一切せず、要望テキストのコードポイント和で固定候補から1件選ぶ

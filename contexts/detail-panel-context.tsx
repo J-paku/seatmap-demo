@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
-import { useSeats } from './mock-loader'
+import { useSeats } from '@/lib/mock-loader'
 
 // 03: 詳細パネル開き状態(全て null=閉)
 export type DetailPanelState = {

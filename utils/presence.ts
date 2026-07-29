@@ -1,4 +1,4 @@
-import type { PresenceStatus, ScheduleEvent } from './types'
+import type { PresenceStatus, ScheduleEvent } from '@/types'
 
 // 同時進行時の優先度(vacation > out > meeting)
 const RANK: Record<'meeting' | 'out' | 'vacation', number> = {

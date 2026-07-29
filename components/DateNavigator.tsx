@@ -1,7 +1,8 @@
 import { useRef, useState } from 'react'
 import { CalendarPopover } from './CalendarPopover'
-import { jstWeekday, useSelectedDate } from '@/lib/selected-date-context'
-import type { JstDate } from '@/lib/selected-date-context'
+import { useSelectedDate } from '@/contexts/selected-date-context'
+import { jstWeekday } from '@/utils/jst-date'
+import type { JstDate } from '@/utils/jst-date'
 
 const WEEKDAY_KANJI = ['日', '月', '火', '水', '木', '金', '土']
 

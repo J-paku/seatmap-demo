@@ -1,9 +1,9 @@
 import Head from 'next/head'
 import { useRouter } from 'next/router'
 import { SeatMapView } from '@/components/SeatMapView'
-import { DetailPanelProvider } from '@/lib/detail-panel-context'
-import { SelectedDateProvider } from '@/lib/selected-date-context'
-import { SelfAvatarProvider } from '@/lib/self-avatar-context'
+import { DetailPanelProvider } from '@/contexts/detail-panel-context'
+import { SelectedDateProvider } from '@/contexts/selected-date-context'
+import { SelfAvatarProvider } from '@/contexts/self-avatar-context'
 
 const SITE_URL = 'https://j-paku.github.io/seatmap-demo/'
 const SITE_TITLE = 'seat-map デモ'

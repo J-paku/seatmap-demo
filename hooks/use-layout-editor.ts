@@ -2,8 +2,8 @@
 // 永続化(localStorage保存)自体はこのフックの範囲外。呼び出し側(pages/index.tsx)が
 // finishEdit直前のeditingLayoutをlib/mock-loaderのpersistLayout経由で保存する
 import { useCallback, useMemo, useRef, useState } from 'react'
-import type { Facility, Seat, SeatLayout, Team } from './types'
-import type { LayoutAction, Rect } from './layout-actions'
+import type { Facility, Seat, SeatLayout, Team } from '@/types'
+import type { LayoutAction, Rect } from '@/utils/layout-actions'
 import {
   DEFAULT_SEAT_HEIGHT,
   DEFAULT_SEAT_WIDTH,
@@ -13,7 +13,7 @@ import {
   rectOf,
   rectsIntersect,
   relayoutSeatsInGrid,
-} from './layout-actions'
+} from '@/utils/layout-actions'
 
 // undo 用スナップショット(アクション適用直前の関連部分のみ保持)
 type UndoEntry = { seats: Seat[]; teams: Team[] }

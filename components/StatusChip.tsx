@@ -1,5 +1,5 @@
-import type { PresenceStatus } from '@/lib/types'
-import { PRESENCE_LABEL } from '@/lib/types'
+import type { PresenceStatus } from '@/types'
+import { PRESENCE_LABEL } from '@/types'
 
 type PresenceBadgeProps = {
   // 表示可否(仮想座席・非当日は呼び出し側で false を渡す=優先度1)

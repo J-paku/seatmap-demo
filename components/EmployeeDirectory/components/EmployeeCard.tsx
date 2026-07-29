@@ -1,6 +1,6 @@
 import { PixelAvatar } from '@/components/PixelAvatar'
-import { SELF_EMPLOYEE_ID } from '../utils/directory-constants'
-import type { AvatarConfig, Employee } from '@/lib/types'
+import { SELF_EMPLOYEE_ID } from '@/utils/demo-identity'
+import type { AvatarConfig, Employee } from '@/types'
 
 // 社員1件のカード。本文タップで詳細・右端の★でお気に入り
 

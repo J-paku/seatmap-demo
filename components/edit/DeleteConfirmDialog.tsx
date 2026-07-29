@@ -1,5 +1,5 @@
 // 07-admin-edit: 削除確認ダイアログ(着席中は着席者名を表示して警告)
-import { useSwipeDismiss } from '@/lib/use-swipe-dismiss'
+import { useSwipeDismiss } from '@/hooks/use-swipe-dismiss'
 
 type Props = {
   employeeName: string | null

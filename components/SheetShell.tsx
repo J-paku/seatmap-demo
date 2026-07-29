@@ -1,8 +1,8 @@
 import { useEffect, useId, useRef } from 'react'
 import type { ReactNode } from 'react'
-import { useBodyScrollLock } from '@/lib/use-body-scroll-lock'
-import { useBackgroundInert } from '@/lib/use-background-inert'
-import { useSwipeDismiss } from '@/lib/use-swipe-dismiss'
+import { useBodyScrollLock } from '@/hooks/use-body-scroll-lock'
+import { useBackgroundInert } from '@/hooks/use-background-inert'
+import { useSwipeDismiss } from '@/hooks/use-swipe-dismiss'
 
 export const SEATMAP_BG_ID = 'seatmap-bg-root'
 

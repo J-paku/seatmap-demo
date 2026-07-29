@@ -1,10 +1,10 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
-import type { AvatarConfig } from './types'
-import { useEmployees } from './mock-loader'
+import type { AvatarConfig } from '@/types'
+import { useEmployees } from '@/lib/mock-loader'
+import { SELF_EMPLOYEE_ID } from '@/utils/demo-identity'
 
 // 08: 本人(emp-001 固定)アバターの共有状態。localStorage 永続 + 全画面伝播 + 編集モーダル開閉
-export const SELF_EMPLOYEE_ID = 'emp-001'
 const STORAGE_KEY = 'seatmap-demo:avatar:emp-001'
 
 type SelfAvatarApi = {

@@ -2,7 +2,7 @@ import { useRef } from 'react'
 import type { MouseEvent as ReactMouseEvent, PointerEvent as ReactPointerEvent, RefObject } from 'react'
 import type { Viewport } from './use-viewport'
 import { isModalOpen } from '../utils/canvas-metrics'
-import { MAX_SCALE, clamp, scaleToLevel, toLogical } from '@/lib/geometry'
+import { MAX_SCALE, clamp, scaleToLevel, toLogical } from '@/utils/geometry'
 
 // パン・ピンチ・ダブルタップ・慣性。状態は全て ref に置き、追従中の再レンダーを起こさない
 

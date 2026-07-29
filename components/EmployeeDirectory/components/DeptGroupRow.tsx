@@ -1,5 +1,5 @@
 import { EmployeeCard } from './EmployeeCard'
-import type { AvatarConfig, Employee } from '@/lib/types'
+import type { AvatarConfig, Employee } from '@/types'
 import type { DeptGroup, DirectoryFavorites } from '../type'
 
 // 部署1件の折りたたみ行と、展開時の社員カード一覧

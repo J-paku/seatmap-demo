@@ -1,4 +1,4 @@
-import type { Facility, FacilityMeeting, FacilityStatus } from './types'
+import type { Facility, FacilityMeeting, FacilityStatus } from '@/types'
 
 // まもなく判定の窓(分)
 const UPCOMING_WINDOW_MIN = 30

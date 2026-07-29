@@ -1,7 +1,7 @@
 import { ScheduleCard } from './ScheduleCard'
 import { DateNavigator } from '@/components/DateNavigator'
 import { SwipeDateStage } from '@/components/SwipeDateStage'
-import type { ScheduleEvent } from '@/lib/types'
+import type { ScheduleEvent } from '@/types'
 
 // 見出し + 日付ナビ + 左右スワイプ台。日付操作と予定表示の組み立てだけを持つ
 

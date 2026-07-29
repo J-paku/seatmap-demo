@@ -8,7 +8,7 @@ import {
   OUTFIT_OPTIONS,
   SKIN_COLORS,
 } from '../utils/avatar-options'
-import type { AvatarConfig } from '@/lib/types'
+import type { AvatarConfig } from '@/types'
 
 // パーツと色の選択面。ヘア / スキン+フェイス / コスチュームの3グループ
 

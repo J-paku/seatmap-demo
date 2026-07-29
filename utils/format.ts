@@ -1,4 +1,4 @@
-import type { ScheduleEvent } from './types'
+import type { ScheduleEvent } from '@/types'
 
 // ISO8601(+09:00)から HH:MM を取り出す(表示専用・TZ 変換なし)
 export const hhmm = (iso: string): string => iso.slice(11, 16)

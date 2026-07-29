@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useState } from 'react'
-import type { Employee } from '@/lib/types'
+import type { Employee } from '@/types'
 import type { DeptGroup, DirectoryFavorites } from '../type'
 
 // お気に入り(社員単位・部署単位)。部署をお気に入りにすると所属全員が一覧へ入る

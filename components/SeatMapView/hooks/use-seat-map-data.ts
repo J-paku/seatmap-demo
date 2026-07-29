@@ -1,13 +1,15 @@
 import { useMemo, useRef } from 'react'
 import type { LayoutEditor } from '../type'
-import { deriveFacilityState } from '@/lib/facility-status'
-import type { FacilityState } from '@/lib/facility-status'
+import { deriveFacilityState } from '@/utils/facility-status'
+import type { FacilityState } from '@/utils/facility-status'
 import { useEmployees, useFacilityMeetings, useSchedules, useSeatLayout } from '@/lib/mock-loader'
-import { computePresenceMap } from '@/lib/presence'
-import { jstDateKey, jstKeyFromIso, useSelectedDate } from '@/lib/selected-date-context'
-import { SELF_EMPLOYEE_ID, useSelfAvatar } from '@/lib/self-avatar-context'
-import { useQuantizedClock } from '@/lib/use-quantized-clock'
-import type { Employee, PresenceStatus, SeatLayout } from '@/lib/types'
+import { computePresenceMap } from '@/utils/presence'
+import { useSelectedDate } from '@/contexts/selected-date-context'
+import { jstDateKey, jstKeyFromIso } from '@/utils/jst-date'
+import { useSelfAvatar } from '@/contexts/self-avatar-context'
+import { SELF_EMPLOYEE_ID } from '@/utils/demo-identity'
+import { useQuantizedClock } from '@/hooks/use-quantized-clock'
+import type { Employee, PresenceStatus, SeatLayout } from '@/types'
 
 // 表示に必要なデータの合成。編集モード中は在席状態を凍結し、レイアウトも編集中のものへ切り替える
 

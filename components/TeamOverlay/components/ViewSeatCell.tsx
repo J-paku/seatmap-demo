@@ -3,8 +3,8 @@ import type { MouseEvent as ReactMouseEvent, PointerEvent as ReactPointerEvent, 
 import { PixelAvatar } from '@/components/PixelAvatar'
 import { SEAT_STATUS_COLOR } from '../utils/seat-grid'
 import { compactNameFontSize, getCompactNameLabel } from '../utils/compact-name'
-import { PRESENCE_LABEL } from '@/lib/types'
-import type { Employee, PresenceStatus, Seat } from '@/lib/types'
+import { PRESENCE_LABEL } from '@/types'
+import type { Employee, PresenceStatus, Seat } from '@/types'
 
 // Compact 用の座席セル。縦積み(アバター上 + テキスト下)・姓のみ・椅子なし・回転反映なし。
 // Desktop が onClick 直結なのに対し、こちらはスクロール誤爆対策のガードが多重に入る

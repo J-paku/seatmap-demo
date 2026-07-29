@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { DeptGroupRow } from './DeptGroupRow'
 import { EmployeeCard } from './EmployeeCard'
-import type { AvatarConfig, Employee } from '@/lib/types'
+import type { AvatarConfig, Employee } from '@/types'
 import type { DeptGroup, DirectoryFavorites } from '../type'
 
 // お気に入り → マイ部署ピン → 全ての部署 の順に並ぶツリー本体

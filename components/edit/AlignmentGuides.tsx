@@ -1,5 +1,5 @@
 // 07-admin-edit: 整列スナップ成立中の基準線ガイド(viewBox座標系・変換レイヤー内に描画)
-import type { SnapGuide } from '@/lib/snap-guides'
+import type { SnapGuide } from '@/utils/snap-guides'
 
 type Props = {
   guides: SnapGuide[]

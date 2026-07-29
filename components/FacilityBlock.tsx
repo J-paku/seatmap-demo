@@ -1,7 +1,7 @@
-import type { Facility } from '@/lib/types'
-import { FACILITY_STATUS_LABEL } from '@/lib/types'
-import { FACILITY_COLOR } from '@/lib/facility-status'
-import type { FacilityState } from '@/lib/facility-status'
+import type { Facility } from '@/types'
+import { FACILITY_STATUS_LABEL } from '@/types'
+import { FACILITY_COLOR } from '@/utils/facility-status'
+import type { FacilityState } from '@/utils/facility-status'
 import type { FacilityHoverPayload } from './FacilityHoverCard'
 
 type Props = {

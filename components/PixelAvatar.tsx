@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import type { AvatarConfig } from '@/lib/types'
+import type { AvatarConfig } from '@/types'
 
 // AvatarConfig を 8×8 グリッド(コード配列)へ合成する
 // コード: H=髪 / S=肌 / O=上衣 / I=上衣の内側(濃色2トーン) / E=目 / M=口 / .=空

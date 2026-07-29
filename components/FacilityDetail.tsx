@@ -1,10 +1,10 @@
 import { useMemo } from 'react'
 import { useEmployees, useFacilities, useFacilityMeetings } from '@/lib/mock-loader'
-import { deriveFacilityState, minToHHMM, FACILITY_COLOR } from '@/lib/facility-status'
-import type { FacilityState } from '@/lib/facility-status'
-import { FACILITY_STATUS_LABEL } from '@/lib/types'
-import { useSelectedDate } from '@/lib/selected-date-context'
-import { useQuantizedClock } from '@/lib/use-quantized-clock'
+import { deriveFacilityState, minToHHMM, FACILITY_COLOR } from '@/utils/facility-status'
+import type { FacilityState } from '@/utils/facility-status'
+import { FACILITY_STATUS_LABEL } from '@/types'
+import { useSelectedDate } from '@/contexts/selected-date-context'
+import { useQuantizedClock } from '@/hooks/use-quantized-clock'
 
 // 施設詳細: 状態バッジ + 現在の会議 + 本日の予定
 export const FacilityDetail = ({ facilityId }: { facilityId: string }) => {

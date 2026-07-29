@@ -1,4 +1,4 @@
-import type { Seat } from '@/lib/types'
+import type { Seat } from '@/types'
 
 // 05: ジャンプ着地パルス。テキスト無し・クリック不可の矩形のみ(座席カード復活ではない)
 

@@ -1,6 +1,3 @@
-// 05: 本人社員id(デモ固定)。マイ部署ピン・本人カード強調・フッターに共用
-export const SELF_EMPLOYEE_ID = 'emp-001'
-
 // どのチームにも属さない社員の受け皿
 export const UNASSIGNED_GROUP = '未所属'
 

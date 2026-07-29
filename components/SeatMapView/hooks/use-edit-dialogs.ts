@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react'
 import type { LayoutEditor } from '../type'
-import type { Employee, Seat, Team } from '@/lib/types'
+import type { Employee, Seat, Team } from '@/types'
 
 // 07: 座席削除確認・チーム変更シート・チームレイアウトエディタの開閉と対象解決
 

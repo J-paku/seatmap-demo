@@ -1,14 +1,15 @@
 import { useEffect, useMemo } from 'react'
 import { ProfileCard } from './components/ProfileCard'
 import { ScheduleSection } from './components/ScheduleSection'
-import { useScheduleRefresh } from './lib/use-schedule-refresh'
+import { useScheduleRefresh } from './hooks/use-schedule-refresh'
 import type { EmployeeDetailProps } from './type'
 import { useEmployees, useSchedules, useSeats, useTeams } from '@/lib/mock-loader'
-import { computePresenceMap } from '@/lib/presence'
-import { useQuantizedClock } from '@/lib/use-quantized-clock'
-import { useDetailPanel } from '@/lib/detail-panel-context'
-import { isSameJstDate, jstDateKey, jstKeyFromIso, useSelectedDate } from '@/lib/selected-date-context'
-import { useSelfAvatar } from '@/lib/self-avatar-context'
+import { computePresenceMap } from '@/utils/presence'
+import { useQuantizedClock } from '@/hooks/use-quantized-clock'
+import { useDetailPanel } from '@/contexts/detail-panel-context'
+import { useSelectedDate } from '@/contexts/selected-date-context'
+import { isSameJstDate, jstDateKey, jstKeyFromIso } from '@/utils/jst-date'
+import { useSelfAvatar } from '@/contexts/self-avatar-context'
 
 // 12-member-detail: 社員詳細(座席詳細兼用)。空席時は空席表記のみ
 

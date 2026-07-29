@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react'
-import { hexToRgba } from '@/lib/color'
-import type { TeamColorEntry } from '@/lib/team-colors'
-import type { Team } from '@/lib/types'
+import { hexToRgba } from '@/utils/color'
+import type { TeamColorEntry } from '@/utils/team-colors'
+import type { Team } from '@/types'
 
 // 10: ロングプレス(押し続け)判定のしきい値。これを超えて発火した後は click を無視する
 const LONG_PRESS_MS = 300

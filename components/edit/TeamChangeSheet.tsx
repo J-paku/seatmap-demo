@@ -1,8 +1,8 @@
 // 07-admin-edit: チーム変更シート(下端シート・移動先Team一覧をチームカラードット+チーム名で表示)
 import { useEffect, useRef } from 'react'
-import type { TeamColorEntry } from '@/lib/team-colors'
-import type { Team } from '@/lib/types'
-import { useSwipeDismiss } from '@/lib/use-swipe-dismiss'
+import type { TeamColorEntry } from '@/utils/team-colors'
+import type { Team } from '@/types'
+import { useSwipeDismiss } from '@/hooks/use-swipe-dismiss'
 
 type Props = {
   teams: Team[]

@@ -2,8 +2,8 @@ import { ContactRow } from './ContactRow'
 import { PixelAvatar } from '@/components/PixelAvatar'
 import { PresenceBadge } from '@/components/StatusChip'
 import { formatPhone } from '../utils/format-phone'
-import { useCopyField } from '../lib/use-copy-field'
-import type { AvatarConfig, Employee, PresenceStatus, Team } from '@/lib/types'
+import { useCopyField } from '../hooks/use-copy-field'
+import type { AvatarConfig, Employee, PresenceStatus, Team } from '@/types'
 
 // 12-member-detail: グラデーション帯 + はみ出しアバター + 4段テキスト + 連絡先
 

@@ -1,4 +1,4 @@
-import type { AvatarConfig } from '@/lib/types'
+import type { AvatarConfig } from '@/types'
 
 // クイックスタートのプリセット
 export type AvatarPreset = {

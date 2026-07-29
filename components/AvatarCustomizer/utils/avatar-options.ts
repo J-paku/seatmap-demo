@@ -1,4 +1,4 @@
-import type { AvatarConfig } from '@/lib/types'
+import type { AvatarConfig } from '@/types'
 import type { AvatarPreset } from '../type'
 
 // パーツ候補・色パレット・クイックスタートのプリセット

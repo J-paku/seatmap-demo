@@ -3,8 +3,8 @@ import { ScrollHint } from './ScrollHint'
 import { SeatCard } from './SeatCard'
 import { DESKTOP_SEAT_CARD_WIDTH_PX, DESKTOP_SEAT_GAP_PX, gridCellKey } from '../utils/seat-grid'
 import type { SeatGridProps } from '../type'
-import { useDesktopScrollHints } from '../lib/use-scroll-hints'
-import type { PresenceStatus } from '@/lib/types'
+import { useDesktopScrollHints } from '../hooks/use-scroll-hints'
+import type { PresenceStatus } from '@/types'
 
 // 列幅は固定 180px。ブラウザ幅次第でオーバーフロー量が変わるため、ヒントは実測で出す
 

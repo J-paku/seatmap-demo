@@ -1,4 +1,4 @@
-import type { Employee, PresenceStatus, Seat } from '@/lib/types'
+import type { Employee, PresenceStatus, Seat } from '@/types'
 
 // チームバウンダリのクリックで渡ってくる情報。rect が拡大の原点になる
 export type TeamOverlayPayload = {

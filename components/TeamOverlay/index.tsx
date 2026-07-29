@@ -3,13 +3,13 @@ import { SeatGridFrame } from './components/SeatGridFrame'
 import { SeatLayoutHeader } from './components/SeatLayoutHeader'
 import { SheetDragHandle } from './components/SheetDragHandle'
 import { TeamOverlayHeader } from './components/TeamOverlayHeader'
-import { useIsCompactMobile } from './lib/use-compact-mobile'
-import { useModalShell } from './lib/use-modal-shell'
-import { useOverlaySession } from './lib/use-overlay-session'
+import { useIsCompactMobile } from './hooks/use-compact-mobile'
+import { useModalShell } from './hooks/use-modal-shell'
+import { useOverlaySession } from './hooks/use-overlay-session'
 import { anchorTransformOrigin } from './utils/anchor-origin'
 import { COMPACT_SIDE_PADDING_PX, buildSeatGrid } from './utils/seat-grid'
 import type { TeamOverlayProps } from './type'
-import { useSwipeDismiss } from '@/lib/use-swipe-dismiss'
+import { useSwipeDismiss } from '@/hooks/use-swipe-dismiss'
 
 // 10: チームバウンダリクリックで開く大型オーバーレイ(座席グリッド全体)
 // クリックしたバウンダリ中心から膨らむように開く。中央固定拡大ではない

@@ -1,5 +1,5 @@
-import { rectOf } from '@/lib/layout-actions'
-import type { SeatLayout } from '@/lib/types'
+import { rectOf } from '@/utils/layout-actions'
+import type { SeatLayout } from '@/types'
 import type { Rect } from '../type'
 
 // スナップ吸着候補になる兄弟オブジェクトの矩形群

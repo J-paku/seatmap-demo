@@ -1,6 +1,6 @@
 import { PixelAvatar } from '@/components/PixelAvatar'
 import { EditModeToggle } from '@/components/edit/EditModeToggle'
-import type { AvatarConfig } from '@/lib/types'
+import type { AvatarConfig } from '@/types'
 
 // 閲覧モードのヘッダー(メニュー・レイアウトリセット・編集トグル・本人アバター)
 

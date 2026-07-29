@@ -1,8 +1,6 @@
 // 06-team-overlay: チームカラーの単一レジストリ
 // 「同じチーム=常に同じ色」を全画面で保証する唯一の参照元
-import { useMemo } from 'react'
-import { useTeams } from './mock-loader'
-import type { Team } from './types'
+import type { Team } from '@/types'
 
 // レジストリが公開する3値(使用側はこれだけを参照する)
 export type TeamColorEntry = {
@@ -158,10 +156,4 @@ export const resolveTeamColor = (
   const found = registry.get(teamId)
   if (found) return found
   return deriveEntry(fallbackColor(fallbackName), registry.size)
-}
-
-// SWR由来のTeamsから単一レジストリを構築するフック(全画面が参照する唯一の入口)
-export const useTeamColorMap = (): Map<string, TeamColorEntry> => {
-  const { data: teams } = useTeams()
-  return useMemo(() => buildTeamColorRegistry(teams ?? []), [teams])
 }

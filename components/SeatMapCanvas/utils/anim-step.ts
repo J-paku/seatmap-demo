@@ -1,5 +1,5 @@
-import { MAX_SCALE, clamp, levelToScale, scaleToLevel } from '@/lib/geometry'
-import type { Transform } from '@/lib/geometry'
+import { MAX_SCALE, clamp, levelToScale, scaleToLevel } from '@/utils/geometry'
+import type { Transform } from '@/utils/geometry'
 import type { Anim } from '../type'
 
 // rAF ループ1フレーム分の計算。DOM には触れず、次の変換と次の演出状態だけを返す

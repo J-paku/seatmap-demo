@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react'
-import type { Employee, Seat, Team } from '@/lib/types'
+import type { Employee, Seat, Team } from '@/types'
 
 // 11: 原本のキャンバスは個人座席カードを描かない。座席は sr-only ミラー層にのみ存在し、
 // キーボード/スクリーンリーダー経路(roving tabindex)で全座席へ到達できるようにする

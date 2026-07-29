@@ -3,7 +3,7 @@ import { SheetShell } from './SheetShell'
 import { EmployeeDetail } from './EmployeeDetail'
 import { FacilityDetail } from './FacilityDetail'
 import { ScheduleDetail } from './ScheduleDetail'
-import { useDetailPanel } from '@/lib/detail-panel-context'
+import { useDetailPanel } from '@/contexts/detail-panel-context'
 import { useFacilities, useSchedules } from '@/lib/mock-loader'
 
 // 03: 詳細パネル群のオーケストレーター(排他=社員/施設・スタック=予定)

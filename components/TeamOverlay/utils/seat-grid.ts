@@ -1,4 +1,4 @@
-import type { PresenceStatus, Seat } from '@/lib/types'
+import type { PresenceStatus, Seat } from '@/types'
 import type { SeatGrid } from '../type'
 
 // 座席グリッドの寸法定数と、絶対座標から行列を起こす計算

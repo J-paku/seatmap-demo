@@ -1,6 +1,6 @@
 import { PixelAvatar } from '@/components/PixelAvatar'
 import { PRESETS } from '../utils/avatar-options'
-import type { AvatarConfig } from '@/lib/types'
+import type { AvatarConfig } from '@/types'
 
 // 大きなプレビューと、クイックスタートのプリセットチップ
 

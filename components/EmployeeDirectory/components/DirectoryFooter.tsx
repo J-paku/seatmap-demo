@@ -1,5 +1,5 @@
 import { PixelAvatar } from '@/components/PixelAvatar'
-import type { AvatarConfig, Employee } from '@/lib/types'
+import type { AvatarConfig, Employee } from '@/types'
 
 // 本人アバター(タップでアバター編集)と設定(デモでは無効)
 

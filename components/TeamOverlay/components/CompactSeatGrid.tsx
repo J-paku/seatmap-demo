@@ -9,10 +9,10 @@ import {
   COMPACT_VISIBLE_COLS,
 } from '../utils/seat-grid'
 import type { SeatGridProps } from '../type'
-import { useScrollActivity } from '../lib/use-scroll-activity'
-import { useScrollHints } from '../lib/use-scroll-hints'
-import { useSeatHighlightAnimation } from '../lib/use-seat-highlight-animation'
-import type { PresenceStatus } from '@/lib/types'
+import { useScrollActivity } from '../hooks/use-scroll-activity'
+import { useScrollHints } from '../hooks/use-scroll-hints'
+import { useSeatHighlightAnimation } from '../hooks/use-seat-highlight-animation'
+import type { PresenceStatus } from '@/types'
 
 // 列幅は可変。6 列がコンテナ幅にちょうど収まる幅を実測して minmax の下限に使う
 

@@ -50,16 +50,11 @@ feat: チームバウンダリクリックで大型オーバーレイを開く
 
 ## ファイル構成
 
-1ファイルが 200 行を超え、かつ責務が複数あるなら次の形へ分ける。
+**正本は `docs/project-structure.md`。ファイルを新規に作る前に必ず読む。**
 
-```
-components/<Name>/
-  index.tsx     組み立てのみ
-  type.ts       型は平坦にここへ(サブフォルダを切らない)
-  components/   下位部品
-  lib/          フック
-  utils/        純関数・定数
-```
+要点だけ:
 
-- `pages/*.tsx` はルート専用。画面本体は `components/<Name>/` へ置き、ページは Head とプロバイダだけにする
-- 単一責務のまま長いだけのモジュール(1つのフック等)は分割しない
+- `components/` UI / `contexts/` Context / `hooks/` フック / `lib/` 外部接続 / `utils/` 純関数 / `types/` 型
+- `lib` と `utils` の境目は「アプリの外(fetch・localStorage・第三者SDK)に出るか」だけ。DOM 実測は「外」ではない
+- 200行超 かつ 複数責務なら `components/<Name>/{index.tsx, type.ts, components/, hooks/, utils/}` へ割る
+- 単一責務のまま長いだけのモジュール(フック1本など)は割らない

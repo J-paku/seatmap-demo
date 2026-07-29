@@ -1,5 +1,5 @@
 import { PixelAvatar } from '@/components/PixelAvatar'
-import type { AvatarConfig } from '@/lib/types'
+import type { AvatarConfig } from '@/types'
 
 // ミニプレビュー付きのパーツチップ行
 

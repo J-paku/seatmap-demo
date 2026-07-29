@@ -1,5 +1,5 @@
 import { UNASSIGNED_GROUP } from './directory-constants'
-import type { Employee, Team } from '@/lib/types'
+import type { Employee, Team } from '@/types'
 import type { DeptGroup } from '../type'
 
 // 職位ランク(部長→課長→職位なし)。第2キーは id 昇順で安定ソート

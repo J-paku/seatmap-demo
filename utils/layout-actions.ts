@@ -1,5 +1,5 @@
 // 07-admin-edit: レイアウト編集アクションモデル(純粋リデューサー+衝突判定+スナップ計算)
-import type { Facility, Seat, SeatLayout, Team } from './types'
+import type { Facility, Seat, SeatLayout, Team } from '@/types'
 
 // 座席既定サイズ(action model・グリッドリファク双方で使用)
 export const DEFAULT_SEAT_WIDTH = 105

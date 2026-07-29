@@ -1,9 +1,10 @@
 import { DeleteConfirmDialog } from '@/components/edit/DeleteConfirmDialog'
 import { TeamChangeSheet } from '@/components/edit/TeamChangeSheet'
 import { TeamRelayoutModal } from '@/components/edit/TeamRelayoutModal'
-import { resolveTeamColor, useTeamColorMap } from '@/lib/team-colors'
+import { resolveTeamColor } from '@/utils/team-colors'
+import { useTeamColorMap } from '@/hooks/use-team-color-map'
 import type { LayoutEditor } from '../type'
-import type { useEditDialogs } from '../lib/use-edit-dialogs'
+import type { useEditDialogs } from '../hooks/use-edit-dialogs'
 
 // 07: 編集モードから開く3つのダイアログ。開閉状態は useEditDialogs が持つ
 

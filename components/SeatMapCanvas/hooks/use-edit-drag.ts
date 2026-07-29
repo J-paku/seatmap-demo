@@ -3,9 +3,9 @@ import type { PointerEvent as ReactPointerEvent } from 'react'
 import type { Viewport } from './use-viewport'
 import { siblingRectsForSeat, siblingRectsForTeam } from '../utils/sibling-rects'
 import type { EditDrag, LivePosition, Rect } from '../type'
-import { SNAP_THRESHOLD_SCREEN_PX, computeSnap } from '@/lib/snap-guides'
-import type { SnapGuide } from '@/lib/snap-guides'
-import type { SeatLayout } from '@/lib/types'
+import { SNAP_THRESHOLD_SCREEN_PX, computeSnap } from '@/utils/snap-guides'
+import type { SnapGuide } from '@/utils/snap-guides'
+import type { SeatLayout } from '@/types'
 
 // 07: 編集モードの座席/チームラベルのドラッグ移動。閲覧モードではこのロジックへ一切到達しない
 

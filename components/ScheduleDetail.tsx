@@ -1,8 +1,8 @@
 import { PixelAvatar } from './PixelAvatar'
 import { useEmployees, useSchedules, useTeams } from '@/lib/mock-loader'
-import { CATEGORY_LABEL, scheduleTimeLabel } from '@/lib/format'
-import { useDetailPanel } from '@/lib/detail-panel-context'
-import { useSelfAvatar } from '@/lib/self-avatar-context'
+import { CATEGORY_LABEL, scheduleTimeLabel } from '@/utils/format'
+import { useDetailPanel } from '@/contexts/detail-panel-context'
+import { useSelfAvatar } from '@/contexts/self-avatar-context'
 
 // 予定詳細(社員詳細の上にスタック)
 export const ScheduleDetail = ({ eventId }: { eventId: string }) => {

@@ -1,6 +1,6 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
-import { addJstDays, isSameJstDate, jstWeekday } from '@/lib/selected-date-context'
-import type { JstDate } from '@/lib/selected-date-context'
+import { addJstDays, isSameJstDate, jstWeekday } from '@/utils/jst-date'
+import type { JstDate } from '@/utils/jst-date'
 
 type Props = {
   anchorRef: React.RefObject<HTMLElement | null>

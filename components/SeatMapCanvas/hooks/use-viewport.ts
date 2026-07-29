@@ -11,8 +11,8 @@ import {
   levelToScale,
   scaleToLevel,
   toLogical,
-} from '@/lib/geometry'
-import type { Transform } from '@/lib/geometry'
+} from '@/utils/geometry'
+import type { Transform } from '@/utils/geometry'
 
 // パン・ズームの変換そのものを持つ。DOM へ直接 transform を当て、再レンダーは
 // ジェスチャー終了時の scaleSnap 更新だけに絞る
