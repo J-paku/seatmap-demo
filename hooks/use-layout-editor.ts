@@ -1,25 +1,16 @@
-// 07-admin-edit: 編集モードの可変ワーキングコピー+undoスタック+アクション発行を司るフック
-// 永続化(localStorage保存)自体はこのフックの範囲外。呼び出し側(pages/index.tsx)が
-// finishEdit直前のeditingLayoutをlib/mock-loaderのpersistLayout経由で保存する
-import { useCallback, useMemo, useRef, useState } from 'react'
-import type { Facility, Seat, SeatLayout, Team } from '@/types'
-import type { LayoutAction, Rect } from '@/utils/layout-actions'
-import {
-  DEFAULT_SEAT_HEIGHT,
-  DEFAULT_SEAT_WIDTH,
-  applyLayoutAction,
-  clampRectToViewBox,
-  fitAreaToSeats,
-  rectOf,
-  rectsIntersect,
-  relayoutSeatsInGrid,
-} from '@/utils/layout-actions'
+import { useCallback } from 'react'
+import { useEditSession } from './use-edit-session'
+import { useErrorToast } from './use-error-toast'
+import type { ErrorToastState } from './use-error-toast'
+import { clampRectToViewBox } from '@/utils/rect'
+import type { Rect } from '@/utils/rect'
+import { findOverlappingSeat, findTeamContaining, seatOverlapsFacility, teamAreaOverlaps } from '@/utils/layout-rules'
+import { fitAreaToSeats, relayoutSeatsInGrid } from '@/utils/seat-relayout'
+import type { Seat, SeatLayout } from '@/types'
 
-// undo 用スナップショット(アクション適用直前の関連部分のみ保持)
-type UndoEntry = { seats: Seat[]; teams: Team[] }
-
-// エラートースト用の一時文言
-type ErrorToastState = { id: number; message: string } | null
+// 07-admin-edit: 編集アクションの発行口。セッション管理は useEditSession、
+// 判定規則は utils/layout-rules が持ち、ここは「発行してよいか」を決めるだけ。
+// 永続化(localStorage保存)は範囲外で、呼び出し側が finishEdit 直前に保存する
 
 export type UseLayoutEditorApi = {
   isEditMode: boolean
@@ -40,101 +31,18 @@ export type UseLayoutEditorApi = {
   relayoutTeam: (teamId: string, rows: number, cols: number) => { ok: true } | { ok: false; message: string }
 }
 
-// 対象チームの所属座席id集合を先に取っておくための小ヘルパー
-const seatsOfTeam = (seats: Seat[], teamId: string) => seats.filter((s) => s.teamId === teamId)
+const seatsOfTeam = (seats: Seat[], teamId: string): Seat[] => seats.filter((s) => s.teamId === teamId)
+
+const MSG_FACILITY = '設備と重なるため配置できません'
+const MSG_TEAM_OVERLAP = 'チームエリアが重なるため適用できません'
+const MSG_NOT_FIT = '座席が収まらないため適用できません'
 
 export const useLayoutEditor = (sourceLayout: SeatLayout | undefined): UseLayoutEditorApi => {
-  const [isEditMode, setIsEditMode] = useState(false)
-  const [editingLayout, setEditingLayout] = useState<SeatLayout | null>(null)
-  const baselineRef = useRef<SeatLayout | null>(null)
-  const undoStackRef = useRef<UndoEntry[]>([])
-  const changedIdsRef = useRef<Set<string>>(new Set())
-  const [undoVersion, setUndoVersion] = useState(0)
-  const [changedVersion, setChangedVersion] = useState(0)
-  const [errorToast, setErrorToast] = useState<ErrorToastState>(null)
-  const errorSeqRef = useRef(0)
+  const session = useEditSession(sourceLayout)
+  const { errorToast, showError, dismissError } = useErrorToast()
+  const { editingLayout, dispatch } = session
 
-  const showError = useCallback((message: string) => {
-    errorSeqRef.current += 1
-    setErrorToast({ id: errorSeqRef.current, message })
-  }, [])
-
-  const dismissError = useCallback(() => setErrorToast(null), [])
-
-  // 進入時処理(順序固定): baseline深いコピー保存→undoスタック初期化→編集モード表示
-  const enterEditMode = useCallback(() => {
-    if (!sourceLayout) return
-    const clone: SeatLayout = JSON.parse(JSON.stringify(sourceLayout))
-    baselineRef.current = clone
-    undoStackRef.current = []
-    changedIdsRef.current = new Set()
-    setEditingLayout(JSON.parse(JSON.stringify(clone)))
-    setIsEditMode(true)
-    setUndoVersion((v) => v + 1)
-    setChangedVersion((v) => v + 1)
-  }, [sourceLayout])
-
-  // 変更を破棄してbaselineへ復元
-  const restoreBaseline = useCallback(() => {
-    baselineRef.current = null
-    undoStackRef.current = []
-    changedIdsRef.current = new Set()
-    setEditingLayout(null)
-    setIsEditMode(false)
-    setUndoVersion((v) => v + 1)
-    setChangedVersion((v) => v + 1)
-  }, [])
-
-  // 完了: 保存(差分ありの場合)は呼び出し側で完了済みという前提でbaselineを畳む
-  const finishEdit = useCallback(() => {
-    restoreBaseline()
-  }, [restoreBaseline])
-
-  const cancelEdit = useCallback(() => {
-    restoreBaseline()
-  }, [restoreBaseline])
-
-  // 適用直前のスナップショットをpushし(無変化なら push しない)、変更エンティティ数を計上
-  const pushUndoAndMarkChanged = useCallback(
-    (before: SeatLayout, after: SeatLayout, touchedIds: string[]) => {
-      if (before.seats === after.seats && before.teams === after.teams) return
-      undoStackRef.current.push({ seats: before.seats, teams: before.teams })
-      let changed = false
-      for (const id of touchedIds) {
-        if (!changedIdsRef.current.has(id)) {
-          changedIdsRef.current.add(id)
-          changed = true
-        }
-      }
-      setUndoVersion((v) => v + 1)
-      if (changed) setChangedVersion((v) => v + 1)
-    },
-    []
-  )
-
-  // 純粋リデューサーへディスパッチ(適用結果が無変化ならundo pushしない)
-  const dispatch = useCallback(
-    (action: LayoutAction, touchedIds: string[]) => {
-      setEditingLayout((cur) => {
-        if (!cur) return cur
-        const next = applyLayoutAction(cur, action)
-        if (next === cur) return cur
-        pushUndoAndMarkChanged(cur, next, touchedIds)
-        return next
-      })
-    },
-    [pushUndoAndMarkChanged]
-  )
-
-  const undo = useCallback(() => {
-    const entry = undoStackRef.current.pop()
-    if (!entry) return
-    setEditingLayout((cur) => (cur ? { ...cur, seats: entry.seats, teams: entry.teams } : cur))
-    setUndoVersion((v) => v + 1)
-  }, [])
-
-  // ── 座席ドラッグ移動(スワップ/エリア内assign連鎖含む) ──────────
-
+  // 座席ドラッグ移動(スワップ/エリア内assign連鎖含む)
   const moveSeat = useCallback(
     (seatId: string, x: number, y: number) => {
       const layout = editingLayout
@@ -148,56 +56,23 @@ export const useLayoutEditor = (sourceLayout: SeatLayout | undefined): UseLayout
       )
 
       // ドロップ先が他座席と重なる場合はスワップとして解釈(座標は互いに維持)
-      const overlappedSeat = layout.seats.find(
-        (s) => s.id !== seatId && rectsIntersect(rectOf(s), candidate)
-      )
-      if (overlappedSeat) {
-        dispatch({ type: 'seat-swap', fromSeatId: seatId, toSeatId: overlappedSeat.id }, [seatId, overlappedSeat.id])
+      const overlapped = findOverlappingSeat(layout.seats, seatId, candidate)
+      if (overlapped) {
+        dispatch({ type: 'seat-swap', fromSeatId: seatId, toSeatId: overlapped.id }, [seatId, overlapped.id])
         return
       }
-
       // Facility と重なる場合は拒否(ドラッグ原位置へ復帰=何もしない)
-      if (layout.facilities.some((f) => rectsIntersect(rectOf(f), candidate))) {
-        showError('設備と重なるため配置できません')
+      if (seatOverlapsFacility(layout.facilities, candidate)) {
+        showError(MSG_FACILITY)
         return
       }
-
-      // 移動先が他チームのarea内部なら teamId を連鎖更新
-      const centerX = candidate.x + candidate.w / 2
-      const centerY = candidate.y + candidate.h / 2
-      const targetTeam = layout.teams.find((t) => {
-        if (t.id === seat.teamId) return false
-        const a = t.area
-        return centerX >= a.x && centerX <= a.x + a.w && centerY >= a.y && centerY <= a.y + a.h
-      })
 
       dispatch({ type: 'seat-move', seatId, x: candidate.x, y: candidate.y }, [seatId])
-      if (targetTeam) {
-        dispatch({ type: 'seat-assign', seatId, teamId: targetTeam.id }, [seatId])
-      }
+      // 移動先が他チームのarea内部なら teamId を連鎖更新
+      const targetTeam = findTeamContaining(layout.teams, seat.teamId, candidate)
+      if (targetTeam) dispatch({ type: 'seat-assign', seatId, teamId: targetTeam.id }, [seatId])
     },
     [editingLayout, dispatch, showError]
-  )
-
-  const swapSeats = useCallback(
-    (fromSeatId: string, toSeatId: string) => {
-      dispatch({ type: 'seat-swap', fromSeatId, toSeatId }, [fromSeatId, toSeatId])
-    },
-    [dispatch]
-  )
-
-  const assignSeat = useCallback(
-    (seatId: string, teamId: string) => {
-      dispatch({ type: 'seat-assign', seatId, teamId }, [seatId])
-    },
-    [dispatch]
-  )
-
-  const deleteSeat = useCallback(
-    (seatId: string) => {
-      dispatch({ type: 'seat-delete', seatId }, [seatId])
-    },
-    [dispatch]
   )
 
   // チームラベルドラッグ: area+所属全座席を同一delta平行移動(単一アクション=team-move)
@@ -210,12 +85,8 @@ export const useLayoutEditor = (sourceLayout: SeatLayout | undefined): UseLayout
       const candidate: Rect = { x, y, w: team.area.w, h: team.area.h }
       const clamped = clampRectToViewBox(candidate, layout.viewBox.width, layout.viewBox.height)
 
-      // Team area同士の重なりを禁止
-      const overlapsTeam = layout.teams.some(
-        (t) => t.id !== teamId && rectsIntersect(rectOf({ ...t.area, width: t.area.w, height: t.area.h }), clamped)
-      )
-      if (overlapsTeam) {
-        showError('チームエリアが重なるため適用できません')
+      if (teamAreaOverlaps(layout.teams, teamId, clamped)) {
+        showError(MSG_TEAM_OVERLAP)
         return
       }
       const touched = [teamId, ...seatsOfTeam(layout.seats, teamId).map((s) => s.id)]
@@ -232,56 +103,44 @@ export const useLayoutEditor = (sourceLayout: SeatLayout | undefined): UseLayout
       const team = layout.teams.find((t) => t.id === teamId)
       if (!team) return { ok: false, message: '対象チームが見つかりません' }
       const teamSeats = seatsOfTeam(layout.seats, teamId)
-      if (rows * cols < teamSeats.length) {
-        return { ok: false, message: '座席が収まらないため適用できません' }
+      if (teamSeats.length === 0 || rows * cols < teamSeats.length) {
+        return { ok: false, message: MSG_NOT_FIT }
       }
-      if (teamSeats.length === 0) {
-        return { ok: false, message: '座席が収まらないため適用できません' }
-      }
-      const relaid = relayoutSeatsInGrid(teamSeats, team.area, rows, cols)
-      const fitted = fitAreaToSeats(relaid, team.area)
 
       // fit後のareaが他area/Facilityと交差する場合は適用しない
-      const overlapsTeam = layout.teams.some(
-        (t) => t.id !== teamId && rectsIntersect(rectOf({ ...t.area, width: t.area.w, height: t.area.h }), fitted)
-      )
-      const overlapsFacility = layout.facilities.some((f) => rectsIntersect(rectOf(f), fitted))
-      if (overlapsTeam) {
-        return { ok: false, message: 'チームエリアが重なるため適用できません' }
-      }
-      if (overlapsFacility) {
-        return { ok: false, message: '設備と重なるため配置できません' }
-      }
+      const fitted = fitAreaToSeats(relayoutSeatsInGrid(teamSeats, team.area, rows, cols), team.area)
+      if (teamAreaOverlaps(layout.teams, teamId, fitted)) return { ok: false, message: MSG_TEAM_OVERLAP }
+      if (seatOverlapsFacility(layout.facilities, fitted)) return { ok: false, message: MSG_FACILITY }
 
-      const touched = [teamId, ...teamSeats.map((s) => s.id)]
-      dispatch({ type: 'team-relayout', teamId, rows, cols }, touched)
+      dispatch({ type: 'team-relayout', teamId, rows, cols }, [teamId, ...teamSeats.map((s) => s.id)])
       return { ok: true }
     },
     [editingLayout, dispatch]
   )
 
-  const changedCount = useMemo(() => changedIdsRef.current.size, [changedVersion])
-  const canUndo = useMemo(() => undoStackRef.current.length > 0, [undoVersion])
-
   return {
-    isEditMode,
+    isEditMode: session.isEditMode,
     editingLayout,
-    changedCount,
-    canUndo,
+    changedCount: session.changedCount,
+    canUndo: session.canUndo,
     errorToast,
-    enterEditMode,
-    finishEdit,
-    cancelEdit,
-    undo,
+    enterEditMode: session.enterEditMode,
+    finishEdit: session.finishEdit,
+    cancelEdit: session.cancelEdit,
+    undo: session.undo,
     dismissError,
     moveSeat,
-    swapSeats,
-    assignSeat,
-    deleteSeat,
+    swapSeats: useCallback(
+      (fromSeatId: string, toSeatId: string) =>
+        dispatch({ type: 'seat-swap', fromSeatId, toSeatId }, [fromSeatId, toSeatId]),
+      [dispatch]
+    ),
+    assignSeat: useCallback(
+      (seatId: string, teamId: string) => dispatch({ type: 'seat-assign', seatId, teamId }, [seatId]),
+      [dispatch]
+    ),
+    deleteSeat: useCallback((seatId: string) => dispatch({ type: 'seat-delete', seatId }, [seatId]), [dispatch]),
     moveTeam,
     relayoutTeam,
   }
 }
-
-// SeatCard/TeamArea/FacilityBlock 共有の既定座席サイズ再エクスポート(edit UIから参照)
-export { DEFAULT_SEAT_WIDTH, DEFAULT_SEAT_HEIGHT }

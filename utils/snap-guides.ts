@@ -1,5 +1,5 @@
 // 07-admin-edit: 整列スナップ(ドラッグ中のエッジ・中心線吸着)計算
-import type { Rect } from '@/utils/layout-actions'
+import type { Rect } from './rect'
 
 // スクリーン基準28pxを現在ズーム倍率でviewBox単位に換算した値をしきい値とする
 export const SNAP_THRESHOLD_SCREEN_PX = 28

@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import type { RefObject } from 'react'
+import { useViewportInput } from './use-viewport-input'
 import { stepAnim } from '../utils/anim-step'
-import { isModalOpen, prefersReducedMotion } from '../utils/canvas-metrics'
-import type { Anim } from '../type'
+import { prefersReducedMotion } from '../utils/canvas-metrics'
+import type { Anim, Viewport } from '../type'
 import {
   MAX_SCALE,
   clamp,
@@ -17,24 +18,6 @@ import type { Transform } from '@/utils/geometry'
 // パン・ズームの変換そのものを持つ。DOM へ直接 transform を当て、再レンダーは
 // ジェスチャー終了時の scaleSnap 更新だけに絞る
 
-export type Viewport = {
-  containerRef: RefObject<HTMLDivElement | null>
-  layerRef: RefObject<HTMLDivElement | null>
-  transformRef: RefObject<Transform>
-  minScaleRef: RefObject<number>
-  animRef: RefObject<Anim>
-  scaleSnap: number
-  rect: () => DOMRect | null
-  applyTransform: (t: Transform, allowOverscroll?: boolean) => void
-  commitSnap: () => void
-  cancelAnim: () => void
-  startLoop: () => void
-  lerpZoom: (deltaLevel: number, anchorX: number, anchorY: number) => void
-  immediateZoom: (deltaLevel: number, anchorX: number, anchorY: number, overscroll?: boolean) => void
-  zoomButton: (delta: number) => void
-  resetView: () => void
-  animateTo: (target: Transform, onDone?: () => void) => void
-}
 
 // アニメーション付きで移動したあと transition を外すまでの時間
 const TRANSITION_MS = 300
@@ -49,8 +32,9 @@ export const useViewport = (): Viewport => {
   const rafRef = useRef(0)
   const animRef = useRef<Anim>({ kind: 'none' })
 
-  // LOD/カウンタ補正用スナップショット(ジェスチャ終了時のみ更新)
-  const [scaleSnap, setScaleSnap] = useState(0.5)
+  // LOD/カウンタ補正用スナップショット(ジェスチャ終了時のみ更新)。
+  // レンダー中に transformRef を読まずに済ませるため変換一式で持つ
+  const [transformSnap, setTransformSnap] = useState<Transform>({ scale: 0.5, translateX: 0, translateY: 0 })
 
   const rect = useCallback(() => {
     if (!rectRef.current && containerRef.current) {
@@ -71,7 +55,7 @@ export const useViewport = (): Viewport => {
     }
   }, [])
 
-  const commitSnap = useCallback(() => setScaleSnap(transformRef.current.scale), [])
+  const commitSnap = useCallback(() => setTransformSnap(transformRef.current), [])
 
   const cancelAnim = useCallback(() => {
     animRef.current = { kind: 'none' }
@@ -187,64 +171,12 @@ export const useViewport = (): Viewport => {
     minScaleRef.current = computeMinScale(r.width, r.height)
     const compact = computeCompact(r.width, r.height)
     applyTransform(compact)
-    setScaleSnap(compact.scale)
+    setTransformSnap(compact)
     mountedRef.current = true
   }, [applyTransform])
 
-  // リサイズ: rect キャッシュのみ再計測(transform は維持)
-  useEffect(() => {
-    const onResize = () => {
-      if (containerRef.current) rectRef.current = containerRef.current.getBoundingClientRect()
-    }
-    window.addEventListener('resize', onResize)
-    return () => window.removeEventListener('resize', onResize)
-  }, [])
-
-  // キーボード ±level
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.metaKey || e.ctrlKey || e.altKey || isModalOpen()) return
-      const tag = (e.target as HTMLElement | null)?.tagName
-      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return
-      const r = rect()
-      if (!r) return
-      if (e.key === '+' || e.key === '=') {
-        cancelAnim()
-        lerpZoom(1, r.width / 2, r.height / 2)
-      } else if (e.key === '-' || e.key === '_') {
-        cancelAnim()
-        lerpZoom(-1, r.width / 2, r.height / 2)
-      }
-    }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [rect, cancelAnim, lerpZoom])
-
-  // ホイール/トラックパッドズーム(native passive:false 登録)
-  useEffect(() => {
-    const el = containerRef.current
-    if (!el) return
-    const onWheel = (e: WheelEvent) => {
-      if (isModalOpen()) return
-      e.preventDefault()
-      cancelAnim()
-      const r = rect()
-      if (!r) return
-      const ax = e.clientX - r.left
-      const ay = e.clientY - r.top
-      if (e.ctrlKey) {
-        // トラックパッドピンチ: 70px=1レベル 即時
-        immediateZoom(-e.deltaY / 70, ax, ay)
-        return
-      }
-      let delta = e.deltaY
-      if (e.deltaMode === 1) delta *= 33 // 行スクロール換算
-      delta = clamp(delta, -100, 100)
-      lerpZoom(-delta / 100, ax, ay)
-    }
-    el.addEventListener('wheel', onWheel, { passive: false })
-    return () => el.removeEventListener('wheel', onWheel)
-  }, [rect, cancelAnim, immediateZoom, lerpZoom])
+  // 入力(リサイズ・キーボード・ホイール)は useViewportInput が変換モデルへ繋ぐ
+  useViewportInput({ containerRef, rectRef, rect, cancelAnim, lerpZoom, immediateZoom })
 
   useEffect(() => () => cancelAnim(), [cancelAnim])
 
@@ -254,7 +186,8 @@ export const useViewport = (): Viewport => {
     transformRef,
     minScaleRef,
     animRef,
-    scaleSnap,
+    scaleSnap: transformSnap.scale,
+    transformSnap,
     rect,
     applyTransform,
     commitSnap,

@@ -1,3 +1,5 @@
+import type { RefObject } from 'react'
+import type { Transform } from '@/utils/geometry'
 import type { Employee, PresenceStatus, Seat, SeatLayout } from '@/types'
 import type { FacilityState } from '@/utils/facility-status'
 import type { FacilityHoverPayload } from '@/components/FacilityHoverCard'
@@ -62,3 +64,25 @@ export type EditDrag =
 
 // ドラッグ中のみ描画へ反映する座標(確定は pointerup 時に親へ1回だけ通知)
 export type LivePosition = { id: string; x: number; y: number }
+
+// パン・ズームの変換モデルが公開するAPI(useViewport の戻り値)
+export type Viewport = {
+  containerRef: RefObject<HTMLDivElement | null>
+  layerRef: RefObject<HTMLDivElement | null>
+  transformRef: RefObject<Transform>
+  minScaleRef: RefObject<number>
+  animRef: RefObject<Anim>
+  scaleSnap: number
+  // ジェスチャー終了時点の変換スナップショット。レンダー中に ref を読まずに済ませるため
+  transformSnap: Transform
+  rect: () => DOMRect | null
+  applyTransform: (t: Transform, allowOverscroll?: boolean) => void
+  commitSnap: () => void
+  cancelAnim: () => void
+  startLoop: () => void
+  lerpZoom: (deltaLevel: number, anchorX: number, anchorY: number) => void
+  immediateZoom: (deltaLevel: number, anchorX: number, anchorY: number, overscroll?: boolean) => void
+  zoomButton: (delta: number) => void
+  resetView: () => void
+  animateTo: (target: Transform, onDone?: () => void) => void
+}

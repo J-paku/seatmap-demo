@@ -1,4 +1,4 @@
-import { rectOf } from '@/utils/layout-actions'
+import { rectOf } from '@/utils/rect'
 import type { SeatLayout } from '@/types'
 import type { Rect } from '../type'
 

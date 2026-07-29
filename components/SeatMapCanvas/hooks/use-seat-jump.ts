@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import type { Viewport } from './use-viewport'
+import type { Viewport } from '../type'
 import { PULSE_DURATION_MS, PULSE_REDUCED_MS, prefersReducedMotion } from '../utils/canvas-metrics'
 import type { Seat } from '@/types'
 import type { Transform } from '@/utils/geometry'
