@@ -8,6 +8,22 @@ import type { SwipeSample } from '@/utils/swipe-threshold'
 // Pointer Event は touch-action の判定でブラウザにスクロールを先取りされ pointercancel が飛ぶため、
 // { passive: false } のネイティブ touch イベント + preventDefault で確実にジェスチャーを主張する
 
+// touch から閉じた直後に飛んでくる合成 click を1回だけ捨てる(二重クローズ防止)。
+// シートが外れると click は別の要素へリターゲットされるため document の capture 段で受ける
+const swallowNextClick = () => {
+  const swallow = (e: MouseEvent) => {
+    e.stopPropagation()
+    e.preventDefault()
+    cleanup()
+  }
+  const cleanup = () => {
+    document.removeEventListener('click', swallow, true)
+    window.clearTimeout(timer)
+  }
+  const timer = window.setTimeout(cleanup, 350)
+  document.addEventListener('click', swallow, true)
+}
+
 type UseSwipeDismissOptions = {
   onClose: () => void
   enabled?: boolean
@@ -33,6 +49,7 @@ export const useSwipeDismiss = ({
     fromHandle: false,
     startX: 0,
     startY: 0,
+    startTime: 0,
     samples: [] as SwipeSample[],
     suppressClick: false,
   })
@@ -75,6 +92,7 @@ export const useSwipeDismiss = ({
         fromHandle: (e.target as HTMLElement).dataset.handle === 'true',
         startX: touch.clientX,
         startY: touch.clientY,
+        startTime: e.timeStamp,
         samples: [{ y: touch.clientY, t: e.timeStamp }],
       }
     }
@@ -131,6 +149,19 @@ export const useSwipeDismiss = ({
       const d = drag.current
       if (!d.active) return
       d.active = false
+
+      // ハンドルは閉じるための持ち手なので、そこから始めて離したら距離を問わず閉じる。
+      // 指で少し引き下げるとスワイプが確定し、閾値に届かず戻る一方でブラウザが click を握り潰すため、
+      // button の onClick だけに頼るとハンドルが反応しないように見える。
+      // 上/横へ逃げた(abandoned)ときだけは取り消しとして扱う
+      if (d.fromHandle && !d.abandoned) {
+        d.committed = false
+        setTransform(null, false)
+        swallowNextClick()
+        onCloseRef.current()
+        return
+      }
+
       if (d.suppressClick) {
         window.setTimeout(() => {
           d.suppressClick = false
@@ -141,8 +172,12 @@ export const useSwipeDismiss = ({
 
       const offset = swipeOffset(e.changedTouches[0].clientY - d.startY)
       const flick = downwardFlick(d.samples, e.timeStamp)
-      if (shouldDismiss(offset, el.offsetHeight || 1, flick)) onCloseRef.current()
-      else setTransform(null, true)
+      if (shouldDismiss(offset, el.offsetHeight || 1, flick)) {
+        swallowNextClick()
+        onCloseRef.current()
+      } else {
+        setTransform(null, true)
+      }
     }
 
     const onTouchCancel = () => {

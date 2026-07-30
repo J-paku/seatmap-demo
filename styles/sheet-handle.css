@@ -3,6 +3,8 @@
    高さ・余白・表示ブレークポイントは各シート側のクラスに任せる */
 
 .sheet-handle-hit {
+  /* 見えているバーは 40x6 しかないので、タップ領域は最低限これだけ確保する */
+  min-height: 28px;
   border: 0;
   background: transparent;
   color: inherit;
