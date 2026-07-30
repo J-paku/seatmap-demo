@@ -71,10 +71,12 @@
   top: 0;
   left: 0;
   right: 0;
-  height: 96px;
+  /* 以前は96pxあり、下のタイトル帯まで覆っていた。タップで閉じるようにしたため
+     バー周辺だけに絞る(スワイプ自体はシート全域で受けている) */
+  height: 28px;
   display: flex;
+  align-items: center;
   justify-content: center;
-  padding-top: 10px;
   z-index: 1;
 }
 @media (min-width: 640px) {

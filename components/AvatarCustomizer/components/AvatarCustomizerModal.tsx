@@ -7,6 +7,7 @@ import { useAvatarDraft } from '../hooks/use-avatar-draft'
 import { useDialogShell } from '../hooks/use-dialog-shell'
 import { cloneAvatar } from '../utils/clone-avatar'
 import type { AvatarCustomizerModalProps } from '../type'
+import { SheetHandle } from '@/components/SheetHandle'
 import { SEATMAP_BG_ID } from '@/components/SheetShell'
 import { useBodyScrollLock } from '@/hooks/use-body-scroll-lock'
 import { useBackgroundInert } from '@/hooks/use-background-inert'
@@ -48,9 +49,7 @@ export const AvatarCustomizerModal = ({ initial, onSave, onClose }: Props) => {
     <div className='ac-overlay'>
       <div ref={backdropRef} className='ac-backdrop' onClick={onClose} />
       <div ref={dialogRef} className='ac-dialog' role='dialog' aria-modal='true' aria-label='アバター編集' {...bind}>
-        <div className='ac-handle-strip' data-handle='true'>
-          <span className='ac-handle-bar' data-handle='true' />
-        </div>
+        <SheetHandle stripClassName='ac-handle-strip' barClassName='ac-handle-bar' onClose={onClose} />
         <div className='ac-header'>
           <h2 className='ac-title'>アバター編集</h2>
           <button ref={closeBtnRef} type='button' className='ac-close' aria-label='閉じる' onClick={onClose}>

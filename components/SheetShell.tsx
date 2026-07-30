@@ -2,6 +2,7 @@ import { useEffect, useId, useRef } from 'react'
 import type { ReactNode } from 'react'
 import { useBodyScrollLock } from '@/hooks/use-body-scroll-lock'
 import { useBackgroundInert } from '@/hooks/use-background-inert'
+import { SheetHandle } from './SheetHandle'
 import { useSwipeDismiss } from '@/hooks/use-swipe-dismiss'
 
 export const SEATMAP_BG_ID = 'seatmap-bg-root'
@@ -89,7 +90,9 @@ export const SheetShell = ({ title, variant, active, showHandle, onClose, childr
         aria-describedby={bodyId}
         {...bind}
       >
-        {showHandle && <div className='sheet-handle-strip' data-handle='true'><span className='sheet-handle-bar' data-handle='true' /></div>}
+        {showHandle && (
+          <SheetHandle stripClassName='sheet-handle-strip' barClassName='sheet-handle-bar' onClose={onClose} />
+        )}
         <div ref={scrollRef} className='sheet-scroll'>
           <div className='sheet-header'>
             <h2 id={titleId} className='sheet-title'>

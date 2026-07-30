@@ -1,0 +1,13 @@
+/* 全モーダル共通のシートハンドル(タップで閉じる)。
+   div から button へ変えたことによる UA 既定値の打ち消しだけを担い、
+   高さ・余白・表示ブレークポイントは各シート側のクラスに任せる */
+
+.sheet-handle-hit {
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  /* 押下時の灰色ハイライトを出さない(ドラッグ起点でもあるため) */
+  -webkit-tap-highlight-color: transparent;
+}

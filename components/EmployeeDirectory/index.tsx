@@ -2,6 +2,7 @@ import { useCallback, useMemo, useRef, useState } from 'react'
 import { DirectoryFooter } from './components/DirectoryFooter'
 import { DirectoryHeader } from './components/DirectoryHeader'
 import { DirectoryTree } from './components/DirectoryTree'
+import { SheetHandle } from '@/components/SheetHandle'
 import { useDebouncedQuery } from './hooks/use-debounced-query'
 import { useDirectoryFavorites } from './hooks/use-directory-favorites'
 import { useDirectoryFocus } from './hooks/use-directory-focus'
@@ -110,9 +111,7 @@ export const EmployeeDirectory = ({ isOpen, onClose, onSelectEmployee, onOpenAva
         aria-label='社員ディレクトリ'
         {...bind}
       >
-        <div className='emp-dir-handle-strip' data-handle='true'>
-          <span className='emp-dir-handle-bar' data-handle='true' />
-        </div>
+        <SheetHandle stripClassName='emp-dir-handle-strip' barClassName='emp-dir-handle-bar' onClose={onClose} />
 
         <DirectoryHeader
           query={searchQuery}
