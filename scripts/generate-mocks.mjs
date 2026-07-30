@@ -9,7 +9,9 @@ import { dirname, join } from 'node:path'
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const MOCKS_DIR = join(__dirname, '..', 'mocks')
 
-// 当日分の基準日(JST 固定)
+// 当日分の基準日。出力を決定論的に保つため固定値を使う。
+// 実際の表示日は utils/schedule-anchor が読み込み時に「今日」へ寄せるので、
+// ここの値が古くてもデモが空になることはない
 const BASE_DATE = '2026-07-27'
 
 // ── プール定義 ──────────────────────────────────────────
