@@ -14,13 +14,6 @@ export const CATEGORY_LABEL: Record<ScheduleEvent['category'], string> = {
   vacation: '休暇',
 }
 
-// 施設 kind ラベル
-export const FACILITY_KIND_LABEL: Record<'meeting' | 'booth' | 'common', string> = {
-  meeting: '会議室',
-  booth: 'ブース',
-  common: '共用スペース',
-}
-
 // 在席ステータス表示ラベル
 export const PRESENCE_LABEL: Record<PresenceStatus, string> = {
   present: '在席',

@@ -24,7 +24,6 @@ export type UseLayoutEditorApi = {
   undo: () => void
   dismissError: () => void
   moveSeat: (seatId: string, x: number, y: number) => void
-  swapSeats: (fromSeatId: string, toSeatId: string) => void
   assignSeat: (seatId: string, teamId: string) => void
   deleteSeat: (seatId: string) => void
   moveTeam: (teamId: string, x: number, y: number) => void
@@ -130,11 +129,6 @@ export const useLayoutEditor = (sourceLayout: SeatLayout | undefined): UseLayout
     undo: session.undo,
     dismissError,
     moveSeat,
-    swapSeats: useCallback(
-      (fromSeatId: string, toSeatId: string) =>
-        dispatch({ type: 'seat-swap', fromSeatId, toSeatId }, [fromSeatId, toSeatId]),
-      [dispatch]
-    ),
     assignSeat: useCallback(
       (seatId: string, teamId: string) => dispatch({ type: 'seat-assign', seatId, teamId }, [seatId]),
       [dispatch]

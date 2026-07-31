@@ -10,10 +10,6 @@ export const MAX_SCALE = 5
 export const clamp = (v: number, lo: number, hi: number) =>
   Math.min(hi, Math.max(lo, v))
 
-// 論理座標 → 画面座標
-export const toScreen = (logical: number, scale: number, translate: number) =>
-  logical * scale + translate
-
 // 画面座標 → 論理座標
 export const toLogical = (screen: number, scale: number, translate: number) =>
   (screen - translate) / scale

@@ -6,6 +6,7 @@ import { SheetHandle } from '@/components/SheetHandle'
 import { useDebouncedQuery } from './hooks/use-debounced-query'
 import { useDirectoryFavorites } from './hooks/use-directory-favorites'
 import { useDirectoryFocus } from './hooks/use-directory-focus'
+import { useExpandedDepts } from './hooks/use-expanded-depts'
 import { usePanelVisibility } from './hooks/use-panel-visibility'
 import { buildGroups } from './utils/build-groups'
 import { UNASSIGNED_GROUP } from './utils/directory-constants'
@@ -30,23 +31,11 @@ export const EmployeeDirectory = ({ isOpen, onClose, onSelectEmployee, onOpenAva
   const { resolveAvatar } = useSelfAvatar()
 
   const [searchQuery, setSearchQuery] = useState('')
-  const [expandedDepts, setExpandedDepts] = useState<Set<string>>(new Set())
   const debouncedQuery = useDebouncedQuery(searchQuery)
 
   const treeRef = useRef<HTMLDivElement>(null)
   const closeBtnRef = useRef<HTMLButtonElement>(null)
   const searchInputRef = useRef<HTMLInputElement>(null)
-
-  // 再オープン時は初期状態(検索語・展開状態は保持しなくてよい仕様)
-  const resetOnClose = useCallback(() => {
-    setSearchQuery('')
-    setExpandedDepts(new Set())
-  }, [])
-  const { isVisible, isClosing } = usePanelVisibility(isOpen, resetOnClose)
-
-  const { sheetRef: panelRef, bind } = useSwipeDismiss({ onClose, scrollGateRef: treeRef })
-  useBodyScrollLock(isVisible)
-  useDirectoryFocus({ isVisible, isClosing, panelRef, treeRef, closeBtnRef, searchInputRef, onClose })
 
   const teamNameById = useMemo(() => new Map((teams ?? []).map((t) => [t.id, t.name])), [teams])
   const seatByEmployeeId = useMemo(() => {
@@ -70,21 +59,18 @@ export const EmployeeDirectory = ({ isOpen, onClose, onSelectEmployee, onOpenAva
   const isSearching = normalizedQuery.length > 0
   const filteredGroups = useMemo(() => filterGroups(allGroups, normalizedQuery), [allGroups, normalizedQuery])
 
-  // 検索確定(debouncedQuery 変化)時: ヒット全グループを自動展開。クリア時: 全接続復帰(空 Set)
-  const [prevDebouncedQuery, setPrevDebouncedQuery] = useState(debouncedQuery)
-  if (prevDebouncedQuery !== debouncedQuery) {
-    setPrevDebouncedQuery(debouncedQuery)
-    setExpandedDepts(isSearching ? new Set(filteredGroups.map((g) => g.teamName)) : new Set())
-  }
+  const { expandedDepts, toggleDept, resetExpandedDepts } = useExpandedDepts(debouncedQuery, isSearching, filteredGroups)
 
-  const toggleDept = useCallback((teamName: string) => {
-    setExpandedDepts((prev) => {
-      const next = new Set(prev)
-      if (next.has(teamName)) next.delete(teamName)
-      else next.add(teamName)
-      return next
-    })
-  }, [])
+  // 再オープン時は初期状態(検索語・展開状態は保持しなくてよい仕様)
+  const resetOnClose = useCallback(() => {
+    setSearchQuery('')
+    resetExpandedDepts()
+  }, [resetExpandedDepts])
+  const { isVisible, isClosing } = usePanelVisibility(isOpen, resetOnClose)
+
+  const { sheetRef: panelRef, bind } = useSwipeDismiss({ onClose, scrollGateRef: treeRef })
+  useBodyScrollLock(isVisible)
+  useDirectoryFocus({ isVisible, isClosing, panelRef, treeRef, closeBtnRef, searchInputRef, onClose })
 
   const handleSelectEmployee = useCallback(
     (emp: Employee) => onSelectEmployee(emp, seatByEmployeeId.get(emp.id) ?? null),

@@ -117,9 +117,6 @@ const hashString = (value: string) => {
   return hash
 }
 
-// 黄金角(既存色と知覚的に最大限離れた色相を選ぶための増分)
-const GOLDEN_ANGLE = 137.508
-
 // 背景色から3値(背景・前景・枠)を導出
 const deriveEntry = (background: string, index: number): TeamColorEntry => ({
   background,
@@ -133,10 +130,6 @@ const fallbackColor = (name: string): string => {
   const hue = hashString(name) % 360
   return hslToHex(hue, 68, 50)
 }
-
-// 新規チーム追加時のhue(既存最大インデックス+1に黄金角を適用)
-export const nextTeamHue = (existingCount: number): number =>
-  (existingCount * GOLDEN_ANGLE) % 360
 
 // Team[] から レジストリ(teamId→3値)を構築する純粋関数
 export const buildTeamColorRegistry = (teams: Team[]): Map<string, TeamColorEntry> => {

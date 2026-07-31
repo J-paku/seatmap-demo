@@ -12,6 +12,7 @@ import {
   levelToScale,
   scaleToLevel,
   toLogical,
+  zoomAtPoint,
 } from '@/utils/geometry'
 import type { Transform } from '@/utils/geometry'
 
@@ -112,9 +113,7 @@ export const useViewport = (): Viewport => {
       const t = transformRef.current
       const raw = levelToScale(scaleToLevel(t.scale) + deltaLevel)
       const s = overscroll ? raw : clamp(raw, minScaleRef.current, MAX_SCALE)
-      const lx = toLogical(anchorX, t.scale, t.translateX)
-      const ly = toLogical(anchorY, t.scale, t.translateY)
-      applyTransform({ scale: s, translateX: anchorX - lx * s, translateY: anchorY - ly * s }, overscroll)
+      applyTransform(zoomAtPoint(t, s, anchorX, anchorY), overscroll)
     },
     [applyTransform]
   )

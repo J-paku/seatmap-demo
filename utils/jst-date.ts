@@ -35,3 +35,13 @@ export const isSameJstDate = (a: JstDate, b: JstDate): boolean => a.y === b.y &&
 
 // JST暦日の曜日(0=日〜6=土)
 export const jstWeekday = (date: JstDate): number => new Date(jstDateToNoonMs(date)).getUTCDay()
+
+// 月初セルから月末セルまでを6週分(42マス)並べたグリッドを作る(前後月の日付含む)
+export const buildMonthGrid = (y: number, m: number): JstDate[] => {
+  const first: JstDate = { y, m, d: 1 }
+  const firstWeekday = jstWeekday(first)
+  const start = addJstDays(first, -firstWeekday)
+  const cells: JstDate[] = []
+  for (let i = 0; i < 42; i++) cells.push(addJstDays(start, i))
+  return cells
+}

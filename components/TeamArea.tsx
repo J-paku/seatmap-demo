@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react'
 import { hexToRgba } from '@/utils/color'
+import { clamp } from '@/utils/geometry'
 import type { TeamColorEntry } from '@/utils/team-colors'
 import type { Team } from '@/types'
 
@@ -25,8 +26,6 @@ type Props = {
 }
 
 const ISLAND_INSET = 4
-
-const clamp = (min: number, v: number, max: number) => Math.min(max, Math.max(min, v))
 
 export const TeamArea = ({
   team,
@@ -65,8 +64,8 @@ export const TeamArea = ({
 
   const inner = { x: area.x + ISLAND_INSET, y: area.y + ISLAND_INSET, w: area.w - ISLAND_INSET * 2, h: area.h - ISLAND_INSET * 2 }
   const dot = colorEntry.background
-  const teamNameFont = clamp(44, Math.round(inner.w * 0.095), 72)
-  const countFont = clamp(30, Math.round(teamNameFont * 0.72), 52)
+  const teamNameFont = clamp(Math.round(inner.w * 0.095), 44, 72)
+  const countFont = clamp(Math.round(teamNameFont * 0.72), 30, 52)
   const topBarH = lod === 'overview' ? 8 : lod === 'mid' ? 6 : 4
   const topBarR = lod === 'overview' ? 4 : 2
   const leftBarW = lod === 'overview' ? 6 : 4

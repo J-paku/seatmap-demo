@@ -51,8 +51,7 @@ export const CompactSeatGrid = ({
 }: Props) => {
   const scrollRef = useRef<HTMLDivElement>(null)
   const cellWidth = useCompactCellWidth(scrollRef)
-  // cellWidth はグリッド内部幅の非同期変化を捉えるための再測定契機
-  const { hasOverflow, atStart, atEnd } = useScrollHints(scrollRef, grid.cols, cellWidth)
+  const { hasOverflow, atStart, atEnd } = useScrollHints(scrollRef, grid.cols)
   const isScrollingRef = useScrollActivity()
   const glowing = useSeatHighlightAnimation(scrollRef, highlightSeatId)
   const spotlight = highlightSeatId !== null

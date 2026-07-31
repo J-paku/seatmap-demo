@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
-import { addJstDays, isSameJstDate, jstWeekday } from '@/utils/jst-date'
+import { buildMonthGrid, isSameJstDate, jstWeekday } from '@/utils/jst-date'
 import type { JstDate } from '@/utils/jst-date'
 
 type Props = {
@@ -15,16 +15,6 @@ const MIN_YEAR_OFFSET = -4
 const MAX_YEAR_OFFSET = 4
 
 const WEEKDAY_LABELS = ['日', '月', '火', '水', '木', '金', '土']
-
-// 月初セルから月末セルまでを6週分(42マス)並べたグリッドを作る(前後月の日付含む)
-const buildMonthGrid = (y: number, m: number): JstDate[] => {
-  const first: JstDate = { y, m, d: 1 }
-  const firstWeekday = jstWeekday(first)
-  const start = addJstDays(first, -firstWeekday)
-  const cells: JstDate[] = []
-  for (let i = 0; i < 42; i++) cells.push(addJstDays(start, i))
-  return cells
-}
 
 export const CalendarPopover = ({ anchorRef, selected, today, onSelect, onClose }: Props) => {
   const popoverRef = useRef<HTMLDivElement>(null)
