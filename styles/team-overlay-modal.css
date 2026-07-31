@@ -281,7 +281,7 @@
   display: grid;
 }
 
-/* 横スクロールヒント */
+/* 横スクロールヒント(座席がうっすら透ける glass 化) */
 .team-ovl-hint {
   position: absolute;
   top: 50%;
@@ -293,10 +293,19 @@
   justify-content: center;
   border: 0;
   border-radius: 8px;
-  background: var(--color-surface-overlay);
+  background: var(--glass-bg);
+  backdrop-filter: blur(14px) saturate(150%);
   color: var(--color-text-secondary);
-  box-shadow: var(--shadow-card);
+  box-shadow: var(--glass-shadow-sm);
   pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+
+/* backdrop-filter 非対応環境用の不透明フォールバック */
+@supports not (backdrop-filter: blur(1px)) {
+  .team-ovl-hint {
+    background: var(--glass-bg-opaque);
+  }
 }
 
 .team-ovl-hint.is-left {
@@ -311,6 +320,13 @@
 .team-ovl-hint.is-button {
   pointer-events: auto;
   cursor: pointer;
+}
+
+/* 端まで到達したら非表示(display:none にせず opacity で滑らかに)
+   is-button と特異度同値のため後方宣言で優先(順序依存) */
+.team-ovl-hint.is-faded {
+  opacity: 0;
+  pointer-events: none;
 }
 
 /* ── 座席カード(Desktop) ───────────────────────── */

@@ -51,7 +51,8 @@ export const CompactSeatGrid = ({
 }: Props) => {
   const scrollRef = useRef<HTMLDivElement>(null)
   const cellWidth = useCompactCellWidth(scrollRef)
-  const { hasOverflow } = useScrollHints(grid.cols)
+  // cellWidth はグリッド内部幅の非同期変化を捉えるための再測定契機
+  const { hasOverflow, atStart, atEnd } = useScrollHints(scrollRef, grid.cols, cellWidth)
   const isScrollingRef = useScrollActivity()
   const glowing = useSeatHighlightAnimation(scrollRef, highlightSeatId)
   const spotlight = highlightSeatId !== null
@@ -103,9 +104,9 @@ export const CompactSeatGrid = ({
           })}
         </div>
       </div>
-      {/* onNudge を渡す = ボタン化 */}
-      {hasOverflow && <ScrollHint side='left' onNudge={() => nudge(-1)} />}
-      {hasOverflow && <ScrollHint side='right' onNudge={() => nudge(1)} />}
+      {/* onNudge を渡す = ボタン化。端に達した側は is-faded でフェード(アンマウントはしない) */}
+      {hasOverflow && <ScrollHint side='left' onNudge={() => nudge(-1)} faded={atStart} />}
+      {hasOverflow && <ScrollHint side='right' onNudge={() => nudge(1)} faded={atEnd} />}
     </div>
   )
 }

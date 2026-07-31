@@ -3,7 +3,7 @@ import { ScrollHint } from './ScrollHint'
 import { SeatCard } from './SeatCard'
 import { DESKTOP_SEAT_CARD_WIDTH_PX, DESKTOP_SEAT_GAP_PX, gridCellKey } from '../utils/seat-grid'
 import type { SeatGridProps } from '../type'
-import { useDesktopScrollHints } from '../hooks/use-scroll-hints'
+import { useScrollHints } from '../hooks/use-scroll-hints'
 import type { PresenceStatus } from '@/types'
 
 // 列幅は固定 180px。ブラウザ幅次第でオーバーフロー量が変わるため、ヒントは実測で出す
@@ -22,7 +22,7 @@ export const DesktopSeatGrid = ({
   onClearHighlight,
 }: Props) => {
   const scrollRef = useRef<HTMLDivElement>(null)
-  const { hasOverflow, atStart, atEnd } = useDesktopScrollHints(scrollRef, grid.cols)
+  const { hasOverflow, atStart, atEnd } = useScrollHints(scrollRef, grid.cols)
   const spotlight = highlightSeatId !== null
 
   const cells = []
