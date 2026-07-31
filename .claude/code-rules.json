@@ -1,0 +1,11 @@
+{
+  "extends": "global",
+  "overrides": {
+    "css-manual-vendor-prefix": { "enabled": true },
+    "ts-no-any": { "enabled": true },
+    "ts-no-semicolon": { "enabled": true },
+    "ts-single-quote": { "enabled": true },
+    "hook-file-naming": { "enabled": true },
+    "comment-language": { "enabled": true, "options": { "lang": "ja" } }
+  }
+}
