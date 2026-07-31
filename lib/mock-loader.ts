@@ -45,20 +45,50 @@ const CACHE_PREFIX = 'seatmap::'
 const FORCE_FAIL = false // true で強制失敗→指数バックオフ確認
 const responseDelay = () => 200 + Math.floor(Math.random() * 300)
 
-const readCache = <T,>(name: string): T | undefined => {
+// シード指紋用の軽量文字列ハッシュ(暗号強度は不要、変更検知のみ)
+const hashString = (value: string): string => {
+  let hash = 0
+  for (let i = 0; i < value.length; i += 1) {
+    hash = (hash * 31 + value.charCodeAt(i)) | 0
+  }
+  return hash.toString(36)
+}
+
+// シードデータ本体から指紋を計算(手動バージョン定数は持たない。上げ忘れによる同種バグの再発防止)
+const fingerprintOf = <T,>(data: T): string => hashString(JSON.stringify(data))
+
+// 新キャッシュ形式(封筒): シード指紋を同梱し、シード変更時に自動無効化する
+type CacheEnvelope<T> = {
+  fingerprint: string
+  data: T
+}
+
+const isCacheEnvelope = <T,>(value: unknown): value is CacheEnvelope<T> =>
+  typeof value === 'object' &&
+  value !== null &&
+  'fingerprint' in value &&
+  'data' in value &&
+  typeof (value as { fingerprint: unknown }).fingerprint === 'string'
+
+const readCache = <T,>(name: string, fingerprint: string): T | undefined => {
   try {
     if (typeof window === 'undefined') return undefined
     const raw = window.localStorage.getItem(CACHE_PREFIX + name)
-    return raw ? (JSON.parse(raw) as T) : undefined
+    if (!raw) return undefined
+    const parsed: unknown = JSON.parse(raw)
+    // 旧形式(配列そのまま)や指紋不一致(シード更新)はキャッシュミス扱い
+    if (!isCacheEnvelope<T>(parsed) || parsed.fingerprint !== fingerprint) return undefined
+    return parsed.data
   } catch {
     return undefined
   }
 }
 
-const writeCache = <T,>(name: string, data: T): void => {
+const writeCache = <T,>(name: string, data: T, fingerprint: string): void => {
   try {
     if (typeof window === 'undefined') return
-    window.localStorage.setItem(CACHE_PREFIX + name, JSON.stringify(data))
+    const envelope: CacheEnvelope<T> = { fingerprint, data }
+    window.localStorage.setItem(CACHE_PREFIX + name, JSON.stringify(envelope))
   } catch {
     // 容量超過などは無視(デモではキャッシュ失敗を致命としない)
   }
@@ -79,19 +109,21 @@ const fetchWithRetry = async <T,>(data: T): Promise<T> => {
 }
 
 // キャッシュ即時描画(fallbackData)+バックグラウンド再取得(SWR)+取得成功時にキャッシュ更新
-const useCached = <T,>(name: string, data: T) =>
-  useSWR<T>(
+const useCached = <T,>(name: string, data: T) => {
+  const fingerprint = fingerprintOf(data)
+  return useSWR<T>(
     `mock/${name}`,
     async () => {
       // キャッシュヒットは即返す(fetcherはマウント後実行なのでSSR不整合は起きない)
-      const cached = readCache<T>(name)
+      const cached = readCache<T>(name, fingerprint)
       if (cached !== undefined) return cached
       const fresh = await fetchWithRetry(data)
-      writeCache(name, fresh)
+      writeCache(name, fresh, fingerprint)
       return fresh
     },
     { revalidateOnFocus: false }
   )
+}
 
 // 各データの SWR フック(キャッシュ優先・失敗時リトライ付き)
 export const useEmployees = () => useCached('employees', EMPLOYEES)

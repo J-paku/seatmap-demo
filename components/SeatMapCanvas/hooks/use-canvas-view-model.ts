@@ -47,12 +47,16 @@ export const useCanvasViewModel = ({
     [pulsingSeatId, layout.seats]
   )
 
-  // 11: チームラベルの N名 は「seat.id が team.idPrefix + '-' で始まり employeeId が非null」の件数
+  // 11: チームラベルの N名 は「seat.teamId が一致し employeeId が非null」の件数
   const assignedCountByTeam = useMemo(() => {
     const map = new Map<string, number>()
     for (const team of layout.teams) {
-      const prefix = `${team.idPrefix}-`
-      map.set(team.id, layout.seats.filter((s) => s.id.startsWith(prefix) && s.employeeId !== null).length)
+      map.set(team.id, 0)
+    }
+    for (const seat of layout.seats) {
+      if (seat.employeeId === null) continue
+      if (!map.has(seat.teamId)) continue
+      map.set(seat.teamId, (map.get(seat.teamId) ?? 0) + 1)
     }
     return map
   }, [layout.teams, layout.seats])
