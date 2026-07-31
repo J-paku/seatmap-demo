@@ -479,7 +479,6 @@
   border-radius: 8px;
   background: color-mix(in srgb, var(--color-surface-sunken) 72%, transparent);
   backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
 }
 .schedule-spinner {
   width: 22px;
