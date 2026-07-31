@@ -83,8 +83,8 @@ seatmap-demo/
 
 ## 5. SRP 分割パターン
 
-「分割するかどうか」の判断基準(行数ではなく責務の数)は `~/.claude/rules/01-authoring.md` 3.。
-本節は **分割すると決めた後、何をどこへ出して入口をどう作るか** を扱う。
+分割の判断基準(行数ではなく責務の数)は `~/.claude/rules/01-authoring.md` 3.、
+入口の作り方の原則とその理由は同 4.。**本節はこのリポジトリでの実例と適用結果だけを持つ。**
 
 ### 5.1 共通手順
 
@@ -182,13 +182,8 @@ import { useLayoutEditor } from '@/hooks/use-layout-editor/use-layout-editor'
 import { useLayoutHistory } from '@/hooks/use-layout-editor/use-layout-history'
 ```
 
-`index.ts` を禁じる理由:
-
-1. **指すべき「その1つ」が無い。** コンポーネントのフォルダは公開物が1つだが、フックのフォルダは
-   同格のフックの集まり。入口を1本に決めた瞬間、内側の1本だけが要る画面が使えなくなる
-2. **grep が切れる。** バレル経由だと import 行にフック名が出ないため、`use-layout-history` で
-   検索しても呼び出し側が一件も引っかからない
-3. **束ねた入口だけが要る画面と、内側の1本だけが要る画面が混在する。** バレルは前者しか許さない
+`index.ts` を禁じる理由(指すべき「その1つ」が無い / grep が切れる / 部分利用が潰れる)は
+`~/.claude/rules/01-authoring.md` 4. を参照。ここでは結論だけ持つ。
 
 命名は `[hook-file-naming]` の対象のまま。**フォルダ名・フォルダ内の全ファイルとも kebab-case +
 `use-` 接頭辞**にする(`hooks/layout-editor/` のように接頭辞を落とさない)。
