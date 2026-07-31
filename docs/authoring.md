@@ -69,6 +69,7 @@ seatmap-demo/
 - Props / 戻り値の型はファイル上部に定義する
 - コンポーネント専用フックは `components/<Name>/hooks/` へ。2箇所以上で使われたら
   ルート直下の `hooks/` へ昇格する
+- 1本のフックを複数責務で分割する時は下記 5.3。**フォルダ化しても `index.ts` は作らない**
 - **例外**: `lib/mock-loader.ts` はデータ取得フック(`useEmployees` 等)を取得層と一体で同居させる。
   取得層が1ファイルに閉じているため `hooks/` へ分離しない(`~/.claude/rules/01-authoring.md` の
   「フックは常に `hooks/`」原則に対する明示的な例外)
@@ -77,23 +78,130 @@ seatmap-demo/
 
 - `index.tsx` は組み立てのみ。ロジックはフックへ委譲する(`SeatMapCanvas/index.tsx` が模範)
 - 200行超 **かつ** 複数責務なら `components/<Name>/` へ分割。単一責務のまま長いだけなら分割しない
-- 分割時の構造:
-  ```
-  components/<Name>/
-    index.tsx     組み立てのみ
-    type.ts       型は平坦にここへ
-    components/   専用の下位部品
-    hooks/        専用のフック
-    utils/        専用の純関数・定数
-  ```
+- 分割時の構造と `index.tsx` の薄さの基準は下記 5.2
 - ローカルに `lib/` は作らない。外部接続は必ずルートの `lib/` に集約する
 
-## 5. import alias
+## 5. SRP 分割パターン
+
+「分割するかどうか」の判断基準(行数ではなく責務の数)は `~/.claude/rules/01-authoring.md` 3.。
+本節は **分割すると決めた後、何をどこへ出して入口をどう作るか** を扱う。
+
+### 5.1 共通手順
+
+1. **責務に名前を付ける。** 名前が付かない塊は責務ではないので分割しない
+2. **切り出し先は種類で自動的に決まる。** 迷う余地を残さない
+   | 切り出すもの | 行き先 |
+   |--------------|--------|
+   | JSX を返す | `components/` |
+   | `use` で始まり React 機能を呼ぶ | `hooks/` |
+   | 副作用のない計算・定数 | `utils/` |
+   | 型だけ | `type.ts`(サブフォルダを作らず平坦に置く) |
+3. **元のファイルに残るのは配線だけ。** 状態・計算・分岐が残っているなら切り出しが足りない
+4. **2箇所以上から使われ始めたらルート直下へ昇格。** ローカルに複製しない
+
+### 5.2 コンポーネント — `<Name>/index.tsx` パターン
+
+コンポーネントのフォルダは **公開物がちょうど1つ**(そのコンポーネント)なので、入口を `index.tsx` にする。
+呼び出し側は `@/components/AvatarCustomizer` とだけ書き、内部構造を知らなくてよい。
+
+模範例 `components/AvatarCustomizer/`:
+
+```
+components/AvatarCustomizer/
+├─ index.tsx                     組み立てのみ(9行)
+├─ type.ts                       この木で共有する型
+├─ components/
+│  ├─ AvatarCustomizerModal.tsx  モーダル本体
+│  ├─ AvatarPreview.tsx
+│  ├─ PartsPanel.tsx
+│  ├─ PartChipRow.tsx
+│  ├─ SwatchRow.tsx
+│  └─ AiStudio.tsx
+├─ hooks/
+│  ├─ use-avatar-draft.ts        編集中の下書き状態と差し替え口
+│  ├─ use-ai-generator.ts        AI生成モック(通信なし)
+│  └─ use-dialog-shell.ts        フォーカス・Escape 閉じ・背景スクロール遮断
+└─ utils/
+   ├─ avatar-options.ts          パーツ候補・色パレットの定数
+   ├─ clone-avatar.ts            不変クローン
+   └─ ai-candidates.ts           生成モックの固定候補12件
+```
+
+`index.tsx` の全文。ここまで薄くできれば分割は成功している。
+
+```tsx
+import { AvatarCustomizerModal } from './components/AvatarCustomizerModal'
+import { useSelfAvatar } from '@/contexts/self-avatar-context'
+
+// 開いている時だけモーダルをマウント(hooks の on/off を開閉に一致)
+export const AvatarCustomizer = () => {
+  const { isEditorOpen, selfAvatar, save, closeEditor } = useSelfAvatar()
+  if (!isEditorOpen || !selfAvatar) return null
+  return <AvatarCustomizerModal initial={selfAvatar} onSave={save} onClose={closeEditor} />
+}
+```
+
+`index.tsx` に置いてよいもの / いけないもの:
+
+| | 内容 |
+|---|---|
+| ○ | Props の受け取り、Context の読み出し、早期 return、下位部品への受け渡し |
+| × | `useState` / `useEffect` の直書き、計算式、条件分岐の塊、インラインのイベントハンドラ本体 |
+
+`index.tsx` が100行を超えたら、それは組み立て以外が残っている合図。分割先を再検討する。
+
+### 5.3 フック — フォルダ化しても `index.ts` は作らない
+
+フックが複数責務を抱えて分割する時、**コンポーネントと同じ形にはしない**。
+`index.ts` を置かず、**フォルダ名と同じ名前のフックファイルを入口にする**。
+
+× Bad — バレルを作る:
+
+```
+hooks/use-layout-editor/
+├─ index.ts                      ← 作らない
+├─ use-layout-draft.ts
+└─ use-layout-history.ts
+```
+
+```ts
+import { useLayoutEditor } from '@/hooks/use-layout-editor'
+```
+
+○ Good — 使うフックを名指しする:
+
+```
+hooks/use-layout-editor/
+├─ use-layout-editor.ts          束ねる入口。下の2本を呼ぶだけ
+├─ use-layout-draft.ts           編集中の下書き状態
+└─ use-layout-history.ts         undo/redo スタック
+```
+
+```ts
+import { useLayoutEditor } from '@/hooks/use-layout-editor/use-layout-editor'
+import { useLayoutHistory } from '@/hooks/use-layout-editor/use-layout-history'
+```
+
+`index.ts` を禁じる理由:
+
+1. **指すべき「その1つ」が無い。** コンポーネントのフォルダは公開物が1つだが、フックのフォルダは
+   同格のフックの集まり。入口を1本に決めた瞬間、内側の1本だけが要る画面が使えなくなる
+2. **grep が切れる。** バレル経由だと import 行にフック名が出ないため、`use-layout-history` で
+   検索しても呼び出し側が一件も引っかからない
+3. **束ねた入口だけが要る画面と、内側の1本だけが要る画面が混在する。** バレルは前者しか許さない
+
+命名は `[hook-file-naming]` の対象のまま。**フォルダ名・フォルダ内の全ファイルとも kebab-case +
+`use-` 接頭辞**にする(`hooks/layout-editor/` のように接頭辞を落とさない)。
+
+> 現時点でフォルダ化されたフックは無い。ルート `hooks/` の10本・コンポーネント専用の30本、
+> 計40本すべて単一責務のまま1ファイルで収まっている。最初にフォルダ化した時はここに実例を追記する。
+
+## 6. import alias
 
 - 兄弟 `./` / 同じツリー内 `../` / ツリーを跨ぐ `@/`
 - ツリーを跨ぐ時は `@/hooks/...` `@/utils/...` のように置き場が分かる形で書く
 
-## 6. コードスタイル
+## 7. コードスタイル
 
 | ルール | 内容 | 自動検査 |
 |--------|------|----------|
