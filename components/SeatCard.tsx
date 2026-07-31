@@ -1,7 +1,7 @@
 import { memo } from 'react'
 import { PixelAvatar } from './PixelAvatar'
 import type { Employee, PresenceStatus, Seat } from '@/types'
-import { PRESENCE_LABEL } from '@/types'
+import { PRESENCE_LABEL } from '@/utils/format'
 
 // LOD: detail=アバター+名前+状態 / mid=アバター+状態ドット(名前省略)
 export type Lod = 'detail' | 'mid' | 'overview'

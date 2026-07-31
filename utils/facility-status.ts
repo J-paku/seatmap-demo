@@ -17,6 +17,14 @@ export const FACILITY_COLOR: Record<FacilityStatus, { bg: string; border: string
   unlinked: { bg: '#f8fafc', border: '#e2e8f0', text: '#94a3b8' },
 }
 
+// 会議室状態の表示ラベル
+export const FACILITY_STATUS_LABEL: Record<FacilityStatus, string> = {
+  available: '空室',
+  in_meeting: '会議中',
+  upcoming: 'まもなく',
+  unlinked: '施設未連携',
+}
+
 // facilityId + 会議 + 現在時刻(分)から状態を導出
 export const deriveFacilityState = (
   facility: Facility,

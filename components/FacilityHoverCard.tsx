@@ -1,6 +1,5 @@
 import type { Employee, Facility } from '@/types'
-import { FACILITY_STATUS_LABEL } from '@/types'
-import { FACILITY_COLOR, minToHHMM } from '@/utils/facility-status'
+import { FACILITY_COLOR, FACILITY_STATUS_LABEL, minToHHMM } from '@/utils/facility-status'
 import type { FacilityState } from '@/utils/facility-status'
 
 export type FacilityHoverPayload = { facilityId: string; rect: DOMRect }

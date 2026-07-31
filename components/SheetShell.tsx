@@ -2,6 +2,7 @@ import { useEffect, useId, useRef } from 'react'
 import type { ReactNode } from 'react'
 import { useBodyScrollLock } from '@/hooks/use-body-scroll-lock'
 import { useBackgroundInert } from '@/hooks/use-background-inert'
+import { useFocusTrap } from '@/hooks/use-focus-trap'
 import { SheetHandle } from './SheetHandle'
 import { useSwipeDismiss } from '@/hooks/use-swipe-dismiss'
 
@@ -15,8 +16,6 @@ type Props = {
   onClose: () => void
   children: ReactNode
 }
-
-const FOCUSABLE = 'a[href],button:not([disabled]),input:not([disabled]),textarea,select,[tabindex]:not([tabindex="-1"])'
 
 export const SheetShell = ({ title, variant, active, showHandle, onClose, children }: Props) => {
   const closeBtnRef = useRef<HTMLButtonElement>(null)
@@ -42,28 +41,7 @@ export const SheetShell = ({ title, variant, active, showHandle, onClose, childr
   }, [])
 
   // フォーカストラップ(最前面のみ)
-  useEffect(() => {
-    if (!active) return
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key !== 'Tab') return
-      const sheet = sheetRef.current
-      if (!sheet) return
-      const items = [...sheet.querySelectorAll<HTMLElement>(FOCUSABLE)].filter((el) => el.offsetParent !== null)
-      if (items.length === 0) return
-      const first = items[0]
-      const last = items[items.length - 1]
-      const activeEl = document.activeElement as HTMLElement | null
-      if (e.shiftKey && activeEl === first) {
-        e.preventDefault()
-        last.focus()
-      } else if (!e.shiftKey && activeEl === last) {
-        e.preventDefault()
-        first.focus()
-      }
-    }
-    document.addEventListener('keydown', onKey)
-    return () => document.removeEventListener('keydown', onKey)
-  }, [active])
+  useFocusTrap(active, sheetRef)
 
   // 背景膜の native touchmove/wheel を遮断(passive:false)
   useEffect(() => {

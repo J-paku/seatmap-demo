@@ -1,6 +1,5 @@
 import type { Facility } from '@/types'
-import { FACILITY_STATUS_LABEL } from '@/types'
-import { FACILITY_COLOR } from '@/utils/facility-status'
+import { FACILITY_COLOR, FACILITY_STATUS_LABEL } from '@/utils/facility-status'
 import type { FacilityState } from '@/utils/facility-status'
 import type { FacilityHoverPayload } from './FacilityHoverCard'
 

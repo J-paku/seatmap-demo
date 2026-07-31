@@ -97,19 +97,3 @@ export type ScheduleEvent = {
   end: string
   isAllDay: boolean
 }
-
-// 在席ステータス表示ラベル
-export const PRESENCE_LABEL: Record<PresenceStatus, string> = {
-  present: '在席',
-  meeting: '会議',
-  out: '外出',
-  vacation: '休暇',
-}
-
-// 会議室状態の表示ラベル
-export const FACILITY_STATUS_LABEL: Record<FacilityStatus, string> = {
-  available: '空室',
-  in_meeting: '会議中',
-  upcoming: 'まもなく',
-  unlinked: '施設未連携',
-}

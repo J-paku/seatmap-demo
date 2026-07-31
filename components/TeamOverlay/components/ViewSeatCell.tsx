@@ -3,7 +3,7 @@ import type { MouseEvent as ReactMouseEvent, PointerEvent as ReactPointerEvent, 
 import { PixelAvatar } from '@/components/PixelAvatar'
 import { SEAT_STATUS_COLOR } from '../utils/seat-grid'
 import { compactNameFontSize, getCompactNameLabel } from '../utils/compact-name'
-import { PRESENCE_LABEL } from '@/types'
+import { PRESENCE_LABEL } from '@/utils/format'
 import type { Employee, PresenceStatus, Seat } from '@/types'
 
 // Compact 用の座席セル。縦積み(アバター上 + テキスト下)・姓のみ・椅子なし・回転反映なし。

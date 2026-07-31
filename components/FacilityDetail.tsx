@@ -1,8 +1,7 @@
 import { useMemo } from 'react'
 import { useEmployees, useFacilities, useFacilityMeetings } from '@/lib/mock-loader'
-import { deriveFacilityState, minToHHMM, FACILITY_COLOR } from '@/utils/facility-status'
+import { deriveFacilityState, minToHHMM, FACILITY_COLOR, FACILITY_STATUS_LABEL } from '@/utils/facility-status'
 import type { FacilityState } from '@/utils/facility-status'
-import { FACILITY_STATUS_LABEL } from '@/types'
 import { useSelectedDate } from '@/contexts/selected-date-context'
 import { useQuantizedClock } from '@/hooks/use-quantized-clock'
 

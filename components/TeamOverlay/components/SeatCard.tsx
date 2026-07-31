@@ -1,7 +1,7 @@
 import { PixelAvatar } from '@/components/PixelAvatar'
 import { hexToRgba } from '@/utils/color'
 import { SEAT_STATUS_COLOR } from '../utils/seat-grid'
-import { PRESENCE_LABEL } from '@/types'
+import { PRESENCE_LABEL } from '@/utils/format'
 import type { Employee, PresenceStatus, Seat } from '@/types'
 
 // Desktop 用の座席カード。横並び(アバター左 + テキスト右)・氏名フルネーム・椅子あり
