@@ -1,11 +1,9 @@
 import { forwardRef, useCallback, useImperativeHandle } from 'react'
 import { EditSeatLayer } from './components/EditSeatLayer'
-import { JumpMarker } from './components/JumpMarker'
 import { TeamAreaLayer } from './components/TeamAreaLayer'
 import { useCanvasPointer } from './hooks/use-canvas-pointer'
 import { useCanvasViewModel } from './hooks/use-canvas-view-model'
 import { useEditDrag } from './hooks/use-edit-drag'
-import { useSeatJump } from './hooks/use-seat-jump'
 import { useViewport } from './hooks/use-viewport'
 import { useZoomControls } from './hooks/use-zoom-controls'
 import type { SeatMapCanvasHandle, SeatMapCanvasProps } from './type'
@@ -50,19 +48,27 @@ export const SeatMapCanvas = forwardRef<SeatMapCanvasHandle, Props>(function Sea
   const viewport = useViewport()
   const zoom = useZoomControls(viewport)
   const { isPanningRef, handlers } = useCanvasPointer(viewport)
-  const { pulsingSeatId, jumpToSeat } = useSeatJump(viewport)
   const edit = useEditDrag({ viewport, layout, isEditMode, onSeatMove, onTeamMove, onSeatEditSelect })
   const view = useCanvasViewModel({
     layout,
     viewport,
     isEditMode,
-    pulsingSeatId,
     editSelectedSeatId: edit.editSelectedSeatId,
     onSeatSelect,
     onTeamBoundaryClick,
   })
 
-  useImperativeHandle(ref, () => ({ jumpToSeat }), [jumpToSeat])
+  // 検索ヒット経由でオーバーレイを開く際の拡大原点。チーム箱は画面外でも常に描画されているため
+  // キャンバスを動かさずに実測できる(data-team-id の値は Team.idPrefix)
+  const measureTeamRect = useCallback(
+    (idPrefix: string): DOMRect | null => {
+      const el = viewport.containerRef.current?.querySelector(`[data-team-id="${idPrefix}"]`)
+      return el ? el.getBoundingClientRect() : null
+    },
+    [viewport.containerRef]
+  )
+
+  useImperativeHandle(ref, () => ({ measureTeamRect }), [measureTeamRect])
 
   // 07: 空き領域クリックで座席の編集選択を解除(各要素側は stopPropagation 済み)
   const handleBackgroundClick = useCallback(() => {
@@ -114,7 +120,6 @@ export const SeatMapCanvas = forwardRef<SeatMapCanvasHandle, Props>(function Sea
             presenceMap={presenceMap}
             liveSeatPos={edit.liveSeatPos}
             editSelectedSeatId={edit.editSelectedSeatId}
-            pulsingSeatId={pulsingSeatId}
             lod={view.lod}
             counterScale={view.counterScale}
             onSelect={view.handleSeatSelect}
@@ -128,7 +133,6 @@ export const SeatMapCanvas = forwardRef<SeatMapCanvasHandle, Props>(function Sea
             viewBoxH={layout.viewBox.height}
           />
         )}
-        {view.pulsingSeat && <JumpMarker key={view.pulsingSeat.id} seat={view.pulsingSeat} />}
       </div>
       {/* 座席は個人カードとして描画しない。sr-only ミラー層のみがキーボード/スクリーンリーダー経路を提供する */}
       <SeatMirrorLayer

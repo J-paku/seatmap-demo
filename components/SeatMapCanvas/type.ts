@@ -1,6 +1,6 @@
 import type { RefObject } from 'react'
 import type { Transform } from '@/utils/geometry'
-import type { Employee, PresenceStatus, Seat, SeatLayout } from '@/types'
+import type { Employee, PresenceStatus, SeatLayout } from '@/types'
 import type { FacilityState } from '@/utils/facility-status'
 import type { FacilityHoverPayload } from '@/components/FacilityHoverCard'
 import type { TeamOverlayPayload } from '@/components/TeamOverlay'
@@ -28,9 +28,12 @@ export type SeatMapCanvasProps = {
   canUndo?: boolean
 }
 
-// 05: ディレクトリからの「座席へジャンプ」命令(親が ref 経由で呼び出す)
+// 親が ref 経由で呼び出すキャンバスの命令
 export type SeatMapCanvasHandle = {
-  jumpToSeat: (seat: Seat, onArrive: () => void) => void
+  // 検索ヒットからオーバーレイを開くときはクリックイベントが無いため、拡大原点の矩形をここで実測する。
+  // チーム矩形は画面外でも常に描画されているのでキャンバスを動かさずに測れる。
+  // 引数は data-team-id 属性の値 = Team.idPrefix であり Team.id ではない
+  measureTeamRect: (idPrefix: string) => DOMRect | null
 }
 
 export type Rect = { x: number; y: number; w: number; h: number }

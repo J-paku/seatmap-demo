@@ -13,7 +13,7 @@ export const ZoomControls = ({ onZoomIn, onZoomOut, onReset }: Props) => (
     <button type='button' aria-label='縮小' onClick={onZoomOut}>
       －
     </button>
-    <button type='button' aria-label='リセット' onClick={onReset} style={{ fontSize: 12 }}>
+    <button type='button' className='zoom-controls-reset' aria-label='リセット' onClick={onReset}>
       リセット
     </button>
   </div>

@@ -19,7 +19,12 @@ const HomePage = () => {
     <>
       <Head>
         <title>{SITE_TITLE}</title>
-        <meta name='viewport' content='width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no' />
+        {/* viewport-fit=cover が無いと env(safe-area-inset-*) は全て 0 に解決される。
+            AppHeader・a11y トースト・TeamOverlay の3箇所が既にこれを前提に書かれているため付ける */}
+        <meta
+          name='viewport'
+          content='width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover'
+        />
         <meta name='description' content={SITE_DESCRIPTION} />
         <meta property='og:type' content='website' />
         <meta property='og:title' content={SITE_TITLE} />

@@ -355,8 +355,8 @@
 }
 
 .team-ovl-card.is-hit {
-  border: 2px solid #e9a93d;
-  box-shadow: 0 0 0 4px rgba(242, 193, 78, 0.22), 0 10px 24px rgba(233, 169, 61, 0.18);
+  border: 2px solid var(--color-hit);
+  box-shadow: 0 0 0 4px var(--color-hit-ring), 0 10px 24px var(--color-hit-ring);
 }
 
 .team-ovl-card-accent {
@@ -471,7 +471,7 @@
 }
 
 .team-ovl-cell.is-hit {
-  border: 2px solid #e9a93d;
+  border: 2px solid var(--color-hit);
 }
 
 .team-ovl-cell.is-glowing {
@@ -480,10 +480,10 @@
 
 @keyframes team-ovl-glow {
   0% {
-    box-shadow: 0 0 0 0 rgba(233, 169, 61, 0.55);
+    box-shadow: 0 0 0 0 var(--color-hit-glow-from);
   }
   60% {
-    box-shadow: 0 0 0 6px rgba(233, 169, 61, 0.22);
+    box-shadow: 0 0 0 6px var(--color-hit-glow-to);
   }
   100% {
     box-shadow: var(--shadow-card);
@@ -493,6 +493,25 @@
 @media (prefers-reduced-motion: reduce) {
   .team-ovl-cell.is-glowing {
     animation-duration: 420ms;
+  }
+}
+
+/* スポットライト。原本はセル側のインラインスタイルに 0.28 が2ファイル重複していたため
+   トークン1つへ寄せる(同じ概念の判定基準を2つ持たない) */
+.team-ovl-cell.is-dimmed,
+.team-ovl-card.is-dimmed {
+  opacity: var(--opacity-seat-dimmed);
+}
+
+.team-ovl-cell,
+.team-ovl-card {
+  transition: opacity 180ms ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .team-ovl-cell,
+  .team-ovl-card {
+    transition: none;
   }
 }
 
@@ -558,8 +577,8 @@
   right: 6px;
   padding: 1px 6px;
   border-radius: 8px;
-  background: #f2c14e;
-  color: #6b4a12;
+  background: var(--color-hit-badge-bg);
+  color: var(--color-hit-badge-fg);
   font-size: 11px;
   font-weight: 800;
 }

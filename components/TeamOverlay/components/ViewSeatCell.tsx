@@ -78,9 +78,10 @@ export const ViewSeatCell = ({
   }
 
   if (!employee) {
-    // 空席はボタン化しない
+    // 空席はボタン化しない。スポットライト中は空席も落とす
+    // (ここを外すと空席だけが最前面の明るさで残り、ヒット席より目立ってしまう。Desktop 側は同じ要素なので既に落ちている)
     return (
-      <div data-seat-id={seat.id} className='team-ovl-cell is-empty'>
+      <div data-seat-id={seat.id} className={`team-ovl-cell is-empty${dimmed ? ' is-dimmed' : ''}`}>
         <span className='team-ovl-cell-name'>空席</span>
       </div>
     )
@@ -92,8 +93,7 @@ export const ViewSeatCell = ({
     <button
       type='button'
       data-seat-id={seat.id}
-      className={`team-ovl-cell${isHit ? ' is-hit' : ''}${glowing ? ' is-glowing' : ''}`}
-      style={{ opacity: dimmed ? 0.28 : 1 }}
+      className={`team-ovl-cell${isHit ? ' is-hit' : ''}${glowing ? ' is-glowing' : ''}${dimmed ? ' is-dimmed' : ''}`}
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
       onPointerCancel={handlePointerCancel}

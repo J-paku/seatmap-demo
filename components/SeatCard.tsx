@@ -13,7 +13,6 @@ type Props = {
   status: PresenceStatus
   selected: boolean
   // 05: ディレクトリからのジャンプ着地時の強調パルス(任意・既定 false)
-  pulsing?: boolean
   lod: Lod
   counterScale: number
   onSelect: (seatId: string) => void
@@ -35,7 +34,6 @@ const SeatCardInner = ({
   employee,
   status,
   selected,
-  pulsing,
   lod,
   counterScale,
   onSelect,
@@ -49,7 +47,7 @@ const SeatCardInner = ({
 
   return (
     <div
-      className={`seat-card${isEmpty ? ' is-empty' : ''}${selected ? ' is-selected' : ''}${pulsing ? ' is-jump-pulse' : ''}${isEditMode ? ' is-edit-mode' : ''}${isEditDragging ? ' is-edit-dragging' : ''}`}
+      className={`seat-card${isEmpty ? ' is-empty' : ''}${selected ? ' is-selected' : ''}${isEditMode ? ' is-edit-mode' : ''}${isEditDragging ? ' is-edit-dragging' : ''}`}
       style={{
         left: seat.x,
         top: seat.y,

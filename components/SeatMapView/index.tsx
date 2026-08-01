@@ -5,21 +5,23 @@ import { EditModeLayer } from './components/EditModeLayer'
 import { useEditDialogs } from './hooks/use-edit-dialogs'
 import { useLayoutSave } from './hooks/use-layout-save'
 import { useSeatMapData } from './hooks/use-seat-map-data'
+import { useTeamSeatFocus } from './hooks/use-team-seat-focus'
+import type { FocusFailure } from './hooks/use-team-seat-focus'
 import { DetailPanels } from '@/components/DetailPanels'
 import { EmployeeDirectory } from '@/components/EmployeeDirectory'
 import { FacilityHoverCard } from '@/components/FacilityHoverCard'
 import type { FacilityHoverPayload } from '@/components/FacilityHoverCard'
+import { MySeatButton } from '@/components/MySeatButton'
 import { SeatMapCanvas } from '@/components/SeatMapCanvas'
 import type { SeatMapCanvasHandle } from '@/components/SeatMapCanvas'
 import { TeamOverlay } from '@/components/TeamOverlay'
-import type { TeamOverlayPayload } from '@/components/TeamOverlay'
 import { EditErrorToast } from '@/components/edit/EditErrorToast'
 import { useDetailPanel } from '@/contexts/detail-panel-context'
 import { useSeatLayout } from '@/lib/mock-loader'
 import { useTheme } from '@/hooks/use-theme'
 import { SELF_EMPLOYEE_ID } from '@/utils/demo-identity'
 import { useLayoutEditor } from '@/hooks/use-layout-editor'
-import type { Employee, Seat } from '@/types'
+import type { Seat } from '@/types'
 
 // 座席マップ画面の組み立て。データ合成・保存・ダイアログ状態はそれぞれのフックが持つ
 
@@ -37,46 +39,49 @@ export const SeatMapView = () => {
   const { ready, employeeById, effectiveLayout, effectivePresenceMap, facilityStateById } = useSeatMapData(editor)
   // 移植版サイドバーは社員配列を直接受け取る
   const directoryEmployees = useMemo(() => [...employeeById.values()], [employeeById])
-  // 社員タップ → 該当座席へジャンプして詳細を開く(座席未設定は createVirtualSeat 由来の id 空文字)
-  const handleDirectorySeatSelect = useCallback(
-    (seat: Seat) => {
-      setIsDirectoryOpen(false)
-      if (!seat.id) {
-        setUnassignedNotice('座席未設定')
-        window.setTimeout(() => setUnassignedNotice(null), NOTICE_MS)
-        return
-      }
-      canvasRef.current?.jumpToSeat(seat, () => openSeatDetail(seat.id))
-    },
-    [openSeatDetail]
-  )
   const save = useLayoutSave(editor)
   const dialogs = useEditDialogs(editor, employeeById)
 
   const canvasRef = useRef<SeatMapCanvasHandle>(null)
   const [isDirectoryOpen, setIsDirectoryOpen] = useState(false)
-  // 10: チームバウンダリのタップで開く大型オーバーレイ(payload=null で閉)
-  const [teamOverlay, setTeamOverlay] = useState<TeamOverlayPayload | null>(null)
   const [hoverFacility, setHoverFacility] = useState<FacilityHoverPayload | null>(null)
   // 05: 座席未設定(防御分岐)時の一時通知文言
   const [unassignedNotice, setUnassignedNotice] = useState<string | null>(null)
 
-  // 05: ディレクトリの社員選択 → 座席ジャンプ+パルス→詳細パネル(座席未設定は防御分岐)
-  const handleSelectEmployee = useCallback(
-    (_employee: Employee, seat: Seat | null) => {
-      setIsDirectoryOpen(false)
-      if (!seat) {
-        // 種データは全員配置済みのため通常到達しない防御分岐
-        setUnassignedNotice('座席未設定')
-        window.setTimeout(() => setUnassignedNotice(null), NOTICE_MS)
-        return
-      }
-      canvasRef.current?.jumpToSeat(seat, () => openSeatDetail(seat.id))
+  const showNotice = useCallback((message: string) => {
+    setUnassignedNotice(message)
+    window.setTimeout(() => setUnassignedNotice(null), NOTICE_MS)
+  }, [])
+
+  const handleFocusFailure = useCallback(
+    (reason: FocusFailure) => {
+      showNotice(reason === 'no-seat' ? '座席未設定' : '座席の所属チームが不明です')
     },
-    [openSeatDetail]
+    [showNotice]
   )
 
-  // 08: アバター編集モーダルを開く
+  // 10: チームバウンダリのタップ、および検索・自分の席からのヒット表示を束ねる
+  const focus = useTeamSeatFocus({ layout: effectiveLayout, canvasRef, onFailure: handleFocusFailure })
+
+  // 検索でヒットした社員の席 → 所属チームのオーバーレイを開き、その席をヒット表示する。
+  // キャンバス側に座席カードは無いので、旧来の座席へのズームは行わない
+  const handleDirectorySeatSelect = useCallback(
+    (seat: Seat) => {
+      setIsDirectoryOpen(false)
+      focus.focusSeat(seat)
+    },
+    [focus]
+  )
+
+  // 「自分の席」ボタン。検索と同じ focusSeat を通し、分岐はここ(席の引き当て)だけに持つ
+  const handleGoToMySeat = useCallback(() => {
+    const seat = effectiveLayout?.seats.find((candidate) => candidate.employeeId === SELF_EMPLOYEE_ID)
+    if (!seat) {
+      showNotice('座席未設定')
+      return
+    }
+    focus.focusSeat(seat)
+  }, [effectiveLayout, focus, showNotice])
 
   return (
     <div className='seat-map-page'>
@@ -94,7 +99,7 @@ export const SeatMapView = () => {
           presenceMap={effectivePresenceMap}
           onSeatSelect={openSeatDetail}
           onFacilitySelect={openFacilityDetail}
-          onTeamBoundaryClick={setTeamOverlay}
+          onTeamBoundaryClick={focus.openByBoundary}
           facilityStateById={facilityStateById}
           onFacilityHover={setHoverFacility}
           isEditMode={editor.isEditMode}
@@ -122,6 +127,8 @@ export const SeatMapView = () => {
         isGaroonConnected
         onGaroonLogout={() => {}}
       />
+      {/* 編集モードでは TeamOverlay 自体が描画されないため、この入口も出さない */}
+      {!editor.isEditMode && ready && effectiveLayout && <MySeatButton onClick={handleGoToMySeat} />}
       {unassignedNotice && <div className='emp-dir-unassigned-toast'>{unassignedNotice}</div>}
       {save.saveToast && (
         <div className='emp-dir-unassigned-toast' role='status'>
@@ -130,12 +137,14 @@ export const SeatMapView = () => {
       )}
       {!editor.isEditMode && effectiveLayout && (
         <TeamOverlay
-          payload={teamOverlay}
+          payload={focus.payload}
           seats={effectiveLayout.seats}
           employeeById={employeeById}
           presenceMap={effectivePresenceMap}
-          onClose={() => setTeamOverlay(null)}
+          onClose={focus.close}
           onSeatClick={openSeatDetail}
+          highlightSeatId={focus.highlightSeatId}
+          onClearHighlight={focus.clearHighlight}
         />
       )}
       {!editor.isEditMode &&

@@ -12,7 +12,6 @@ type Props = {
   presenceMap: Map<string, PresenceStatus>
   liveSeatPos: LivePosition | null
   editSelectedSeatId: string | null
-  pulsingSeatId: string | null
   lod: Lod
   counterScale: number
   onSelect: (seatId: string) => void
@@ -25,7 +24,6 @@ export const EditSeatLayer = ({
   presenceMap,
   liveSeatPos,
   editSelectedSeatId,
-  pulsingSeatId,
   lod,
   counterScale,
   onSelect,
@@ -44,7 +42,6 @@ export const EditSeatLayer = ({
           employee={emp}
           status={status}
           selected={seat.id === editSelectedSeatId}
-          pulsing={seat.id === pulsingSeatId}
           lod={lod}
           counterScale={counterScale}
           onSelect={onSelect}

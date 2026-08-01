@@ -1,8 +1,8 @@
 import { useCallback, useMemo } from 'react'
 import { useTeamColorMap } from '@/hooks/use-team-color-map'
-import { resolveTeamColor } from '@/utils/team-colors'
+import { buildTeamOverlayPayload } from '@/utils/team-overlay-payload'
 import { clamp } from '@/utils/geometry'
-import type { Seat, SeatLayout } from '@/types'
+import type { SeatLayout } from '@/types'
 import type { TeamOverlayPayload } from '@/components/TeamOverlay'
 import { lodOf } from '../utils/canvas-metrics'
 import type { Lod, Viewport } from '../type'
@@ -13,7 +13,6 @@ type Options = {
   layout: SeatLayout
   viewport: Viewport
   isEditMode: boolean
-  pulsingSeatId: string | null
   editSelectedSeatId: string | null
   onSeatSelect?: (seatId: string) => void
   onTeamBoundaryClick?: (payload: TeamOverlayPayload) => void
@@ -22,7 +21,6 @@ type Options = {
 type CanvasViewModel = {
   lod: Lod
   counterScale: number
-  pulsingSeat: Seat | null
   assignedCountByTeam: Map<string, number>
   seatActionBarPos: { x: number; y: number } | null
   handleSeatSelect: (seatId: string) => void
@@ -33,19 +31,12 @@ export const useCanvasViewModel = ({
   layout,
   viewport,
   isEditMode,
-  pulsingSeatId,
   editSelectedSeatId,
   onSeatSelect,
   onTeamBoundaryClick,
 }: Options): CanvasViewModel => {
   const teamColorMap = useTeamColorMap()
   const { scaleSnap, transformSnap } = viewport
-
-  // 05: パルス中の座席(sr-only 化で個人カードが無いため、着地マーカーは座席の座標から直接描く)
-  const pulsingSeat = useMemo(
-    () => (pulsingSeatId ? layout.seats.find((s) => s.id === pulsingSeatId) ?? null : null),
-    [pulsingSeatId, layout.seats]
-  )
 
   // 11: チームラベルの N名 は「seat.teamId が一致し employeeId が非null」の件数
   const assignedCountByTeam = useMemo(() => {
@@ -75,7 +66,6 @@ export const useCanvasViewModel = ({
   return {
     lod: lodOf(scaleSnap),
     counterScale: useMemo(() => clamp(0.8 / scaleSnap, 1, 2), [scaleSnap]),
-    pulsingSeat,
     assignedCountByTeam,
     seatActionBarPos,
     // 07: 編集モード中は座席タップで詳細パネルを開かず、アクションバーの選択のみ行う
@@ -89,10 +79,8 @@ export const useCanvasViewModel = ({
     // 10: チームバウンダリのタップ→画面座標 rect + チーム色を親へ渡してオーバーレイを開く
     handleTeamBoundaryOpen: useCallback(
       (teamId: string, rect: DOMRect) => {
-        const team = layout.teams.find((t) => t.id === teamId)
-        if (!team) return
-        const colorEntry = resolveTeamColor(teamColorMap, team.id, team.name)
-        onTeamBoundaryClick?.({ teamId, teamName: team.name, teamColor: colorEntry.background, rect })
+        const payload = buildTeamOverlayPayload(layout.teams, teamColorMap, teamId, rect)
+        if (payload) onTeamBoundaryClick?.(payload)
       },
       [layout.teams, teamColorMap, onTeamBoundaryClick]
     ),
