@@ -102,13 +102,16 @@ export const usePartsModel = ({
   const [activeQuickStartKind, setActiveQuickStartKind] =
     useState<QuickStartKind>(initialQuickStartKind)
 
-  // パレット基準色に髪色・服色の単色上書きを重ねた最終パレット
-  const basePalette = PIXEL_AVATAR_PRESETS[paletteId].palette
-  const palette: AvatarPalette = {
-    ...basePalette,
-    ...(hairColorOverride ? { hair: hairColorOverride } : {}),
-    ...(outfitColorOverride ? deriveOutfitColors(outfitColorOverride) : {}),
-  }
+  // パレット基準色に髪色・服色の単色上書きを重ねた最終パレット。
+  // 毎レンダー新しいオブジェクトになると、これを依存に持つ下流の useMemo が一度も効かなくなるため memo 化する
+  const palette: AvatarPalette = useMemo(() => {
+    const basePalette = PIXEL_AVATAR_PRESETS[paletteId].palette
+    return {
+      ...basePalette,
+      ...(hairColorOverride ? { hair: hairColorOverride } : {}),
+      ...(outfitColorOverride ? deriveOutfitColors(outfitColorOverride) : {}),
+    }
+  }, [paletteId, hairColorOverride, outfitColorOverride])
   const hairColor = palette.hair
   const outfitColor = palette.outfit
   const hairOptions = useMemo(

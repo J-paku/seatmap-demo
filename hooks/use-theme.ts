@@ -33,6 +33,8 @@ export function useTheme(): { themeMode: ThemeMode; setTheme: (mode: ThemeMode) 
 
   useEffect(() => {
     const stored = readStoredTheme()
+    // localStorage はクライアント専用。SSR 出力と初回クライアント出力を揃えるため、復元は effect でしか行えない
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (stored) setThemeMode(stored)
   }, [])
 

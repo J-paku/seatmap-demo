@@ -41,6 +41,8 @@ export function useAvatarCustomizerModal({
 
   useEffect(() => {
     if (!isOpen) {
+      // 開閉とアバター読込完了という2つのイベントに応じた準備完了フラグ
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setIsReady(false)
       return
     }

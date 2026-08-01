@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from 'react'
+import { useCallback, useRef, useState } from 'react'
 import { applyLayoutAction } from '@/utils/layout-actions'
 import type { LayoutAction } from '@/utils/layout-actions'
 import type { Seat, SeatLayout, Team } from '@/types'
@@ -28,8 +28,18 @@ export const useEditSession = (sourceLayout: SeatLayout | undefined): EditSessio
   const baselineRef = useRef<SeatLayout | null>(null)
   const undoStackRef = useRef<UndoEntry[]>([])
   const changedIdsRef = useRef<Set<string>>(new Set())
-  const [undoVersion, setUndoVersion] = useState(0)
-  const [changedVersion, setChangedVersion] = useState(0)
+  // 編集中レイアウトの最新値。dispatch が「適用前の状態」を setState の外で読むために持つ
+  const editingLayoutRef = useRef<SeatLayout | null>(null)
+  // ref から派生する数値はレンダー中に ref を読まずに済むよう state に持つ
+  // (以前は version カウンタを回して useMemo の中で ref.current を読んでいた)
+  const [changedCount, setChangedCount] = useState(0)
+  const [canUndo, setCanUndo] = useState(false)
+
+  // editingLayout は ref と state の両方へ同時に置く(ref=同期読み取り用・state=描画用)
+  const commitEditingLayout = useCallback((next: SeatLayout | null) => {
+    editingLayoutRef.current = next
+    setEditingLayout(next)
+  }, [])
 
   // 進入時処理(順序固定): baseline深いコピー保存→undoスタック初期化→編集モード表示
   const enterEditMode = useCallback(() => {
@@ -38,62 +48,58 @@ export const useEditSession = (sourceLayout: SeatLayout | undefined): EditSessio
     baselineRef.current = clone
     undoStackRef.current = []
     changedIdsRef.current = new Set()
-    setEditingLayout(JSON.parse(JSON.stringify(clone)))
+    commitEditingLayout(JSON.parse(JSON.stringify(clone)))
     setIsEditMode(true)
-    setUndoVersion((v) => v + 1)
-    setChangedVersion((v) => v + 1)
-  }, [sourceLayout])
+    setChangedCount(0)
+    setCanUndo(false)
+  }, [sourceLayout, commitEditingLayout])
 
   // 変更を破棄してbaselineへ復元(完了もキャンセルも畳み方は同じ。保存は呼び出し側の責務)
   const restoreBaseline = useCallback(() => {
     baselineRef.current = null
     undoStackRef.current = []
     changedIdsRef.current = new Set()
-    setEditingLayout(null)
+    commitEditingLayout(null)
     setIsEditMode(false)
-    setUndoVersion((v) => v + 1)
-    setChangedVersion((v) => v + 1)
-  }, [])
+    setChangedCount(0)
+    setCanUndo(false)
+  }, [commitEditingLayout])
 
   // 適用直前のスナップショットをpushし(無変化なら push しない)、変更エンティティ数を計上
   const pushUndoAndMarkChanged = useCallback((before: SeatLayout, touchedIds: string[]) => {
     undoStackRef.current.push({ seats: before.seats, teams: before.teams })
-    let changed = false
-    for (const id of touchedIds) {
-      if (!changedIdsRef.current.has(id)) {
-        changedIdsRef.current.add(id)
-        changed = true
-      }
-    }
-    setUndoVersion((v) => v + 1)
-    if (changed) setChangedVersion((v) => v + 1)
+    for (const id of touchedIds) changedIdsRef.current.add(id)
+    setCanUndo(true)
+    setChangedCount(changedIdsRef.current.size)
   }, [])
 
+  // setEditingLayout の更新関数の中で undo スタックを積んでいたが、更新関数は純粋でなければならない
+  // (StrictMode では二度呼ばれ、undo が重複して積まれる)。ref から現在値を読んで外で副作用を行う
   const dispatch = useCallback(
     (action: LayoutAction, touchedIds: string[]) => {
-      setEditingLayout((cur) => {
-        if (!cur) return cur
-        const next = applyLayoutAction(cur, action)
-        if (next === cur) return cur
-        pushUndoAndMarkChanged(cur, touchedIds)
-        return next
-      })
+      const cur = editingLayoutRef.current
+      if (!cur) return
+      const next = applyLayoutAction(cur, action)
+      if (next === cur) return
+      pushUndoAndMarkChanged(cur, touchedIds)
+      commitEditingLayout(next)
     },
-    [pushUndoAndMarkChanged]
+    [pushUndoAndMarkChanged, commitEditingLayout]
   )
 
   const undo = useCallback(() => {
     const entry = undoStackRef.current.pop()
     if (!entry) return
-    setEditingLayout((cur) => (cur ? { ...cur, seats: entry.seats, teams: entry.teams } : cur))
-    setUndoVersion((v) => v + 1)
-  }, [])
+    const cur = editingLayoutRef.current
+    if (cur) commitEditingLayout({ ...cur, seats: entry.seats, teams: entry.teams })
+    setCanUndo(undoStackRef.current.length > 0)
+  }, [commitEditingLayout])
 
   return {
     isEditMode,
     editingLayout,
-    changedCount: useMemo(() => changedIdsRef.current.size, [changedVersion]),
-    canUndo: useMemo(() => undoStackRef.current.length > 0, [undoVersion]),
+    changedCount,
+    canUndo,
     enterEditMode,
     finishEdit: restoreBaseline,
     cancelEdit: restoreBaseline,

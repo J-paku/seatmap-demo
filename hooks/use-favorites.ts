@@ -44,6 +44,8 @@ export function useFavorites(options: UseFavoritesOptions = {}): UseFavoritesRes
   useEffect(() => {
     if (initialization !== 'effect') return
 
+    // initialization=effect は hydration 一致のためのモード。マウント後の復元が仕様
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setFavoriteIds(readFavoriteIds())
     setFavoriteDeptNames(readFavoriteDepartments())
   }, [initialization])

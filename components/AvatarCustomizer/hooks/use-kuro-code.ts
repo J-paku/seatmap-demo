@@ -23,8 +23,12 @@ const KURO_KEY = KURO_SEQUENCE.join(',')
 // enabled が false の間はリスナーを一切登録しない
 export function useKuroCode(onMatch: () => void, enabled: boolean): void {
   const bufRef = useRef<string[]>([])
+  // 最新の onMatch を保つための ref(リスナー登録 effect の依存を増やさないため)。
+  // レンダー中の代入は副作用なので effect で行う
   const onMatchRef = useRef(onMatch)
-  onMatchRef.current = onMatch
+  useEffect(() => {
+    onMatchRef.current = onMatch
+  }, [onMatch])
 
   useEffect(() => {
     if (!enabled) return

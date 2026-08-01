@@ -30,7 +30,8 @@ export const useScrollHints = (
   const [hints, setHints] = useState<ScrollHints>({ hasOverflow: false, atStart: true, atEnd: true })
 
   // 依存配列なし = 毎コミット後に同期再測定。セル幅などの非同期更新でリレンダーした直後の実 DOM を拾う。
-  // 変化なしなら前回オブジェクトを返し無限レンダーを防ぐ
+  // 変化なしなら前回オブジェクトを返すので無限レンダーにはならない([ref] を渡すと初回しか測れなくなる)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useLayoutEffect(() => {
     const el = ref.current
     if (!el) return

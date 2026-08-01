@@ -29,6 +29,8 @@ export function useEmployeeDirectoryView(
   // isOpen の変化を監視して isVisible を制御
   useEffect(() => {
     if (isOpen) {
+      // 閉じるアニメーション 200ms の完了を待ってアンマウントするための時間差制御
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setIsVisible(true)
       // 前回の閉じる操作で残留したドラッグオフセットをリセット
       resetDrag()
@@ -52,6 +54,8 @@ export function useEmployeeDirectoryView(
 
   // サイドバーが閉じられたときに設定パネルをリセット
   useEffect(() => {
+    // サイドバーが閉じた「瞬間」に設定パネルを畳む。開閉の遷移イベントに対する処理
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (!isOpen) setSidebarView('directory')
   }, [isOpen])
 

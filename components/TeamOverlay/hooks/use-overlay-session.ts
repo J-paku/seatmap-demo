@@ -25,6 +25,8 @@ export const useOverlaySession = (
 
   useEffect(() => {
     if (!isOpen) return
+    // 「開いた」というイベントに対するローディング演出。派生値ではなくライフサイクルそのもの
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoading(true)
     setClickLocked(true)
     // 開くたびに本文スクロールを先頭へ戻す

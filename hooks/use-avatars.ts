@@ -29,6 +29,8 @@ export function useAvatars(): UseAvatarsResult {
   const [isInitialLoading, setIsInitialLoading] = useState(true)
 
   useEffect(() => {
+    // localStorage 合流は hydration 一致のためマウント後にしか行えない
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setAvatars(mergeByOwnerCode(seedAvatarRecords(), loadStoredAvatars()))
     setIsInitialLoading(false)
   }, [])
