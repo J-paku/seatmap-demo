@@ -6,7 +6,7 @@
 // 体マスク: row12-15(4行) col0-15(全幅16列)
 // 比率 顔6行:体4行 = 元 3:2 不変
 
-export const AVATAR_MASK_COORDS = {
+const AVATAR_MASK_COORDS = {
   // 顔領域: 左上 (row4, col4) から 右下 (row9, col11)
   face: {
     rowStart: 4,
@@ -30,8 +30,6 @@ export const AVATAR_MASK_COORDS = {
 } as const
 
 // マスク座標の総セル数
-export const FACE_MASK_SIZE = AVATAR_MASK_COORDS.face.rows * AVATAR_MASK_COORDS.face.cols // 48
-export const OUTFIT_MASK_SIZE = AVATAR_MASK_COORDS.outfit.rows * AVATAR_MASK_COORDS.outfit.cols // 64
 
 // 透明度判定用の集計結果型
 interface MaskFillStats {
@@ -55,7 +53,7 @@ function getMaskCells(
 
 // マスク領域内の透明度統計を計算 — rows は 16 個・各 16 文字の前提
 // palette に無いキー(慣例'.') = 透明セルとカウント
-export function countMaskTransparency(
+function countMaskTransparency(
   rows: string[],
   mask: (typeof AVATAR_MASK_COORDS)[keyof typeof AVATAR_MASK_COORDS],
   palette: Record<string, string>

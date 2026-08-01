@@ -159,5 +159,3 @@ export function AvatarCustomizerModal({ isOpen, onClose }: AvatarCustomizerModal
     </div>
   )
 }
-
-export default AvatarCustomizerModal

@@ -9,7 +9,3 @@ export const useScrollIntoViewOnMount = () => {
   }, [])
   return ref
 }
-
-export default function _Page() {
-  return null
-}

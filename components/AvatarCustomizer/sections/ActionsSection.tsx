@@ -75,7 +75,3 @@ export function ActionsSection({
     </div>
   )
 }
-
-export default function _Page() {
-  return null
-}

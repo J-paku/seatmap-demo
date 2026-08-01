@@ -40,5 +40,3 @@ export function StepCard({ title, description, onGoHome, children }: StepCardPro
     </div>
   )
 }
-
-export default StepCard

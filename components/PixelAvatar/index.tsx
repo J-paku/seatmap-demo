@@ -76,5 +76,3 @@ export function PixelAvatar({
     </svg>
   )
 }
-
-export default PixelAvatar

@@ -64,5 +64,3 @@ export function GaroonFooter({
     </div>
   )
 }
-
-export default GaroonFooter

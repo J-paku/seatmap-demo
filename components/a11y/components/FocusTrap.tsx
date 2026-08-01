@@ -18,4 +18,3 @@ export function FocusTrap({ isActive, children, className }: FocusTrapProps) {
 }
 
 // Pages Router の page-without-valid-component 警告回避用ダミー default export
-export default FocusTrap

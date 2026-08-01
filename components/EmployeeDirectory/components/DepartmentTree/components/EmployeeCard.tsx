@@ -119,5 +119,3 @@ function EmployeeCard({
 }
 
 export { EmployeeCard }
-
-export default EmployeeCard

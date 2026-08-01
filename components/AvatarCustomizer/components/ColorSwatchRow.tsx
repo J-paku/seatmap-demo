@@ -64,5 +64,3 @@ export function ColorSwatchRow({ ariaLabel, colors, selected, onSelect }: ColorS
     </div>
   )
 }
-
-export default ColorSwatchRow

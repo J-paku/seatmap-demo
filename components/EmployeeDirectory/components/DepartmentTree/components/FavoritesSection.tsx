@@ -121,5 +121,3 @@ function FavoritesSection({
 }
 
 export { FavoritesSection }
-
-export default FavoritesSection

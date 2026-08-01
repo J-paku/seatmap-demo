@@ -91,5 +91,3 @@ export function QuickStartSection({
     />
   )
 }
-
-export default QuickStartSection

@@ -1,0 +1,6 @@
+{
+  "$schema": "https://unpkg.com/knip@5/schema.json",
+  "entry": ["pages/**/*.{ts,tsx}", "scripts/generate-mocks.mjs", "scripts/verify-s1.js"],
+  "project": ["**/*.{ts,tsx,mjs,js}"],
+  "ignoreDependencies": ["tailwindcss"]
+}

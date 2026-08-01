@@ -166,5 +166,3 @@ export function ThemeSelector({ themeMode, setTheme, isDark }: ThemeSelectorProp
     </div>
   )
 }
-
-export default ThemeSelector

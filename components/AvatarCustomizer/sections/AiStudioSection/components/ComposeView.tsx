@@ -57,5 +57,3 @@ export function ComposeView({
     </StepCard>
   )
 }
-
-export default ComposeView

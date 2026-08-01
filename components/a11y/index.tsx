@@ -78,5 +78,3 @@ export function useGlobalAnnouncement() {
   }
   return context
 }
-
-export default AnnouncementProvider

@@ -1,6 +1,8 @@
 import type { RefObject } from 'react'
 import type { Transform } from '@/utils/geometry'
-import type { Employee, PresenceStatus, SeatLayout } from '@/types'
+import type { Employee, Lod, PresenceStatus, SeatLayout } from '@/types'
+
+export type { Lod }
 import type { FacilityState } from '@/utils/facility-status'
 import type { FacilityHoverPayload } from '@/components/FacilityHoverCard'
 import type { TeamOverlayPayload } from '@/components/TeamOverlay'
@@ -37,9 +39,6 @@ export type SeatMapCanvasHandle = {
 }
 
 export type Rect = { x: number; y: number; w: number; h: number }
-
-// LOD(詳細度)。座席の視覚カードは廃止したが施設・チームの詳細度切替には引き続き使用
-export type Lod = 'detail' | 'mid' | 'overview'
 
 // rAF ループで進行中の演出
 export type Anim =

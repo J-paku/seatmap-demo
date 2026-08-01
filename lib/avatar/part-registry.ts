@@ -18,12 +18,7 @@ interface AccessoryPartMeta {
   aiDesc: string
 }
 
-interface OutfitPartMeta {
-  label: string
-  aiDesc: string
-}
-
-export const HAIR_REGISTRY: Record<HairId, HairPartMeta> = {
+const HAIR_REGISTRY: Record<HairId, HairPartMeta> = {
   short: { label: 'ショート', aiDesc: '短髪', group: 'common' },
   long: { label: 'ロング', aiDesc: 'ロングヘア', group: 'common' },
   bald: { label: 'ボウズ', aiDesc: '坊主・スキンヘッド', group: 'common' },
@@ -47,7 +42,7 @@ export const HAIR_REGISTRY: Record<HairId, HairPartMeta> = {
   kuroxxx: { label: 'ヒドル帽', aiDesc: 'クロミ風 (特殊)', group: 'hidden' },
 }
 
-export const FACE_REGISTRY: Record<FaceId, FacePartMeta> = {
+const FACE_REGISTRY: Record<FaceId, FacePartMeta> = {
   slit: { label: 'クール', aiDesc: '細目・クール' },
   smile: { label: 'スマイル', aiDesc: '笑顔' },
   closed: { label: '目つぶり', aiDesc: '目を閉じた穏やかな顔' },
@@ -58,7 +53,7 @@ export const FACE_REGISTRY: Record<FaceId, FacePartMeta> = {
   happy: { label: 'ハッピー', aiDesc: 'にっこり嬉しい' },
 }
 
-export const ACCESSORY_REGISTRY: Record<AccessoryId, AccessoryPartMeta> = {
+const ACCESSORY_REGISTRY: Record<AccessoryId, AccessoryPartMeta> = {
   none: { label: 'なし', aiDesc: 'なし' },
   glasses: { label: 'メガネ', aiDesc: 'メガネ' },
   cap: { label: 'キャップ', aiDesc: 'キャップ帽' },
@@ -70,48 +65,18 @@ export const ACCESSORY_REGISTRY: Record<AccessoryId, AccessoryPartMeta> = {
   bow: { label: 'ピンクリボン', aiDesc: 'リボン' },
 }
 
-export const OUTFIT_REGISTRY: Record<OutfitId, OutfitPartMeta> = {
-  solid: { label: 'コスチューム solid', aiDesc: '無地のトップス' },
-  striped: { label: 'コスチューム striped', aiDesc: 'ボーダー・縞模様' },
-  suit: { label: 'コスチューム suit', aiDesc: 'スーツ' },
-  hoodie: { label: 'コスチューム hoodie', aiDesc: 'パーカー' },
-  shirt: { label: 'コスチューム shirt', aiDesc: 'シャツ' },
-  blazer: { label: 'コスチューム blazer', aiDesc: 'ブレザー' },
-  knit: { label: 'コスチューム knit', aiDesc: 'ニット' },
-  cardigan: { label: 'コスチューム cardigan', aiDesc: 'カーディガン' },
-  polo: { label: 'コスチューム polo', aiDesc: 'ポロシャツ' },
-  turtleneck: { label: 'コスチューム turtleneck', aiDesc: 'タートルネック' },
-  vest: { label: 'コスチューム vest', aiDesc: 'ベスト' },
-}
-
 // 公開用: 各パーツ ID ごとに label / aiDesc を取得できるマップ
 export const HAIR_LABELS: Record<HairId, string> = Object.fromEntries(
   Object.entries(HAIR_REGISTRY).map(([id, meta]) => [id, meta.label])
-) as Record<HairId, string>
-
-export const HAIR_DESC: Record<HairId, string> = Object.fromEntries(
-  Object.entries(HAIR_REGISTRY).map(([id, meta]) => [id, meta.aiDesc])
 ) as Record<HairId, string>
 
 export const FACE_LABELS: Record<FaceId, string> = Object.fromEntries(
   Object.entries(FACE_REGISTRY).map(([id, meta]) => [id, meta.label])
 ) as Record<FaceId, string>
 
-export const FACE_DESC: Record<FaceId, string> = Object.fromEntries(
-  Object.entries(FACE_REGISTRY).map(([id, meta]) => [id, meta.aiDesc])
-) as Record<FaceId, string>
-
 export const ACCESSORY_LABELS: Record<AccessoryId, string> = Object.fromEntries(
   Object.entries(ACCESSORY_REGISTRY).map(([id, meta]) => [id, meta.label])
 ) as Record<AccessoryId, string>
-
-export const ACCESSORY_DESC: Record<AccessoryId, string> = Object.fromEntries(
-  Object.entries(ACCESSORY_REGISTRY).map(([id, meta]) => [id, meta.aiDesc])
-) as Record<AccessoryId, string>
-
-export const OUTFIT_DESC: Record<OutfitId, string> = Object.fromEntries(
-  Object.entries(OUTFIT_REGISTRY).map(([id, meta]) => [id, meta.aiDesc])
-) as Record<OutfitId, string>
 
 // HAIR_OPTION_GROUPS の派生: グループ分類から common/male/female に整理
 export const HAIR_OPTION_GROUPS: {

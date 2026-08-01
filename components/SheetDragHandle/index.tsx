@@ -60,5 +60,3 @@ export function SheetDragHandle({
     </div>
   )
 }
-
-export default SheetDragHandle

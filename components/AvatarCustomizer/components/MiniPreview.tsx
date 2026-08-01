@@ -9,5 +9,3 @@ interface MiniPreviewProps {
 export function MiniPreview({ config }: MiniPreviewProps) {
   return <PixelAvatar config={config} size={40} />
 }
-
-export default MiniPreview

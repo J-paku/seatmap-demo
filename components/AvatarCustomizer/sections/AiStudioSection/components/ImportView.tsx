@@ -79,7 +79,3 @@ export function ImportView({
     </StepCard>
   )
 }
-
-export default function _Page() {
-  return null
-}
