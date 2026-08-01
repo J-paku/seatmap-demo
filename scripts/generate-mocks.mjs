@@ -101,6 +101,41 @@ const hslToHex = (h, s, l) => {
   return `#${to(r)}${to(g)}${to(b)}`
 }
 
+// 全角カタカナ→半角カタカナ。濁点・半濁点は2文字へ分解する(社員名簿の furigana 表記に合わせる)
+const KANA_FULL =
+  'アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲンァィゥェォッャュョー'
+const KANA_HALF =
+  'ｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃﾄﾅﾆﾇﾈﾉﾊﾋﾌﾍﾎﾏﾐﾑﾒﾓﾔﾕﾖﾗﾘﾙﾚﾛﾜｦﾝｧｨｩｪｫｯｬｭｮｰ'
+const KANA_VOICED = 'ガギグゲゴザジズゼゾダヂヅデドバビブベボ'
+const KANA_VOICED_BASE = 'カキクケコサシスセソタチツテトハヒフヘホ'
+const KANA_SEMI = 'パピプペポ'
+const KANA_SEMI_BASE = 'ハヒフヘホ'
+const toHalfWidthKana = (value) =>
+  [...value]
+    .map((ch) => {
+      const v = KANA_VOICED.indexOf(ch)
+      if (v >= 0) return `${KANA_HALF[KANA_FULL.indexOf(KANA_VOICED_BASE[v])]}ﾞ`
+      const s = KANA_SEMI.indexOf(ch)
+      if (s >= 0) return `${KANA_HALF[KANA_FULL.indexOf(KANA_SEMI_BASE[s])]}ﾟ`
+      const i = KANA_FULL.indexOf(ch)
+      return i >= 0 ? KANA_HALF[i] : ch
+    })
+    .join('')
+
+// 服の単色から三色を生成。式は lib/avatar/avatar-color-utils.ts の deriveOutfitColors と同じに保つ
+// (このスクリプトは .mjs なので TS を import できず、やむを得ず複製している)
+const hexToRgb = (hex) => [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16))
+const rgbToHex = (rgb) =>
+  `#${rgb.map((n) => Math.max(0, Math.min(255, Math.round(n))).toString(16).padStart(2, '0')).join('')}`
+const deriveOutfitColors = (base) => {
+  const [r, g, b] = hexToRgb(base)
+  return {
+    outfit: base,
+    outfitDark: rgbToHex([r * 0.74, g * 0.74, b * 0.74]),
+    outfitAlt: rgbToHex([r + (255 - r) * 0.32, g + (255 - g) * 0.32, b + (255 - b) * 0.32]),
+  }
+}
+
 const pad3 = (n) => String(n).padStart(3, '0')
 const pad2 = (n) => String(n).padStart(2, '0')
 const pad4 = (n) => String(n).padStart(4, '0')
@@ -190,6 +225,10 @@ TEAM_DEFS.forEach((def, i) => {
 // ── 社員生成 ────────────────────────────────────────────
 
 const employees = []
+// avatars.json(StoredAvatarRecord[])。社員レコードとは別立てにし、アバターの単一ソースにする
+const avatarRecords = []
+// モックは決定論的に再生成するので更新時刻も固定値にする(差分ノイズ防止)
+const AVATAR_UPDATED_TIME = '2026-01-01T00:00:00.000Z'
 let empSeq = 1
 // チームごとにメンバーを順次割当。チーム内 local index 0=部長 / 3=課長
 TEAM_DEFS.forEach((def, ti) => {
@@ -202,16 +241,6 @@ TEAM_DEFS.forEach((def, ti) => {
     const position = local === 0 ? '部長' : local === 3 ? '課長' : undefined
     const surnameRoman = skr
     const phone = buildPhone(id)
-    const avatar = {
-      hair: HAIRS[gi % HAIRS.length],
-      face: FACES[gi % FACES.length],
-      outfit: OUTFITS[gi % OUTFITS.length],
-      palette: {
-        hair: HAIR_COLORS[gi % HAIR_COLORS.length],
-        skin: SKIN_COLORS[gi % SKIN_COLORS.length],
-        outfit: OUTFIT_COLORS[gi % OUTFIT_COLORS.length],
-      },
-    }
     // 表示名は実名ではなく「部署名+連番」(例: 営業部1)。nameKana は「部署名の読み+同じ連番」(例: エイギョウブ1)
     const displayName = `${def.name}${local + 1}`
     const nameKana = `${def.kana}${local + 1}`
@@ -220,12 +249,36 @@ TEAM_DEFS.forEach((def, ti) => {
       name: displayName,
       nameKana,
       teamId,
+      // 実物ツリーは部署名の文字列でグルーピングするため、teamId とは別に部署名も持たせる
+      team: def.name,
+      // 4桁社員番号。アバターレコード(avatars.json)の一意キー
+      ownerCode: pad4(empSeq),
+      // 表示名が「部署名+連番」の合成なので姓/名に割れない。読み全体を姓側に入れる(半角カタカナ)
+      furiganaSei: toHalfWidthKana(nameKana),
       ...(position ? { position } : {}),
       email: `${surnameRoman}${pad3(empSeq)}@example.co.jp`,
       ...(phone ? { phone } : {}),
-      avatar,
     }
     employees.push(emp)
+    // 3人に1人はアバター未設定にして、既定プリセットへのフォールバックも画面で確認できるようにする
+    if (gi % 3 !== 0) {
+      avatarRecords.push({
+        ownerCode: emp.ownerCode,
+        ownerName: displayName,
+        config: {
+          kind: 'parts',
+          hair: HAIRS[gi % HAIRS.length],
+          face: FACES[gi % FACES.length],
+          outfit: OUTFITS[gi % OUTFITS.length],
+          palette: {
+            hair: HAIR_COLORS[gi % HAIR_COLORS.length],
+            skin: SKIN_COLORS[gi % SKIN_COLORS.length],
+            ...deriveOutfitColors(OUTFIT_COLORS[gi % OUTFIT_COLORS.length]),
+          },
+        },
+        updatedTime: AVATAR_UPDATED_TIME,
+      })
+    }
     empSeq++
   }
 })
@@ -441,6 +494,7 @@ const dump = (name, data) =>
 
 dump('teams.json', teams)
 dump('employees.json', employees)
+dump('avatars.json', avatarRecords)
 dump('seats.json', seats)
 dump('facilities.json', facilities)
 dump('schedules.json', schedules)

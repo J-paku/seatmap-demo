@@ -1,19 +1,21 @@
 import { PixelAvatar } from '@/components/PixelAvatar'
 import { SELF_EMPLOYEE_ID } from '@/utils/demo-identity'
-import type { AvatarConfig, Employee } from '@/types'
+import type { Employee } from '@/types'
+import { useEmployeeAvatar } from '@/hooks/use-employee-avatar'
 
 // 社員1件のカード。本文タップで詳細・右端の★でお気に入り
 
 type Props = {
   employee: Employee
   deptName: string
-  avatar: AvatarConfig
   isFavorite: boolean
   onSelect: (employee: Employee) => void
   onToggleFavorite: (empId: string) => void
 }
 
-export const EmployeeCard = ({ employee, deptName, avatar, isFavorite, onSelect, onToggleFavorite }: Props) => (
+export const EmployeeCard = ({ employee, deptName, isFavorite, onSelect, onToggleFavorite }: Props) => {
+  const avatar = useEmployeeAvatar(employee)
+  return (
   <div
     className={`emp-dir-card${employee.id === SELF_EMPLOYEE_ID ? ' is-self' : ''}`}
     role='treeitem'
@@ -40,3 +42,4 @@ export const EmployeeCard = ({ employee, deptName, avatar, isFavorite, onSelect,
     </button>
   </div>
 )
+}

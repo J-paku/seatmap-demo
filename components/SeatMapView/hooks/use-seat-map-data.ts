@@ -6,7 +6,6 @@ import { useEmployees, useFacilityMeetings, useSchedules, useSeatLayout } from '
 import { computePresenceMap } from '@/utils/presence'
 import { useSelectedDate } from '@/contexts/selected-date-context'
 import { jstDateKey, jstKeyFromIso } from '@/utils/jst-date'
-import { useSelfAvatar } from '@/contexts/self-avatar-context'
 import { SELF_EMPLOYEE_ID } from '@/utils/demo-identity'
 import { useQuantizedClock } from '@/hooks/use-quantized-clock'
 import type { Employee, PresenceStatus, SeatLayout } from '@/types'
@@ -27,20 +26,13 @@ export const useSeatMapData = (editor: LayoutEditor): SeatMapData => {
   const { data: schedules } = useSchedules()
   const { data: facilityMeetings } = useFacilityMeetings()
   const { debouncedDate, isTodaySelected } = useSelectedDate()
-  // 08: 本人アバターの共有状態(localStorage override)
-  const { override: selfAvatarOverride } = useSelfAvatar()
   // 現在時刻の進行中判定は「今日」を表示中の時だけ稼働
   const nowMs = useQuantizedClock(isTodaySelected)
 
-  // 08: 本人(emp-001)の表示アバターは保存済み override を優先
+  // アバターの上書きは AvatarsContext(ownerCode キー)が持つため、ここでは素の社員を配るだけ
   const employeeById = useMemo(
-    () =>
-      new Map(
-        (employees ?? []).map((e) =>
-          selfAvatarOverride && e.id === SELF_EMPLOYEE_ID ? [e.id, { ...e, avatar: selfAvatarOverride }] : [e.id, e]
-        )
-      ),
-    [employees, selfAvatarOverride]
+    () => new Map((employees ?? []).map((e) => [e.id, e])),
+    [employees]
   )
 
   // debouncedDate 当日分のイベントに絞ってから在席判定

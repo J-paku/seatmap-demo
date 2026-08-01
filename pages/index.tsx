@@ -3,7 +3,7 @@ import { useRouter } from 'next/router'
 import { SeatMapView } from '@/components/SeatMapView'
 import { DetailPanelProvider } from '@/contexts/detail-panel-context'
 import { SelectedDateProvider } from '@/contexts/selected-date-context'
-import { SelfAvatarProvider } from '@/contexts/self-avatar-context'
+import { AvatarsProvider } from '@/contexts/avatars-context'
 
 const SITE_URL = 'https://j-paku.github.io/seatmap-demo/'
 const SITE_TITLE = 'seat-map デモ'
@@ -30,13 +30,13 @@ const HomePage = () => {
         <link rel='icon' href={`${basePath}/favicon.ico`} />
       </Head>
       <div className='seat-map-root'>
-        <SelfAvatarProvider>
+        <AvatarsProvider>
           <SelectedDateProvider>
             <DetailPanelProvider>
               <SeatMapView />
             </DetailPanelProvider>
           </SelectedDateProvider>
-        </SelfAvatarProvider>
+        </AvatarsProvider>
       </div>
     </>
   )

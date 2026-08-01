@@ -3,15 +3,7 @@
 // 在席ステータス(表示ラベル: present=在席 / meeting=会議 / out=外出 / vacation=休暇)
 export type PresenceStatus = 'present' | 'meeting' | 'out' | 'vacation'
 
-// ピクセルアバター設定
-export type AvatarConfig = {
-  hair: 'short' | 'long' | 'bob' | 'ponytail' | 'bald'
-  face: 'smile' | 'closed' | 'serious' | 'wink'
-  outfit: 'suit' | 'shirt' | 'hoodie' | 'knit'
-  palette: { hair: string; skin: string; outfit: string }
-}
-
-// --- ここから実物 PiPiT-web 由来のピクセルアバター型（C1 で追加・C2 で上の AvatarConfig を置き換える） ---
+// --- 実物 PiPiT-web 由来のピクセルアバター型 ---
 
 // プリセット ID — 原文 types.ts の union は抜粋の先頭が欠けていたため
 // pixelAvatarPresets.ts の PIXEL_AVATAR_PRESETS のキー18件から復元した
@@ -137,11 +129,19 @@ export type Employee = {
   name: string
   nameKana: string
   teamId: string
+  // 部署名の文字列。実物のディレクトリツリーはこれでグルーピングする(座席結束は teamId)
+  team: string
+  // 4桁社員番号。アバターレコード(StoredAvatarRecord)の一意キー
+  ownerCode?: string
+  // 氏名フリガナ(半角カタカナ)。デモの表示名は「部署名+連番」の合成なので姓側のみ持つ
+  furiganaSei?: string
+  furiganaMei?: string
+  // 外国籍社員フラグ(表示名を全カタカナ化し氏名レイアウトを左寄せにする)
+  isForeign?: boolean
   position?: string
   email?: string
   // 携帯電話番号(数字のみ・ハイフン無し。tel:リンクはそのまま使い、表示側で整形する)
   phone?: string
-  avatar: AvatarConfig
 }
 
 // チーム(部署)

@@ -1,5 +1,5 @@
 import { EmployeeCard } from './EmployeeCard'
-import type { AvatarConfig, Employee } from '@/types'
+import type { Employee } from '@/types'
 import type { DeptGroup, DirectoryFavorites } from '../type'
 
 // 部署1件の折りたたみ行と、展開時の社員カード一覧
@@ -9,7 +9,6 @@ type Props = {
   expanded: boolean
   favorites: DirectoryFavorites
   deptNameOf: (employee: Employee) => string
-  resolveAvatar: (empId: string, fallback: AvatarConfig) => AvatarConfig
   onToggleExpand: (teamName: string) => void
   onSelectEmployee: (employee: Employee) => void
 }
@@ -19,7 +18,6 @@ export const DeptGroupRow = ({
   expanded,
   favorites,
   deptNameOf,
-  resolveAvatar,
   onToggleExpand,
   onSelectEmployee,
 }: Props) => {
@@ -50,7 +48,6 @@ export const DeptGroupRow = ({
               key={emp.id}
               employee={emp}
               deptName={deptNameOf(emp)}
-              avatar={resolveAvatar(emp.id, emp.avatar)}
               isFavorite={favorites.employeeIds.has(emp.id)}
               onSelect={onSelectEmployee}
               onToggleFavorite={favorites.toggleEmployee}

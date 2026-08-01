@@ -5,7 +5,6 @@ import { EditModeLayer } from './components/EditModeLayer'
 import { useEditDialogs } from './hooks/use-edit-dialogs'
 import { useLayoutSave } from './hooks/use-layout-save'
 import { useSeatMapData } from './hooks/use-seat-map-data'
-import { AvatarCustomizer } from '@/components/AvatarCustomizer'
 import { DetailPanels } from '@/components/DetailPanels'
 import { EmployeeDirectory } from '@/components/EmployeeDirectory'
 import { FacilityHoverCard } from '@/components/FacilityHoverCard'
@@ -17,7 +16,7 @@ import type { TeamOverlayPayload } from '@/components/TeamOverlay'
 import { EditErrorToast } from '@/components/edit/EditErrorToast'
 import { useDetailPanel } from '@/contexts/detail-panel-context'
 import { useSeatLayout } from '@/lib/mock-loader'
-import { useSelfAvatar } from '@/contexts/self-avatar-context'
+import { useMyAvatarConfig } from '@/hooks/use-my-avatar-config'
 import { useLayoutEditor } from '@/hooks/use-layout-editor'
 import type { Employee, Seat } from '@/types'
 
@@ -29,7 +28,9 @@ const NOTICE_MS = 2400
 export const SeatMapView = () => {
   const { openSeatDetail, openFacilityDetail } = useDetailPanel()
   const { layout } = useSeatLayout()
-  const { selfAvatar, openEditor } = useSelfAvatar()
+  const selfAvatar = useMyAvatarConfig()
+  // アバター編集モーダルは C7 で AvatarCustomizerModal に差し替える。それまで入口は無効
+  const handleOpenAvatarEditor = useCallback(() => {}, [])
 
   // 07: 編集モード(ワーキングコピー+undoスタック+アクション発行)
   const editor = useLayoutEditor(layout)
@@ -61,7 +62,6 @@ export const SeatMapView = () => {
   )
 
   // 08: アバター編集モーダルを開く
-  const handleOpenAvatarEditor = useCallback(() => openEditor(), [openEditor])
 
   return (
     <div className='seat-map-page'>
@@ -148,7 +148,6 @@ export const SeatMapView = () => {
       <EditDialogs editor={editor} dialogs={dialogs} />
 
       {/* 08: アバター編集モーダル(開いている時のみマウント) */}
-      <AvatarCustomizer />
     </div>
   )
 }

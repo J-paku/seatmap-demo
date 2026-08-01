@@ -1,3 +1,4 @@
+import { useEmployeeAvatar } from '@/hooks/use-employee-avatar'
 import { PixelAvatar } from '@/components/PixelAvatar'
 import { hexToRgba } from '@/utils/color'
 import { SEAT_STATUS_COLOR } from '../utils/seat-grid'
@@ -26,7 +27,9 @@ const DIRECTION: Record<Seat['rotation'], 'row' | 'column' | 'row-reverse' | 'co
   270: 'column-reverse',
 }
 
-export const SeatCard = ({ seat, employee, status, teamName, teamColor, loading, isHit, dimmed, onSelect }: Props) => (
+export const SeatCard = ({ seat, employee, status, teamName, teamColor, loading, isHit, dimmed, onSelect }: Props) => {
+  const avatarConfig = useEmployeeAvatar(employee)
+  return (
   <button
     type='button'
     data-seat-id={seat.id}
@@ -37,7 +40,7 @@ export const SeatCard = ({ seat, employee, status, teamName, teamColor, loading,
   >
     {employee?.position && <span className='team-ovl-card-accent' />}
     <span className='team-ovl-card-avatar'>
-      {employee ? <PixelAvatar config={employee.avatar} size={32} /> : null}
+      {employee ? <PixelAvatar config={avatarConfig} size={32} /> : null}
     </span>
     <span className='team-ovl-card-text'>
       <span className='team-ovl-card-name'>{employee ? employee.name : '空席'}</span>
@@ -60,3 +63,4 @@ export const SeatCard = ({ seat, employee, status, teamName, teamColor, loading,
     />
   </button>
 )
+}

@@ -17,7 +17,7 @@ import { useBodyScrollLock } from '@/hooks/use-body-scroll-lock'
 import { useSwipeDismiss } from '@/hooks/use-swipe-dismiss'
 import { useEmployees, useSeats, useTeams } from '@/lib/mock-loader'
 import { normalizeForSearch } from '@/utils/kana'
-import { useSelfAvatar } from '@/contexts/self-avatar-context'
+import { useMyAvatarConfig } from '@/hooks/use-my-avatar-config'
 import type { Employee, Seat } from '@/types'
 
 // 05: 部署ツリー + かな検索 + お気に入りの社員ディレクトリ
@@ -28,7 +28,7 @@ export const EmployeeDirectory = ({ isOpen, onClose, onSelectEmployee, onOpenAva
   const { data: employees } = useEmployees()
   const { data: teams } = useTeams()
   const { data: seats } = useSeats()
-  const { resolveAvatar } = useSelfAvatar()
+  const myAvatarConfig = useMyAvatarConfig()
 
   const [searchQuery, setSearchQuery] = useState('')
   const debouncedQuery = useDebouncedQuery(searchQuery)
@@ -116,7 +116,6 @@ export const EmployeeDirectory = ({ isOpen, onClose, onSelectEmployee, onOpenAva
             isSearching={isSearching}
             isEmptyResult={isSearching && filteredGroups.length === 0}
             deptNameOf={deptNameOf}
-            resolveAvatar={resolveAvatar}
             onToggleDept={toggleDept}
             onSelectEmployee={handleSelectEmployee}
           />
@@ -124,7 +123,7 @@ export const EmployeeDirectory = ({ isOpen, onClose, onSelectEmployee, onOpenAva
 
         <DirectoryFooter
           selfEmployee={selfEmployee}
-          selfAvatar={selfEmployee ? resolveAvatar(selfEmployee.id, selfEmployee.avatar) : null}
+          selfAvatar={myAvatarConfig}
           onOpenAvatarEditor={onOpenAvatarEditor}
         />
       </div>

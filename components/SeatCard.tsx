@@ -1,4 +1,5 @@
 import { memo } from 'react'
+import { useEmployeeAvatar } from '@/hooks/use-employee-avatar'
 import { PixelAvatar } from './PixelAvatar'
 import type { Employee, PresenceStatus, Seat } from '@/types'
 import { PRESENCE_LABEL } from '@/utils/format'
@@ -42,6 +43,7 @@ const SeatCardInner = ({
   isEditDragging,
   onEditPointerDown,
 }: Props) => {
+  const avatarConfig = useEmployeeAvatar(employee)
   const isEmpty = employee === null
   const showName = lod === 'detail'
 
@@ -71,7 +73,7 @@ const SeatCardInner = ({
         <>
           {employee.position && <div className='seat-accent-bar' />}
           <div className='seat-avatar-frame'>
-            <PixelAvatar config={employee.avatar} size={28} />
+            <PixelAvatar config={avatarConfig} size={28} />
           </div>
           {showName && <div className='seat-name'>{employee.name}</div>}
           <div className='seat-status-row' style={{ ['--status-color' as string]: STATUS_VAR[status] }}>

@@ -1,5 +1,6 @@
 import { useRef } from 'react'
 import type { MouseEvent as ReactMouseEvent, PointerEvent as ReactPointerEvent, RefObject } from 'react'
+import { useEmployeeAvatar } from '@/hooks/use-employee-avatar'
 import { PixelAvatar } from '@/components/PixelAvatar'
 import { SEAT_STATUS_COLOR } from '../utils/seat-grid'
 import { compactNameFontSize, getCompactNameLabel } from '../utils/compact-name'
@@ -39,6 +40,7 @@ export const ViewSeatCell = ({
   isScrollingRef,
   onSelect,
 }: Props) => {
+  const avatarConfig = useEmployeeAvatar(employee)
   const tap = useRef({ x: 0, y: 0, startedAt: 0, valid: false, fromPointer: false })
 
   const handlePointerDown = (e: ReactPointerEvent<HTMLButtonElement>) => {
@@ -100,7 +102,7 @@ export const ViewSeatCell = ({
       {/* 役職は文字では出さず上端 3px のバーだけで示す */}
       {employee.position && <span className='team-ovl-cell-accent' />}
       <span className='team-ovl-cell-avatar'>
-        <PixelAvatar config={employee.avatar} size={28} />
+        <PixelAvatar config={avatarConfig} size={28} />
       </span>
       <span className='team-ovl-cell-name' style={{ fontSize: compactNameFontSize(label) }}>
         {label}

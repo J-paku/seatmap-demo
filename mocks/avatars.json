@@ -1,0 +1,524 @@
+[
+  {
+    "ownerCode": "0002",
+    "ownerName": "営業部2",
+    "config": {
+      "kind": "parts",
+      "hair": "long",
+      "face": "closed",
+      "outfit": "shirt",
+      "palette": {
+        "hair": "#3B2B20",
+        "skin": "#F6D7B8",
+        "outfit": "#2F3B52",
+        "outfitDark": "#232c3d",
+        "outfitAlt": "#727a89"
+      }
+    },
+    "updatedTime": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "ownerCode": "0003",
+    "ownerName": "営業部3",
+    "config": {
+      "kind": "parts",
+      "hair": "bob",
+      "face": "serious",
+      "outfit": "hoodie",
+      "palette": {
+        "hair": "#241C16",
+        "skin": "#E8B48C",
+        "outfit": "#4A5A6E",
+        "outfitDark": "#374351",
+        "outfitAlt": "#848f9c"
+      }
+    },
+    "updatedTime": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "ownerCode": "0005",
+    "ownerName": "営業部5",
+    "config": {
+      "kind": "parts",
+      "hair": "bald",
+      "face": "smile",
+      "outfit": "suit",
+      "palette": {
+        "hair": "#1F1A17",
+        "skin": "#F0C49A",
+        "outfit": "#8A5A5A",
+        "outfitDark": "#664343",
+        "outfitAlt": "#af8f8f"
+      }
+    },
+    "updatedTime": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "ownerCode": "0006",
+    "ownerName": "営業部6",
+    "config": {
+      "kind": "parts",
+      "hair": "short",
+      "face": "closed",
+      "outfit": "shirt",
+      "palette": {
+        "hair": "#2A1A0F",
+        "skin": "#F6D7B8",
+        "outfit": "#5C5470",
+        "outfitDark": "#443e53",
+        "outfitAlt": "#908b9e"
+      }
+    },
+    "updatedTime": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "ownerCode": "0008",
+    "ownerName": "営業部8",
+    "config": {
+      "kind": "parts",
+      "hair": "bob",
+      "face": "wink",
+      "outfit": "knit",
+      "palette": {
+        "hair": "#241C16",
+        "skin": "#FAE0C8",
+        "outfit": "#2F3B52",
+        "outfitDark": "#232c3d",
+        "outfitAlt": "#727a89"
+      }
+    },
+    "updatedTime": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "ownerCode": "0009",
+    "ownerName": "営業部9",
+    "config": {
+      "kind": "parts",
+      "hair": "ponytail",
+      "face": "smile",
+      "outfit": "suit",
+      "palette": {
+        "hair": "#4A3728",
+        "skin": "#F0C49A",
+        "outfit": "#4A5A6E",
+        "outfitDark": "#374351",
+        "outfitAlt": "#848f9c"
+      }
+    },
+    "updatedTime": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "ownerCode": "0011",
+    "ownerName": "開発部1",
+    "config": {
+      "kind": "parts",
+      "hair": "short",
+      "face": "serious",
+      "outfit": "hoodie",
+      "palette": {
+        "hair": "#2A1A0F",
+        "skin": "#E8B48C",
+        "outfit": "#8A5A5A",
+        "outfitDark": "#664343",
+        "outfitAlt": "#af8f8f"
+      }
+    },
+    "updatedTime": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "ownerCode": "0012",
+    "ownerName": "開発部2",
+    "config": {
+      "kind": "parts",
+      "hair": "long",
+      "face": "wink",
+      "outfit": "knit",
+      "palette": {
+        "hair": "#3B2B20",
+        "skin": "#FAE0C8",
+        "outfit": "#5C5470",
+        "outfitDark": "#443e53",
+        "outfitAlt": "#908b9e"
+      }
+    },
+    "updatedTime": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "ownerCode": "0014",
+    "ownerName": "開発部4",
+    "config": {
+      "kind": "parts",
+      "hair": "ponytail",
+      "face": "closed",
+      "outfit": "shirt",
+      "palette": {
+        "hair": "#4A3728",
+        "skin": "#F6D7B8",
+        "outfit": "#2F3B52",
+        "outfitDark": "#232c3d",
+        "outfitAlt": "#727a89"
+      }
+    },
+    "updatedTime": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "ownerCode": "0015",
+    "ownerName": "開発部5",
+    "config": {
+      "kind": "parts",
+      "hair": "bald",
+      "face": "serious",
+      "outfit": "hoodie",
+      "palette": {
+        "hair": "#1F1A17",
+        "skin": "#E8B48C",
+        "outfit": "#4A5A6E",
+        "outfitDark": "#374351",
+        "outfitAlt": "#848f9c"
+      }
+    },
+    "updatedTime": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "ownerCode": "0017",
+    "ownerName": "開発部7",
+    "config": {
+      "kind": "parts",
+      "hair": "long",
+      "face": "smile",
+      "outfit": "suit",
+      "palette": {
+        "hair": "#3B2B20",
+        "skin": "#F0C49A",
+        "outfit": "#8A5A5A",
+        "outfitDark": "#664343",
+        "outfitAlt": "#af8f8f"
+      }
+    },
+    "updatedTime": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "ownerCode": "0018",
+    "ownerName": "開発部8",
+    "config": {
+      "kind": "parts",
+      "hair": "bob",
+      "face": "closed",
+      "outfit": "shirt",
+      "palette": {
+        "hair": "#241C16",
+        "skin": "#F6D7B8",
+        "outfit": "#5C5470",
+        "outfitDark": "#443e53",
+        "outfitAlt": "#908b9e"
+      }
+    },
+    "updatedTime": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "ownerCode": "0020",
+    "ownerName": "開発部10",
+    "config": {
+      "kind": "parts",
+      "hair": "bald",
+      "face": "wink",
+      "outfit": "knit",
+      "palette": {
+        "hair": "#1F1A17",
+        "skin": "#FAE0C8",
+        "outfit": "#2F3B52",
+        "outfitDark": "#232c3d",
+        "outfitAlt": "#727a89"
+      }
+    },
+    "updatedTime": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "ownerCode": "0021",
+    "ownerName": "総務部1",
+    "config": {
+      "kind": "parts",
+      "hair": "short",
+      "face": "smile",
+      "outfit": "suit",
+      "palette": {
+        "hair": "#2A1A0F",
+        "skin": "#F0C49A",
+        "outfit": "#4A5A6E",
+        "outfitDark": "#374351",
+        "outfitAlt": "#848f9c"
+      }
+    },
+    "updatedTime": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "ownerCode": "0023",
+    "ownerName": "総務部3",
+    "config": {
+      "kind": "parts",
+      "hair": "bob",
+      "face": "serious",
+      "outfit": "hoodie",
+      "palette": {
+        "hair": "#241C16",
+        "skin": "#E8B48C",
+        "outfit": "#8A5A5A",
+        "outfitDark": "#664343",
+        "outfitAlt": "#af8f8f"
+      }
+    },
+    "updatedTime": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "ownerCode": "0024",
+    "ownerName": "総務部4",
+    "config": {
+      "kind": "parts",
+      "hair": "ponytail",
+      "face": "wink",
+      "outfit": "knit",
+      "palette": {
+        "hair": "#4A3728",
+        "skin": "#FAE0C8",
+        "outfit": "#5C5470",
+        "outfitDark": "#443e53",
+        "outfitAlt": "#908b9e"
+      }
+    },
+    "updatedTime": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "ownerCode": "0026",
+    "ownerName": "総務部6",
+    "config": {
+      "kind": "parts",
+      "hair": "short",
+      "face": "closed",
+      "outfit": "shirt",
+      "palette": {
+        "hair": "#2A1A0F",
+        "skin": "#F6D7B8",
+        "outfit": "#2F3B52",
+        "outfitDark": "#232c3d",
+        "outfitAlt": "#727a89"
+      }
+    },
+    "updatedTime": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "ownerCode": "0027",
+    "ownerName": "総務部7",
+    "config": {
+      "kind": "parts",
+      "hair": "long",
+      "face": "serious",
+      "outfit": "hoodie",
+      "palette": {
+        "hair": "#3B2B20",
+        "skin": "#E8B48C",
+        "outfit": "#4A5A6E",
+        "outfitDark": "#374351",
+        "outfitAlt": "#848f9c"
+      }
+    },
+    "updatedTime": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "ownerCode": "0029",
+    "ownerName": "総務部9",
+    "config": {
+      "kind": "parts",
+      "hair": "ponytail",
+      "face": "smile",
+      "outfit": "suit",
+      "palette": {
+        "hair": "#4A3728",
+        "skin": "#F0C49A",
+        "outfit": "#8A5A5A",
+        "outfitDark": "#664343",
+        "outfitAlt": "#af8f8f"
+      }
+    },
+    "updatedTime": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "ownerCode": "0030",
+    "ownerName": "経理部1",
+    "config": {
+      "kind": "parts",
+      "hair": "bald",
+      "face": "closed",
+      "outfit": "shirt",
+      "palette": {
+        "hair": "#1F1A17",
+        "skin": "#F6D7B8",
+        "outfit": "#5C5470",
+        "outfitDark": "#443e53",
+        "outfitAlt": "#908b9e"
+      }
+    },
+    "updatedTime": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "ownerCode": "0032",
+    "ownerName": "経理部3",
+    "config": {
+      "kind": "parts",
+      "hair": "long",
+      "face": "wink",
+      "outfit": "knit",
+      "palette": {
+        "hair": "#3B2B20",
+        "skin": "#FAE0C8",
+        "outfit": "#2F3B52",
+        "outfitDark": "#232c3d",
+        "outfitAlt": "#727a89"
+      }
+    },
+    "updatedTime": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "ownerCode": "0033",
+    "ownerName": "経理部4",
+    "config": {
+      "kind": "parts",
+      "hair": "bob",
+      "face": "smile",
+      "outfit": "suit",
+      "palette": {
+        "hair": "#241C16",
+        "skin": "#F0C49A",
+        "outfit": "#4A5A6E",
+        "outfitDark": "#374351",
+        "outfitAlt": "#848f9c"
+      }
+    },
+    "updatedTime": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "ownerCode": "0035",
+    "ownerName": "経理部6",
+    "config": {
+      "kind": "parts",
+      "hair": "bald",
+      "face": "serious",
+      "outfit": "hoodie",
+      "palette": {
+        "hair": "#1F1A17",
+        "skin": "#E8B48C",
+        "outfit": "#8A5A5A",
+        "outfitDark": "#664343",
+        "outfitAlt": "#af8f8f"
+      }
+    },
+    "updatedTime": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "ownerCode": "0036",
+    "ownerName": "経理部7",
+    "config": {
+      "kind": "parts",
+      "hair": "short",
+      "face": "wink",
+      "outfit": "knit",
+      "palette": {
+        "hair": "#2A1A0F",
+        "skin": "#FAE0C8",
+        "outfit": "#5C5470",
+        "outfitDark": "#443e53",
+        "outfitAlt": "#908b9e"
+      }
+    },
+    "updatedTime": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "ownerCode": "0038",
+    "ownerName": "企画部1",
+    "config": {
+      "kind": "parts",
+      "hair": "bob",
+      "face": "closed",
+      "outfit": "shirt",
+      "palette": {
+        "hair": "#241C16",
+        "skin": "#F6D7B8",
+        "outfit": "#2F3B52",
+        "outfitDark": "#232c3d",
+        "outfitAlt": "#727a89"
+      }
+    },
+    "updatedTime": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "ownerCode": "0039",
+    "ownerName": "企画部2",
+    "config": {
+      "kind": "parts",
+      "hair": "ponytail",
+      "face": "serious",
+      "outfit": "hoodie",
+      "palette": {
+        "hair": "#4A3728",
+        "skin": "#E8B48C",
+        "outfit": "#4A5A6E",
+        "outfitDark": "#374351",
+        "outfitAlt": "#848f9c"
+      }
+    },
+    "updatedTime": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "ownerCode": "0041",
+    "ownerName": "企画部4",
+    "config": {
+      "kind": "parts",
+      "hair": "short",
+      "face": "smile",
+      "outfit": "suit",
+      "palette": {
+        "hair": "#2A1A0F",
+        "skin": "#F0C49A",
+        "outfit": "#8A5A5A",
+        "outfitDark": "#664343",
+        "outfitAlt": "#af8f8f"
+      }
+    },
+    "updatedTime": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "ownerCode": "0042",
+    "ownerName": "企画部5",
+    "config": {
+      "kind": "parts",
+      "hair": "long",
+      "face": "closed",
+      "outfit": "shirt",
+      "palette": {
+        "hair": "#3B2B20",
+        "skin": "#F6D7B8",
+        "outfit": "#5C5470",
+        "outfitDark": "#443e53",
+        "outfitAlt": "#908b9e"
+      }
+    },
+    "updatedTime": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "ownerCode": "0044",
+    "ownerName": "企画部7",
+    "config": {
+      "kind": "parts",
+      "hair": "ponytail",
+      "face": "wink",
+      "outfit": "knit",
+      "palette": {
+        "hair": "#4A3728",
+        "skin": "#FAE0C8",
+        "outfit": "#2F3B52",
+        "outfitDark": "#232c3d",
+        "outfitAlt": "#727a89"
+      }
+    },
+    "updatedTime": "2026-01-01T00:00:00.000Z"
+  }
+]

@@ -1,11 +1,11 @@
 import { PixelAvatar } from '@/components/PixelAvatar'
 import { EditModeToggle } from '@/components/edit/EditModeToggle'
-import type { AvatarConfig } from '@/types'
+import type { PixelAvatarConfig } from '@/types'
 
 // 閲覧モードのヘッダー(メニュー・レイアウトリセット・編集トグル・本人アバター)
 
 type Props = {
-  selfAvatar: AvatarConfig | null
+  selfAvatar: PixelAvatarConfig | null
   onOpenDirectory: () => void
   onResetLayout: () => void
   onEnterEdit: () => void

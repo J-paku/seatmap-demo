@@ -4,794 +4,486 @@
     "name": "営業部1",
     "nameKana": "エイギョウブ1",
     "teamId": "team-01",
+    "team": "営業部",
+    "ownerCode": "0001",
+    "furiganaSei": "ｴｲｷﾞｮｳﾌﾞ1",
     "position": "部長",
     "email": "aoyama001@example.co.jp",
-    "phone": "07020304264",
-    "avatar": {
-      "hair": "short",
-      "face": "smile",
-      "outfit": "suit",
-      "palette": {
-        "hair": "#2A1A0F",
-        "skin": "#F0C49A",
-        "outfit": "#3B6EA8"
-      }
-    }
+    "phone": "07020304264"
   },
   {
     "id": "emp-002",
     "name": "営業部2",
     "nameKana": "エイギョウブ2",
     "teamId": "team-01",
+    "team": "営業部",
+    "ownerCode": "0002",
+    "furiganaSei": "ｴｲｷﾞｮｳﾌﾞ2",
     "email": "shiraishi002@example.co.jp",
-    "phone": "07065554145",
-    "avatar": {
-      "hair": "long",
-      "face": "closed",
-      "outfit": "shirt",
-      "palette": {
-        "hair": "#3B2B20",
-        "skin": "#F6D7B8",
-        "outfit": "#2F3B52"
-      }
-    }
+    "phone": "07065554145"
   },
   {
     "id": "emp-003",
     "name": "営業部3",
     "nameKana": "エイギョウブ3",
     "teamId": "team-01",
+    "team": "営業部",
+    "ownerCode": "0003",
+    "furiganaSei": "ｴｲｷﾞｮｳﾌﾞ3",
     "email": "takahashi003@example.co.jp",
-    "phone": "07080478090",
-    "avatar": {
-      "hair": "bob",
-      "face": "serious",
-      "outfit": "hoodie",
-      "palette": {
-        "hair": "#241C16",
-        "skin": "#E8B48C",
-        "outfit": "#4A5A6E"
-      }
-    }
+    "phone": "07080478090"
   },
   {
     "id": "emp-004",
     "name": "営業部4",
     "nameKana": "エイギョウブ4",
     "teamId": "team-01",
+    "team": "営業部",
+    "ownerCode": "0004",
+    "furiganaSei": "ｴｲｷﾞｮｳﾌﾞ4",
     "position": "課長",
     "email": "tanaka004@example.co.jp",
-    "phone": "08060408363",
-    "avatar": {
-      "hair": "ponytail",
-      "face": "wink",
-      "outfit": "knit",
-      "palette": {
-        "hair": "#4A3728",
-        "skin": "#FAE0C8",
-        "outfit": "#7C9E6F"
-      }
-    }
+    "phone": "08060408363"
   },
   {
     "id": "emp-005",
     "name": "営業部5",
     "nameKana": "エイギョウブ5",
     "teamId": "team-01",
+    "team": "営業部",
+    "ownerCode": "0005",
+    "furiganaSei": "ｴｲｷﾞｮｳﾌﾞ5",
     "email": "nakamura005@example.co.jp",
-    "phone": "09055676145",
-    "avatar": {
-      "hair": "bald",
-      "face": "smile",
-      "outfit": "suit",
-      "palette": {
-        "hair": "#1F1A17",
-        "skin": "#F0C49A",
-        "outfit": "#8A5A5A"
-      }
-    }
+    "phone": "09055676145"
   },
   {
     "id": "emp-006",
     "name": "営業部6",
     "nameKana": "エイギョウブ6",
     "teamId": "team-01",
-    "email": "fujii006@example.co.jp",
-    "avatar": {
-      "hair": "short",
-      "face": "closed",
-      "outfit": "shirt",
-      "palette": {
-        "hair": "#2A1A0F",
-        "skin": "#F6D7B8",
-        "outfit": "#5C5470"
-      }
-    }
+    "team": "営業部",
+    "ownerCode": "0006",
+    "furiganaSei": "ｴｲｷﾞｮｳﾌﾞ6",
+    "email": "fujii006@example.co.jp"
   },
   {
     "id": "emp-007",
     "name": "営業部7",
     "nameKana": "エイギョウブ7",
     "teamId": "team-01",
+    "team": "営業部",
+    "ownerCode": "0007",
+    "furiganaSei": "ｴｲｷﾞｮｳﾌﾞ7",
     "email": "matsumoto007@example.co.jp",
-    "phone": "08022212546",
-    "avatar": {
-      "hair": "long",
-      "face": "serious",
-      "outfit": "hoodie",
-      "palette": {
-        "hair": "#3B2B20",
-        "skin": "#E8B48C",
-        "outfit": "#3B6EA8"
-      }
-    }
+    "phone": "08022212546"
   },
   {
     "id": "emp-008",
     "name": "営業部8",
     "nameKana": "エイギョウブ8",
     "teamId": "team-01",
+    "team": "営業部",
+    "ownerCode": "0008",
+    "furiganaSei": "ｴｲｷﾞｮｳﾌﾞ8",
     "email": "inoue008@example.co.jp",
-    "phone": "07034261229",
-    "avatar": {
-      "hair": "bob",
-      "face": "wink",
-      "outfit": "knit",
-      "palette": {
-        "hair": "#241C16",
-        "skin": "#FAE0C8",
-        "outfit": "#2F3B52"
-      }
-    }
+    "phone": "07034261229"
   },
   {
     "id": "emp-009",
     "name": "営業部9",
     "nameKana": "エイギョウブ9",
     "teamId": "team-01",
+    "team": "営業部",
+    "ownerCode": "0009",
+    "furiganaSei": "ｴｲｷﾞｮｳﾌﾞ9",
     "email": "kimura009@example.co.jp",
-    "phone": "08062147800",
-    "avatar": {
-      "hair": "ponytail",
-      "face": "smile",
-      "outfit": "suit",
-      "palette": {
-        "hair": "#4A3728",
-        "skin": "#F0C49A",
-        "outfit": "#4A5A6E"
-      }
-    }
+    "phone": "08062147800"
   },
   {
     "id": "emp-010",
     "name": "営業部10",
     "nameKana": "エイギョウブ10",
     "teamId": "team-01",
+    "team": "営業部",
+    "ownerCode": "0010",
+    "furiganaSei": "ｴｲｷﾞｮｳﾌﾞ10",
     "email": "hayashi010@example.co.jp",
-    "phone": "07077377856",
-    "avatar": {
-      "hair": "bald",
-      "face": "closed",
-      "outfit": "shirt",
-      "palette": {
-        "hair": "#1F1A17",
-        "skin": "#F6D7B8",
-        "outfit": "#7C9E6F"
-      }
-    }
+    "phone": "07077377856"
   },
   {
     "id": "emp-011",
     "name": "開発部1",
     "nameKana": "カイハツブ1",
     "teamId": "team-02",
+    "team": "開発部",
+    "ownerCode": "0011",
+    "furiganaSei": "ｶｲﾊﾂﾌﾞ1",
     "position": "部長",
     "email": "shimizu011@example.co.jp",
-    "phone": "07009636463",
-    "avatar": {
-      "hair": "short",
-      "face": "serious",
-      "outfit": "hoodie",
-      "palette": {
-        "hair": "#2A1A0F",
-        "skin": "#E8B48C",
-        "outfit": "#8A5A5A"
-      }
-    }
+    "phone": "07009636463"
   },
   {
     "id": "emp-012",
     "name": "開発部2",
     "nameKana": "カイハツブ2",
     "teamId": "team-02",
+    "team": "開発部",
+    "ownerCode": "0012",
+    "furiganaSei": "ｶｲﾊﾂﾌﾞ2",
     "email": "yamamoto012@example.co.jp",
-    "phone": "08015583129",
-    "avatar": {
-      "hair": "long",
-      "face": "wink",
-      "outfit": "knit",
-      "palette": {
-        "hair": "#3B2B20",
-        "skin": "#FAE0C8",
-        "outfit": "#5C5470"
-      }
-    }
+    "phone": "08015583129"
   },
   {
     "id": "emp-013",
     "name": "開発部3",
     "nameKana": "カイハツブ3",
     "teamId": "team-02",
+    "team": "開発部",
+    "ownerCode": "0013",
+    "furiganaSei": "ｶｲﾊﾂﾌﾞ3",
     "email": "morita013@example.co.jp",
-    "phone": "08068180014",
-    "avatar": {
-      "hair": "bob",
-      "face": "smile",
-      "outfit": "suit",
-      "palette": {
-        "hair": "#241C16",
-        "skin": "#F0C49A",
-        "outfit": "#3B6EA8"
-      }
-    }
+    "phone": "08068180014"
   },
   {
     "id": "emp-014",
     "name": "開発部4",
     "nameKana": "カイハツブ4",
     "teamId": "team-02",
+    "team": "開発部",
+    "ownerCode": "0014",
+    "furiganaSei": "ｶｲﾊﾂﾌﾞ4",
     "position": "課長",
     "email": "kobayashi014@example.co.jp",
-    "phone": "09058884577",
-    "avatar": {
-      "hair": "ponytail",
-      "face": "closed",
-      "outfit": "shirt",
-      "palette": {
-        "hair": "#4A3728",
-        "skin": "#F6D7B8",
-        "outfit": "#2F3B52"
-      }
-    }
+    "phone": "09058884577"
   },
   {
     "id": "emp-015",
     "name": "開発部5",
     "nameKana": "カイハツブ5",
     "teamId": "team-02",
-    "email": "kato015@example.co.jp",
-    "avatar": {
-      "hair": "bald",
-      "face": "serious",
-      "outfit": "hoodie",
-      "palette": {
-        "hair": "#1F1A17",
-        "skin": "#E8B48C",
-        "outfit": "#4A5A6E"
-      }
-    }
+    "team": "開発部",
+    "ownerCode": "0015",
+    "furiganaSei": "ｶｲﾊﾂﾌﾞ5",
+    "email": "kato015@example.co.jp"
   },
   {
     "id": "emp-016",
     "name": "開発部6",
     "nameKana": "カイハツブ6",
     "teamId": "team-02",
-    "email": "yoshida016@example.co.jp",
-    "avatar": {
-      "hair": "short",
-      "face": "wink",
-      "outfit": "knit",
-      "palette": {
-        "hair": "#2A1A0F",
-        "skin": "#FAE0C8",
-        "outfit": "#7C9E6F"
-      }
-    }
+    "team": "開発部",
+    "ownerCode": "0016",
+    "furiganaSei": "ｶｲﾊﾂﾌﾞ6",
+    "email": "yoshida016@example.co.jp"
   },
   {
     "id": "emp-017",
     "name": "開発部7",
     "nameKana": "カイハツブ7",
     "teamId": "team-02",
+    "team": "開発部",
+    "ownerCode": "0017",
+    "furiganaSei": "ｶｲﾊﾂﾌﾞ7",
     "email": "yamada017@example.co.jp",
-    "phone": "07073217665",
-    "avatar": {
-      "hair": "long",
-      "face": "smile",
-      "outfit": "suit",
-      "palette": {
-        "hair": "#3B2B20",
-        "skin": "#F0C49A",
-        "outfit": "#8A5A5A"
-      }
-    }
+    "phone": "07073217665"
   },
   {
     "id": "emp-018",
     "name": "開発部8",
     "nameKana": "カイハツブ8",
     "teamId": "team-02",
+    "team": "開発部",
+    "ownerCode": "0018",
+    "furiganaSei": "ｶｲﾊﾂﾌﾞ8",
     "email": "sasaki018@example.co.jp",
-    "phone": "08043618276",
-    "avatar": {
-      "hair": "bob",
-      "face": "closed",
-      "outfit": "shirt",
-      "palette": {
-        "hair": "#241C16",
-        "skin": "#F6D7B8",
-        "outfit": "#5C5470"
-      }
-    }
+    "phone": "08043618276"
   },
   {
     "id": "emp-019",
     "name": "開発部9",
     "nameKana": "カイハツブ9",
     "teamId": "team-02",
+    "team": "開発部",
+    "ownerCode": "0019",
+    "furiganaSei": "ｶｲﾊﾂﾌﾞ9",
     "email": "yamaguchi019@example.co.jp",
-    "phone": "09017811095",
-    "avatar": {
-      "hair": "ponytail",
-      "face": "serious",
-      "outfit": "hoodie",
-      "palette": {
-        "hair": "#4A3728",
-        "skin": "#E8B48C",
-        "outfit": "#3B6EA8"
-      }
-    }
+    "phone": "09017811095"
   },
   {
     "id": "emp-020",
     "name": "開発部10",
     "nameKana": "カイハツブ10",
     "teamId": "team-02",
+    "team": "開発部",
+    "ownerCode": "0020",
+    "furiganaSei": "ｶｲﾊﾂﾌﾞ10",
     "email": "saito020@example.co.jp",
-    "phone": "07088817473",
-    "avatar": {
-      "hair": "bald",
-      "face": "wink",
-      "outfit": "knit",
-      "palette": {
-        "hair": "#1F1A17",
-        "skin": "#FAE0C8",
-        "outfit": "#2F3B52"
-      }
-    }
+    "phone": "07088817473"
   },
   {
     "id": "emp-021",
     "name": "総務部1",
     "nameKana": "ソウムブ1",
     "teamId": "team-03",
+    "team": "総務部",
+    "ownerCode": "0021",
+    "furiganaSei": "ｿｳﾑﾌﾞ1",
     "position": "部長",
     "email": "ikeda021@example.co.jp",
-    "phone": "07057783320",
-    "avatar": {
-      "hair": "short",
-      "face": "smile",
-      "outfit": "suit",
-      "palette": {
-        "hair": "#2A1A0F",
-        "skin": "#F0C49A",
-        "outfit": "#4A5A6E"
-      }
-    }
+    "phone": "07057783320"
   },
   {
     "id": "emp-022",
     "name": "総務部2",
     "nameKana": "ソウムブ2",
     "teamId": "team-03",
+    "team": "総務部",
+    "ownerCode": "0022",
+    "furiganaSei": "ｿｳﾑﾌﾞ2",
     "email": "hashimoto022@example.co.jp",
-    "phone": "09032154708",
-    "avatar": {
-      "hair": "long",
-      "face": "closed",
-      "outfit": "shirt",
-      "palette": {
-        "hair": "#3B2B20",
-        "skin": "#F6D7B8",
-        "outfit": "#7C9E6F"
-      }
-    }
+    "phone": "09032154708"
   },
   {
     "id": "emp-023",
     "name": "総務部3",
     "nameKana": "ソウムブ3",
     "teamId": "team-03",
+    "team": "総務部",
+    "ownerCode": "0023",
+    "furiganaSei": "ｿｳﾑﾌﾞ3",
     "email": "ishikawa023@example.co.jp",
-    "phone": "08081473887",
-    "avatar": {
-      "hair": "bob",
-      "face": "serious",
-      "outfit": "hoodie",
-      "palette": {
-        "hair": "#241C16",
-        "skin": "#E8B48C",
-        "outfit": "#8A5A5A"
-      }
-    }
+    "phone": "08081473887"
   },
   {
     "id": "emp-024",
     "name": "総務部4",
     "nameKana": "ソウムブ4",
     "teamId": "team-03",
+    "team": "総務部",
+    "ownerCode": "0024",
+    "furiganaSei": "ｿｳﾑﾌﾞ4",
     "position": "課長",
     "email": "maeda024@example.co.jp",
-    "phone": "08017057776",
-    "avatar": {
-      "hair": "ponytail",
-      "face": "wink",
-      "outfit": "knit",
-      "palette": {
-        "hair": "#4A3728",
-        "skin": "#FAE0C8",
-        "outfit": "#5C5470"
-      }
-    }
+    "phone": "08017057776"
   },
   {
     "id": "emp-025",
     "name": "総務部5",
     "nameKana": "ソウムブ5",
     "teamId": "team-03",
+    "team": "総務部",
+    "ownerCode": "0025",
+    "furiganaSei": "ｿｳﾑﾌﾞ5",
     "email": "fujiwara025@example.co.jp",
-    "phone": "08036924479",
-    "avatar": {
-      "hair": "bald",
-      "face": "smile",
-      "outfit": "suit",
-      "palette": {
-        "hair": "#1F1A17",
-        "skin": "#F0C49A",
-        "outfit": "#3B6EA8"
-      }
-    }
+    "phone": "08036924479"
   },
   {
     "id": "emp-026",
     "name": "総務部6",
     "nameKana": "ソウムブ6",
     "teamId": "team-03",
+    "team": "総務部",
+    "ownerCode": "0026",
+    "furiganaSei": "ｿｳﾑﾌﾞ6",
     "email": "okada026@example.co.jp",
-    "phone": "07071139990",
-    "avatar": {
-      "hair": "short",
-      "face": "closed",
-      "outfit": "shirt",
-      "palette": {
-        "hair": "#2A1A0F",
-        "skin": "#F6D7B8",
-        "outfit": "#2F3B52"
-      }
-    }
+    "phone": "07071139990"
   },
   {
     "id": "emp-027",
     "name": "総務部7",
     "nameKana": "ソウムブ7",
     "teamId": "team-03",
+    "team": "総務部",
+    "ownerCode": "0027",
+    "furiganaSei": "ｿｳﾑﾌﾞ7",
     "email": "goto027@example.co.jp",
-    "phone": "07067006389",
-    "avatar": {
-      "hair": "long",
-      "face": "serious",
-      "outfit": "hoodie",
-      "palette": {
-        "hair": "#3B2B20",
-        "skin": "#E8B48C",
-        "outfit": "#4A5A6E"
-      }
-    }
+    "phone": "07067006389"
   },
   {
     "id": "emp-028",
     "name": "総務部8",
     "nameKana": "ソウムブ8",
     "teamId": "team-03",
-    "email": "hasegawa028@example.co.jp",
-    "avatar": {
-      "hair": "bob",
-      "face": "wink",
-      "outfit": "knit",
-      "palette": {
-        "hair": "#241C16",
-        "skin": "#FAE0C8",
-        "outfit": "#7C9E6F"
-      }
-    }
+    "team": "総務部",
+    "ownerCode": "0028",
+    "furiganaSei": "ｿｳﾑﾌﾞ8",
+    "email": "hasegawa028@example.co.jp"
   },
   {
     "id": "emp-029",
     "name": "総務部9",
     "nameKana": "ソウムブ9",
     "teamId": "team-03",
+    "team": "総務部",
+    "ownerCode": "0029",
+    "furiganaSei": "ｿｳﾑﾌﾞ9",
     "email": "murakami029@example.co.jp",
-    "phone": "07069676969",
-    "avatar": {
-      "hair": "ponytail",
-      "face": "smile",
-      "outfit": "suit",
-      "palette": {
-        "hair": "#4A3728",
-        "skin": "#F0C49A",
-        "outfit": "#8A5A5A"
-      }
-    }
+    "phone": "07069676969"
   },
   {
     "id": "emp-030",
     "name": "経理部1",
     "nameKana": "ケイリブ1",
     "teamId": "team-04",
+    "team": "経理部",
+    "ownerCode": "0030",
+    "furiganaSei": "ｹｲﾘﾌﾞ1",
     "position": "部長",
     "email": "kondo030@example.co.jp",
-    "phone": "09059397204",
-    "avatar": {
-      "hair": "bald",
-      "face": "closed",
-      "outfit": "shirt",
-      "palette": {
-        "hair": "#1F1A17",
-        "skin": "#F6D7B8",
-        "outfit": "#5C5470"
-      }
-    }
+    "phone": "09059397204"
   },
   {
     "id": "emp-031",
     "name": "経理部2",
     "nameKana": "ケイリブ2",
     "teamId": "team-04",
+    "team": "経理部",
+    "ownerCode": "0031",
+    "furiganaSei": "ｹｲﾘﾌﾞ2",
     "email": "aoyama031@example.co.jp",
-    "phone": "09076554346",
-    "avatar": {
-      "hair": "short",
-      "face": "serious",
-      "outfit": "hoodie",
-      "palette": {
-        "hair": "#2A1A0F",
-        "skin": "#E8B48C",
-        "outfit": "#3B6EA8"
-      }
-    }
+    "phone": "09076554346"
   },
   {
     "id": "emp-032",
     "name": "経理部3",
     "nameKana": "ケイリブ3",
     "teamId": "team-04",
+    "team": "経理部",
+    "ownerCode": "0032",
+    "furiganaSei": "ｹｲﾘﾌﾞ3",
     "email": "shiraishi032@example.co.jp",
-    "phone": "09092991462",
-    "avatar": {
-      "hair": "long",
-      "face": "wink",
-      "outfit": "knit",
-      "palette": {
-        "hair": "#3B2B20",
-        "skin": "#FAE0C8",
-        "outfit": "#2F3B52"
-      }
-    }
+    "phone": "09092991462"
   },
   {
     "id": "emp-033",
     "name": "経理部4",
     "nameKana": "ケイリブ4",
     "teamId": "team-04",
+    "team": "経理部",
+    "ownerCode": "0033",
+    "furiganaSei": "ｹｲﾘﾌﾞ4",
     "position": "課長",
-    "email": "takahashi033@example.co.jp",
-    "avatar": {
-      "hair": "bob",
-      "face": "smile",
-      "outfit": "suit",
-      "palette": {
-        "hair": "#241C16",
-        "skin": "#F0C49A",
-        "outfit": "#4A5A6E"
-      }
-    }
+    "email": "takahashi033@example.co.jp"
   },
   {
     "id": "emp-034",
     "name": "経理部5",
     "nameKana": "ケイリブ5",
     "teamId": "team-04",
+    "team": "経理部",
+    "ownerCode": "0034",
+    "furiganaSei": "ｹｲﾘﾌﾞ5",
     "email": "tanaka034@example.co.jp",
-    "phone": "08041151655",
-    "avatar": {
-      "hair": "ponytail",
-      "face": "closed",
-      "outfit": "shirt",
-      "palette": {
-        "hair": "#4A3728",
-        "skin": "#F6D7B8",
-        "outfit": "#7C9E6F"
-      }
-    }
+    "phone": "08041151655"
   },
   {
     "id": "emp-035",
     "name": "経理部6",
     "nameKana": "ケイリブ6",
     "teamId": "team-04",
+    "team": "経理部",
+    "ownerCode": "0035",
+    "furiganaSei": "ｹｲﾘﾌﾞ6",
     "email": "nakamura035@example.co.jp",
-    "phone": "09078395069",
-    "avatar": {
-      "hair": "bald",
-      "face": "serious",
-      "outfit": "hoodie",
-      "palette": {
-        "hair": "#1F1A17",
-        "skin": "#E8B48C",
-        "outfit": "#8A5A5A"
-      }
-    }
+    "phone": "09078395069"
   },
   {
     "id": "emp-036",
     "name": "経理部7",
     "nameKana": "ケイリブ7",
     "teamId": "team-04",
-    "email": "fujii036@example.co.jp",
-    "avatar": {
-      "hair": "short",
-      "face": "wink",
-      "outfit": "knit",
-      "palette": {
-        "hair": "#2A1A0F",
-        "skin": "#FAE0C8",
-        "outfit": "#5C5470"
-      }
-    }
+    "team": "経理部",
+    "ownerCode": "0036",
+    "furiganaSei": "ｹｲﾘﾌﾞ7",
+    "email": "fujii036@example.co.jp"
   },
   {
     "id": "emp-037",
     "name": "経理部8",
     "nameKana": "ケイリブ8",
     "teamId": "team-04",
+    "team": "経理部",
+    "ownerCode": "0037",
+    "furiganaSei": "ｹｲﾘﾌﾞ8",
     "email": "matsumoto037@example.co.jp",
-    "phone": "09083429202",
-    "avatar": {
-      "hair": "long",
-      "face": "smile",
-      "outfit": "suit",
-      "palette": {
-        "hair": "#3B2B20",
-        "skin": "#F0C49A",
-        "outfit": "#3B6EA8"
-      }
-    }
+    "phone": "09083429202"
   },
   {
     "id": "emp-038",
     "name": "企画部1",
     "nameKana": "キカクブ1",
     "teamId": "team-05",
+    "team": "企画部",
+    "ownerCode": "0038",
+    "furiganaSei": "ｷｶｸﾌﾞ1",
     "position": "部長",
     "email": "inoue038@example.co.jp",
-    "phone": "09085779935",
-    "avatar": {
-      "hair": "bob",
-      "face": "closed",
-      "outfit": "shirt",
-      "palette": {
-        "hair": "#241C16",
-        "skin": "#F6D7B8",
-        "outfit": "#2F3B52"
-      }
-    }
+    "phone": "09085779935"
   },
   {
     "id": "emp-039",
     "name": "企画部2",
     "nameKana": "キカクブ2",
     "teamId": "team-05",
+    "team": "企画部",
+    "ownerCode": "0039",
+    "furiganaSei": "ｷｶｸﾌﾞ2",
     "email": "kimura039@example.co.jp",
-    "phone": "09020128555",
-    "avatar": {
-      "hair": "ponytail",
-      "face": "serious",
-      "outfit": "hoodie",
-      "palette": {
-        "hair": "#4A3728",
-        "skin": "#E8B48C",
-        "outfit": "#4A5A6E"
-      }
-    }
+    "phone": "09020128555"
   },
   {
     "id": "emp-040",
     "name": "企画部3",
     "nameKana": "キカクブ3",
     "teamId": "team-05",
+    "team": "企画部",
+    "ownerCode": "0040",
+    "furiganaSei": "ｷｶｸﾌﾞ3",
     "email": "hayashi040@example.co.jp",
-    "phone": "07056805725",
-    "avatar": {
-      "hair": "bald",
-      "face": "wink",
-      "outfit": "knit",
-      "palette": {
-        "hair": "#1F1A17",
-        "skin": "#FAE0C8",
-        "outfit": "#7C9E6F"
-      }
-    }
+    "phone": "07056805725"
   },
   {
     "id": "emp-041",
     "name": "企画部4",
     "nameKana": "キカクブ4",
     "teamId": "team-05",
+    "team": "企画部",
+    "ownerCode": "0041",
+    "furiganaSei": "ｷｶｸﾌﾞ4",
     "position": "課長",
     "email": "shimizu041@example.co.jp",
-    "phone": "08041515357",
-    "avatar": {
-      "hair": "short",
-      "face": "smile",
-      "outfit": "suit",
-      "palette": {
-        "hair": "#2A1A0F",
-        "skin": "#F0C49A",
-        "outfit": "#8A5A5A"
-      }
-    }
+    "phone": "08041515357"
   },
   {
     "id": "emp-042",
     "name": "企画部5",
     "nameKana": "キカクブ5",
     "teamId": "team-05",
+    "team": "企画部",
+    "ownerCode": "0042",
+    "furiganaSei": "ｷｶｸﾌﾞ5",
     "email": "yamamoto042@example.co.jp",
-    "phone": "09076529094",
-    "avatar": {
-      "hair": "long",
-      "face": "closed",
-      "outfit": "shirt",
-      "palette": {
-        "hair": "#3B2B20",
-        "skin": "#F6D7B8",
-        "outfit": "#5C5470"
-      }
-    }
+    "phone": "09076529094"
   },
   {
     "id": "emp-043",
     "name": "企画部6",
     "nameKana": "キカクブ6",
     "teamId": "team-05",
-    "email": "morita043@example.co.jp",
-    "avatar": {
-      "hair": "bob",
-      "face": "serious",
-      "outfit": "hoodie",
-      "palette": {
-        "hair": "#241C16",
-        "skin": "#E8B48C",
-        "outfit": "#3B6EA8"
-      }
-    }
+    "team": "企画部",
+    "ownerCode": "0043",
+    "furiganaSei": "ｷｶｸﾌﾞ6",
+    "email": "morita043@example.co.jp"
   },
   {
     "id": "emp-044",
     "name": "企画部7",
     "nameKana": "キカクブ7",
     "teamId": "team-05",
+    "team": "企画部",
+    "ownerCode": "0044",
+    "furiganaSei": "ｷｶｸﾌﾞ7",
     "email": "kobayashi044@example.co.jp",
-    "phone": "09038651007",
-    "avatar": {
-      "hair": "ponytail",
-      "face": "wink",
-      "outfit": "knit",
-      "palette": {
-        "hair": "#4A3728",
-        "skin": "#FAE0C8",
-        "outfit": "#2F3B52"
-      }
-    }
+    "phone": "09038651007"
   }
 ]

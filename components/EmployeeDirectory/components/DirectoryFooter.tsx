@@ -1,11 +1,11 @@
 import { PixelAvatar } from '@/components/PixelAvatar'
-import type { AvatarConfig, Employee } from '@/types'
+import type { PixelAvatarConfig, Employee } from '@/types'
 
 // 本人アバター(タップでアバター編集)と設定(デモでは無効)
 
 type Props = {
   selfEmployee: Employee | null
-  selfAvatar: AvatarConfig | null
+  selfAvatar: PixelAvatarConfig | null
   onOpenAvatarEditor: () => void
 }
 

@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { DeptGroupRow } from './DeptGroupRow'
 import { EmployeeCard } from './EmployeeCard'
-import type { AvatarConfig, Employee } from '@/types'
+import type { Employee } from '@/types'
 import type { DeptGroup, DirectoryFavorites } from '../type'
 
 // お気に入り → マイ部署ピン → 全ての部署 の順に並ぶツリー本体
@@ -14,7 +14,6 @@ type Props = {
   isSearching: boolean
   isEmptyResult: boolean
   deptNameOf: (employee: Employee) => string
-  resolveAvatar: (empId: string, fallback: AvatarConfig) => AvatarConfig
   onToggleDept: (teamName: string) => void
   onSelectEmployee: (employee: Employee) => void
 }
@@ -27,7 +26,6 @@ export const DirectoryTree = ({
   isSearching,
   isEmptyResult,
   deptNameOf,
-  resolveAvatar,
   onToggleDept,
   onSelectEmployee,
 }: Props) => {
@@ -53,7 +51,6 @@ export const DirectoryTree = ({
                   key={emp.id}
                   employee={emp}
                   deptName={deptNameOf(emp)}
-                  avatar={resolveAvatar(emp.id, emp.avatar)}
                   isFavorite={favorites.employeeIds.has(emp.id)}
                   onSelect={onSelectEmployee}
                   onToggleFavorite={favorites.toggleEmployee}
@@ -75,7 +72,6 @@ export const DirectoryTree = ({
             expanded={isPinnedExpanded}
             favorites={favorites}
             deptNameOf={deptNameOf}
-            resolveAvatar={resolveAvatar}
             onToggleExpand={() => setIsPinnedExpanded((v) => !v)}
             onSelectEmployee={onSelectEmployee}
           />
@@ -91,7 +87,6 @@ export const DirectoryTree = ({
             expanded={expandedDepts.has(group.teamName)}
             favorites={favorites}
             deptNameOf={deptNameOf}
-            resolveAvatar={resolveAvatar}
             onToggleExpand={onToggleDept}
             onSelectEmployee={onSelectEmployee}
           />

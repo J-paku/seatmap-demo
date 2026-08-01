@@ -1,11 +1,22 @@
 import useSWR from 'swr'
 import { useCallback } from 'react'
-import type { Employee, Facility, FacilityMeeting, ScheduleEvent, Seat, SeatLayout, Team } from '@/types'
+import type {
+  Employee,
+  Facility,
+  FacilityMeeting,
+  PixelAvatarConfig,
+  ScheduleEvent,
+  Seat,
+  SeatLayout,
+  StoredAvatarRecord,
+  Team,
+} from '@/types'
 import { VIEWBOX_W, VIEWBOX_H } from '@/utils/geometry'
 import { clearStoredLayout, loadStoredLayout, saveStoredLayout } from '@/lib/layout-persistence'
 import { anchorSchedulesToDate } from '@/utils/schedule-anchor'
 import { hashString } from '@/utils/hash-string'
 import employeesJson from '../mocks/employees.json'
+import avatarsJson from '../mocks/avatars.json'
 import teamsJson from '../mocks/teams.json'
 import seatsJson from '../mocks/seats.json'
 import facilitiesJson from '../mocks/facilities.json'
@@ -13,10 +24,14 @@ import schedulesJson from '../mocks/schedules.json'
 import facilityMeetingsJson from '../mocks/facility-meetings.json'
 
 // JSON 由来の緩い型を、union フィールドを持つ確定型へ整形(このファイルが唯一の import 点)
-const EMPLOYEES: Employee[] = employeesJson.map((e) => ({
-  ...e,
-  avatar: e.avatar as Employee['avatar'],
+const EMPLOYEES: Employee[] = employeesJson
+const AVATAR_RECORDS: StoredAvatarRecord[] = avatarsJson.map((r) => ({
+  ...r,
+  config: r.config as PixelAvatarConfig,
 }))
+
+// アバターの種データ。上書き合流は hooks/use-avatars.ts が担う
+export const seedAvatarRecords = (): StoredAvatarRecord[] => AVATAR_RECORDS
 const TEAMS: Team[] = teamsJson
 const SEATS: Seat[] = seatsJson.map((s) => ({
   ...s,

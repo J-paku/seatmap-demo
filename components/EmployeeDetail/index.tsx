@@ -9,7 +9,7 @@ import { useQuantizedClock } from '@/hooks/use-quantized-clock'
 import { useDetailPanel } from '@/contexts/detail-panel-context'
 import { useSelectedDate } from '@/contexts/selected-date-context'
 import { isSameJstDate, jstDateKey, jstKeyFromIso } from '@/utils/jst-date'
-import { useSelfAvatar } from '@/contexts/self-avatar-context'
+import { useEmployeeAvatar } from '@/hooks/use-employee-avatar'
 
 // 12-member-detail: 社員詳細(座席詳細兼用)。空席時は空席表記のみ
 
@@ -23,11 +23,11 @@ export const EmployeeDetail = ({ seatId }: Props) => {
   const { date, debouncedDate, isTodaySelected, goToPrevDay, goToNextDay, goToToday } = useSelectedDate()
   const nowMs = useQuantizedClock(isTodaySelected)
   const { openScheduleDetail } = useDetailPanel()
-  const { resolveAvatar } = useSelfAvatar()
   const { isRefreshing, cooldown, refresh } = useScheduleRefresh()
 
   const seat = seats?.find((s) => s.id === seatId)
   const employee = seat?.employeeId ? employees?.find((e) => e.id === seat.employeeId) : null
+  const avatarConfig = useEmployeeAvatar(employee)
   const team = employee ? teams?.find((t) => t.id === employee.teamId) ?? null : null
 
   // debouncedDate 当日分の予定に絞って時刻順に並べる
@@ -61,7 +61,7 @@ export const EmployeeDetail = ({ seatId }: Props) => {
           <ProfileCard
             employee={employee}
             team={team}
-            avatar={resolveAvatar(employee.id, employee.avatar)}
+            avatar={avatarConfig}
             status={status}
             isBadgeVisible={!!seat.id && isTodaySelected}
             isScheduleLoading={isScheduleLoading}
