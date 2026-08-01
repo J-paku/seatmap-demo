@@ -11,6 +11,126 @@ export type AvatarConfig = {
   palette: { hair: string; skin: string; outfit: string }
 }
 
+// --- ここから実物 PiPiT-web 由来のピクセルアバター型（C1 で追加・C2 で上の AvatarConfig を置き換える） ---
+
+// プリセット ID — 原文 types.ts の union は抜粋の先頭が欠けていたため
+// pixelAvatarPresets.ts の PIXEL_AVATAR_PRESETS のキー18件から復元した
+export type PixelAvatarPresetId =
+  | 'av1'
+  | 'av2'
+  | 'av3'
+  | 'av4'
+  | 'av5'
+  | 'av6'
+  | 'av7'
+  | 'av8'
+  | 'av9'
+  | 'av10'
+  | 'av11'
+  | 'av12'
+  | 'av13'
+  | 'av14'
+  | 'av15'
+  | 'av16'
+  | 'av17'
+  | 'av18'
+
+// パーツ ID — 各バリアントを追加するときは type に 1 行 + マトリクスに 1 エントリ
+export type HairId =
+  | 'short'
+  | 'long'
+  | 'bald'
+  | 'mohawk'
+  | 'topknot'
+  | 'windSweep'
+  | 'garou'
+  | 'curl'
+  | 'neatBob'
+  | 'softBob'
+  | 'bob'
+  | 'ponytail'
+  | 'twintail'
+  | 'wavy'
+  | 'hime'
+  | 'hood'
+  | 'bobBangs'
+  | 'wavyBangs'
+  | 'longStraight'
+  | 'cCurlBob'
+  | 'kuroxxx'
+export type FaceId = 'slit' | 'smile' | 'closed' | 'serious' | 'wink' | 'stern' | 'smirk' | 'happy'
+export type AccessoryId =
+  | 'none'
+  | 'glasses'
+  | 'cap'
+  | 'mask'
+  | 'sunglasses'
+  | 'glassesThick'
+  | 'glassesAviator'
+  | 'glassesRound'
+  | 'bow'
+export type OutfitId =
+  | 'solid'
+  | 'striped'
+  | 'suit'
+  | 'hoodie'
+  | 'shirt'
+  | 'blazer'
+  | 'knit'
+  | 'cardigan'
+  | 'polo'
+  | 'turtleneck'
+  | 'vest'
+
+// パレット — hex 文字列。色はパーツ間で共有
+export interface AvatarPalette {
+  hair: string
+  skin: string
+  outfit: string
+  outfitDark: string
+  outfitAlt?: string
+  accessory?: string
+}
+
+// preset config — id 1 つで parts に展開される (lib/pixelAvatarPresets が解決)
+interface PresetAvatarConfig {
+  kind: 'preset'
+  id: PixelAvatarPresetId
+}
+
+// parts config — ユーザーが自由にカスタマイズできる完全合成型
+export interface PartsAvatarConfig {
+  kind: 'parts'
+  hair: HairId
+  face: FaceId
+  accessory?: AccessoryId
+  outfit: OutfitId
+  palette: AvatarPalette
+}
+
+// pixels config — AI 自由生成の 16x16 フリーピクセルモード
+// size 固定 16 / rows: 16本・各 16 文字 / palette: 文字キー→HEX('#RRGGBB')
+export interface PixelsAvatarConfig {
+  kind: 'pixels'
+  size: 16
+  palette: Record<string, string>
+  rows: string[]
+}
+
+export type PixelAvatarConfig = PresetAvatarConfig | PartsAvatarConfig | PixelsAvatarConfig
+
+// 8x8 ピクセルマトリクス — 各セルはパレットキー or null (透明)
+export type PixelMatrix = (string | null)[][]
+
+export interface StoredAvatarRecord {
+  ownerCode: string
+  ownerName: string
+  config: PixelAvatarConfig
+  updatedTime: string
+}
+
+// --- 実物由来ここまで ---
+
 // 社員
 export type Employee = {
   id: string

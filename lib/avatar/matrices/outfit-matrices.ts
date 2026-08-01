@@ -1,0 +1,142 @@
+// 服装パーツ — row 6-7 (胴体) と必要なら row 5 (襟・フード)
+import type { OutfitId, PixelMatrix } from '@/types'
+
+const _: null = null
+
+export const OUTFIT_MATRICES: Record<OutfitId, PixelMatrix> = {
+  solid: [
+    [_, _, _, _, _, _, _, _],
+    [_, _, _, _, _, _, _, _],
+    [_, _, _, _, _, _, _, _],
+    [_, _, _, _, _, _, _, _],
+    [_, _, _, _, _, _, _, _],
+    [_, _, _, _, _, _, _, _],
+    ['outfit', 'outfit', 'outfit', 'outfit', 'outfit', 'outfit', 'outfit', 'outfit'],
+    [
+      'outfit',
+      'outfit',
+      'outfitDark',
+      'outfitDark',
+      'outfitDark',
+      'outfitDark',
+      'outfit',
+      'outfit',
+    ],
+  ],
+  striped: [
+    [_, _, _, _, _, _, _, _],
+    [_, _, _, _, _, _, _, _],
+    [_, _, _, _, _, _, _, _],
+    [_, _, _, _, _, _, _, _],
+    [_, _, _, _, _, _, _, _],
+    [_, _, _, _, _, _, _, _],
+    ['outfit', 'outfitAlt', 'outfit', 'outfitAlt', 'outfit', 'outfitAlt', 'outfit', 'outfitAlt'],
+    ['outfitAlt', 'outfit', 'outfitAlt', 'outfit', 'outfitAlt', 'outfit', 'outfitAlt', 'outfit'],
+  ],
+  suit: [
+    [_, _, _, _, _, _, _, _],
+    [_, _, _, _, _, _, _, _],
+    [_, _, _, _, _, _, _, _],
+    [_, _, _, _, _, _, _, _],
+    [_, _, _, _, _, _, _, _],
+    [_, _, _, _, _, _, _, _],
+    ['outfit', 'outfit', 'outfit', 'outfitAlt', 'outfitAlt', 'outfit', 'outfit', 'outfit'],
+    [
+      'outfitDark',
+      'outfit',
+      'outfitDark',
+      'outfitAlt',
+      'outfitAlt',
+      'outfitDark',
+      'outfit',
+      'outfitDark',
+    ],
+  ],
+  hoodie: [
+    [_, _, _, _, _, _, _, _],
+    [_, _, _, _, _, _, _, _],
+    [_, _, _, _, _, _, _, _],
+    [_, _, _, _, _, _, _, _],
+    [_, _, _, _, _, _, _, _],
+    [_, 'outfit', _, _, _, _, 'outfit', _],
+    ['outfit', 'outfit', 'outfit', 'outfit', 'outfit', 'outfit', 'outfit', 'outfit'],
+    ['outfit', 'outfitDark', 'outfit', 'outfit', 'outfit', 'outfit', 'outfitDark', 'outfit'],
+  ],
+  // 襟付きシャツ — 左右の襟 + 中央の縦ボタンプラケット
+  shirt: [
+    [_, _, _, _, _, _, _, _],
+    [_, _, _, _, _, _, _, _],
+    [_, _, _, _, _, _, _, _],
+    [_, _, _, _, _, _, _, _],
+    [_, _, _, _, _, _, _, _],
+    [_, _, 'outfitDark', _, _, 'outfitDark', _, _],
+    ['outfit', 'outfit', 'outfit', 'outfitDark', 'outfit', 'outfit', 'outfit', 'outfit'],
+    ['outfit', 'outfit', 'outfit', 'outfitDark', 'outfit', 'outfit', 'outfit', 'outfit'],
+  ],
+  // ジャケット (ブレザー) — 外側ラペル + 中央に覗くインナー (V 字に絞る)
+  blazer: [
+    [_, _, _, _, _, _, _, _],
+    [_, _, _, _, _, _, _, _],
+    [_, _, _, _, _, _, _, _],
+    [_, _, _, _, _, _, _, _],
+    [_, _, _, _, _, _, _, _],
+    [_, 'outfit', 'outfit', 'outfitAlt', 'outfitAlt', 'outfit', 'outfit', _],
+    ['outfit', 'outfit', 'outfit', 'outfitAlt', 'outfitAlt', 'outfit', 'outfit', 'outfit'],
+    ['outfit', 'outfit', 'outfit', 'outfit', 'outfit', 'outfit', 'outfit', 'outfit'],
+  ],
+  // ニット (ラウンドネック) — 首元だけ暗くしたシンプルなセーター
+  knit: [
+    [_, _, _, _, _, _, _, _],
+    [_, _, _, _, _, _, _, _],
+    [_, _, _, _, _, _, _, _],
+    [_, _, _, _, _, _, _, _],
+    [_, _, _, _, _, _, _, _],
+    [_, _, _, 'outfitDark', 'outfitDark', _, _, _],
+    ['outfit', 'outfit', 'outfit', 'outfit', 'outfit', 'outfit', 'outfit', 'outfit'],
+    ['outfit', 'outfit', 'outfit', 'outfit', 'outfit', 'outfit', 'outfit', 'outfit'],
+  ],
+  // カーディガン — 前開きの縦ライン + 中央に覗くインナー
+  cardigan: [
+    [_, _, _, _, _, _, _, _],
+    [_, _, _, _, _, _, _, _],
+    [_, _, _, _, _, _, _, _],
+    [_, _, _, _, _, _, _, _],
+    [_, _, _, _, _, _, _, _],
+    [_, 'outfit', _, _, _, _, 'outfit', _],
+    ['outfit', 'outfit', 'outfitDark', 'outfitAlt', 'outfitAlt', 'outfitDark', 'outfit', 'outfit'],
+    ['outfit', 'outfit', 'outfitDark', 'outfitAlt', 'outfitAlt', 'outfitDark', 'outfit', 'outfit'],
+  ],
+  // ポロシャツ — 小さな襟 + 短い前立てボタン
+  polo: [
+    [_, _, _, _, _, _, _, _],
+    [_, _, _, _, _, _, _, _],
+    [_, _, _, _, _, _, _, _],
+    [_, _, _, _, _, _, _, _],
+    [_, _, _, _, _, _, _, _],
+    [_, _, 'outfitDark', _, _, 'outfitDark', _, _],
+    ['outfit', 'outfit', 'outfit', 'outfitDark', 'outfit', 'outfit', 'outfit', 'outfit'],
+    ['outfit', 'outfit', 'outfit', 'outfit', 'outfit', 'outfit', 'outfit', 'outfit'],
+  ],
+  // タートルネック — 首まで立ち上がるハイネック
+  turtleneck: [
+    [_, _, _, _, _, _, _, _],
+    [_, _, _, _, _, _, _, _],
+    [_, _, _, _, _, _, _, _],
+    [_, _, _, _, _, _, _, _],
+    [_, _, 'outfit', 'outfit', 'outfit', 'outfit', _, _],
+    ['outfit', 'outfit', 'outfit', 'outfit', 'outfit', 'outfit', 'outfit', 'outfit'],
+    ['outfit', 'outfit', 'outfitDark', 'outfit', 'outfit', 'outfitDark', 'outfit', 'outfit'],
+    ['outfit', 'outfit', 'outfit', 'outfit', 'outfit', 'outfit', 'outfit', 'outfit'],
+  ],
+  // ベスト (ジレ) — V 字の襟元から覗くインナーシャツ
+  vest: [
+    [_, _, _, _, _, _, _, _],
+    [_, _, _, _, _, _, _, _],
+    [_, _, _, _, _, _, _, _],
+    [_, _, _, _, _, _, _, _],
+    [_, _, _, _, _, _, _, _],
+    [_, _, 'outfitAlt', _, _, 'outfitAlt', _, _],
+    ['outfit', 'outfit', 'outfit', 'outfitAlt', 'outfitAlt', 'outfit', 'outfit', 'outfit'],
+    ['outfit', 'outfit', 'outfit', 'outfit', 'outfit', 'outfit', 'outfit', 'outfit'],
+  ],
+}
