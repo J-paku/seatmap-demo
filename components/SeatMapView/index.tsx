@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from 'react'
+import { useCallback, useMemo, useRef, useState } from 'react'
 import { AppHeader } from './components/AppHeader'
 import { EditDialogs } from './components/EditDialogs'
 import { EditModeLayer } from './components/EditModeLayer'
@@ -16,8 +16,8 @@ import type { TeamOverlayPayload } from '@/components/TeamOverlay'
 import { EditErrorToast } from '@/components/edit/EditErrorToast'
 import { useDetailPanel } from '@/contexts/detail-panel-context'
 import { useSeatLayout } from '@/lib/mock-loader'
-import { useMyAvatarConfig } from '@/hooks/use-my-avatar-config'
-import { AvatarCustomizerModal } from '@/components/AvatarCustomizerModal'
+import { useTheme } from '@/hooks/use-theme'
+import { SELF_EMPLOYEE_ID } from '@/utils/demo-identity'
 import { useLayoutEditor } from '@/hooks/use-layout-editor'
 import type { Employee, Seat } from '@/types'
 
@@ -29,14 +29,27 @@ const NOTICE_MS = 2400
 export const SeatMapView = () => {
   const { openSeatDetail, openFacilityDetail } = useDetailPanel()
   const { layout } = useSeatLayout()
-  const selfAvatar = useMyAvatarConfig()
-  const [isAvatarEditorOpen, setIsAvatarEditorOpen] = useState(false)
-  const handleOpenAvatarEditor = useCallback(() => setIsAvatarEditorOpen(true), [])
-  const handleCloseAvatarEditor = useCallback(() => setIsAvatarEditorOpen(false), [])
+  const { themeMode, setTheme } = useTheme()
+  // アバター編集モーダルは移植版 EmployeeDirectory が内包する(設定パネル・フッターのアバターから開く)
 
   // 07: 編集モード(ワーキングコピー+undoスタック+アクション発行)
   const editor = useLayoutEditor(layout)
   const { ready, employeeById, effectiveLayout, effectivePresenceMap, facilityStateById } = useSeatMapData(editor)
+  // 移植版サイドバーは社員配列を直接受け取る
+  const directoryEmployees = useMemo(() => [...employeeById.values()], [employeeById])
+  // 社員タップ → 該当座席へジャンプして詳細を開く(座席未設定は createVirtualSeat 由来の id 空文字)
+  const handleDirectorySeatSelect = useCallback(
+    (seat: Seat) => {
+      setIsDirectoryOpen(false)
+      if (!seat.id) {
+        setUnassignedNotice('座席未設定')
+        window.setTimeout(() => setUnassignedNotice(null), NOTICE_MS)
+        return
+      }
+      canvasRef.current?.jumpToSeat(seat, () => openSeatDetail(seat.id))
+    },
+    [openSeatDetail]
+  )
   const save = useLayoutSave(editor)
   const dialogs = useEditDialogs(editor, employeeById)
 
@@ -69,11 +82,9 @@ export const SeatMapView = () => {
     <div className='seat-map-page'>
       {!editor.isEditMode && (
         <AppHeader
-          selfAvatar={selfAvatar}
           onOpenDirectory={() => setIsDirectoryOpen(true)}
           onResetLayout={save.resetLayout}
           onEnterEdit={editor.enterEditMode}
-          onOpenAvatarEditor={handleOpenAvatarEditor}
         />
       )}
       {ready && effectiveLayout && (
@@ -100,8 +111,17 @@ export const SeatMapView = () => {
       <EmployeeDirectory
         isOpen={isDirectoryOpen}
         onClose={() => setIsDirectoryOpen(false)}
-        onSelectEmployee={handleSelectEmployee}
-        onOpenAvatarEditor={handleOpenAvatarEditor}
+        employees={directoryEmployees}
+        seats={effectiveLayout?.seats ?? []}
+        currentUserId={SELF_EMPLOYEE_ID}
+        onSeatSelect={handleDirectorySeatSelect}
+        themeMode={themeMode}
+        setTheme={setTheme}
+        onEnterEdit={editor.enterEditMode}
+        onResetLayout={save.resetLayout}
+        onRefresh={() => {}}
+        isGaroonConnected
+        onGaroonLogout={() => {}}
       />
       {unassignedNotice && <div className='emp-dir-unassigned-toast'>{unassignedNotice}</div>}
       {save.saveToast && (
@@ -149,10 +169,6 @@ export const SeatMapView = () => {
 
       <EditDialogs editor={editor} dialogs={dialogs} />
 
-      {/* アバター編集モーダル(開いている時のみマウントし、内部フックの on/off を開閉に一致させる) */}
-      {isAvatarEditorOpen && (
-        <AvatarCustomizerModal isOpen={isAvatarEditorOpen} onClose={handleCloseAvatarEditor} />
-      )}
     </div>
   )
 }

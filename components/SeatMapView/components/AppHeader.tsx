@@ -1,23 +1,17 @@
-import { PixelAvatar } from '@/components/PixelAvatar'
 import { EditModeToggle } from '@/components/edit/EditModeToggle'
-import type { PixelAvatarConfig } from '@/types'
 
 // 閲覧モードのヘッダー(メニュー・レイアウトリセット・編集トグル・本人アバター)
 
 type Props = {
-  selfAvatar: PixelAvatarConfig | null
   onOpenDirectory: () => void
   onResetLayout: () => void
   onEnterEdit: () => void
-  onOpenAvatarEditor: () => void
 }
 
 export const AppHeader = ({
-  selfAvatar,
   onOpenDirectory,
   onResetLayout,
   onEnterEdit,
-  onOpenAvatarEditor,
 }: Props) => (
   <header className='app-header'>
     <button type='button' className='app-header-btn' aria-label='メニュー' onClick={onOpenDirectory}>
@@ -34,11 +28,6 @@ export const AppHeader = ({
         </span>
       </button>
       <EditModeToggle isEditMode={false} onEnterEdit={onEnterEdit} />
-      {(
-        <button type='button' className='app-header-avatar' aria-label='アバターを編集' onClick={onOpenAvatarEditor}>
-          <PixelAvatar config={selfAvatar} size={30} />
-        </button>
-      )}
     </div>
   </header>
 )

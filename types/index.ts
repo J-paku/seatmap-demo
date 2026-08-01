@@ -3,6 +3,45 @@
 // 在席ステータス(表示ラベル: present=在席 / meeting=会議 / out=外出 / vacation=休暇)
 export type PresenceStatus = 'present' | 'meeting' | 'out' | 'vacation'
 
+// --- 実物 PiPiT-web 由来のテーマ型(ThemeSelector が data-theme を切り替える) ---
+
+// テーマ種別の単一ソース型定義 — light(既定) / dracula / kuroxxx の3種
+// 配色実体は styles/parts/theme.css の data-theme トークンで管理する
+// 旧 'dark'(グレージュ) は廃止し dracula をメインダークへ昇格
+
+export type ThemeMode = 'light' | 'dracula' | 'kuroxxx'
+
+// メインのダークテーマ — OS ダーク追従・旧 'dark' 移行の落とし先
+export const DEFAULT_DARK_THEME: ThemeMode = 'dracula'
+
+// localStorage 復元時の検証に使う全テーマ値
+export const THEME_MODES: readonly ThemeMode[] = ['light', 'dracula', 'kuroxxx']
+
+// 暗い系テーマ判定 — Tailwind dark バリアント付与・暗色トーン適用の基準
+export const isDarkTheme = (mode: ThemeMode): boolean => mode !== 'light'
+
+// 旧 'dark' テーマの保存値を dracula へ移行する — 廃止テーマの後方互換
+export const migrateLegacyTheme = (value: string | null): string | null =>
+  value === 'dark' ? DEFAULT_DARK_THEME : value
+
+// localStorage に保存された文字列が有効な ThemeMode か検証する型ガード
+export const isThemeMode = (value: string | null): value is ThemeMode =>
+  value !== null && (THEME_MODES as readonly string[]).includes(value)
+
+// テーマ選択 UI 用メタ — ラベルと2色スウォッチ(背景 + アクセント)
+export interface ThemeOption {
+  mode: ThemeMode
+  label: string
+  swatchBg: string
+  swatchAccent: string
+}
+
+export const THEME_OPTIONS: readonly ThemeOption[] = [
+  { mode: 'light', label: 'ライト', swatchBg: '#F5EFE9', swatchAccent: '#C76A4A' },
+  { mode: 'dracula', label: 'ドラキュラ', swatchBg: '#282A36', swatchAccent: '#BD93F9' },
+  { mode: 'kuroxxx', label: 'クロミ', swatchBg: '#1A1320', swatchAccent: '#F58FB8' },
+]
+
 // --- 実物 PiPiT-web 由来のピクセルアバター型 ---
 
 // プリセット ID — 原文 types.ts の union は抜粋の先頭が欠けていたため
