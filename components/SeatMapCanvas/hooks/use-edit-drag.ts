@@ -170,6 +170,8 @@ export const useEditDrag = ({
   // 編集モードOFFへ遷移した瞬間に編集専用の状態を掃除(view 側の状態には影響しない)
   useEffect(() => {
     if (isEditMode) return
+    // 編集モード OFF への遷移時だけ編集専用 state を掃除する。遷移イベントに対する後始末
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setEditSelectedSeatId(null)
     setLiveSeatPos(null)
     setLiveTeamPos(null)

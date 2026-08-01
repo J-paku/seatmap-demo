@@ -1,4 +1,4 @@
-import { useMemo, useRef } from 'react'
+import { useMemo, useState } from 'react'
 import type { LayoutEditor } from '../type'
 import { deriveFacilityState } from '@/utils/facility-status'
 import type { FacilityState } from '@/utils/facility-status'
@@ -45,9 +45,17 @@ export const useSeatMapData = (editor: LayoutEditor): SeatMapData => {
     () => computePresenceMap(schedulesForDate, nowMs, isTodaySelected),
     [schedulesForDate, nowMs, isTodaySelected]
   )
-  const frozenPresenceMapRef = useRef(presenceMap)
-  if (!editor.isEditMode) frozenPresenceMapRef.current = presenceMap
-  const effectivePresenceMap = editor.isEditMode ? frozenPresenceMapRef.current : presenceMap
+  // 編集モードへ入った瞬間の presenceMap を state に退避する。
+  // 以前は ref をレンダー中に書き換えていたが、レンダーは副作用を持てない(StrictMode の
+  // 二重レンダーや中断レンダーで書き込み回数が変わる)。React の「レンダー中に state を調整する」
+  // 手順に置き換え、切り替わりを検知した回だけ setState する
+  const [wasEditMode, setWasEditMode] = useState(editor.isEditMode)
+  const [frozenPresenceMap, setFrozenPresenceMap] = useState(presenceMap)
+  if (wasEditMode !== editor.isEditMode) {
+    setWasEditMode(editor.isEditMode)
+    if (editor.isEditMode) setFrozenPresenceMap(presenceMap)
+  }
+  const effectivePresenceMap = editor.isEditMode ? frozenPresenceMap : presenceMap
 
   // 07: 表示ソース切り替え(編集中はeditingLayout・それ以外は通常ロード分)
   const effectiveLayout = editor.isEditMode ? editor.editingLayout ?? layout : layout

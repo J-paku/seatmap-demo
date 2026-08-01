@@ -18,6 +18,8 @@ export const useSeatHighlightAnimation = (
 
   useEffect(() => {
     if (!highlightSeatId) {
+      // glow はタイマー駆動の一時状態。ヒット指定を受けた時点から始まる演出であり派生値ではない
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setGlowing(false)
       return
     }

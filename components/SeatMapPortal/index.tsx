@@ -12,6 +12,8 @@ export function SeatMapPortal({ children }: SeatMapPortalProps) {
   const [isDark, setIsDark] = useState(false)
 
   useEffect(() => {
+    // ポータル先の DOM とテーマ属性はマウント後にしか読めない
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true)
     // .seat-map-root から current テーマを読み取る
     const root = document.querySelector('.seat-map-root')

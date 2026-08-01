@@ -214,6 +214,8 @@ export function useEmployeeDirectory(
   useEffect(() => {
     const query = debouncedQuery.trim()
     if (query.length === 0) {
+      // 検索語の変化に対する展開状態のリセット。ユーザーが個別に開閉もできるので純粋な派生値にはできない
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setExpandedDepts(new Set())
       return
     }

@@ -255,8 +255,11 @@ export function useSwipeToDismiss({
     driveTransform(sheetNodeRef.current, '', true)
   }, [disarm])
 
+  // ドラッグ量は指に追従させるため再レンダーを挟まず driveTransform で DOM を直接動かしており、
+  // ここで返すのはその取りこぼし用フォールバック。react-hooks/refs が禁じるレンダー中の ref 読み取りに
+  // 当たるが、state 化すると 1 フレームごとに再レンダーが走り追従が崩れる(移植元の設計意図そのもの)
+  /* eslint-disable react-hooks/refs */
   return {
-    // 命令的駆動のため ref 値を返す(消費側はレンダー時点の値のみ gate 用途で参照)
     dragOffset: dragOffsetRef.current,
     isDragging,
     sheetHandlers: {
@@ -273,4 +276,5 @@ export function useSwipeToDismiss({
     },
     resetDrag,
   }
+  /* eslint-enable react-hooks/refs */
 }
