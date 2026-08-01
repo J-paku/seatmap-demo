@@ -1,20 +1,12 @@
 import { useEffect } from 'react'
+import { lockBodyScroll, unlockBodyScroll } from '@/lib/body-scroll-lock'
 
-// 参照カウント式の body スクロールロック(パネル入れ子時は最後の1枚が閉じるときのみ復元)
-let lockCount = 0
-let prevOverflow = ''
-
+// 参照カウントの実体は lib/body-scroll-lock.ts に一本化する。
+// カウンタを2つ持つと、片方でロックし他方で解除したときに overflow の復元が壊れる
 export const useBodyScrollLock = (active: boolean) => {
   useEffect(() => {
     if (!active) return
-    if (lockCount === 0) {
-      prevOverflow = document.body.style.overflow
-      document.body.style.overflow = 'hidden'
-    }
-    lockCount++
-    return () => {
-      lockCount--
-      if (lockCount === 0) document.body.style.overflow = prevOverflow
-    }
+    lockBodyScroll()
+    return unlockBodyScroll
   }, [active])
 }
