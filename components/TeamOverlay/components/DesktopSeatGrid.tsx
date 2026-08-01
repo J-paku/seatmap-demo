@@ -4,6 +4,7 @@ import { SeatCard } from './SeatCard'
 import { DESKTOP_SEAT_CARD_WIDTH_PX, DESKTOP_SEAT_GAP_PX, gridCellKey } from '../utils/seat-grid'
 import type { SeatGridProps } from '../type'
 import { useScrollHints } from '../hooks/use-scroll-hints'
+import { useSeatHighlightAnimation } from '../hooks/use-seat-highlight-animation'
 import type { PresenceStatus } from '@/types'
 
 // 列幅は固定 180px。ブラウザ幅次第でオーバーフロー量が変わるため、ヒントは実測で出す
@@ -23,6 +24,11 @@ export const DesktopSeatGrid = ({
 }: Props) => {
   const scrollRef = useRef<HTMLDivElement>(null)
   const { hasOverflow, atStart, atEnd } = useScrollHints(scrollRef, grid.cols)
+  // 列幅180px固定なので、ブラウザ幅が狭いとヒット席が横スクロールの外に出る。
+  // 実測: 幅900pxで 492px、幅800pxで 592px あふれ、scrollLeft は 0 のままだった。
+  // Compact と同じフックで追従させる(戻り値の glowing は Desktop カードが
+  // 枠+リング+影+HITバッジを既に持つため使わない)
+  useSeatHighlightAnimation(scrollRef, highlightSeatId)
   const spotlight = highlightSeatId !== null
 
   const cells = []
