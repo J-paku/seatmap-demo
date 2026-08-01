@@ -29,15 +29,6 @@ const SURNAMES = [
   ['村上', 'ムラカミ', 'murakami'], ['近藤', 'コンドウ', 'kondo'],
 ]
 
-// 名プール20種([漢字, カナ])
-const GIVENS = [
-  ['健太', 'ケンタ'], ['美咲', 'ミサキ'], ['翔太', 'ショウタ'], ['結衣', 'ユイ'],
-  ['大輔', 'ダイスケ'], ['さくら', 'サクラ'], ['直樹', 'ナオキ'], ['陽子', 'ヨウコ'],
-  ['拓也', 'タクヤ'], ['愛', 'アイ'], ['亮', 'リョウ'], ['恵', 'メグミ'],
-  ['誠', 'マコト'], ['遥', 'ハルカ'], ['智也', 'トモヤ'], ['由美', 'ユミ'],
-  ['健一', 'ケンイチ'], ['彩', 'アヤ'], ['康弘', 'ヤスヒロ'], ['麻衣', 'マイ'],
-]
-
 // チーム定義(名称順が定義順 team-01..05)
 // idPrefix: 座席ID接頭辞(11-layout-pipeline.md — seat.id.startsWith(idPrefix + '-') が唯一の結束キー)
 // kana: 部署名の読み(全角カタカナ)。かな検索用。社員 nameKana(=kana+連番)の元にもなる
@@ -235,8 +226,7 @@ TEAM_DEFS.forEach((def, ti) => {
   const teamId = `team-${pad2(ti + 1)}`
   for (let local = 0; local < def.empCount; local++) {
     const gi = empSeq - 1 // 通し index
-    const [sk, skk, skr] = SURNAMES[gi % SURNAMES.length]
-    const [gk, gkk] = GIVENS[gi % GIVENS.length]
+    const [, , skr] = SURNAMES[gi % SURNAMES.length]
     const id = `emp-${pad3(empSeq)}`
     const position = local === 0 ? '部長' : local === 3 ? '課長' : undefined
     const surnameRoman = skr

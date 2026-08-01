@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
-import type { RefObject } from 'react'
 import { useViewportInput } from './use-viewport-input'
 import { stepAnim } from '../utils/anim-step'
 import { prefersReducedMotion } from '../utils/canvas-metrics'
