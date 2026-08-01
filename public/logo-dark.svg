@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-14.3 -5.66 568.6 224.31" role="img" aria-label="J-Paku">
+  <!-- ダーク用。原文と同じく背景を透かし、文字だけを明色にする -->
+  <rect x="-14.3" y="-5.66" width="568.6" height="224.31" rx="28" fill="none" stroke="#6272A4" stroke-width="4"/>
+  <text x="270" y="106" font-family="Verdana, Geneva, sans-serif" font-size="96" font-weight="700"
+        fill="#F8F8F2" text-anchor="middle" dominant-baseline="middle">J-Paku</text>
+  <text x="270" y="166" font-family="Verdana, Geneva, sans-serif" font-size="34" font-weight="500"
+        fill="#BD93F9" text-anchor="middle" dominant-baseline="middle" letter-spacing="6">SEAT MAP</text>
+</svg>

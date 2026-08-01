@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-14.3 -5.66 568.6 224.31" role="img" aria-label="J-Paku">
+  <!-- 社内ブランド資産の代替。原文と同じ viewBox・同じ表示幅(86px)を保ちレイアウト数値を変えない -->
+  <rect x="-14.3" y="-5.66" width="568.6" height="224.31" rx="28" fill="#2F3B52"/>
+  <text x="270" y="106" font-family="Verdana, Geneva, sans-serif" font-size="96" font-weight="700"
+        fill="#F5EFE9" text-anchor="middle" dominant-baseline="middle">J-Paku</text>
+  <text x="270" y="166" font-family="Verdana, Geneva, sans-serif" font-size="34" font-weight="500"
+        fill="#C76A4A" text-anchor="middle" dominant-baseline="middle" letter-spacing="6">SEAT MAP</text>
+</svg>
