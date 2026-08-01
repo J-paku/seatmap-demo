@@ -1,8 +1,6 @@
 import type { Lod } from '../type'
 
 // パルス演出時間(通常/reduced-motion)
-export const PULSE_DURATION_MS = 2200
-export const PULSE_REDUCED_MS = 420
 
 // モーダル表示中はキャンバス操作を無効化
 export const isModalOpen = (): boolean =>

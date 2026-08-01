@@ -178,3 +178,26 @@
   --color-status-out: #d97706;
   --color-status-vacation: #6b7280;
 }
+
+/* 検索ヒット表示色。原本の #e9a93d は light のカード地(#ffffff)に対して 2.06:1 しかなく
+   WCAG 非テキストの 3:1 に届かないため light だけ暗くする(#b07d1a = 3.62:1)。
+   dracula 5.05:1 / kuroxxx 7.28:1 は原本のまま通る。
+   同じセルに出る外出色 #d97706 と色相が近いので、色単独ではなく HIT バッジと併用する */
+.seat-map-root {
+  --color-hit: #b07d1a;
+  --color-hit-ring: rgba(176, 125, 26, 0.22);
+  --color-hit-glow-from: rgba(176, 125, 26, 0.55);
+  --color-hit-glow-to: rgba(176, 125, 26, 0.22);
+  --color-hit-badge-bg: #f2c14e;
+  --color-hit-badge-fg: #6b4a12;
+  /* スポットライト時に非ヒット席へ掛ける不透明度。原本の 0.28 は暗テーマでカード形状まで消えるため緩める */
+  --opacity-seat-dimmed: 0.45;
+}
+
+.seat-map-root[data-theme='dracula'],
+.seat-map-root[data-theme='kuroxxx'] {
+  --color-hit: #e9a93d;
+  --color-hit-ring: rgba(242, 193, 78, 0.22);
+  --color-hit-glow-from: rgba(233, 169, 61, 0.55);
+  --color-hit-glow-to: rgba(233, 169, 61, 0.22);
+}

@@ -40,13 +40,13 @@ export const DetailPanels = () => {
         </SheetShell>
       )}
       {facilityDetailId && facility && (
-        <SheetShell title={facility.name} variant='facility' active showHandle onClose={closeTop}>
+        <SheetShell title={facility.name} variant='facility' active onClose={closeTop}>
           <FacilityDetail facilityId={facilityDetailId} />
         </SheetShell>
       )}
       {scheduleDetailId && scheduleEv && (
         <div className='sheet-stack-top'>
-          <SheetShell title={scheduleEv.title} variant='schedule' active showHandle onClose={closeTop}>
+          <SheetShell title={scheduleEv.title} variant='schedule' active onClose={closeTop}>
             <ScheduleDetail eventId={scheduleDetailId} />
           </SheetShell>
         </div>

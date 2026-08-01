@@ -33,9 +33,9 @@ export const SeatCard = ({ seat, employee, status, teamName, teamColor, loading,
   <button
     type='button'
     data-seat-id={seat.id}
-    className={`team-ovl-card${employee ? '' : ' is-empty'}${isHit ? ' is-hit' : ''}`}
+    className={`team-ovl-card${employee ? '' : ' is-empty'}${isHit ? ' is-hit' : ''}${dimmed ? ' is-dimmed' : ''}`}
     disabled={!employee}
-    style={{ flexDirection: DIRECTION[seat.rotation], opacity: dimmed ? 0.28 : 1 }}
+    style={{ flexDirection: DIRECTION[seat.rotation] }}
     onClick={onSelect}
   >
     {employee?.position && <span className='team-ovl-card-accent' />}

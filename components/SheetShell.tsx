@@ -3,7 +3,6 @@ import type { ReactNode } from 'react'
 import { useBodyScrollLock } from '@/hooks/use-body-scroll-lock'
 import { useBackgroundInert } from '@/hooks/use-background-inert'
 import { useFocusTrap } from '@/hooks/use-focus-trap'
-import { SheetHandle } from './SheetHandle'
 import { useSwipeDismiss } from '@/hooks/use-swipe-dismiss'
 
 export const SEATMAP_BG_ID = 'seatmap-bg-root'
@@ -12,12 +11,13 @@ type Props = {
   title: string
   variant: 'employee' | 'facility' | 'schedule'
   active: boolean // 最前面(フォーカストラップ対象)
-  showHandle?: boolean
   onClose: () => void
   children: ReactNode
 }
 
-export const SheetShell = ({ title, variant, active, showHandle, onClose, children }: Props) => {
+// シートは中央モーダルになったため、ボトムシートの持ち手(SheetHandle)は置かない。
+// 下スワイプで閉じる挙動は残っており、スクロール最上部からの下方ドラッグで発火する
+export const SheetShell = ({ title, variant, active, onClose, children }: Props) => {
   const closeBtnRef = useRef<HTMLButtonElement>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
   const backdropRef = useRef<HTMLDivElement>(null)
@@ -68,9 +68,6 @@ export const SheetShell = ({ title, variant, active, showHandle, onClose, childr
         aria-describedby={bodyId}
         {...bind}
       >
-        {showHandle && (
-          <SheetHandle stripClassName='sheet-handle-strip' barClassName='sheet-handle-bar' onClose={onClose} />
-        )}
         <div ref={scrollRef} className='sheet-scroll'>
           <div className='sheet-header'>
             <h2 id={titleId} className='sheet-title'>

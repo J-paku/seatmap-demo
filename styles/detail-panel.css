@@ -60,32 +60,6 @@
   z-index: calc(var(--z-index-modal) + 3);
 }
 
-.sheet-handle-strip {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  /* 以前は96pxあり、下のタイトル帯まで覆っていた。タップで閉じるようにしたため
-     バー周辺だけに絞る(スワイプ自体はシート全域で受けている) */
-  height: 28px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1;
-}
-@media (min-width: 640px) {
-  .sheet-handle-strip {
-    display: none;
-  }
-}
-
-.sheet-handle-bar {
-  width: 40px;
-  height: 6px;
-  border-radius: 9999px;
-  background: var(--color-border-strong);
-}
-
 .sheet-scroll {
   overflow-y: auto;
   overscroll-behavior: contain;
