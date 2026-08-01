@@ -83,8 +83,7 @@ export const SeatMapView = () => {
       {!editor.isEditMode && (
         <AppHeader
           onOpenDirectory={() => setIsDirectoryOpen(true)}
-          onResetLayout={save.resetLayout}
-          onEnterEdit={editor.enterEditMode}
+          isDirectoryOpen={isDirectoryOpen}
         />
       )}
       {ready && effectiveLayout && (
