@@ -6,7 +6,6 @@ import { useEmployees, useFacilityMeetings, useSchedules, useSeatLayout } from '
 import { computePresenceMap } from '@/utils/presence'
 import { useSelectedDate } from '@/contexts/selected-date-context'
 import { jstDateKey, jstKeyFromIso } from '@/utils/jst-date'
-import { SELF_EMPLOYEE_ID } from '@/utils/demo-identity'
 import { useQuantizedClock } from '@/hooks/use-quantized-clock'
 import type { Employee, PresenceStatus, SeatLayout } from '@/types'
 
