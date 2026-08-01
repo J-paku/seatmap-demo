@@ -10,6 +10,12 @@ const Document = () => (
         rel='stylesheet'
         href='https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=block'
       />
+      {/* 移植UIの .icon-msr-* は Rounded を指すため併せて読み込む。
+          Outlined だけだとリガチャが効かず「menu」等の文字がそのまま表示される */}
+      <link
+        rel='stylesheet'
+        href='https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=block'
+      />
     </Head>
     <body>
       <Main />

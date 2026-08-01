@@ -20,41 +20,35 @@
   overflow: hidden;
 }
 
-/* モバイル: 下端密着ボトムシート・全幅・上部のみラウンド */
+/* モバイルも中央モーダルにする(ボトムシートのドロップダウン風表示をやめる)。
+   中央寄せは transform ではなく inset+margin:auto で行う —
+   下スワイプ閉じが el.style.transform を直接上書きするため、transform を空けておく必要がある */
 .sheet {
-  left: 0;
-  right: 0;
-  bottom: 0;
-  border-radius: 20px 20px 0 0;
-  animation: sheet-slide-up 0.2s ease-out;
+  inset: 0;
+  margin: auto;
+  width: calc(100% - 24px);
+  max-width: 448px;
+  border-radius: 16px;
+  animation: sheet-fade-in 0.2s ease-out;
 }
 
 .sheet-employee {
-  height: 95dvh;
-  /* 12: 社員詳細のモバイル角丸(共有 .sheet の20pxとは異なる16px指定) */
-  border-radius: 16px 16px 0 0;
+  height: 88dvh;
 }
 
 .sheet-facility,
 .sheet-schedule {
-  max-height: 90dvh;
+  max-height: 84dvh;
 }
 
-/* デスクトップ: 中央モーダル・最大448px・全ラウンド */
+/* デスクトップ: 高さだけ広げる(配置はモバイルと共通) */
 @media (min-width: 640px) {
-  .sheet {
-    left: 50%;
-    right: auto;
-    bottom: auto;
-    top: 50%;
-    transform: translate(-50%, -50%);
-    width: 100%;
-    max-width: 448px;
-    border-radius: 16px;
-    animation: sheet-fade-in 0.2s ease-out;
-  }
   .sheet-employee {
     height: 90dvh;
+  }
+  .sheet-facility,
+  .sheet-schedule {
+    max-height: 90dvh;
   }
 }
 

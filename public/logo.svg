@@ -1,8 +1,18 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="-14.3 -5.66 568.6 224.31" role="img" aria-label="J-Paku">
-  <!-- 社内ブランド資産の代替。原文と同じ viewBox・同じ表示幅(86px)を保ちレイアウト数値を変えない -->
-  <rect x="-14.3" y="-5.66" width="568.6" height="224.31" rx="28" fill="#2F3B52"/>
-  <text x="270" y="106" font-family="Verdana, Geneva, sans-serif" font-size="96" font-weight="700"
-        fill="#F5EFE9" text-anchor="middle" dominant-baseline="middle">J-Paku</text>
-  <text x="270" y="166" font-family="Verdana, Geneva, sans-serif" font-size="34" font-weight="500"
-        fill="#C76A4A" text-anchor="middle" dominant-baseline="middle" letter-spacing="6">SEAT MAP</text>
+  <!-- 社内ブランド資産の代替。原文と同じ viewBox・表示幅86px を保ちレイアウト数値を変えない。
+       86px 幅では高さ約34px しか出ないため、タグラインは置かず単一行のワードマークにする -->
+  <g>
+    <!-- マーク: 座席2列の俯瞰を単純化した図形 -->
+    <rect x="-14.3" y="21.5" width="170" height="170" rx="42" fill="#C76A4A"/>
+    <g fill="#FFF7F1">
+      <rect x="16" y="56" width="46" height="34" rx="10"/>
+      <rect x="78" y="56" width="46" height="34" rx="10"/>
+      <rect x="16" y="122" width="46" height="34" rx="10"/>
+      <rect x="78" y="122" width="46" height="34" rx="10"/>
+    </g>
+    <rect x="16" y="102" width="108" height="8" rx="4" fill="#FFF7F1" opacity="0.45"/>
+  </g>
+  <text x="186" y="106.5" font-family="'Segoe UI', 'Helvetica Neue', Arial, sans-serif"
+        font-size="106" font-weight="700" letter-spacing="-2"
+        fill="#2A2522" dominant-baseline="central">J-Paku</text>
 </svg>
