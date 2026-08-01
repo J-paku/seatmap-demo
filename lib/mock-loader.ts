@@ -4,6 +4,7 @@ import type { Employee, Facility, FacilityMeeting, ScheduleEvent, Seat, SeatLayo
 import { VIEWBOX_W, VIEWBOX_H } from '@/utils/geometry'
 import { clearStoredLayout, loadStoredLayout, saveStoredLayout } from '@/lib/layout-persistence'
 import { anchorSchedulesToDate } from '@/utils/schedule-anchor'
+import { hashString } from '@/utils/hash-string'
 import employeesJson from '../mocks/employees.json'
 import teamsJson from '../mocks/teams.json'
 import seatsJson from '../mocks/seats.json'
@@ -44,15 +45,6 @@ const VIEWBOX = { width: VIEWBOX_W, height: VIEWBOX_H }
 const CACHE_PREFIX = 'seatmap::'
 const FORCE_FAIL = false // true で強制失敗→指数バックオフ確認
 const responseDelay = () => 200 + Math.floor(Math.random() * 300)
-
-// シード指紋用の軽量文字列ハッシュ(暗号強度は不要、変更検知のみ)
-const hashString = (value: string): string => {
-  let hash = 0
-  for (let i = 0; i < value.length; i += 1) {
-    hash = (hash * 31 + value.charCodeAt(i)) | 0
-  }
-  return hash.toString(36)
-}
 
 // シードデータ本体から指紋を計算(手動バージョン定数は持たない。上げ忘れによる同種バグの再発防止)
 const fingerprintOf = <T,>(data: T): string => hashString(JSON.stringify(data))
