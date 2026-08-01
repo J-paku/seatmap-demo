@@ -4,6 +4,7 @@ import { SeatMapView } from '@/components/SeatMapView'
 import { DetailPanelProvider } from '@/contexts/detail-panel-context'
 import { SelectedDateProvider } from '@/contexts/selected-date-context'
 import { AvatarsProvider } from '@/contexts/avatars-context'
+import { AnnouncementProvider } from '@/components/a11y'
 
 const SITE_URL = 'https://j-paku.github.io/seatmap-demo/'
 const SITE_TITLE = 'seat-map デモ'
@@ -30,13 +31,15 @@ const HomePage = () => {
         <link rel='icon' href={`${basePath}/favicon.ico`} />
       </Head>
       <div className='seat-map-root'>
-        <AvatarsProvider>
+        <AnnouncementProvider>
+          <AvatarsProvider>
           <SelectedDateProvider>
             <DetailPanelProvider>
               <SeatMapView />
             </DetailPanelProvider>
           </SelectedDateProvider>
-        </AvatarsProvider>
+          </AvatarsProvider>
+        </AnnouncementProvider>
       </div>
     </>
   )

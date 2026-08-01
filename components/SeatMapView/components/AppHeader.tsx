@@ -34,7 +34,7 @@ export const AppHeader = ({
         </span>
       </button>
       <EditModeToggle isEditMode={false} onEnterEdit={onEnterEdit} />
-      {selfAvatar && (
+      {(
         <button type='button' className='app-header-avatar' aria-label='アバターを編集' onClick={onOpenAvatarEditor}>
           <PixelAvatar config={selfAvatar} size={30} />
         </button>

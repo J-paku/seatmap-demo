@@ -17,6 +17,7 @@ import { EditErrorToast } from '@/components/edit/EditErrorToast'
 import { useDetailPanel } from '@/contexts/detail-panel-context'
 import { useSeatLayout } from '@/lib/mock-loader'
 import { useMyAvatarConfig } from '@/hooks/use-my-avatar-config'
+import { AvatarCustomizerModal } from '@/components/AvatarCustomizerModal'
 import { useLayoutEditor } from '@/hooks/use-layout-editor'
 import type { Employee, Seat } from '@/types'
 
@@ -29,8 +30,9 @@ export const SeatMapView = () => {
   const { openSeatDetail, openFacilityDetail } = useDetailPanel()
   const { layout } = useSeatLayout()
   const selfAvatar = useMyAvatarConfig()
-  // アバター編集モーダルは C7 で AvatarCustomizerModal に差し替える。それまで入口は無効
-  const handleOpenAvatarEditor = useCallback(() => {}, [])
+  const [isAvatarEditorOpen, setIsAvatarEditorOpen] = useState(false)
+  const handleOpenAvatarEditor = useCallback(() => setIsAvatarEditorOpen(true), [])
+  const handleCloseAvatarEditor = useCallback(() => setIsAvatarEditorOpen(false), [])
 
   // 07: 編集モード(ワーキングコピー+undoスタック+アクション発行)
   const editor = useLayoutEditor(layout)
@@ -147,7 +149,10 @@ export const SeatMapView = () => {
 
       <EditDialogs editor={editor} dialogs={dialogs} />
 
-      {/* 08: アバター編集モーダル(開いている時のみマウント) */}
+      {/* アバター編集モーダル(開いている時のみマウントし、内部フックの on/off を開閉に一致させる) */}
+      {isAvatarEditorOpen && (
+        <AvatarCustomizerModal isOpen={isAvatarEditorOpen} onClose={handleCloseAvatarEditor} />
+      )}
     </div>
   )
 }

@@ -27,13 +27,13 @@ export function AnnouncementProvider({ children }: AnnouncementProviderProps) {
         aria-live='polite'
         aria-atomic='true'
         className={[
-          'fixed left-1/2 -translate-x-1/2 z-50',
+          'fixed left-1/2 -translate-x-1/2',
           // 上部固定。完了通知(OK)を中央の「元に戻す」トーストと分離して重なりを回避
           'max-w-[75vw] sm:max-w-[min(92vw,560px)] w-full px-4',
           'transition-all duration-200 pointer-events-none',
           toastVisible && toastMessage ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-2',
         ].join(' ')}
-        style={{ top: 'calc(env(safe-area-inset-top) + 16px)' }}
+        style={{ top: 'calc(env(safe-area-inset-top) + 16px)', zIndex: 'var(--z-index-toast)' }}
       >
         <div
           className={[

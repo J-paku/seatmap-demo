@@ -11,7 +11,7 @@ type Props = {
 
 export const DirectoryFooter = ({ selfEmployee, selfAvatar, onOpenAvatarEditor }: Props) => (
   <div className='emp-dir-footer'>
-    {selfEmployee && selfAvatar && (
+    {selfEmployee && (
       <button type='button' className='emp-dir-footer-avatar' onClick={onOpenAvatarEditor}>
         <PixelAvatar config={selfAvatar} size={28} />
         <span className='emp-dir-footer-name'>{selfEmployee.name}</span>
