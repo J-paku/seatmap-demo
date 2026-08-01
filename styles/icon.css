@@ -1,0 +1,36 @@
+/* Google Material Symbols Rounded ユーティリティ */
+
+.icon-msr-filled {
+  font-family: 'Material Symbols Rounded';
+  font-style: normal;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  user-select: none;
+  font-feature-settings: 'liga';
+  -webkit-font-smoothing: antialiased;
+  font-variation-settings: 'FILL' 1, 'wght' 600, 'GRAD' 0, 'opsz' 24;
+}
+
+/* Chrome / SF Symbols 風の細いアウトラインアイコン (FILL 0・細ウェイト) */
+.icon-msr-thin {
+  font-family: 'Material Symbols Rounded';
+  font-style: normal;
+  font-weight: 300;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  user-select: none;
+  font-feature-settings: 'liga';
+  -webkit-font-smoothing: antialiased;
+  font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+}

@@ -156,6 +156,9 @@ export type Team = {
   area: { x: number; y: number; w: number; h: number }
 }
 
+// 座席の形状(実物由来。constants/layout.ts のサイズ表が参照する)
+export type SeatShape = 'standard' | 'executive' | 'vertical'
+
 // 座席
 export type Seat = {
   id: string
