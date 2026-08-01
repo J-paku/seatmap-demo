@@ -45,7 +45,3 @@ export function useKuroCode(onMatch: () => void, enabled: boolean): void {
     }
   }, [enabled])
 }
-
-export default function _Page() {
-  return null
-}

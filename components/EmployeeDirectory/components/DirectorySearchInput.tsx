@@ -58,5 +58,3 @@ export function DirectorySearchInput({ query, onQueryChange, isDark }: Directory
     </div>
   )
 }
-
-export default DirectorySearchInput

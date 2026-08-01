@@ -204,5 +204,3 @@ export function OptionRow({
     </div>
   )
 }
-
-export default OptionRow

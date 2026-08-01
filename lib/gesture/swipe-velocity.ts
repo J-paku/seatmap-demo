@@ -7,7 +7,7 @@ export interface VelocitySample {
 }
 
 // フリック速度算出に用いる直近サンプルの時間窓（ms）
-export const VELOCITY_SAMPLE_WINDOW_MS = 100
+const VELOCITY_SAMPLE_WINDOW_MS = 100
 
 // 新しいサンプルを積み、時間窓を超えた古いサンプルを捨てる（配列を破壊的に更新）
 export function pushVelocitySample(samples: VelocitySample[], sample: VelocitySample): void {

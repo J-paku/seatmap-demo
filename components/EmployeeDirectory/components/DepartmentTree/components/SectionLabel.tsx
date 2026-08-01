@@ -22,5 +22,3 @@ function SectionLabel({ icon, label }: { icon?: string; label: string }) {
 }
 
 export { SectionLabel }
-
-export default SectionLabel

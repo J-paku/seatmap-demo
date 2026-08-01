@@ -156,5 +156,3 @@ export const AvatarCustomizer = forwardRef<AvatarCustomizerHandle, AvatarCustomi
     )
   }
 )
-
-export default AvatarCustomizer

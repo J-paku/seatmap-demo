@@ -2,12 +2,11 @@ import { useRef, useState } from 'react'
 import { hexToRgba } from '@/utils/color'
 import { clamp } from '@/utils/geometry'
 import type { TeamColorEntry } from '@/utils/team-colors'
-import type { Team } from '@/types'
+import type { Lod, Team } from '@/types'
 
 // 10: ロングプレス(押し続け)判定のしきい値。これを超えて発火した後は click を無視する
 const LONG_PRESS_MS = 300
 
-type Lod = 'detail' | 'mid' | 'overview'
 
 // チームエリア(バウンダリ)。原本の5層構造: 床カード / 上バー / 左バー / インタラクション面 / ラベル板
 type Props = {

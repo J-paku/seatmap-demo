@@ -8,7 +8,7 @@ const AVATAR_KEY_PREFIX = 'seatmap-demo:avatar-v2:'
 const keyOf = (ownerCode: string): string => `${AVATAR_KEY_PREFIX}${ownerCode}`
 
 // PixelAvatarConfig の緩い型ガード(localStorage 由来値の検証用)
-export const isPixelAvatarConfig = (value: unknown): value is PixelAvatarConfig => {
+const isPixelAvatarConfig = (value: unknown): value is PixelAvatarConfig => {
   if (value === null || typeof value !== 'object') return false
   const v = value as Record<string, unknown>
   if (v.kind === 'preset') return typeof v.id === 'string'

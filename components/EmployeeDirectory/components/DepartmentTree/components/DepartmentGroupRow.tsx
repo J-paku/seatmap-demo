@@ -106,5 +106,3 @@ function DepartmentGroupRow({
 }
 
 export { DepartmentGroupRow }
-
-export default DepartmentGroupRow

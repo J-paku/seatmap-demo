@@ -19,7 +19,7 @@ const STATUS_VAR: Record<PresenceStatus, string> = {
 }
 
 // 在席ステータスのチップ(優先度3: 状態確定時)
-export const StatusChip = ({ status }: { status: PresenceStatus }) => (
+const StatusChip = ({ status }: { status: PresenceStatus }) => (
   <span className='status-chip' style={{ ['--status-color' as string]: STATUS_VAR[status] }}>
     <span className='status-chip-dot' />
     {PRESENCE_LABEL[status]}

@@ -82,7 +82,3 @@ export function PromptView({
     </StepCard>
   )
 }
-
-export default function _Page() {
-  return null
-}

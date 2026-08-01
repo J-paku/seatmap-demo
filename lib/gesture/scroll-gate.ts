@@ -4,7 +4,7 @@
 // 要素が「スクロール可能かつ上端でない」状態かを判定
 // scrollTop は iOS のモメンタムスクロール後に 0.x の小数が残留するため、
 // 整数 0 比較だと視覚的最上端でもゲートが立ち続ける → 1px の許容幅で判定する
-export function isScrollGateBlocking(el: Element): boolean {
+function isScrollGateBlocking(el: Element): boolean {
   const style = window.getComputedStyle(el)
   const canScroll =
     el.scrollHeight > el.clientHeight + 1 &&

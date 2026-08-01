@@ -38,6 +38,3 @@ export const TOAST_MESSAGES = {
   UNDO_ACTION: '元に戻す',
   UNDO_SUCCESS: '元に戻しました',
 } as const
-
-// ズーム尺度メッセージ（100%基準のパーセント表示）
-export const toastZoomScale = (pct: number) => `ズーム ${pct}%`

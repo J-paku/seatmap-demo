@@ -35,5 +35,3 @@ export function PreviewSection({ currentConfig }: PreviewSectionProps) {
     </div>
   )
 }
-
-export default PreviewSection

@@ -52,5 +52,3 @@ export function AvatarsProvider({ children }: AvatarsProviderProps) {
 }
 
 export const useSharedAvatars = (): AvatarsContextValue => useContext(AvatarsContext)
-
-export default AvatarsProvider

@@ -86,5 +86,3 @@ export function DepartmentTree({
     </div>
   )
 }
-
-export default DepartmentTree

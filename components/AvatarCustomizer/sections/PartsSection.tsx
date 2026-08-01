@@ -190,5 +190,3 @@ export function PartsSection({ state, options, setters }: PartsSectionProps) {
     </div>
   )
 }
-
-export default PartsSection

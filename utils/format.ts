@@ -1,7 +1,7 @@
 import type { PresenceStatus, ScheduleEvent } from '@/types'
 
 // ISO8601(+09:00)から HH:MM を取り出す(表示専用・TZ 変換なし)
-export const hhmm = (iso: string): string => iso.slice(11, 16)
+const hhmm = (iso: string): string => iso.slice(11, 16)
 
 // 予定の時刻表示(終日 or HH:MM - HH:MM)
 export const scheduleTimeLabel = (e: ScheduleEvent): string =>

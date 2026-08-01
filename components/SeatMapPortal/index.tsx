@@ -39,7 +39,3 @@ export function SeatMapPortal({ children }: SeatMapPortalProps) {
 
   return createPortal(portalContent, document.body)
 }
-
-export default function _Page() {
-  return null
-}

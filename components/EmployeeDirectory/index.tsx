@@ -272,7 +272,3 @@ export function EmployeeDirectory({
     </div>
   )
 }
-
-export default function _Page() {
-  return null
-}

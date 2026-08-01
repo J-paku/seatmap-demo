@@ -15,4 +15,3 @@ export function LiveRegion({ message, politeness = 'polite' }: LiveRegionProps) 
 }
 
 // Pages Router の page-without-valid-component 警告回避用ダミー default export
-export default LiveRegion

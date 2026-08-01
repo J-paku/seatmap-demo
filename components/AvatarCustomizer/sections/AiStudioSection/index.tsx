@@ -76,5 +76,3 @@ export function AiStudioSection({
     </section>
   )
 }
-
-export default AiStudioSection

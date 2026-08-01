@@ -12,10 +12,10 @@ export type PresenceStatus = 'present' | 'meeting' | 'out' | 'vacation'
 export type ThemeMode = 'light' | 'dracula' | 'kuroxxx'
 
 // メインのダークテーマ — OS ダーク追従・旧 'dark' 移行の落とし先
-export const DEFAULT_DARK_THEME: ThemeMode = 'dracula'
+const DEFAULT_DARK_THEME: ThemeMode = 'dracula'
 
 // localStorage 復元時の検証に使う全テーマ値
-export const THEME_MODES: readonly ThemeMode[] = ['light', 'dracula', 'kuroxxx']
+const THEME_MODES: readonly ThemeMode[] = ['light', 'dracula', 'kuroxxx']
 
 // 暗い系テーマ判定 — Tailwind dark バリアント付与・暗色トーン適用の基準
 export const isDarkTheme = (mode: ThemeMode): boolean => mode !== 'light'
@@ -195,8 +195,9 @@ export type Team = {
   area: { x: number; y: number; w: number; h: number }
 }
 
-// 座席の形状(実物由来。constants/layout.ts のサイズ表が参照する)
-export type SeatShape = 'standard' | 'executive' | 'vertical'
+// LOD(詳細度)。detail=アバター+名前+状態 / mid=アバター+状態ドット / overview=最小表示。
+// 以前は SeatCard・TeamArea・SeatMapCanvas/type の3箇所に同じ union が別々に書かれていた
+export type Lod = 'detail' | 'mid' | 'overview'
 
 // 座席
 export type Seat = {

@@ -3,7 +3,7 @@
 import type { SeatLayout } from '@/types'
 
 // 仕様書07明記のキー
-export const LAYOUT_STORAGE_KEY = 'seatmap-demo/layout'
+const LAYOUT_STORAGE_KEY = 'seatmap-demo/layout'
 
 // 保存済みレイアウトを読み込む。パース失敗時は保存分を破棄してnullを返す(呼び出し側は種データにフォールバック)
 export const loadStoredLayout = (): SeatLayout | null => {

@@ -19,7 +19,7 @@ export type TeamOverlayProps = {
   onClearHighlight?: () => void
 }
 
-export type PositionedSeat = {
+type PositionedSeat = {
   seat: Seat
   row: number
   col: number

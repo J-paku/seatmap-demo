@@ -133,5 +133,3 @@ export function GaroonLogoutBar({
     </>
   )
 }
-
-export default GaroonLogoutBar

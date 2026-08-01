@@ -2,11 +2,8 @@
 // 原文の hapticOn(window.webkit 経由の iOS ネイティブ呼び出し)はデモに型が無いため取り込まない(§4)
 export type HapticType = 'light' | 'medium' | 'success' | 'error'
 
-// カスタムイベントの型（Provider 内で使用）
-export type HapticEvent = CustomEvent<HapticType>
-
 // イベント名の定数
-export const HAPTIC_EVENT_NAME = 'haptic'
+const HAPTIC_EVENT_NAME = 'haptic'
 
 /**
  * ハプティックのトリガー（どこからでも import なしで使用可能）

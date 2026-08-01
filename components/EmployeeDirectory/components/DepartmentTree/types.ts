@@ -1,7 +1,7 @@
 // 部署ツリーコンポーネント用の型定義
 import type { Employee, PixelAvatarConfig } from '@/types'
 
-export interface DepartmentNode {
+interface DepartmentNode {
   dept: string
   employees: Employee[]
 }

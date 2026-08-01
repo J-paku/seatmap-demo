@@ -49,5 +49,3 @@ export function PartPreviewChip({
     </button>
   )
 }
-
-export default PartPreviewChip

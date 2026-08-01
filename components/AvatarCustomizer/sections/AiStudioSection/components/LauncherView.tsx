@@ -49,7 +49,3 @@ export function LauncherView({ onOpenCompose, onOpenImport }: LauncherViewProps)
     </div>
   )
 }
-
-export default function _Page() {
-  return null
-}
