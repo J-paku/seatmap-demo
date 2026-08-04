@@ -438,3 +438,23 @@
     animation: none;
   }
 }
+
+/* 編集モードで会議室・家具の上に重ねる操作面。実体側(共有部品)には手を入れない */
+.edit-object-hit {
+  position: absolute;
+  box-sizing: border-box;
+  border: 2px solid transparent;
+  border-radius: 6px;
+  cursor: grab;
+  touch-action: none;
+}
+
+.edit-object-hit.is-selected {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-accent) 24%, transparent);
+}
+
+/* ゴーストで掴み直している間は実体を淡くして二重に見せない */
+.edit-object-hit.is-repositioning {
+  background: color-mix(in srgb, var(--color-surface) 62%, transparent);
+}

@@ -7,10 +7,10 @@ import type { Furniture } from '@/types'
 type Props = {
   furniture: Furniture
   counterScale: number
-  isEditMode: boolean
 }
 
-export const FurnitureBlock = ({ furniture, counterScale, isEditMode }: Props) => {
+// 家具自体はポインタを受けない。編集モードの選択・ドラッグは上に重ねる EditObjectLayer が担う
+export const FurnitureBlock = ({ furniture, counterScale }: Props) => {
   const structural = isStructuralKind(furniture.kind)
   return (
     <div
@@ -22,8 +22,7 @@ export const FurnitureBlock = ({ furniture, counterScale, isEditMode }: Props) =
         top: furniture.y,
         width: furniture.width,
         height: furniture.height,
-        // 閲覧モードでは家具に触れない。編集モードの選択はこの上に重ねる層が受ける
-        pointerEvents: isEditMode ? undefined : 'none',
+        pointerEvents: 'none',
       }}
     >
       {!structural && furniture.name && (
