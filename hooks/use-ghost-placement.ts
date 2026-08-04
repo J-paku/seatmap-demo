@@ -41,7 +41,8 @@ type Options = {
 export type GhostPlacement = {
   screenRect: { left: number; top: number; width: number; height: number } | null
   logicalRect: Rect | null
-  guides: SnapGuide[]
+  // ガイド線は画面座標で返す。ゴースト層は position:fixed でキャンバスの変換の外にいるため
+  screenGuides: SnapGuide[]
   blocked: boolean
   isDragging: boolean
   onGhostPointerDown: (e: ReactPointerEvent) => void
@@ -129,6 +130,18 @@ export const useGhostPlacement = ({
       x: clamp(next.x, canvas.left + halfW, canvas.right - halfW),
       y: clamp(next.y, canvas.top + halfH, canvas.bottom - halfH),
     }
+  }, [])
+
+  // ガイド線を画面座標へ移す。ゴースト層はキャンバスの変換の外にいるので viewBox 座標では描けない
+  const toScreenGuides = useCallback((gs: SnapGuide[]): SnapGuide[] => {
+    const canvas = canvasRectRef.current
+    if (!canvas) return []
+    const t = transformRef.current
+    return gs.map((g) =>
+      g.axis === 'vertical'
+        ? { axis: 'vertical', pos: canvas.left + t.tx + g.pos * t.scale }
+        : { axis: 'horizontal', pos: canvas.top + t.ty + g.pos * t.scale }
+    )
   }, [])
 
   // 論理矩形へスナップを掛け、そのぶん画面中心をずらす
@@ -245,7 +258,7 @@ export const useGhostPlacement = ({
         const raw = clampCenter({ x: e.clientX - drag.grabDx, y: e.clientY - drag.grabDy })
         const snapped = applySnap(raw)
         setCenter(clampCenter(snapped.center))
-        setGuides(snapped.guides)
+        setGuides(toScreenGuides(snapped.guides))
         return
       }
 
@@ -259,7 +272,7 @@ export const useGhostPlacement = ({
       setLogicalSize({ width: snappedRect.w, height: snappedRect.h })
       const nextCenter = toScreenCenter(snappedRect)
       if (nextCenter) setCenter(nextCenter)
-      setGuides(snap.guides)
+      setGuides(toScreenGuides(snap.guides))
     }
 
     const onUp = (e: PointerEvent) => {
@@ -278,7 +291,7 @@ export const useGhostPlacement = ({
       window.removeEventListener('pointerup', onUp)
       window.removeEventListener('pointercancel', onUp)
     }
-  }, [active, applySnap, clampCenter, toScreenCenter])
+  }, [active, applySnap, clampCenter, toScreenCenter, toScreenGuides])
 
   const logicalRect = center ? toLogicalRect(center, logicalSize) : null
   const blocked = logicalRect && isBlocked ? isBlocked(logicalRect) : false
@@ -306,7 +319,7 @@ export const useGhostPlacement = ({
   return {
     screenRect,
     logicalRect,
-    guides,
+    screenGuides: guides,
     blocked,
     isDragging,
     onGhostPointerDown,
