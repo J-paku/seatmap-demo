@@ -200,6 +200,20 @@
   --opacity-seat-dimmed: 0.45;
 }
 
+/* ミニマップの現在地マーカー。原本は赤系固定だが暗色テーマで沈むので明度だけ振る。
+   周囲の薄い枠・格子は --color-text-secondary を color-mix で薄めて流用する
+   (light の #6b5e52 が原本の rgb(107,94,82) と一致するため、明色テーマは原本の値そのもの) */
+.seat-map-root {
+  --color-minimap-here: #ef4444;
+  --color-minimap-here-label: #b91c1c;
+}
+
+.seat-map-root[data-theme='dracula'],
+.seat-map-root[data-theme='kuroxxx'] {
+  --color-minimap-here: #ff6e6e;
+  --color-minimap-here-label: #ff9d9d;
+}
+
 .seat-map-root[data-theme='dracula'],
 .seat-map-root[data-theme='kuroxxx'] {
   --color-hit: #e9a93d;
