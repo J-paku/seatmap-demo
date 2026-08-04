@@ -57,6 +57,8 @@ export const FacilityDetail = ({ facilityId }: { facilityId: string }) => {
         facilityId={facility.facilityId}
         dateKey={jstDateKey(debouncedDate)}
         meetings={scheduleMeetings}
+        employees={employees ?? []}
+        nowMin={nowMin}
         isLoading={isScheduleLoading}
         isTodaySelected={isTodaySelected}
         onSwipePrevDay={goToPrevDay}
