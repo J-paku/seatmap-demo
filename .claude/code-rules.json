@@ -2,6 +2,7 @@
   "extends": "global",
   "overrides": {
     "css-manual-vendor-prefix": { "enabled": true },
+    "css-color-literal": { "enabled": true },
     "ts-no-any": { "enabled": true },
     "ts-no-semicolon": { "enabled": true },
     "ts-single-quote": { "enabled": true },

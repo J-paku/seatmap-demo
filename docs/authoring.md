@@ -257,5 +257,6 @@ import { useLayoutHistory } from '@/hooks/use-layout-editor/use-layout-history'
 | フックファイル命名 | kebab-case + `use-` 接頭辞 | `[hook-file-naming]` |
 | コメント言語 | 日本語のみ・最小限 | `[comment-language]` |
 | ベンダープレフィックス手書き禁止 | `-webkit-` 等を手で書かない(自動付与される。詳細は `docs/pitfalls.md`) | `[css-manual-vendor-prefix]` |
+| 色リテラル禁止 | `styles/**` に `#rrggbb`・`rgb()` を書かない。色は `tokens.css` のみ(6.5 参照) | `[css-color-literal]` |
 
 各 `[rule-id]` の on/off は `.claude/code-rules.json` を参照。
