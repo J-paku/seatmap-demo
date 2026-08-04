@@ -1,0 +1,162 @@
+.seat-vacant-notice {
+  font-size: 14px;
+  color: #6b7280;
+  padding: 8px 0;
+}
+
+.detail-row {
+  display: flex;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--color-border);
+  align-items: center;
+}
+.detail-label {
+  width: 72px;
+  font-size: 13px;
+  color: var(--color-text-muted);
+}
+.detail-value {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* 社員行(予定詳細内) */
+.employee-row {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  margin-top: 12px;
+  border-radius: 12px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface-elevated);
+  cursor: pointer;
+  text-align: left;
+  min-height: 44px;
+}
+.employee-row-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  overflow: hidden;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.employee-row-info {
+  display: flex;
+  flex-direction: column;
+}
+.employee-row-name {
+  font-size: 14px;
+  font-weight: 700;
+}
+.employee-row-sub {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+
+/* ステータスチップ・カテゴリチップ */
+.status-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 12px;
+  border-radius: 9999px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--status-color);
+  background: var(--color-surface-elevated);
+  border: 1px solid var(--color-border);
+}
+.status-chip-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 9999px;
+  background: var(--status-color);
+}
+
+/* 12: 状態バッジ優先度2(読み込み中)・優先度4(使用中/空席フォールバック) */
+.status-chip-loading {
+  color: #6b7280;
+  background: #f3f4f6;
+  border-color: transparent;
+  animation: status-chip-pulse 1.6s ease-in-out infinite;
+}
+.status-chip-loading .material-symbols-outlined {
+  animation: status-chip-spin 1s linear infinite;
+}
+.status-chip-inuse {
+  color: #1e40af;
+  background: #dbeafe;
+  border-color: transparent;
+}
+.status-chip-vacant {
+  color: #4b5563;
+  background: #f3f4f6;
+  border-color: transparent;
+}
+@keyframes status-chip-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.55;
+  }
+}
+@keyframes status-chip-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.category-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.cat-meeting {
+  color: var(--color-status-meeting);
+  background: var(--color-accent-soft);
+}
+.cat-out {
+  color: var(--color-status-out);
+  background: var(--color-warning-soft);
+}
+.cat-vacation {
+  color: var(--color-status-vacation);
+  background: var(--color-surface-muted);
+}
+
+@keyframes sheet-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes sheet-slide-up {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sheet,
+  .sheet-backdrop {
+    animation: none;
+  }
+}
+

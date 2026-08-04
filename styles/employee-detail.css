@@ -1,0 +1,174 @@
+/* 社員詳細 */
+.employee-detail {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+}
+
+.profile-card {
+  position: relative;
+  border-radius: 18px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface-sunken);
+  overflow: hidden;
+}
+
+/* ① カラーヘッダー帯 */
+.profile-band {
+  position: relative;
+  height: 64px;
+  background: linear-gradient(135deg, var(--color-accent), color-mix(in srgb, var(--color-accent) 42%, #ffffff));
+}
+.profile-status-badge {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+}
+
+/* ② アバター(帯に22px被る) */
+.profile-avatar-frame {
+  position: absolute;
+  left: 16px;
+  bottom: -22px;
+  width: 66px;
+  height: 66px;
+  border-radius: 16px;
+  background: var(--color-surface-elevated);
+  box-shadow: 0 0 0 4px var(--color-surface-sunken), inset 0 0 0 1px var(--color-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+/* ③ 本文(アバターの被り分だけ上余白を大きく) */
+.profile-body {
+  padding: 30px 16px 12px;
+  display: flex;
+  flex-direction: column;
+}
+
+.profile-text-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+.profile-name-kana {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  min-width: 0;
+}
+.profile-name {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 0.015em;
+  color: var(--color-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.profile-kana {
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: -0.04em;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.profile-role {
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.04em;
+  color: var(--color-accent);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.profile-dept {
+  font-size: 14px;
+  letter-spacing: -0.04em;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ④ 連絡先(メール・電話のいずれかがある時だけ表示) */
+.profile-contacts {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.contact-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.contact-icon {
+  font-size: 18px;
+  color: var(--color-text-muted);
+  flex-shrink: 0;
+}
+.contact-value {
+  font-size: 14px;
+  color: var(--color-text-primary);
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.contact-value-link {
+  color: var(--color-accent);
+}
+/* 視覚は16pxアイコンだが margin -8 でヒット領域を44×44へ拡張 */
+.contact-copy-btn {
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  margin: -8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  background: transparent;
+  border-radius: 9999px;
+  color: var(--color-text-muted);
+  cursor: pointer;
+}
+.contact-copy-btn:hover {
+  background: var(--color-surface-muted);
+}
+.contact-copy-btn.is-copied {
+  color: var(--color-success);
+}
+.contact-copy-bubble {
+  position: absolute;
+  top: -28px;
+  right: 0;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: var(--color-text-primary);
+  color: var(--color-surface);
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+  pointer-events: none;
+  animation: contact-copy-fade 0.15s ease-out;
+}
+@keyframes contact-copy-fade {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
