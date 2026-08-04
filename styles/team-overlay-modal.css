@@ -24,7 +24,7 @@
 .team-ovl-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(15, 23, 42, 0.34);
+  background: var(--color-scrim-overlay);
   backdrop-filter: blur(12px);
   animation: team-ovl-fade 0.2s ease-out;
 }
