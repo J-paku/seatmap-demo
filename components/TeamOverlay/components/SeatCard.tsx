@@ -1,8 +1,7 @@
 import { useEmployeeAvatar } from '@/hooks/use-employee-avatar'
 import { PixelAvatar } from '@/components/PixelAvatar'
 import { hexToRgba } from '@/utils/color'
-import { SEAT_STATUS_COLOR } from '../utils/seat-grid'
-import { PRESENCE_LABEL } from '@/utils/format'
+import { PRESENCE_COLOR, PRESENCE_LABEL } from '@/utils/format'
 import type { Employee, PresenceStatus, Seat } from '@/types'
 
 // Desktop 用の座席カード。横並び(アバター左 + テキスト右)・氏名フルネーム・椅子あり
@@ -48,8 +47,8 @@ export const SeatCard = ({ seat, employee, status, teamName, teamColor, loading,
       {employee && <span className='team-ovl-card-dept'>{teamName}</span>}
       {employee && (
         <span className='team-ovl-card-status'>
-          <span className='team-ovl-card-statusdot' style={{ background: SEAT_STATUS_COLOR[status] }} />
-          <span style={{ color: SEAT_STATUS_COLOR[status] }}>{loading ? '取得中…' : PRESENCE_LABEL[status]}</span>
+          <span className='team-ovl-card-statusdot' style={{ background: PRESENCE_COLOR[status] }} />
+          <span style={{ color: PRESENCE_COLOR[status] }}>{loading ? '取得中…' : PRESENCE_LABEL[status]}</span>
         </span>
       )}
     </span>

@@ -1,5 +1,5 @@
 import type { PresenceStatus } from '@/types'
-import { PRESENCE_LABEL } from '@/utils/format'
+import { PRESENCE_COLOR, PRESENCE_LABEL } from '@/utils/format'
 
 type PresenceBadgeProps = {
   // 表示可否(仮想座席・非当日は呼び出し側で false を渡す=優先度1)
@@ -11,16 +11,9 @@ type PresenceBadgeProps = {
   status?: PresenceStatus
 }
 
-const STATUS_VAR: Record<PresenceStatus, string> = {
-  present: 'var(--color-status-present)',
-  meeting: 'var(--color-status-meeting)',
-  out: 'var(--color-status-out)',
-  vacation: 'var(--color-status-vacation)',
-}
-
 // 在席ステータスのチップ(優先度3: 状態確定時)
 const StatusChip = ({ status }: { status: PresenceStatus }) => (
-  <span className='status-chip' style={{ ['--status-color' as string]: STATUS_VAR[status] }}>
+  <span className='status-chip' style={{ ['--status-color' as string]: PRESENCE_COLOR[status] }}>
     <span className='status-chip-dot' />
     {PRESENCE_LABEL[status]}
   </span>

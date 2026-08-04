@@ -2,7 +2,7 @@ import { memo } from 'react'
 import { useEmployeeAvatar } from '@/hooks/use-employee-avatar'
 import { PixelAvatar } from './PixelAvatar'
 import type { Employee, Lod, PresenceStatus, Seat } from '@/types'
-import { PRESENCE_LABEL } from '@/utils/format'
+import { PRESENCE_COLOR, PRESENCE_LABEL } from '@/utils/format'
 
 
 type Props = {
@@ -18,13 +18,6 @@ type Props = {
   isEditMode?: boolean
   isEditDragging?: boolean
   onEditPointerDown?: (seatId: string, e: React.PointerEvent) => void
-}
-
-const STATUS_VAR: Record<PresenceStatus, string> = {
-  present: 'var(--color-status-present)',
-  meeting: 'var(--color-status-meeting)',
-  out: 'var(--color-status-out)',
-  vacation: 'var(--color-status-vacation)',
 }
 
 const SeatCardInner = ({
@@ -72,7 +65,7 @@ const SeatCardInner = ({
             <PixelAvatar config={avatarConfig} size={28} />
           </div>
           {showName && <div className='seat-name'>{employee.name}</div>}
-          <div className='seat-status-row' style={{ ['--status-color' as string]: STATUS_VAR[status] }}>
+          <div className='seat-status-row' style={{ ['--status-color' as string]: PRESENCE_COLOR[status] }}>
             <span className='seat-status-dot' />
             {showName && (
               <span className='seat-status-label' style={{ fontSize: 9 * counterScale }}>
