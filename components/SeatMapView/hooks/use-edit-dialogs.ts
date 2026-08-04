@@ -9,6 +9,9 @@ type EditDialogs = {
   deleteTargetEmployeeName: string | null
   teamChangeSeatId: string | null
   teamChangeTargetSeat: Seat | null
+  teamActionTeamId: string | null
+  teamActionTeam: Team | null
+  teamActionSeatCount: number
   relayoutTeamId: string | null
   relayoutTargetTeam: Team | null
   relayoutTargetSeatCount: number
@@ -19,7 +22,9 @@ type EditDialogs = {
   confirmObjectDelete: () => void
   closeObjectDelete: () => void
   requestTeamChange: (seatId: string) => void
-  requestRelayout: (teamId: string) => void
+  requestTeamAction: (teamId: string) => void
+  chooseTeamAction: (action: 'add-seat' | 'relayout') => void
+  closeTeamAction: () => void
   closeDeleteConfirm: () => void
   closeTeamChange: () => void
   closeRelayout: () => void
@@ -39,6 +44,7 @@ export const useEditDialogs = (
   const [teamChangeSeatId, setTeamChangeSeatId] = useState<string | null>(null)
   const [relayoutTeamId, setRelayoutTeamId] = useState<string | null>(null)
   const [deleteObjectId, setDeleteObjectId] = useState<string | null>(null)
+  const [teamActionTeamId, setTeamActionTeamId] = useState<string | null>(null)
 
   // 着席中は確認ダイアログを経由し、空席は即時削除(seat-delete発行)
   const requestSeatDelete = useCallback(
@@ -65,6 +71,18 @@ export const useEditDialogs = (
     setDeleteObjectId(null)
   }, [deleteObjectId, onDeleteObject])
 
+  // チームラベルのタップは操作選択を挟む。座席追加と再配置の両方をここから開く
+  const chooseTeamAction = useCallback(
+    (action: 'add-seat' | 'relayout') => {
+      const teamId = teamActionTeamId
+      if (!teamId) return
+      setTeamActionTeamId(null)
+      if (action === 'add-seat') editor.addSeat(teamId)
+      else setRelayoutTeamId(teamId)
+    },
+    [teamActionTeamId, editor]
+  )
+
   const deleteTargetSeat = editor.editingLayout?.seats.find((s) => s.id === deleteConfirmSeatId) ?? null
 
   return {
@@ -74,6 +92,11 @@ export const useEditDialogs = (
       : null,
     teamChangeSeatId,
     teamChangeTargetSeat: editor.editingLayout?.seats.find((s) => s.id === teamChangeSeatId) ?? null,
+    teamActionTeamId,
+    teamActionTeam: editor.editingLayout?.teams.find((t) => t.id === teamActionTeamId) ?? null,
+    teamActionSeatCount: teamActionTeamId
+      ? editor.editingLayout?.seats.filter((s) => s.teamId === teamActionTeamId).length ?? 0
+      : 0,
     relayoutTeamId,
     relayoutTargetTeam: editor.editingLayout?.teams.find((t) => t.id === relayoutTeamId) ?? null,
     relayoutTargetSeatCount: relayoutTeamId
@@ -85,7 +108,9 @@ export const useEditDialogs = (
     confirmObjectDelete,
     closeObjectDelete: useCallback(() => setDeleteObjectId(null), []),
     requestTeamChange: useCallback((seatId: string) => setTeamChangeSeatId(seatId), []),
-    requestRelayout: useCallback((teamId: string) => setRelayoutTeamId(teamId), []),
+    requestTeamAction: useCallback((teamId: string) => setTeamActionTeamId(teamId), []),
+    chooseTeamAction,
+    closeTeamAction: useCallback(() => setTeamActionTeamId(null), []),
     closeDeleteConfirm: useCallback(() => setDeleteConfirmSeatId(null), []),
     closeTeamChange: useCallback(() => setTeamChangeSeatId(null), []),
     closeRelayout: useCallback(() => setRelayoutTeamId(null), []),

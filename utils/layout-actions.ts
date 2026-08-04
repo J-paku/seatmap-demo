@@ -14,6 +14,9 @@ export type LayoutAction =
   | { type: 'seat-delete'; seatId: string }
   | { type: 'seat-assign'; seatId: string; teamId: string }
   | { type: 'seat-swap'; fromSeatId: string; toSeatId: string }
+  // 社員の配属。同じ社員が座っていた席は空け、席が埋まっていれば入れ替える。
+  // 配属・交替・移動・入れ替えの4通りをこの1アクションで表す(分岐を呼び出し側に散らさない)
+  | { type: 'seat-assign-employee'; seatId: string; employeeId: string | null }
   | { type: 'team-move'; teamId: string; x: number; y: number }
   | { type: 'team-relayout'; teamId: string; rows: number; cols: number }
   | { type: 'facility-add'; x: number; y: number; width: number; height: number }
@@ -101,7 +104,32 @@ export const applyLayoutAction = (layout: SeatLayout, action: LayoutAction): Sea
         rotation: 0,
         employeeId: null,
       }
-      return { ...layout, seats: [...layout.seats, newSeat] }
+      const seats = [...layout.seats, newSeat]
+      // 追加席が area からはみ出す場合に備えて area を座席群へ合わせ直す
+      const fitted = fitAreaToSeats(seats.filter((s) => s.teamId === action.teamId), team.area)
+      return {
+        ...layout,
+        seats,
+        teams: layout.teams.map((t) => (t.id === action.teamId ? { ...t, area: fitted } : t)),
+      }
+    }
+    case 'seat-assign-employee': {
+      const target = layout.seats.find((s) => s.id === action.seatId)
+      if (!target) return layout
+      if (target.employeeId === action.employeeId) return layout
+      // その社員が既に座っている席(あれば)。移動元には移動先の元の人が入る
+      const from = action.employeeId
+        ? layout.seats.find((s) => s.employeeId === action.employeeId && s.id !== action.seatId)
+        : undefined
+      const displaced = target.employeeId
+      return {
+        ...layout,
+        seats: layout.seats.map((s) => {
+          if (s.id === target.id) return { ...s, employeeId: action.employeeId }
+          if (from && s.id === from.id) return { ...s, employeeId: displaced }
+          return s
+        }),
+      }
     }
     case 'seat-delete': {
       if (!layout.seats.some((s) => s.id === action.seatId)) return layout

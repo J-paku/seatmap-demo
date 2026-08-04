@@ -24,6 +24,7 @@ export type SeatMapCanvasProps = {
   onTeamMove?: (teamId: string, x: number, y: number) => void
   onSeatEditSelect?: (seatId: string | null) => void
   onTeamLabelTap?: (teamId: string) => void
+  onSeatAssignRequest?: (seatId: string) => void
   onSeatChangeTeamRequest?: (seatId: string) => void
   onSeatDeleteRequest?: (seatId: string) => void
   // 会議室・家具の編集。閲覧モードでは undefined のままでこの経路へ到達しない

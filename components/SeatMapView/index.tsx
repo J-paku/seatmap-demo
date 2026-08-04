@@ -6,17 +6,22 @@ import { useEditDialogs } from './hooks/use-edit-dialogs'
 import { useLayoutSave } from './hooks/use-layout-save'
 import { useMinimapPayload } from './hooks/use-minimap-payload'
 import { useObjectPlacement } from './hooks/use-object-placement'
+import { useSeatAssign } from './hooks/use-seat-assign'
 import { useSeatMapData } from './hooks/use-seat-map-data'
 import { useTeamSeatFocus } from './hooks/use-team-seat-focus'
 import type { FocusFailure } from './hooks/use-team-seat-focus'
 import { AddObjectFab } from '@/components/AddObjectFab'
 import { DetailPanels } from '@/components/DetailPanels'
+import { EmployeeAssignSheet } from '@/components/EmployeeAssignSheet'
 import { EmployeeDirectory } from '@/components/EmployeeDirectory'
 import { FacilityHoverCard } from '@/components/FacilityHoverCard'
 import type { FacilityHoverPayload } from '@/components/FacilityHoverCard'
 import { FurniturePickerModal } from '@/components/FurniturePickerModal'
 import { GhostPlacementLayer } from '@/components/GhostPlacementLayer'
 import { ObjectCategorySheet } from '@/components/ObjectCategorySheet'
+import { TeamActionSheet } from '@/components/TeamActionSheet'
+import { ConfirmDialog } from '@/components/edit/ConfirmDialog'
+import { LiveRegion } from '@/components/a11y/components/LiveRegion'
 import { MySeatButton } from '@/components/MySeatButton'
 import { SeatMapCanvas } from '@/components/SeatMapCanvas'
 import type { SeatMapCanvasHandle } from '@/components/SeatMapCanvas'
@@ -68,15 +73,21 @@ export const SeatMapView = () => {
 
   const dialogs = useEditDialogs(editor, employeeById, { onDeleteObject: handleDeleteObject })
   const placement = useObjectPlacement(editor, { onPlaced: showUndoChipAt })
+  // 配属の結果はライブリージョンとトーストへ同じ文言を流す(実装を二重化しない)
+  const assign = useSeatAssign({ editor, employeeById, onDone: (message) => showNotice(message) })
 
   const [isDirectoryOpen, setIsDirectoryOpen] = useState(false)
   const [hoverFacility, setHoverFacility] = useState<FacilityHoverPayload | null>(null)
   // 05: 座席未設定(防御分岐)時の一時通知文言
   const [unassignedNotice, setUnassignedNotice] = useState<string | null>(null)
 
+  // 連続で通知すると、前回のタイマーが後から発火して新しい文言を消してしまう。
+  // 立て続けの配属操作では毎回起きるので、出す前に前のタイマーを畳む
+  const noticeTimerRef = useRef(0)
   const showNotice = useCallback((message: string) => {
+    window.clearTimeout(noticeTimerRef.current)
     setUnassignedNotice(message)
-    window.setTimeout(() => setUnassignedNotice(null), NOTICE_MS)
+    noticeTimerRef.current = window.setTimeout(() => setUnassignedNotice(null), NOTICE_MS)
   }, [])
 
   // 編集モードへはサイドバーの設定から入る。閉じずに入るとサイドバーの暗幕が
@@ -140,7 +151,8 @@ export const SeatMapView = () => {
           isEditMode={editor.isEditMode}
           onSeatMove={editor.moveSeat}
           onTeamMove={editor.moveTeam}
-          onTeamLabelTap={dialogs.requestRelayout}
+          onTeamLabelTap={dialogs.requestTeamAction}
+          onSeatAssignRequest={assign.openAssign}
           onSeatChangeTeamRequest={dialogs.requestTeamChange}
           onSeatDeleteRequest={dialogs.requestSeatDelete}
           onObjectMove={editor.moveObject}
@@ -169,6 +181,8 @@ export const SeatMapView = () => {
       {/* 編集モードでは TeamOverlay 自体が描画されないため、この入口も出さない */}
       {!editor.isEditMode && ready && effectiveLayout && <MySeatButton onClick={handleGoToMySeat} />}
       {unassignedNotice && <div className='emp-dir-unassigned-toast'>{unassignedNotice}</div>}
+      {/* 画面を見ていない人にも同じ文言を渡す。トーストと同一の文字列を使う */}
+      <LiveRegion message={unassignedNotice ?? ''} />
       {save.saveToast && (
         <div className='emp-dir-unassigned-toast' role='status'>
           {save.saveToast}
@@ -247,6 +261,37 @@ export const SeatMapView = () => {
       )}
 
       {editor.errorToast && <EditErrorToast key={editor.errorToast.id} message={editor.errorToast.message} />}
+
+      {editor.isEditMode && (
+        <>
+          <TeamActionSheet
+            isOpen={dialogs.teamActionTeamId !== null}
+            teamName={dialogs.teamActionTeam?.name ?? ''}
+            seatCount={dialogs.teamActionSeatCount}
+            onSelect={dialogs.chooseTeamAction}
+            onClose={dialogs.closeTeamAction}
+          />
+          <EmployeeAssignSheet
+            isOpen={assign.assignSeatId !== null}
+            seat={assign.assignTargetSeat}
+            employees={directoryEmployees}
+            seats={effectiveLayout?.seats ?? []}
+            employeeById={employeeById}
+            onSelect={assign.requestAssign}
+            onClear={() => assign.requestAssign(null)}
+            onClose={assign.closeAssign}
+          />
+          {assign.pendingPlan?.confirmMessage && (
+            <ConfirmDialog
+              ariaLabel='配属の確認'
+              message={assign.pendingPlan.confirmMessage}
+              confirmLabel='実行する'
+              onConfirm={assign.confirmAssign}
+              onCancel={assign.cancelAssign}
+            />
+          )}
+        </>
+      )}
 
       <EditDialogs editor={editor} dialogs={dialogs} />
 
