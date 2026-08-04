@@ -10,6 +10,8 @@ export type LayoutAction =
   | { type: 'seat-swap'; fromSeatId: string; toSeatId: string }
   | { type: 'team-move'; teamId: string; x: number; y: number }
   | { type: 'team-relayout'; teamId: string; rows: number; cols: number }
+  // facilityId はレイアウト上の Facility.id を指す。予定システム側の Facility.facilityId ではない
+  | { type: 'facility-delete'; facilityId: string }
 
 // 対象チームの idPrefix を正規表現用にエスケープ
 const escapeRegExp = (s: string): string => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
@@ -116,6 +118,11 @@ export const applyLayoutAction = (layout: SeatLayout, action: LayoutAction): Sea
         teams: layout.teams.map((t) => (t.id === action.teamId ? { ...t, area: fitted } : t)),
         seats: layout.seats.map((s) => relaidById.get(s.id) ?? s),
       }
+    }
+    case 'facility-delete': {
+      // 照合キーは Facility.id。facilityId フィールドと紛らわしいので取り違えない
+      if (!layout.facilities.some((f) => f.id === action.facilityId)) return layout
+      return { ...layout, facilities: layout.facilities.filter((f) => f.id !== action.facilityId) }
     }
     default:
       return layout

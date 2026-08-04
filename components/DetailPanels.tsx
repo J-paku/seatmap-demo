@@ -6,8 +6,13 @@ import { ScheduleDetail } from './ScheduleDetail'
 import { useDetailPanel } from '@/contexts/detail-panel-context'
 import { useFacilities, useSchedules } from '@/lib/mock-loader'
 
+type Props = {
+  // 施設削除の完了通知。トースト状態は SeatMapView が持つ
+  onFacilityDeleted: (facilityName: string) => void
+}
+
 // 03: 詳細パネル群のオーケストレーター(排他=社員/施設・スタック=予定)
-export const DetailPanels = () => {
+export const DetailPanels = ({ onFacilityDeleted }: Props) => {
   const { seatDetailId, facilityDetailId, scheduleDetailId, closeTop } = useDetailPanel()
   const { data: facilities } = useFacilities()
   const { data: schedules } = useSchedules()
@@ -41,7 +46,7 @@ export const DetailPanels = () => {
       )}
       {facilityDetailId && facility && (
         <SheetShell title={facility.name} variant='facility' active onClose={closeTop} headerless>
-          <FacilityDetail facilityId={facilityDetailId} />
+          <FacilityDetail facilityId={facilityDetailId} onDeleted={onFacilityDeleted} />
         </SheetShell>
       )}
       {scheduleDetailId && scheduleEv && (
