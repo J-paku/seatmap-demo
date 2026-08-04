@@ -646,10 +646,67 @@
   flex-direction: column;
   gap: 12px;
 }
-.fac-head {
+
+/* 施設パネルのヘッダー(共通 .sheet-header の代わりに children 側で描く。
+   親 .facility-detail の gap:12px がそのまま次要素との間隔になる) */
+.fac-panel-header {
   display: flex;
   align-items: center;
   gap: 10px;
+}
+.fac-panel-icon {
+  font-size: 22px;
+  color: var(--color-accent);
+  flex-shrink: 0;
+}
+.fac-panel-name {
+  flex: 1;
+  min-width: 0;
+  font-size: 18px;
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.fac-refresh-btn {
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  border-radius: 9999px;
+  border: 0;
+  background: var(--color-surface-muted);
+  color: var(--color-text-secondary);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  cursor: pointer;
+}
+.fac-refresh-btn:hover:not(:disabled) {
+  background: var(--color-surface-muted-hover);
+}
+.fac-refresh-btn:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+.fac-refresh-icon {
+  font-size: 20px;
+}
+.fac-refresh-icon.is-refreshing {
+  animation: schedule-spin 0.8s linear infinite;
+}
+.fac-refresh-cooldown {
+  font-size: 9px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.fac-panel-right {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 .fac-badge {
   font-size: 13px;

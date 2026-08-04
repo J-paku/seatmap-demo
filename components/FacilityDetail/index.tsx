@@ -1,16 +1,19 @@
 import { useMemo } from 'react'
+import { FacilityPanelHeader } from './components/FacilityPanelHeader'
 import { useEmployees, useFacilities, useFacilityMeetings } from '@/lib/mock-loader'
-import { deriveFacilityState, minToHHMM, FACILITY_COLOR, FACILITY_STATUS_LABEL } from '@/utils/facility-status'
+import { deriveFacilityState, minToHHMM } from '@/utils/facility-status'
 import type { FacilityState } from '@/utils/facility-status'
 import { useSelectedDate } from '@/contexts/selected-date-context'
 import { useQuantizedClock } from '@/hooks/use-quantized-clock'
+import { useDetailPanel } from '@/contexts/detail-panel-context'
 
-// 施設詳細: 状態バッジ + 現在の会議 + 本日の予定
+// 施設詳細: ヘッダー(アイコン・施設名・更新・状態バッジ・閉じる) + 現在の会議 + 本日の予定
 export const FacilityDetail = ({ facilityId }: { facilityId: string }) => {
   const { data: facilities } = useFacilities()
   const { data: meetings } = useFacilityMeetings()
   const { data: employees } = useEmployees()
   const { isTodaySelected } = useSelectedDate()
+  const { closeTop } = useDetailPanel()
   const nowMs = useQuantizedClock(isTodaySelected)
 
   const empById = useMemo(() => new Map((employees ?? []).map((e) => [e.id, e])), [employees])
@@ -20,10 +23,7 @@ export const FacilityDetail = ({ facilityId }: { facilityId: string }) => {
 
   const now = new Date(nowMs)
   const nowMin = now.getHours() * 60 + now.getMinutes()
-  const state: FacilityState = isTodaySelected
-    ? deriveFacilityState(facility, meetings ?? [], nowMin)
-    : { status: facility.facilityId ? 'available' : 'unlinked' }
-  const color = FACILITY_COLOR[state.status]
+  const state: FacilityState = deriveFacilityState(facility, meetings ?? [], nowMin)
   const mine = (meetings ?? [])
     .filter((m) => facility.facilityId && m.facilityId === facility.facilityId)
     .sort((a, b) => a.startMin - b.startMin)
@@ -31,12 +31,13 @@ export const FacilityDetail = ({ facilityId }: { facilityId: string }) => {
 
   return (
     <div className='facility-detail'>
-      <div className='fac-head'>
-        <span className='fac-badge' style={{ background: color.bg, color: color.text, borderColor: color.border }}>
-          {FACILITY_STATUS_LABEL[state.status]}
-        </span>
-        {facility.capacity != null && <span className='fac-cap'>定員{facility.capacity}名</span>}
-      </div>
+      <FacilityPanelHeader
+        facilityName={facility.name}
+        status={state.status}
+        isTodaySelected={isTodaySelected}
+        onClose={closeTop}
+      />
+      {facility.capacity != null && <span className='fac-cap'>定員{facility.capacity}名</span>}
 
       {isTodaySelected && state.current && (
         <div className='fac-current'>

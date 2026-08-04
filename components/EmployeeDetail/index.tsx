@@ -1,7 +1,7 @@
 import { useEffect, useMemo } from 'react'
 import { ProfileCard } from './components/ProfileCard'
 import { ScheduleSection } from './components/ScheduleSection'
-import { useScheduleRefresh } from './hooks/use-schedule-refresh'
+import { useScheduleRefresh } from '@/hooks/use-schedule-refresh'
 import type { EmployeeDetailProps } from './type'
 import { useEmployees, useSchedules, useSeats, useTeams } from '@/lib/mock-loader'
 import { computePresenceMap } from '@/utils/presence'
