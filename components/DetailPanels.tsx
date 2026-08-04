@@ -40,7 +40,7 @@ export const DetailPanels = () => {
         </SheetShell>
       )}
       {facilityDetailId && facility && (
-        <SheetShell title={facility.name} variant='facility' active onClose={closeTop}>
+        <SheetShell title={facility.name} variant='facility' active onClose={closeTop} headerless>
           <FacilityDetail facilityId={facilityDetailId} />
         </SheetShell>
       )}
