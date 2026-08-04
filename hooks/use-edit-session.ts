@@ -1,13 +1,16 @@
 import { useCallback, useRef, useState } from 'react'
 import { applyLayoutAction } from '@/utils/layout-actions'
 import type { LayoutAction } from '@/utils/layout-actions'
-import type { Seat, SeatLayout, Team } from '@/types'
+import type { SeatLayout } from '@/types'
 
 // 07-admin-edit: 編集セッション(ワーキングコピー・undoスタック・変更数)。
 // どのアクションを発行するかは呼び出し側(useLayoutEditor)が決める
 
-// undo 用スナップショット(アクション適用直前の関連部分のみ保持)
-type UndoEntry = { seats: Seat[]; teams: Team[] }
+// undo 用スナップショット。フィールドを列挙せずレイアウト全体を持つ。
+// 列挙すると編集対象の配列が増えたとき(facilities・furniture など)ここの追随を忘れ、
+// undo チップは出るのに戻らない、という無言の失敗になる。別名にして型で追随させる。
+// applyLayoutAction は常に新しいオブジェクトを返すので、適用前の参照はそのまま履歴として使える
+type UndoEntry = SeatLayout
 
 export type EditSession = {
   isEditMode: boolean
@@ -67,7 +70,7 @@ export const useEditSession = (sourceLayout: SeatLayout | undefined): EditSessio
 
   // 適用直前のスナップショットをpushし(無変化なら push しない)、変更エンティティ数を計上
   const pushUndoAndMarkChanged = useCallback((before: SeatLayout, touchedIds: string[]) => {
-    undoStackRef.current.push({ seats: before.seats, teams: before.teams })
+    undoStackRef.current.push(before)
     for (const id of touchedIds) changedIdsRef.current.add(id)
     setCanUndo(true)
     setChangedCount(changedIdsRef.current.size)
@@ -90,8 +93,7 @@ export const useEditSession = (sourceLayout: SeatLayout | undefined): EditSessio
   const undo = useCallback(() => {
     const entry = undoStackRef.current.pop()
     if (!entry) return
-    const cur = editingLayoutRef.current
-    if (cur) commitEditingLayout({ ...cur, seats: entry.seats, teams: entry.teams })
+    commitEditingLayout(entry)
     setCanUndo(undoStackRef.current.length > 0)
   }, [commitEditingLayout])
 
