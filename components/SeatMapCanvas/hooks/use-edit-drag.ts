@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { PointerEvent as ReactPointerEvent } from 'react'
 import { useUndoChip } from './use-undo-chip'
-import { siblingRectsForSeat, siblingRectsForTeam } from '../utils/sibling-rects'
+import { siblingRectsForObject, siblingRectsForSeat, siblingRectsForTeam } from '../utils/sibling-rects'
 import type { EditDrag, LivePosition, Rect, Viewport } from '../type'
 import { SNAP_THRESHOLD_SCREEN_PX, computeSnap } from '@/utils/snap-guides'
 import type { SnapGuide } from '@/utils/snap-guides'
-import type { SeatLayout } from '@/types'
+import { rectOfRef } from '@/utils/layout-objects'
+import type { LayoutObjectRef, SeatLayout } from '@/types'
 
 // 07: 編集モードの座席/チームラベルのドラッグ移動。閲覧モードではこのロジックへ一切到達しない
 
@@ -19,17 +20,21 @@ type Options = {
   onSeatMove?: (seatId: string, x: number, y: number) => void
   onTeamMove?: (teamId: string, x: number, y: number) => void
   onSeatEditSelect?: (seatId: string | null) => void
+  onObjectMove?: (ref: LayoutObjectRef, x: number, y: number) => void
 }
 
 type EditDragState = {
   liveSeatPos: LivePosition | null
   liveTeamPos: LivePosition | null
+  liveObjectPos: LivePosition | null
   snapGuides: SnapGuide[]
   editSelectedSeatId: string | null
+  editSelectedObject: LayoutObjectRef | null
   undoChipPos: { x: number; y: number } | null
   showUndoChipAt: (logicalX: number, logicalY: number) => void
   onSeatEditPointerDown: (seatId: string, e: ReactPointerEvent) => void
   onTeamLabelEditPointerDown: (teamId: string, e: ReactPointerEvent) => void
+  onObjectEditPointerDown: (ref: LayoutObjectRef, e: ReactPointerEvent) => void
   clearSelection: () => void
   dismissUndoChip: () => void
 }
@@ -41,6 +46,7 @@ export const useEditDrag = ({
   onSeatMove,
   onTeamMove,
   onSeatEditSelect,
+  onObjectMove,
 }: Options): EditDragState => {
   const { transformRef } = viewport
   const editDragRef = useRef<EditDrag>({ kind: 'none' })
@@ -49,9 +55,12 @@ export const useEditDrag = ({
   // ライブ座標(ドラッグ中のみ描画反映。確定はpointerup時に親へ1回通知)
   const [liveSeatPos, setLiveSeatPos] = useState<LivePosition | null>(null)
   const [liveTeamPos, setLiveTeamPos] = useState<LivePosition | null>(null)
+  const [liveObjectPos, setLiveObjectPos] = useState<LivePosition | null>(null)
   const [snapGuides, setSnapGuides] = useState<SnapGuide[]>([])
   // 07: 編集モード中に選択された座席1件(フローティングアクションバー表示用)
   const [editSelectedSeatId, setEditSelectedSeatId] = useState<string | null>(null)
+  // 07/B: 選択中の会議室・家具。選択は全体で1件だけなので座席選択と相互に打ち消す
+  const [editSelectedObject, setEditSelectedObject] = useState<LayoutObjectRef | null>(null)
   const onSeatEditPointerDown = useCallback(
     (seatId: string, e: ReactPointerEvent) => {
       if (!isEditMode) return
@@ -59,6 +68,7 @@ export const useEditDrag = ({
       const seat = layout.seats.find((s) => s.id === seatId)
       if (!seat) return
       setEditSelectedSeatId(seatId)
+      setEditSelectedObject(null)
       onSeatEditSelect?.(seatId)
       undoChip.dismiss()
       editDragRef.current = {
@@ -84,6 +94,8 @@ export const useEditDrag = ({
       e.stopPropagation()
       const team = layout.teams.find((t) => t.id === teamId)
       if (!team) return
+      setEditSelectedSeatId(null)
+      setEditSelectedObject(null)
       undoChip.dismiss()
       editDragRef.current = {
         kind: 'team',
@@ -100,6 +112,33 @@ export const useEditDrag = ({
       ;(e.target as HTMLElement).setPointerCapture(e.pointerId)
     },
     [isEditMode, layout.teams, undoChip]
+  )
+
+  const onObjectEditPointerDown = useCallback(
+    (ref: LayoutObjectRef, e: ReactPointerEvent) => {
+      if (!isEditMode) return
+      e.stopPropagation()
+      const rect = rectOfRef(layout, ref)
+      if (!rect) return
+      setEditSelectedObject(ref)
+      setEditSelectedSeatId(null)
+      onSeatEditSelect?.(null)
+      undoChip.dismiss()
+      editDragRef.current = {
+        kind: 'object',
+        ref,
+        pointerId: e.pointerId,
+        startScreenX: e.clientX,
+        startScreenY: e.clientY,
+        startLogicalX: rect.x,
+        startLogicalY: rect.y,
+        liveX: rect.x,
+        liveY: rect.y,
+        moved: false,
+      }
+      ;(e.target as HTMLElement).setPointerCapture(e.pointerId)
+    },
+    [isEditMode, layout, onSeatEditSelect, undoChip]
   )
 
   // 編集ドラッグの document 追従(pointerId ベース)
@@ -126,6 +165,15 @@ export const useEditDrag = ({
         drag.liveY = snap.y
         setLiveSeatPos({ id: drag.seatId, x: snap.x, y: snap.y })
         setSnapGuides(snap.guides)
+      } else if (drag.kind === 'object') {
+        const rect = rectOfRef(layout, drag.ref)
+        if (!rect) return
+        const candidate: Rect = { x: rawX, y: rawY, w: rect.w, h: rect.h }
+        const snap = computeSnap(candidate, siblingRectsForObject(layout, drag.ref), thresholdViewBox)
+        drag.liveX = snap.x
+        drag.liveY = snap.y
+        setLiveObjectPos({ id: drag.ref.id, x: snap.x, y: snap.y })
+        setSnapGuides(snap.guides)
       } else {
         const team = layout.teams.find((t) => t.id === drag.teamId)
         if (!team) return
@@ -149,6 +197,12 @@ export const useEditDrag = ({
           onSeatMove?.(drag.seatId, drag.liveX, drag.liveY)
           undoChip.showAt(drag.liveX, drag.liveY)
         }
+      } else if (drag.kind === 'object') {
+        setLiveObjectPos(null)
+        if (drag.moved) {
+          onObjectMove?.(drag.ref, drag.liveX, drag.liveY)
+          undoChip.showAt(drag.liveX, drag.liveY)
+        }
       } else {
         setLiveTeamPos(null)
         if (drag.moved) {
@@ -166,7 +220,20 @@ export const useEditDrag = ({
       window.removeEventListener('pointerup', onUp)
       window.removeEventListener('pointercancel', onUp)
     }
-  }, [isEditMode, layout, transformRef, onSeatMove, onTeamMove, undoChip])
+  }, [isEditMode, layout, transformRef, onSeatMove, onTeamMove, onObjectMove, undoChip])
+
+  // Esc で選択解除。キャンバス余白のクリックと同じ扱い
+  useEffect(() => {
+    if (!isEditMode) return
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape') return
+      setEditSelectedSeatId(null)
+      setEditSelectedObject(null)
+      onSeatEditSelect?.(null)
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [isEditMode, onSeatEditSelect])
 
   // 編集モードOFFへ遷移した瞬間に編集専用の状態を掃除(view 側の状態には影響しない)
   useEffect(() => {
@@ -174,8 +241,10 @@ export const useEditDrag = ({
     // 編集モード OFF への遷移時だけ編集専用 state を掃除する。遷移イベントに対する後始末
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setEditSelectedSeatId(null)
+    setEditSelectedObject(null)
     setLiveSeatPos(null)
     setLiveTeamPos(null)
+    setLiveObjectPos(null)
     setSnapGuides([])
     undoChip.dismiss()
     editDragRef.current = { kind: 'none' }
@@ -183,18 +252,22 @@ export const useEditDrag = ({
 
   const clearSelection = useCallback(() => {
     setEditSelectedSeatId(null)
+    setEditSelectedObject(null)
     onSeatEditSelect?.(null)
   }, [onSeatEditSelect])
 
   return {
     liveSeatPos,
     liveTeamPos,
+    liveObjectPos,
     snapGuides,
     editSelectedSeatId,
+    editSelectedObject,
     undoChipPos: undoChip.pos,
     showUndoChipAt: undoChip.showAt,
     onSeatEditPointerDown,
     onTeamLabelEditPointerDown,
+    onObjectEditPointerDown,
     clearSelection,
     dismissUndoChip: undoChip.dismiss,
   }

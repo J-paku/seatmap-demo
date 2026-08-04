@@ -1,6 +1,6 @@
 import type { RefObject } from 'react'
 import type { Transform } from '@/utils/geometry'
-import type { Employee, Lod, PresenceStatus, SeatLayout } from '@/types'
+import type { Employee, LayoutObjectRef, Lod, PresenceStatus, SeatLayout } from '@/types'
 
 export type { Lod }
 import type { FacilityState } from '@/utils/facility-status'
@@ -26,6 +26,12 @@ export type SeatMapCanvasProps = {
   onTeamLabelTap?: (teamId: string) => void
   onSeatChangeTeamRequest?: (seatId: string) => void
   onSeatDeleteRequest?: (seatId: string) => void
+  // 会議室・家具の編集。閲覧モードでは undefined のままでこの経路へ到達しない
+  onObjectMove?: (ref: LayoutObjectRef, x: number, y: number) => void
+  onObjectRepositionRequest?: (ref: LayoutObjectRef) => void
+  onObjectDeleteRequest?: (ref: LayoutObjectRef) => void
+  // ゴーストで掴み直し中の対象(実体を淡く描くためだけに使う)
+  repositioningRef?: LayoutObjectRef | null
   onUndo?: () => void
   canUndo?: boolean
 }
@@ -66,6 +72,7 @@ export type EditDrag =
   | { kind: 'none' }
   | (EditDragBase & { kind: 'seat'; seatId: string })
   | (EditDragBase & { kind: 'team'; teamId: string })
+  | (EditDragBase & { kind: 'object'; ref: LayoutObjectRef })
 
 // ドラッグ中のみ描画へ反映する座標(確定は pointerup 時に親へ1回だけ通知)
 export type LivePosition = { id: string; x: number; y: number }

@@ -2,7 +2,8 @@ import { useCallback, useMemo } from 'react'
 import { useTeamColorMap } from '@/hooks/use-team-color-map'
 import { buildTeamOverlayPayload } from '@/utils/team-overlay-payload'
 import { clamp } from '@/utils/geometry'
-import type { SeatLayout } from '@/types'
+import { rectOfRef } from '@/utils/layout-objects'
+import type { LayoutObjectRef, SeatLayout } from '@/types'
 import type { TeamOverlayPayload } from '@/components/TeamOverlay'
 import { lodOf } from '../utils/canvas-metrics'
 import type { Lod, Viewport } from '../type'
@@ -14,6 +15,7 @@ type Options = {
   viewport: Viewport
   isEditMode: boolean
   editSelectedSeatId: string | null
+  editSelectedObject: LayoutObjectRef | null
   onSeatSelect?: (seatId: string) => void
   onTeamBoundaryClick?: (payload: TeamOverlayPayload) => void
 }
@@ -23,6 +25,7 @@ type CanvasViewModel = {
   counterScale: number
   assignedCountByTeam: Map<string, number>
   seatActionBarPos: { x: number; y: number } | null
+  objectActionBarPos: { x: number; y: number } | null
   handleSeatSelect: (seatId: string) => void
   handleTeamBoundaryOpen: (teamId: string, rect: DOMRect) => void
 }
@@ -32,6 +35,7 @@ export const useCanvasViewModel = ({
   viewport,
   isEditMode,
   editSelectedSeatId,
+  editSelectedObject,
   onSeatSelect,
   onTeamBoundaryClick,
 }: Options): CanvasViewModel => {
@@ -63,11 +67,23 @@ export const useCanvasViewModel = ({
     }
   }, [isEditMode, editSelectedSeatId, layout.seats, transformSnap])
 
+  // 選択中の会議室・家具のアクションバー画面座標(右下近傍)。座席と同じ出し方に揃える
+  const objectActionBarPos = useMemo(() => {
+    if (!isEditMode || !editSelectedObject) return null
+    const rect = rectOfRef(layout, editSelectedObject)
+    if (!rect) return null
+    return {
+      x: (rect.x + rect.w) * transformSnap.scale + transformSnap.translateX + 8,
+      y: (rect.y + rect.h / 2) * transformSnap.scale + transformSnap.translateY,
+    }
+  }, [isEditMode, editSelectedObject, layout, transformSnap])
+
   return {
     lod: lodOf(scaleSnap),
     counterScale: useMemo(() => clamp(0.8 / scaleSnap, 1, 2), [scaleSnap]),
     assignedCountByTeam,
     seatActionBarPos,
+    objectActionBarPos,
     // 07: 編集モード中は座席タップで詳細パネルを開かず、アクションバーの選択のみ行う
     handleSeatSelect: useCallback(
       (seatId: string) => {

@@ -1,4 +1,5 @@
 import { forwardRef, useCallback, useImperativeHandle } from 'react'
+import { EditObjectLayer } from './components/EditObjectLayer'
 import { EditSeatLayer } from './components/EditSeatLayer'
 import { TeamAreaLayer } from './components/TeamAreaLayer'
 import { useCanvasPointer } from './hooks/use-canvas-pointer'
@@ -6,15 +7,21 @@ import { useCanvasViewModel } from './hooks/use-canvas-view-model'
 import { useEditDrag } from './hooks/use-edit-drag'
 import { useViewport } from './hooks/use-viewport'
 import { useZoomControls } from './hooks/use-zoom-controls'
-import type { SeatMapCanvasHandle, SeatMapCanvasProps } from './type'
+import type { LivePosition, SeatMapCanvasHandle, SeatMapCanvasProps } from './type'
+import type { LayoutObjectRef } from '@/types'
 import { FacilityBlock } from '@/components/FacilityBlock'
 import { FurnitureBlock } from '@/components/FurnitureBlock'
 import { SeatMirrorLayer } from '@/components/SeatMirrorLayer'
 import { SEATMAP_BG_ID } from '@/components/SheetShell'
 import { ZoomControls } from '@/components/ZoomControls'
 import { AlignmentGuides } from '@/components/edit/AlignmentGuides'
+import { ObjectActionBar } from '@/components/edit/ObjectActionBar'
 import { SeatActionBar } from '@/components/edit/SeatActionBar'
 import { UndoChip } from '@/components/edit/UndoChip'
+
+// ドラッグ中の対象だけ live 座標へ差し替える。実体を動かすことで座席と同じ手触りにする
+const livePosOf = <T extends { id: string; x: number; y: number }>(item: T, live: LivePosition | null): T =>
+  live && live.id === item.id ? { ...item, x: live.x, y: live.y } : item
 
 // 02/11: 座席マップのキャンバス。パンズーム・チームアイランド・施設・編集ドラッグを束ねる。
 // 11: チーム箱は team.area(サーバ座標)をそのまま描画する。座席からの逆算(旧 deriveTeamArea)は
@@ -41,6 +48,10 @@ export const SeatMapCanvas = forwardRef<SeatMapCanvasHandle, Props>(function Sea
     onTeamLabelTap,
     onSeatChangeTeamRequest,
     onSeatDeleteRequest,
+    onObjectMove,
+    onObjectRepositionRequest,
+    onObjectDeleteRequest,
+    repositioningRef = null,
     onUndo,
     canUndo,
   },
@@ -49,12 +60,13 @@ export const SeatMapCanvas = forwardRef<SeatMapCanvasHandle, Props>(function Sea
   const viewport = useViewport()
   const zoom = useZoomControls(viewport)
   const { isPanningRef, handlers } = useCanvasPointer(viewport)
-  const edit = useEditDrag({ viewport, layout, isEditMode, onSeatMove, onTeamMove, onSeatEditSelect })
+  const edit = useEditDrag({ viewport, layout, isEditMode, onSeatMove, onTeamMove, onSeatEditSelect, onObjectMove })
   const view = useCanvasViewModel({
     layout,
     viewport,
     isEditMode,
     editSelectedSeatId: edit.editSelectedSeatId,
+    editSelectedObject: edit.editSelectedObject,
     onSeatSelect,
     onTeamBoundaryClick,
   })
@@ -110,17 +122,34 @@ export const SeatMapCanvas = forwardRef<SeatMapCanvasHandle, Props>(function Sea
         {layout.facilities.map((f) => (
           <FacilityBlock
             key={f.id}
-            facility={f}
+            facility={livePosOf(f, edit.liveObjectPos)}
             counterScale={view.counterScale}
-            onSelect={(facilityId) => onFacilitySelect?.(facilityId)}
+            onSelect={(facilityId) => {
+              // 編集モードでは詳細パネルを開かない。選択は上の EditObjectLayer が受ける
+              if (!isEditMode) onFacilitySelect?.(facilityId)
+            }}
             state={facilityStateById?.get(f.id)}
             lod={view.lod}
-            onHover={onFacilityHover}
+            onHover={isEditMode ? undefined : onFacilityHover}
           />
         ))}
         {layout.furniture.map((f) => (
-          <FurnitureBlock key={f.id} furniture={f} counterScale={view.counterScale} isEditMode={isEditMode} />
+          <FurnitureBlock
+            key={f.id}
+            furniture={livePosOf(f, edit.liveObjectPos)}
+            counterScale={view.counterScale}
+          />
         ))}
+        {isEditMode && (
+          <EditObjectLayer
+            facilities={layout.facilities}
+            furniture={layout.furniture}
+            selected={edit.editSelectedObject}
+            repositioning={repositioningRef}
+            livePos={edit.liveObjectPos}
+            onEditPointerDown={edit.onObjectEditPointerDown}
+          />
+        )}
         {isEditMode && (
           <EditSeatLayer
             seats={layout.seats}
@@ -157,6 +186,14 @@ export const SeatMapCanvas = forwardRef<SeatMapCanvasHandle, Props>(function Sea
           y={view.seatActionBarPos.y}
           onChangeTeam={() => onSeatChangeTeamRequest?.(edit.editSelectedSeatId as string)}
           onDelete={() => onSeatDeleteRequest?.(edit.editSelectedSeatId as string)}
+        />
+      )}
+      {isEditMode && view.objectActionBarPos && edit.editSelectedObject && (
+        <ObjectActionBar
+          x={view.objectActionBarPos.x}
+          y={view.objectActionBarPos.y}
+          onReposition={() => onObjectRepositionRequest?.(edit.editSelectedObject as LayoutObjectRef)}
+          onDelete={() => onObjectDeleteRequest?.(edit.editSelectedObject as LayoutObjectRef)}
         />
       )}
       {isEditMode && edit.undoChipPos && canUndo && (
