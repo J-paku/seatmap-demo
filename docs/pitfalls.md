@@ -17,8 +17,9 @@
 **回避法**: 標準プロパティのみ書く。手動でベンダープレフィックスを追加しない。
 確認法: `curl http://localhost:3100/_next/static/chunks/styles_globals_*.css` で成果物を直接見る。
 
-**既知の残存バグ**: `styles/detail-panel.css:481-482` に同種のバグが未修正のまま残っている
-(このドキュメント整備作業の範囲外。修正は別タスクで扱う)。
+**残存バグは解消済み**: かつて `.schedule-loading-overlay` に残っていた手書きの
+`-webkit-backdrop-filter` は `fd10b88` で削除した。`styles/` 全体を検索しても、
+標準宣言とベンダープレフィックスを両方手で書いている箇所は無い。
 
 ## 2. `lib/mock-loader.ts` の localStorage キャッシュ
 
