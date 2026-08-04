@@ -7,7 +7,6 @@ import { triggerHaptic } from '@/lib/haptic'
 interface ThemeSelectorProps {
   themeMode: ThemeMode
   setTheme: (mode: ThemeMode) => void
-  isDark: boolean
 }
 
 // 45°対角で背景色(左上)とアクセント色(右下)を二分した円形スウォッチ
@@ -61,7 +60,7 @@ const ThemeSwatch = ({ option, size }: { option: ThemeOption; size: number }) =>
   )
 }
 
-export function ThemeSelector({ themeMode, setTheme, isDark }: ThemeSelectorProps) {
+export function ThemeSelector({ themeMode, setTheme }: ThemeSelectorProps) {
   const { options, currentOption, isOpen, toggleOpen, handleSelect } = useThemeSelector({
     themeMode,
     setTheme,
@@ -70,8 +69,8 @@ export function ThemeSelector({ themeMode, setTheme, isDark }: ThemeSelectorProp
   return (
     <div
       style={{
-        color: isDark ? '#F8F8F2' : '#1A1A1A',
-        borderBottom: `1px solid ${isDark ? '#374151' : '#E5E7EB'}`,
+        color: 'var(--color-text-primary)',
+        borderBottom: `1px solid var(--color-border)`,
       }}
     >
       {/* トリガー行 — 左にラベル、右に現在テーマの塊 */}
@@ -90,7 +89,7 @@ export function ThemeSelector({ themeMode, setTheme, isDark }: ThemeSelectorProp
           <span
             className='icon-msr-thin text-xl'
             aria-hidden='true'
-            style={{ color: isDark ? '#B8C0DD' : '#6B7280' }}
+            style={{ color: 'var(--color-text-muted)' }}
           >
             palette
           </span>
@@ -104,7 +103,7 @@ export function ThemeSelector({ themeMode, setTheme, isDark }: ThemeSelectorProp
             className='icon-msr-thin text-xl transition-transform duration-200 ease-out motion-reduce:transition-none'
             aria-hidden='true'
             style={{
-              color: isDark ? '#B8C0DD' : '#6B7280',
+              color: 'var(--color-text-muted)',
               transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)',
             }}
           >

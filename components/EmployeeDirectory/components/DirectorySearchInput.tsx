@@ -4,23 +4,22 @@ import { triggerHaptic } from '@/lib/haptic'
 interface DirectorySearchInputProps {
   query: string
   onQueryChange: (query: string) => void
-  isDark: boolean
 }
 
-export function DirectorySearchInput({ query, onQueryChange, isDark }: DirectorySearchInputProps) {
+export function DirectorySearchInput({ query, onQueryChange }: DirectorySearchInputProps) {
   return (
     <div className='px-4 py-3'>
       <div
         className='flex h-11 items-center gap-2 rounded-xl border px-3'
         style={{
-          backgroundColor: isDark ? '#1F2230' : '#FFFFFF',
-          borderColor: isDark ? '#374151' : '#E5E7EB',
+          backgroundColor: 'var(--color-surface-elevated)',
+          borderColor: 'var(--color-border)',
         }}
       >
         <span
           aria-hidden='true'
           className='icon-msr-filled text-[20px] leading-none'
-          style={{ color: isDark ? '#B8C0DD' : '#6B7280' }}
+          style={{ color: 'var(--color-text-muted)' }}
         >
           search
         </span>
@@ -32,7 +31,7 @@ export function DirectorySearchInput({ query, onQueryChange, isDark }: Directory
           onChange={event => onQueryChange(event.target.value)}
           className='h-full min-w-0 flex-1 bg-transparent text-base outline-none'
           style={{
-            color: isDark ? '#F8F8F2' : '#1A1A1A',
+            color: 'var(--color-text-primary)',
           }}
         />
         {query.length > 0 ? (
@@ -48,7 +47,7 @@ export function DirectorySearchInput({ query, onQueryChange, isDark }: Directory
             <span
               aria-hidden='true'
               className='icon-msr-filled text-[20px] leading-none'
-              style={{ color: isDark ? '#B8C0DD' : '#6B7280' }}
+              style={{ color: 'var(--color-text-muted)' }}
             >
               close
             </span>

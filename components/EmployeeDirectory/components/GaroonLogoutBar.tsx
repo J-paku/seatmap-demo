@@ -7,13 +7,11 @@ import { triggerHaptic } from '@/lib/haptic'
 interface GaroonLogoutBarProps {
   isGaroonConnected?: boolean
   onGaroonLogout?: () => void
-  isDark: boolean
 }
 
 export function GaroonLogoutBar({
   isGaroonConnected,
   onGaroonLogout,
-  isDark,
 }: GaroonLogoutBarProps) {
   const [isLogoutConfirmOpen, setIsLogoutConfirmOpen] = useState(false)
 
@@ -44,7 +42,7 @@ export function GaroonLogoutBar({
       <div
         className='flex shrink-0 items-center justify-end px-3 py-1.5'
         style={{
-          backgroundColor: isDark ? '#1F2230' : '#FFFFFF',
+          backgroundColor: 'var(--color-surface-elevated)',
         }}
       >
         <button
@@ -75,13 +73,13 @@ export function GaroonLogoutBar({
                 aria-modal='true'
                 aria-label='Garoonログアウト確認'
                 className='w-[90vw] max-w-sm rounded-2xl shadow-2xl overflow-hidden'
-                style={{ backgroundColor: isDark ? '#1F2230' : '#FFFFFF' }}
+                style={{ backgroundColor: 'var(--color-surface-elevated)' }}
               >
                 {/* アイコン + タイトル + 説明 */}
                 <div className='flex flex-col items-center px-6 pt-6 pb-5 gap-2'>
                   <span
                     className='flex items-center justify-center w-12 h-12 rounded-full mb-1'
-                    style={{ backgroundColor: isDark ? '#3B1F1F' : '#FEF2F2' }}
+                    style={{ backgroundColor: 'var(--color-danger-soft)' }}
                   >
                     <span className='icon-msr-filled text-2xl text-red-500' aria-hidden='true'>
                       logout
@@ -89,13 +87,13 @@ export function GaroonLogoutBar({
                   </span>
                   <h2
                     className='text-base font-bold'
-                    style={{ color: isDark ? '#F8F8F2' : '#1A1A1A' }}
+                    style={{ color: 'var(--color-text-primary)' }}
                   >
                     Garoonログアウト
                   </h2>
                   <p
                     className='text-sm text-center leading-relaxed'
-                    style={{ color: isDark ? '#B8C0DD' : '#6B7280' }}
+                    style={{ color: 'var(--color-text-muted)' }}
                   >
                     Garoon連携を解除しますか？
                   </p>
@@ -104,15 +102,15 @@ export function GaroonLogoutBar({
                 {/* キャンセル / ログアウトボタン */}
                 <div
                   className='flex gap-2 px-5 pt-4 pb-5'
-                  style={{ borderTop: `1px solid ${isDark ? '#374151' : '#E5E7EB'}` }}
+                  style={{ borderTop: `1px solid var(--color-border)` }}
                 >
                   <button
                     type='button'
                     onClick={handleLogoutCancel}
                     className='flex-1 h-10 rounded-xl text-sm font-semibold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500'
                     style={{
-                      backgroundColor: isDark ? '#374151' : '#F3F4F6',
-                      color: isDark ? '#F8F8F2' : '#1A1A1A',
+                      backgroundColor: 'var(--color-surface-muted)',
+                      color: 'var(--color-text-primary)',
                     }}
                   >
                     キャンセル

@@ -1,6 +1,5 @@
 // 社員ディレクトリのスライドインパネルを提供するメインコンポーネント
 import { useMemo, useState, useCallback } from 'react'
-import { isDarkTheme } from '@/types'
 import type { ThemeMode, Employee, Seat } from '@/types'
 import { triggerHaptic } from '@/lib/haptic'
 import { createVirtualSeat } from '@/lib/seat/seat-utils'
@@ -53,7 +52,6 @@ export function EmployeeDirectory({
 
   const activeThemeMode = themeMode
   const activeSetTheme = setTheme
-  const isDark = isDarkTheme(themeMode)
 
   const { isVisible, sidebarView, setSidebarView, sheetHandlers, dragStyle, isDragging } =
     useEmployeeDirectoryView(isOpen, onClose)
@@ -158,7 +156,6 @@ export function EmployeeDirectory({
                   <DirectorySearchInput
                     query={searchQuery}
                     onQueryChange={setSearchQuery}
-                    isDark={isDark}
                   />
                 </div>
                 {/* ヘルプボタン — ? アイコンでガイドツアー再生 */}
@@ -241,7 +238,6 @@ export function EmployeeDirectory({
               isGaroonConnected={isGaroonConnected}
               onGaroonLogout={onGaroonLogout}
               onOpenAvatarCustomizer={handleOpenAvatarCustomizer}
-              isDark={isDark}
             />
           )}
 
@@ -254,7 +250,6 @@ export function EmployeeDirectory({
               onSettingsClick={() =>
                 setSidebarView(sidebarView === 'directory' ? 'settings' : 'directory')
               }
-              isDark={isDark}
               displayName={currentUser?.name}
               onAvatarClick={handleOpenAvatarCustomizer}
             />

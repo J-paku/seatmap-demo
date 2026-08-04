@@ -5,25 +5,23 @@ import { triggerHaptic } from '@/lib/haptic'
 
 interface GaroonFooterProps {
   onSettingsClick: () => void
-  isDark: boolean
   displayName?: string
   onAvatarClick?: () => void
 }
 
 export function GaroonFooter({
   onSettingsClick,
-  isDark,
   displayName,
   onAvatarClick,
 }: GaroonFooterProps) {
   const myAvatarConfig = useMyAvatarConfig()
-  const subColor = isDark ? '#B8C0DD' : '#6B7280'
+  const subColor = 'var(--color-text-muted)'
   return (
     <div
       className='flex h-12 shrink-0 items-center justify-between gap-2 border-t px-3'
       style={{
-        borderColor: isDark ? '#374151' : '#E5E7EB',
-        backgroundColor: isDark ? '#1F2230' : '#FFFFFF',
+        borderColor: 'var(--color-border)',
+        backgroundColor: 'var(--color-surface-elevated)',
       }}
     >
       {/* 自分のアバター — 押下でアバター編集モーダルを開く */}
