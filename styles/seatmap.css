@@ -396,10 +396,12 @@
   display: flex;
   align-items: center;
   gap: 8px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--color-border);
 }
 .fac-hover-icon {
   font-size: 18px;
-  color: #2563eb;
+  color: var(--color-accent);
 }
 .fac-hover-name {
   flex: 1;
@@ -424,13 +426,22 @@
   gap: 3px;
 }
 .fac-hover-title {
-  font-size: 13px;
-  font-weight: 700;
+  font-size: 14px;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .fac-hover-line {
+  display: flex;
+  align-items: center;
+  gap: 4px;
   font-size: 12px;
   color: var(--color-text-secondary);
   font-variant-numeric: tabular-nums;
+}
+.fac-hover-meta-icon {
+  font-size: 14px;
 }
 .fac-hover-next {
   margin-top: 6px;
@@ -438,6 +449,10 @@
   border-top: 1px solid var(--color-border);
   font-size: 11px;
   color: var(--color-text-muted);
+}
+/* 会議中でない時は本文が無く、ヘッダーの下境界線と二重線になるので片方を消す */
+.fac-hover-head + .fac-hover-next {
+  border-top: 0;
 }
 
 /* 座席未設定の一時通知 — 旧 employee-directory.css から移設(サイドバーは Tailwind 化済み) */

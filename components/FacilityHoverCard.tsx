@@ -4,6 +4,13 @@ import type { FacilityState } from '@/utils/facility-status'
 
 export type FacilityHoverPayload = { facilityId: string; rect: DOMRect }
 
+// 実測定数。カード幅と画面端の余白、対象との隙間
+const CARD_WIDTH_PX = 320
+const EDGE_MARGIN_PX = 8
+const GAP_PX = 12
+// これより下にある会議室は上向きに出す
+const ABOVE_THRESHOLD_PX = 240
+
 type Props = {
   facility: Facility
   state: FacilityState
@@ -13,19 +20,32 @@ type Props = {
 
 const clamp = (min: number, v: number, max: number) => Math.min(max, Math.max(min, v))
 
+// 下段は3分岐。未連携 → 次の予約あり → それ以外 の順に決まる
+const footerText = (facility: Facility, state: FacilityState): string => {
+  if (!facility.facilityId) return '施設を連携してください'
+  if (state.next) {
+    return `次の予約: ${state.next.title} (${minToHHMM(state.next.startMin)}-${minToHHMM(state.next.endMin)})`
+  }
+  return '本日の予約なし'
+}
+
+// 会議室のホバーカード(PC)。マウス以外では呼び出し側が出さない
 export const FacilityHoverCard = ({ facility, state, empById, rect }: Props) => {
   const color = FACILITY_COLOR[state.status]
   const nameOf = (id: string) => empById.get(id)?.name ?? id
 
-  const left = clamp(0, rect.left + rect.width / 2 - 160, window.innerWidth - 320 - 8)
-  const above = rect.top > 240
-  const top = above ? Math.max(8, rect.top - 12) : Math.min(window.innerHeight - 12, rect.bottom + 12)
+  const left = clamp(
+    EDGE_MARGIN_PX,
+    rect.left + rect.width / 2 - CARD_WIDTH_PX / 2,
+    window.innerWidth - CARD_WIDTH_PX - EDGE_MARGIN_PX
+  )
+  const above = rect.top > ABOVE_THRESHOLD_PX
+  const top = above
+    ? Math.max(EDGE_MARGIN_PX, rect.top - GAP_PX)
+    : Math.min(window.innerHeight - GAP_PX, rect.bottom + GAP_PX)
 
   return (
-    <div
-      className='fac-hover'
-      style={{ left, top, transform: above ? 'translateY(-100%)' : 'none' }}
-    >
+    <div className='fac-hover' style={{ left, top, transform: above ? 'translateY(-100%)' : 'none' }}>
       <div className='fac-hover-head'>
         <span className='material-symbols-outlined fac-hover-icon'>meeting_room</span>
         <span className='fac-hover-name'>{facility.name}</span>
@@ -33,23 +53,30 @@ export const FacilityHoverCard = ({ facility, state, empById, rect }: Props) => 
           {FACILITY_STATUS_LABEL[state.status]}
         </span>
       </div>
-      <div className='fac-hover-body'>
-        {state.current ? (
-          <>
-            <div className='fac-hover-title'>{state.current.title}</div>
-            <div className='fac-hover-line'>
-              {minToHHMM(state.current.startMin)}–{minToHHMM(state.current.endMin)}
-            </div>
-            <div className='fac-hover-line'>主催: {nameOf(state.current.organizerId)}</div>
-            <div className='fac-hover-line'>参加者 {state.current.participantIds.length}名</div>
-          </>
-        ) : null}
-        <div className='fac-hover-next'>
-          {state.next
-            ? `次の予約: ${state.next.title} (${minToHHMM(state.next.startMin)}–${minToHHMM(state.next.endMin)})`
-            : '本日の予約なし'}
+
+      {/* 現在の会議は会議中のときだけ出す(空室に現在会議が付くのは誤り) */}
+      {state.status === 'in_meeting' && state.current && (
+        <div className='fac-hover-body'>
+          <div className='fac-hover-title'>{state.current.title || '予定あり'}</div>
+          <div className='fac-hover-line'>
+            {minToHHMM(state.current.startMin)}-{minToHHMM(state.current.endMin)}
+          </div>
+          <div className='fac-hover-line'>
+            <span className='material-symbols-outlined fac-hover-meta-icon' aria-hidden='true'>
+              person
+            </span>
+            主催: {nameOf(state.current.organizerId)}
+          </div>
+          <div className='fac-hover-line'>
+            <span className='material-symbols-outlined fac-hover-meta-icon' aria-hidden='true'>
+              groups
+            </span>
+            {state.current.participantIds.length}名
+          </div>
         </div>
-      </div>
+      )}
+
+      <div className='fac-hover-next'>{footerText(facility, state)}</div>
     </div>
   )
 }
