@@ -20,6 +20,9 @@ import { FurniturePickerModal } from '@/components/FurniturePickerModal'
 import { GhostPlacementLayer } from '@/components/GhostPlacementLayer'
 import { ObjectCategorySheet } from '@/components/ObjectCategorySheet'
 import { TeamActionSheet } from '@/components/TeamActionSheet'
+import { TeamCreatePopover } from '@/components/TeamCreatePopover'
+import { CoachMarkTour } from '@/components/CoachMarkTour'
+import { useCoachMarkTour } from '@/components/CoachMarkTour/hooks/use-coach-mark-tour'
 import { ConfirmDialog } from '@/components/edit/ConfirmDialog'
 import { LiveRegion } from '@/components/a11y/components/LiveRegion'
 import { MySeatButton } from '@/components/MySeatButton'
@@ -73,6 +76,9 @@ export const SeatMapView = () => {
 
   const dialogs = useEditDialogs(editor, employeeById, { onDeleteObject: handleDeleteObject })
   const placement = useObjectPlacement(editor, { onPlaced: showUndoChipAt })
+  // 操作ガイド。編集モード初回だけ自動再生し、？ ボタンで何度でも見られる
+  const centerOnSelector = useCallback((selector: string) => canvasRef.current?.centerOnSelector(selector), [])
+  const tour = useCoachMarkTour({ isActive: editor.isEditMode, centerOnSelector })
   // 配属の結果はライブリージョンとトーストへ同じ文言を流す(実装を二重化しない)
   const assign = useSeatAssign({ editor, employeeById, onDone: (message) => showNotice(message) })
 
@@ -228,6 +234,7 @@ export const SeatMapView = () => {
           changedCount={editor.changedCount}
           isSaving={save.isSaving}
           isPlacing={placement.request !== null}
+          onHelp={tour.open}
           onFinish={save.finish}
           onCancel={save.cancel}
         />
@@ -240,13 +247,18 @@ export const SeatMapView = () => {
           <AddObjectFab isOpen={placement.isFabOpen} onToggle={placement.toggleFab} />
           <ObjectCategorySheet
             isOpen={placement.isCategoryOpen}
-            categories={['furniture', 'facility']}
+            categories={['team', 'furniture', 'facility']}
             onSelect={placement.selectCategory}
             onClose={placement.cancel}
           />
           <FurniturePickerModal
             isOpen={placement.isFurniturePickerOpen}
             onSelect={placement.selectFurniture}
+            onClose={placement.cancel}
+          />
+          <TeamCreatePopover
+            isOpen={placement.isTeamFormOpen}
+            onSubmit={placement.submitTeam}
             onClose={placement.cancel}
           />
           {placement.request && (
@@ -292,6 +304,8 @@ export const SeatMapView = () => {
           )}
         </>
       )}
+
+      {editor.isEditMode && <CoachMarkTour tour={tour} />}
 
       <EditDialogs editor={editor} dialogs={dialogs} />
 

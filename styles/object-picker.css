@@ -350,3 +350,74 @@
   font-size: 12px;
   text-align: center;
 }
+
+/* --- チーム作成 --- */
+
+.team-new-label {
+  display: block;
+  margin: 10px 0 4px;
+  color: var(--color-text-secondary);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.team-new-swatches {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.team-new-swatch {
+  width: 32px;
+  height: 32px;
+  border: 2px solid transparent;
+  border-radius: 999px;
+  box-shadow: inset 0 0 0 1px var(--color-border);
+  cursor: pointer;
+}
+
+.team-new-swatch.is-selected {
+  border-color: var(--color-text-primary);
+}
+
+.team-new-swatch:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+.team-new-custom {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.team-new-color-input {
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  background: none;
+  cursor: pointer;
+}
+
+.team-new-hex {
+  flex: 1;
+  font-family: ui-monospace, monospace;
+}
+
+.team-new-hex.is-invalid {
+  border-color: var(--color-danger);
+  color: var(--color-danger);
+}
+
+.team-new-submit {
+  width: 100%;
+  margin-top: 14px;
+}
+
+.team-new-submit:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

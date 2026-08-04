@@ -36,6 +36,7 @@ export type UseLayoutEditorApi = {
   moveObject: (ref: LayoutObjectRef, x: number, y: number) => void
   resizeObject: (ref: LayoutObjectRef, rect: Rect) => boolean
   deleteObject: (ref: LayoutObjectRef) => void
+  addTeam: (name: string, color: string, rect: Rect) => boolean
   addSeat: (teamId: string) => boolean
   assignEmployee: (seatId: string, employeeId: string | null) => void
 }
@@ -242,6 +243,19 @@ export const useLayoutEditor = (sourceLayout: SeatLayout | undefined): UseLayout
     [editingLayout, dispatch, showError]
   )
 
+  const addTeam = useCallback(
+    (name: string, color: string, rect: Rect): boolean => {
+      const placed = guardPlacement(rect)
+      if (!placed) return false
+      dispatch(
+        { type: 'team-add', name, color, x: placed.x, y: placed.y, width: placed.w, height: placed.h },
+        [`team:${name}:${placed.x}:${placed.y}`]
+      )
+      return true
+    },
+    [guardPlacement, dispatch]
+  )
+
   const assignEmployee = useCallback(
     (seatId: string, employeeId: string | null) => {
       dispatch({ type: 'seat-assign-employee', seatId, employeeId }, [seatId])
@@ -273,6 +287,7 @@ export const useLayoutEditor = (sourceLayout: SeatLayout | undefined): UseLayout
     moveObject,
     resizeObject,
     deleteObject,
+    addTeam,
     addSeat,
     assignEmployee,
   }

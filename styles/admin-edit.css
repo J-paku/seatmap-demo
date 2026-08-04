@@ -98,10 +98,6 @@
   gap: 8px;
 }
 
-.edit-help-wrap {
-  position: relative;
-}
-
 .edit-top-btn {
   width: 40px;
   height: 40px;
@@ -109,31 +105,6 @@
   align-items: center;
   justify-content: center;
   font-size: 16px;
-}
-
-.edit-help-popover {
-  position: absolute;
-  top: 48px;
-  right: 0;
-  width: 240px;
-  padding: 12px 14px;
-  border-radius: var(--pixel-corner);
-  border: 1.5px solid var(--color-pixel-edge);
-  box-shadow: var(--pixel-shadow);
-  background: var(--color-surface-elevated);
-  color: var(--color-text-secondary);
-  font-size: 12px;
-  z-index: var(--z-index-popover);
-}
-
-.edit-help-popover p {
-  margin: 0 0 6px;
-}
-
-.edit-help-close {
-  margin-top: 4px;
-  padding: 6px 12px;
-  font-size: 12px;
 }
 
 /* ── 下端リモートバー(変更n件+完了/キャンセル) ───────────────── */
