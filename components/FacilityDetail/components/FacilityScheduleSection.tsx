@@ -2,6 +2,7 @@ import { DateNavigator } from '@/components/DateNavigator'
 import { SwipeDateStage } from '@/components/SwipeDateStage'
 import { FacilityScheduleCard } from './FacilityScheduleCard'
 import type { Employee, FacilityMeeting } from '@/types'
+import type { AttendeeHandlers } from '../type'
 
 // 施設詳細の予定欄: 日付ナビ + 左右スワイプ台。社員詳細のScheduleSectionと同じ組み方
 // 施設未連携(facilityId無し)の時は日付ナビごと出さず「施設未連携」のみを表示する
@@ -14,6 +15,7 @@ type Props = {
   nowMin: number
   isLoading: boolean
   isTodaySelected: boolean
+  attendee: AttendeeHandlers
   onSwipePrevDay: () => void
   onSwipeNextDay: () => void
 }
@@ -26,6 +28,7 @@ export const FacilityScheduleSection = ({
   nowMin,
   isLoading,
   isTodaySelected,
+  attendee,
   onSwipePrevDay,
   onSwipeNextDay,
 }: Props) => {
@@ -42,6 +45,7 @@ export const FacilityScheduleSection = ({
               employees={employees}
               nowMin={nowMin}
               isTodaySelected={isTodaySelected}
+              attendee={attendee}
             />
           )}
           {meetings.length === 0 && !isLoading && (

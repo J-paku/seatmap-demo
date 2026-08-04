@@ -1,7 +1,9 @@
 import { useEffect } from 'react'
+import { AttendeePopover } from './components/AttendeePopover'
 import { FacilityCurrentEvent } from './components/FacilityCurrentEvent'
 import { FacilityPanelHeader } from './components/FacilityPanelHeader'
 import { FacilityScheduleSection } from './components/FacilityScheduleSection'
+import { useAttendeePopover } from './hooks/use-attendee-popover'
 import { useEmployees, useFacilities, useFacilityMeetings } from '@/lib/mock-loader'
 import { deriveFacilityState } from '@/utils/facility-status'
 import type { FacilityState } from '@/utils/facility-status'
@@ -19,6 +21,7 @@ export const FacilityDetail = ({ facilityId }: { facilityId: string }) => {
   const { date, debouncedDate, isTodaySelected, goToPrevDay, goToNextDay, goToToday } = useSelectedDate()
   const { closeTop } = useDetailPanel()
   const nowMs = useQuantizedClock(isTodaySelected)
+  const popover = useAttendeePopover()
 
   const facility = facilities?.find((f) => f.id === facilityId)
 
@@ -38,6 +41,9 @@ export const FacilityDetail = ({ facilityId }: { facilityId: string }) => {
   const now = new Date(nowMs)
   const nowMin = now.getHours() * 60 + now.getMinutes()
   const state: FacilityState = deriveFacilityState(facility, meetings ?? [], nowMin)
+  const popoverMeeting = popover.state
+    ? scheduleMeetings.find((m) => m.id === popover.state?.meetingId)
+    : undefined
 
   return (
     <div className='facility-detail'>
@@ -61,9 +67,21 @@ export const FacilityDetail = ({ facilityId }: { facilityId: string }) => {
         nowMin={nowMin}
         isLoading={isScheduleLoading}
         isTodaySelected={isTodaySelected}
+        attendee={{ onEnter: popover.onEnter, onLeave: popover.onLeave, onToggle: popover.onToggle }}
         onSwipePrevDay={goToPrevDay}
         onSwipeNextDay={goToNextDay}
       />
+
+      {popover.state && popoverMeeting && (
+        <AttendeePopover
+          state={popover.state}
+          meeting={popoverMeeting}
+          employees={employees ?? []}
+          onMouseEnter={popover.cancelClose}
+          onMouseLeave={popover.onLeave}
+          onClose={popover.close}
+        />
+      )}
     </div>
   )
 }
