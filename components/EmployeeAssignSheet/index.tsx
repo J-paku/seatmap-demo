@@ -1,0 +1,98 @@
+import { useEmployeeAssign } from './hooks/use-employee-assign'
+import { PickerSheet } from '@/components/PickerSheet'
+import { PixelAvatar } from '@/components/PixelAvatar'
+import { useEmployeeAvatar } from '@/hooks/use-employee-avatar'
+import type { Employee, Seat } from '@/types'
+
+// 空席・着席席へ座らせる社員を選ぶ。着席中の社員は座席IDつきで示し、
+// 選ぶと移動(または入れ替え)になることを事前に伝える
+
+type Props = {
+  isOpen: boolean
+  seat: Seat | null
+  employees: Employee[]
+  seats: Seat[]
+  employeeById: Map<string, Employee>
+  onSelect: (employeeId: string) => void
+  onClear: () => void
+  onClose: () => void
+}
+
+const CandidateRow = ({
+  employee,
+  seatedAt,
+  onSelect,
+}: {
+  employee: Employee
+  seatedAt: string | null
+  onSelect: () => void
+}) => {
+  const avatar = useEmployeeAvatar(employee)
+  return (
+    <button type='button' className='assign-row' onClick={onSelect}>
+      {avatar && <PixelAvatar config={avatar} size={32} ariaLabel='' />}
+      <span className='assign-row-text'>
+        <span className='assign-row-name'>{employee.name}</span>
+        <span className='assign-row-meta'>
+          {employee.position ? `${employee.position} / ` : ''}
+          {employee.team}
+        </span>
+      </span>
+      {seatedAt && (
+        <span className='assign-row-seated'>
+          着席中
+          <span className='assign-row-seat-id'>{seatedAt}</span>
+        </span>
+      )}
+    </button>
+  )
+}
+
+export const EmployeeAssignSheet = ({
+  isOpen,
+  seat,
+  employees,
+  seats,
+  employeeById,
+  onSelect,
+  onClear,
+  onClose,
+}: Props) => {
+  const { query, setQuery, candidates } = useEmployeeAssign(employees, seats)
+  const occupant = seat?.employeeId ? employeeById.get(seat.employeeId) ?? null : null
+
+  return (
+    <PickerSheet
+      isOpen={isOpen && seat !== null}
+      title={seat ? `${seat.id} に配属` : '配属'}
+      note={occupant ? `現在は${occupant.name}さんが着席しています` : '空席です'}
+      onClose={onClose}
+    >
+      <input
+        type='search'
+        role='searchbox'
+        className='assign-search'
+        placeholder='氏名・カナ・部署で絞り込む'
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+        autoFocus
+      />
+      {occupant && (
+        <button type='button' className='pixel-btn assign-clear' onClick={onClear}>
+          この席を空席にする
+        </button>
+      )}
+      <div className='assign-list'>
+        {candidates.map((candidate) => (
+          <CandidateRow
+            key={candidate.employee.id}
+            employee={candidate.employee}
+            seatedAt={candidate.seatedAt}
+            onSelect={() => onSelect(candidate.employee.id)}
+          />
+        ))}
+        {candidates.length === 0 && <p className='assign-empty'>該当する社員がいません</p>}
+      </div>
+    </PickerSheet>
+  )
+}

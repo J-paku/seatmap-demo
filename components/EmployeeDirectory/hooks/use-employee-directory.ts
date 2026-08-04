@@ -2,6 +2,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import type { Employee, Seat } from '@/types'
 import { normalizeName } from '@/lib/seat/display-utils'
+import { matchesEmployeeQuery, normalizeSearchText } from '@/utils/employee-search'
 import { useFavorites } from '@/hooks/use-favorites'
 import type { FavoritesContent } from '../components/DepartmentTree/types'
 
@@ -159,18 +160,20 @@ export function useEmployeeDirectory(
   }, [employees])
 
   const filteredTree = useMemo<DepartmentGroup[]>(() => {
-    const query = debouncedQuery.trim().toLowerCase()
+    const query = debouncedQuery.trim()
     if (query.length === 0) return groupedTree
+    const normalizedQuery = normalizeSearchText(query)
 
     return groupedTree
       .map(group => {
-        const deptMatched = group.dept.toLowerCase().includes(query)
+        const deptMatched = normalizeSearchText(group.dept).includes(normalizedQuery)
         if (deptMatched) {
           return group
         }
 
+        // 判定は utils/employee-search に集約する(氏名・カナ・部署を横断)
         const matchedEmployees = group.employees.filter(employee =>
-          employee.name.toLowerCase().includes(query)
+          matchesEmployeeQuery(employee, query)
         )
 
         return {

@@ -21,6 +21,8 @@ type Options = {
   onTeamMove?: (teamId: string, x: number, y: number) => void
   onSeatEditSelect?: (seatId: string | null) => void
   onObjectMove?: (ref: LayoutObjectRef, x: number, y: number) => void
+  // 動かさずに離した空席のタップ。配属シートを開く
+  onEmptySeatTap?: (seatId: string) => void
 }
 
 type EditDragState = {
@@ -47,6 +49,7 @@ export const useEditDrag = ({
   onTeamMove,
   onSeatEditSelect,
   onObjectMove,
+  onEmptySeatTap,
 }: Options): EditDragState => {
   const { transformRef } = viewport
   const editDragRef = useRef<EditDrag>({ kind: 'none' })
@@ -196,6 +199,9 @@ export const useEditDrag = ({
         if (drag.moved) {
           onSeatMove?.(drag.seatId, drag.liveX, drag.liveY)
           undoChip.showAt(drag.liveX, drag.liveY)
+        } else if (!layout.seats.find((s) => s.id === drag.seatId)?.employeeId) {
+          // 空席は1タップで配属シートへ。着席済みはアクションバー経由にする
+          onEmptySeatTap?.(drag.seatId)
         }
       } else if (drag.kind === 'object') {
         setLiveObjectPos(null)
@@ -220,7 +226,7 @@ export const useEditDrag = ({
       window.removeEventListener('pointerup', onUp)
       window.removeEventListener('pointercancel', onUp)
     }
-  }, [isEditMode, layout, transformRef, onSeatMove, onTeamMove, onObjectMove, undoChip])
+  }, [isEditMode, layout, transformRef, onSeatMove, onTeamMove, onObjectMove, onEmptySeatTap, undoChip])
 
   // Esc で選択解除。キャンバス余白のクリックと同じ扱い
   useEffect(() => {

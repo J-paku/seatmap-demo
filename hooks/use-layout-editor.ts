@@ -1,5 +1,6 @@
 import { useCallback } from 'react'
 import { useEditSession } from './use-edit-session'
+import { applyLayoutAction } from '@/utils/layout-actions'
 import { useErrorToast } from './use-error-toast'
 import type { ErrorToastState } from './use-error-toast'
 import { clampRectToViewBox } from '@/utils/rect'
@@ -35,6 +36,8 @@ export type UseLayoutEditorApi = {
   moveObject: (ref: LayoutObjectRef, x: number, y: number) => void
   resizeObject: (ref: LayoutObjectRef, rect: Rect) => boolean
   deleteObject: (ref: LayoutObjectRef) => void
+  addSeat: (teamId: string) => boolean
+  assignEmployee: (seatId: string, employeeId: string | null) => void
 }
 
 const seatsOfTeam = (seats: Seat[], teamId: string): Seat[] => seats.filter((s) => s.teamId === teamId)
@@ -43,6 +46,7 @@ const MSG_FACILITY = '設備と重なるため配置できません'
 const MSG_TEAM_OVERLAP = 'チームエリアが重なるため適用できません'
 const MSG_NOT_FIT = '座席が収まらないため適用できません'
 const MSG_OVERLAP = 'ここには配置できません'
+const MSG_AREA_FULL = 'エリアが広がって他と重なるため追加できません'
 
 export const useLayoutEditor = (sourceLayout: SeatLayout | undefined): UseLayoutEditorApi => {
   const session = useEditSession(sourceLayout)
@@ -216,6 +220,35 @@ export const useLayoutEditor = (sourceLayout: SeatLayout | undefined): UseLayout
     [dispatch]
   )
 
+  // 座席の追加。エリアは座席群へ自動で広がるので、広げた結果が他と重なるときだけ拒否する。
+  // 判定はリデューサーの結果に対して行う — 事前に手で予測すると計算が二重化する
+  const addSeat = useCallback(
+    (teamId: string): boolean => {
+      const layout = editingLayout
+      if (!layout) return false
+      const next = applyLayoutAction(layout, { type: 'seat-add', teamId })
+      if (next === layout) return false
+      const team = next.teams.find((t) => t.id === teamId)
+      if (!team) return false
+      const area: Rect = { x: team.area.x, y: team.area.y, w: team.area.w, h: team.area.h }
+      if (teamAreaOverlaps(next.teams, teamId, area) || seatOverlapsFixture(next, area)) {
+        showError(MSG_AREA_FULL)
+        return false
+      }
+      const added = next.seats.find((s) => !layout.seats.some((prev) => prev.id === s.id))
+      dispatch({ type: 'seat-add', teamId }, [teamId, added?.id ?? teamId])
+      return true
+    },
+    [editingLayout, dispatch, showError]
+  )
+
+  const assignEmployee = useCallback(
+    (seatId: string, employeeId: string | null) => {
+      dispatch({ type: 'seat-assign-employee', seatId, employeeId }, [seatId])
+    },
+    [dispatch]
+  )
+
   return {
     isEditMode: session.isEditMode,
     editingLayout,
@@ -240,5 +273,7 @@ export const useLayoutEditor = (sourceLayout: SeatLayout | undefined): UseLayout
     moveObject,
     resizeObject,
     deleteObject,
+    addSeat,
+    assignEmployee,
   }
 }

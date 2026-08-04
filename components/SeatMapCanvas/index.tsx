@@ -46,6 +46,7 @@ export const SeatMapCanvas = forwardRef<SeatMapCanvasHandle, Props>(function Sea
     onTeamMove,
     onSeatEditSelect,
     onTeamLabelTap,
+    onSeatAssignRequest,
     onSeatChangeTeamRequest,
     onSeatDeleteRequest,
     onObjectMove,
@@ -60,7 +61,7 @@ export const SeatMapCanvas = forwardRef<SeatMapCanvasHandle, Props>(function Sea
   const viewport = useViewport()
   const zoom = useZoomControls(viewport)
   const { isPanningRef, handlers } = useCanvasPointer(viewport)
-  const edit = useEditDrag({ viewport, layout, isEditMode, onSeatMove, onTeamMove, onSeatEditSelect, onObjectMove })
+  const edit = useEditDrag({ viewport, layout, isEditMode, onSeatMove, onTeamMove, onSeatEditSelect, onObjectMove, onEmptySeatTap: onSeatAssignRequest })
   const view = useCanvasViewModel({
     layout,
     viewport,
@@ -184,6 +185,7 @@ export const SeatMapCanvas = forwardRef<SeatMapCanvasHandle, Props>(function Sea
         <SeatActionBar
           x={view.seatActionBarPos.x}
           y={view.seatActionBarPos.y}
+          onAssign={() => onSeatAssignRequest?.(edit.editSelectedSeatId as string)}
           onChangeTeam={() => onSeatChangeTeamRequest?.(edit.editSelectedSeatId as string)}
           onDelete={() => onSeatDeleteRequest?.(edit.editSelectedSeatId as string)}
         />
