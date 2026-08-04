@@ -8,6 +8,12 @@
   --color-surface-muted: #ede5d7;
   --color-surface-overlay: rgba(255, 252, 246, 0.88);
   --color-surface-muted-hover: #ddd2bf;
+  /* モーダル背後の暗幕。前景を沈めるのが目的なのでテーマを問わず同値 */
+  --color-scrim: rgba(0, 0, 0, 0.4);
+  --color-scrim-overlay: rgba(15, 23, 42, 0.34);
+  /* プロフィール帯グラデーションの明るい側。暗色テーマでの見え方は要デザイン判断のため
+     現状は全テーマ共通で白のまま(テーマ側で上書きすれば個別調整できる) */
+  --color-band-highlight: #ffffff;
   --color-text-primary: #2a2520;
   --color-text-secondary: #6b5e52;
   --color-text-muted: #9c8e80;

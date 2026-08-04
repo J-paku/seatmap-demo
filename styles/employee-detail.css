@@ -17,7 +17,7 @@
 .profile-band {
   position: relative;
   height: 64px;
-  background: linear-gradient(135deg, var(--color-accent), color-mix(in srgb, var(--color-accent) 42%, #ffffff));
+  background: linear-gradient(135deg, var(--color-accent), color-mix(in srgb, var(--color-accent) 42%, var(--color-band-highlight)));
 }
 .profile-status-badge {
   position: absolute;

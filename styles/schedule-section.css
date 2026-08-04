@@ -177,7 +177,7 @@
   margin: auto 0;
   text-align: center;
   font-size: 14px;
-  color: #9ca3af;
+  color: var(--color-text-muted);
 }
 .schedule-error {
   margin: auto 0;

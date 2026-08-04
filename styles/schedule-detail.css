@@ -1,6 +1,6 @@
 .seat-vacant-notice {
   font-size: 14px;
-  color: #6b7280;
+  color: var(--color-text-muted);
   padding: 8px 0;
 }
 
@@ -81,8 +81,8 @@
 
 /* 12: 状態バッジ優先度2(読み込み中)・優先度4(使用中/空席フォールバック) */
 .status-chip-loading {
-  color: #6b7280;
-  background: #f3f4f6;
+  color: var(--color-text-muted);
+  background: var(--color-surface-muted);
   border-color: transparent;
   animation: status-chip-pulse 1.6s ease-in-out infinite;
 }
@@ -90,13 +90,13 @@
   animation: status-chip-spin 1s linear infinite;
 }
 .status-chip-inuse {
-  color: #1e40af;
-  background: #dbeafe;
+  color: var(--color-meeting-room-busy-text);
+  background: var(--color-meeting-room-busy-bg);
   border-color: transparent;
 }
 .status-chip-vacant {
-  color: #4b5563;
-  background: #f3f4f6;
+  color: var(--color-text-secondary);
+  background: var(--color-surface-muted);
   border-color: transparent;
 }
 @keyframes status-chip-pulse {

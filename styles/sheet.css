@@ -4,7 +4,7 @@
 .sheet-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.4);
+  background: var(--color-scrim);
   /* 12: モーダルスタック表の相対順(社員/施設詳細)。ヘッダー等の共有トークン列に揃えて z-index-modal を使う */
   z-index: var(--z-index-modal);
   animation: sheet-fade-in 0.2s ease-out;
