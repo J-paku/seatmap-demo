@@ -21,3 +21,12 @@ export const PRESENCE_LABEL: Record<PresenceStatus, string> = {
   out: '外出',
   vacation: '休暇',
 }
+
+// 在席ステータス表示色。色そのものは持たず tokens.css の定義を指す
+// (キャンバス・オーバーレイ・チップで別々に持っていたのを1箇所へ寄せた)
+export const PRESENCE_COLOR: Record<PresenceStatus, string> = {
+  present: 'var(--color-status-present)',
+  meeting: 'var(--color-status-meeting)',
+  out: 'var(--color-status-out)',
+  vacation: 'var(--color-status-vacation)',
+}

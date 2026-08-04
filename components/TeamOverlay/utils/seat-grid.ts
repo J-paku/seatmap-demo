@@ -1,15 +1,7 @@
-import type { PresenceStatus, Seat } from '@/types'
+import type { Seat } from '@/types'
 import type { SeatGrid } from '../type'
 
 // 座席グリッドの寸法定数と、絶対座標から行列を起こす計算
-
-// 人の状態色(10-main-interactions の正本表・4種のみ保持)
-export const SEAT_STATUS_COLOR: Record<PresenceStatus, string> = {
-  present: '#16a34a',
-  meeting: '#2563eb',
-  out: '#d97706',
-  vacation: '#6b7280',
-}
 
 export const DESKTOP_SEAT_CARD_WIDTH_PX = 180
 export const DESKTOP_SEAT_GAP_PX = 10
