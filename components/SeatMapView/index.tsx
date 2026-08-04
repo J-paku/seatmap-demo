@@ -162,7 +162,9 @@ export const SeatMapView = () => {
             />
           ) : null
         })()}
-      {!editor.isEditMode && <DetailPanels />}
+      {!editor.isEditMode && (
+        <DetailPanels onFacilityDeleted={(name) => showNotice(`「${name}」を削除しました`)} />
+      )}
 
       {editor.isEditMode && (
         <EditModeLayer
