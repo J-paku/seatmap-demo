@@ -82,10 +82,26 @@ export const SeatMapCanvas = forwardRef<SeatMapCanvasHandle, Props>(function Sea
     [viewport.containerRef]
   )
 
+  // コーチマークの対象を画面中央へ寄せる。倍率は変えず平行移動だけで合わせる
+  const centerOnSelector = useCallback(
+    (selector: string) => {
+      const container = viewport.containerRef.current
+      const el = container?.querySelector(selector)
+      if (!container || !el) return
+      const canvas = container.getBoundingClientRect()
+      const target = el.getBoundingClientRect()
+      const dx = canvas.left + canvas.width / 2 - (target.left + target.width / 2)
+      const dy = canvas.top + canvas.height / 2 - (target.top + target.height / 2)
+      const t = viewport.transformRef.current
+      viewport.animateTo({ scale: t.scale, translateX: t.translateX + dx, translateY: t.translateY + dy })
+    },
+    [viewport]
+  )
+
   useImperativeHandle(
     ref,
-    () => ({ measureTeamRect, showUndoChipAt: edit.showUndoChipAt }),
-    [measureTeamRect, edit.showUndoChipAt]
+    () => ({ measureTeamRect, showUndoChipAt: edit.showUndoChipAt, centerOnSelector }),
+    [measureTeamRect, edit.showUndoChipAt, centerOnSelector]
   )
 
   // 07: 空き領域クリックで座席の編集選択を解除(各要素側は stopPropagation 済み)

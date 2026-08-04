@@ -46,6 +46,8 @@ export type SeatMapCanvasHandle = {
   // ゴーストで新規配置したあと、置いた場所へ「元に戻す」チップを出す。
   // 配置フローはキャンバスの外(SeatMapView)にあるので、変換を持つこちら側へ依頼する
   showUndoChipAt: (logicalX: number, logicalY: number) => void
+  // コーチマークの対象が画面外のとき、その要素をキャンバス中央へ寄せる
+  centerOnSelector: (selector: string) => void
 }
 
 export type Rect = { x: number; y: number; w: number; h: number }

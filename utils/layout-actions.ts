@@ -1,7 +1,7 @@
 // 07-admin-edit: レイアウト編集のアクション定義と純粋リデューサー(副作用なし)
 import { defaultFurnitureName } from './furniture-catalog'
 import { RELAYOUT_COL_GAP, RELAYOUT_PADDING, DEFAULT_SEAT_HEIGHT, DEFAULT_SEAT_WIDTH, fitAreaToSeats, relayoutSeatsInGrid, sortSeatsForRelayout } from './seat-relayout'
-import type { Facility, Furniture, FurnitureKind, Seat, SeatLayout } from '@/types'
+import type { Facility, Furniture, FurnitureKind, Seat, SeatLayout, Team } from '@/types'
 
 // 移動・リサイズ・削除の扱いが完全に同じ2種。座席(重なると入れ替え)とチーム
 // (所属座席ごと動く)は挙動が違うので、ここへ混ぜない。union を2種に絞ることで
@@ -19,6 +19,8 @@ export type LayoutAction =
   | { type: 'seat-assign-employee'; seatId: string; employeeId: string | null }
   | { type: 'team-move'; teamId: string; x: number; y: number }
   | { type: 'team-relayout'; teamId: string; rows: number; cols: number }
+  // idPrefix は座席IDの結束キーなので、衝突しない値をリデューサー側で採番する
+  | { type: 'team-add'; name: string; color: string; x: number; y: number; width: number; height: number }
   | { type: 'facility-add'; x: number; y: number; width: number; height: number }
   | { type: 'furniture-add'; furnitureKind: FurnitureKind; x: number; y: number; width: number; height: number }
   // id はレイアウト上の Facility.id / Furniture.id。予定システム側の Facility.facilityId ではない
@@ -184,6 +186,26 @@ export const applyLayoutAction = (layout: SeatLayout, action: LayoutAction): Sea
         teams: layout.teams.map((t) => (t.id === action.teamId ? { ...t, area: fitted } : t)),
         seats: layout.seats.map((s) => relaidById.get(s.id) ?? s),
       }
+    }
+    case 'team-add': {
+      // idPrefix が既存と衝突すると座席IDの結束が壊れて席が混ざる。空いている連番まで送る
+      const takenPrefixes = new Set(layout.teams.map((t) => t.idPrefix))
+      let index = layout.teams.length + 1
+      let idPrefix = `team-${String(index).padStart(2, '0')}`
+      while (takenPrefixes.has(idPrefix)) {
+        index += 1
+        idPrefix = `team-${String(index).padStart(2, '0')}`
+      }
+      const added: Team = {
+        id: nextSequentialId(layout.teams.map((t) => t.id), 'team-', 2),
+        idPrefix,
+        name: action.name,
+        // かな検索用。日本語名からは機械的に導けないので名前をそのまま入れておく
+        kana: action.name,
+        color: action.color,
+        area: { x: action.x, y: action.y, w: action.width, h: action.height },
+      }
+      return { ...layout, teams: [...layout.teams, added] }
     }
     case 'facility-add': {
       // 新設の会議室は予定システムと未連携(facilityId なし)。デモとして嘘をつかない

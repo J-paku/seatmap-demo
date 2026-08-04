@@ -19,6 +19,8 @@ import type { FurnitureKind, LayoutObjectRef } from '@/types'
 
 // 会議室の既定サイズ
 const FACILITY_DEFAULT_SIZE = { width: 200, height: 150 }
+// チームエリアの最小サイズ。座席は後から追加導線で足す
+const TEAM_DEFAULT_SIZE = { width: 200, height: 100 }
 // 配置していない間に渡す寸法。参照を固定しないとゴースト側の初期化が毎レンダー走る
 const IDLE_SIZE = { width: 0, height: 0 }
 // 会議室は座席1つ分より小さくしない。家具は共通の最小辺まで縮められる
@@ -29,12 +31,14 @@ type PlacementFlow =
   | { step: 'idle' }
   | { step: 'category' }
   | { step: 'furniture-picker' }
+  | { step: 'team-form' }
   | { step: 'placing'; request: GhostRequest }
 
 export type ObjectPlacement = {
   isFabOpen: boolean
   isCategoryOpen: boolean
   isFurniturePickerOpen: boolean
+  isTeamFormOpen: boolean
   request: GhostRequest | null
   // ゴーストで掴み直し中の対象。キャンバス側が実体を淡く描くのに使う
   repositioningRef: LayoutObjectRef | null
@@ -42,6 +46,7 @@ export type ObjectPlacement = {
   toggleFab: () => void
   selectCategory: (category: ObjectCategory) => void
   selectFurniture: (kind: FurnitureKind) => void
+  submitTeam: (name: string, color: string) => void
   startReposition: (ref: LayoutObjectRef) => void
   confirm: () => void
   cancel: () => void
@@ -85,6 +90,10 @@ export const useObjectPlacement = (editor: UseLayoutEditorApi, { onPlaced }: Opt
       setFlow({ step: 'furniture-picker' })
       return
     }
+    if (category === 'team') {
+      setFlow({ step: 'team-form' })
+      return
+    }
     if (category === 'facility') {
       setFlow({
         step: 'placing',
@@ -113,6 +122,23 @@ export const useObjectPlacement = (editor: UseLayoutEditorApi, { onPlaced }: Opt
         initialRect: null,
         resizable: true,
         outline: 'solid',
+        selfRef: null,
+      },
+    })
+  }, [])
+
+  // チームの枠は座席数で決まるので、ゴーストでは引き伸ばさせない(破線・リサイズ不可)
+  const submitTeam = useCallback((name: string, color: string) => {
+    setFlow({
+      step: 'placing',
+      request: {
+        target: { type: 'add-team', name, color },
+        label: name,
+        size: TEAM_DEFAULT_SIZE,
+        minSize: TEAM_DEFAULT_SIZE,
+        initialRect: null,
+        resizable: false,
+        outline: 'dashed',
         selfRef: null,
       },
     })
@@ -158,9 +184,11 @@ export const useObjectPlacement = (editor: UseLayoutEditorApi, { onPlaced }: Opt
         ? editor.addFurniture(target.furnitureKind, rect)
         : target.type === 'add-facility'
           ? editor.addFacility(rect)
-          : target.type === 'reposition'
-            ? editor.resizeObject(target.ref, rect)
-            : false
+          : target.type === 'add-team'
+            ? editor.addTeam(target.name, target.color, rect)
+            : target.type === 'reposition'
+              ? editor.resizeObject(target.ref, rect)
+              : false
     if (!ok) return
     setFlow({ step: 'idle' })
     onPlaced?.(rect)
@@ -170,12 +198,14 @@ export const useObjectPlacement = (editor: UseLayoutEditorApi, { onPlaced }: Opt
     isFabOpen: flow.step !== 'idle',
     isCategoryOpen: flow.step === 'category',
     isFurniturePickerOpen: flow.step === 'furniture-picker',
+    isTeamFormOpen: flow.step === 'team-form',
     request,
     repositioningRef: request?.target.type === 'reposition' ? request.target.ref : null,
     placement,
     toggleFab,
     selectCategory,
     selectFurniture,
+    submitTeam,
     startReposition,
     confirm,
     cancel,
