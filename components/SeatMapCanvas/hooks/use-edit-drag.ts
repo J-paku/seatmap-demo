@@ -27,6 +27,7 @@ type EditDragState = {
   snapGuides: SnapGuide[]
   editSelectedSeatId: string | null
   undoChipPos: { x: number; y: number } | null
+  showUndoChipAt: (logicalX: number, logicalY: number) => void
   onSeatEditPointerDown: (seatId: string, e: ReactPointerEvent) => void
   onTeamLabelEditPointerDown: (teamId: string, e: ReactPointerEvent) => void
   clearSelection: () => void
@@ -191,6 +192,7 @@ export const useEditDrag = ({
     snapGuides,
     editSelectedSeatId,
     undoChipPos: undoChip.pos,
+    showUndoChipAt: undoChip.showAt,
     onSeatEditPointerDown,
     onTeamLabelEditPointerDown,
     clearSelection,

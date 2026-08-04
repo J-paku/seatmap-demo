@@ -27,8 +27,22 @@ export const findTeamContaining = (teams: Team[], excludeTeamId: string, candida
     (t) => t.id !== excludeTeamId && pointInRect(candidate.x + candidate.w / 2, candidate.y + candidate.h / 2, areaRect(t.area))
   ) ?? null
 
-// 会議室・家具の新規配置と再配置の可否。座席・チームエリア・会議室・家具の全てが障害物になる。
+// フロアの外へはみ出しているか。キャンバスはフロアの外側まで見えるので、
+// 「画面上は空いて見えるがフロア外」という位置が実在する
+const outsideViewBox = (layout: SeatLayout, candidate: Rect): boolean =>
+  candidate.x < 0 ||
+  candidate.y < 0 ||
+  candidate.x + candidate.w > layout.viewBox.width ||
+  candidate.y + candidate.h > layout.viewBox.height
+
+// 会議室・家具の新規配置と再配置の可否。座席・チームエリア・会議室・家具の全てが障害物になり、
+// フロアの外も置けない場所として扱う。
+//
+// ゴーストの表示判定と発行前の検証が同じ関数を通ることが要点。別々に書くと
+// 「ゴーストは置けると言うのに確定すると何も起きない」という無言の失敗になる。
+//
 // 座席がチームエリアの内側に載るのは正常(所属を表す)なので、その判定はここではなく
 // findTeamContaining が担う — 同じ「重なり」でも意味が違うので混ぜない
 export const placementBlocked = (layout: SeatLayout, self: LayoutObjectRef | null, candidate: Rect): boolean =>
+  outsideViewBox(layout, candidate) ||
   rectsOfKinds(layout, ['seat', 'team', 'facility', 'furniture'], self).some((r) => rectsIntersect(r, candidate))

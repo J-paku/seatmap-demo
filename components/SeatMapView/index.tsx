@@ -5,13 +5,18 @@ import { EditModeLayer } from './components/EditModeLayer'
 import { useEditDialogs } from './hooks/use-edit-dialogs'
 import { useLayoutSave } from './hooks/use-layout-save'
 import { useMinimapPayload } from './hooks/use-minimap-payload'
+import { useObjectPlacement } from './hooks/use-object-placement'
 import { useSeatMapData } from './hooks/use-seat-map-data'
 import { useTeamSeatFocus } from './hooks/use-team-seat-focus'
 import type { FocusFailure } from './hooks/use-team-seat-focus'
+import { AddObjectFab } from '@/components/AddObjectFab'
 import { DetailPanels } from '@/components/DetailPanels'
 import { EmployeeDirectory } from '@/components/EmployeeDirectory'
 import { FacilityHoverCard } from '@/components/FacilityHoverCard'
 import type { FacilityHoverPayload } from '@/components/FacilityHoverCard'
+import { FurniturePickerModal } from '@/components/FurniturePickerModal'
+import { GhostPlacementLayer } from '@/components/GhostPlacementLayer'
+import { ObjectCategorySheet } from '@/components/ObjectCategorySheet'
 import { MySeatButton } from '@/components/MySeatButton'
 import { SeatMapCanvas } from '@/components/SeatMapCanvas'
 import type { SeatMapCanvasHandle } from '@/components/SeatMapCanvas'
@@ -22,6 +27,7 @@ import { useSeatLayout } from '@/lib/mock-loader'
 import { useTheme } from '@/hooks/use-theme'
 import { SELF_EMPLOYEE_ID } from '@/utils/demo-identity'
 import { useLayoutEditor } from '@/hooks/use-layout-editor'
+import type { Rect } from '@/utils/rect'
 import type { Seat } from '@/types'
 
 // 座席マップ画面の組み立て。データ合成・保存・ダイアログ状態はそれぞれのフックが持つ
@@ -42,8 +48,16 @@ export const SeatMapView = () => {
   const directoryEmployees = useMemo(() => [...employeeById.values()], [employeeById])
   const save = useLayoutSave(editor)
   const dialogs = useEditDialogs(editor, employeeById)
-
   const canvasRef = useRef<SeatMapCanvasHandle>(null)
+
+  // 追加導線(FAB → カテゴリ → ピッカー → ゴースト)。
+  // 置いた直後は対象の直下へ「元に戻す」チップを出す — 追加も undo の対象なので、
+  // ドラッグ移動と同じ導線で取り消せるようにする
+  const handlePlaced = useCallback((rect: Rect) => {
+    canvasRef.current?.showUndoChipAt(rect.x + rect.w / 2, rect.y + rect.h)
+  }, [])
+  const placement = useObjectPlacement(editor, { onPlaced: handlePlaced })
+
   const [isDirectoryOpen, setIsDirectoryOpen] = useState(false)
   const [hoverFacility, setHoverFacility] = useState<FacilityHoverPayload | null>(null)
   // 05: 座席未設定(防御分岐)時の一時通知文言
@@ -53,6 +67,13 @@ export const SeatMapView = () => {
     setUnassignedNotice(message)
     window.setTimeout(() => setUnassignedNotice(null), NOTICE_MS)
   }, [])
+
+  // 編集モードへはサイドバーの設定から入る。閉じずに入るとサイドバーの暗幕が
+  // キャンバスと編集用の操作子を覆ったままになる
+  const handleEnterEdit = useCallback(() => {
+    setIsDirectoryOpen(false)
+    editor.enterEditMode()
+  }, [editor])
 
   const handleFocusFailure = useCallback(
     (reason: FocusFailure) => {
@@ -124,7 +145,7 @@ export const SeatMapView = () => {
         onSeatSelect={handleDirectorySeatSelect}
         themeMode={themeMode}
         setTheme={setTheme}
-        onEnterEdit={editor.enterEditMode}
+        onEnterEdit={handleEnterEdit}
         onResetLayout={save.resetLayout}
         onRefresh={() => {}}
         isGaroonConnected
@@ -177,9 +198,37 @@ export const SeatMapView = () => {
         <EditModeLayer
           changedCount={editor.changedCount}
           isSaving={save.isSaving}
+          isPlacing={placement.request !== null}
           onFinish={save.finish}
           onCancel={save.cancel}
         />
+      )}
+
+      {/* 追加導線。ゴースト層はキャンバスの DOM 木の外に置く —
+          中に入れると暗幕がキャンバスの pointerdown を奪い、配置中にパン/ズームできなくなる */}
+      {editor.isEditMode && (
+        <>
+          <AddObjectFab isOpen={placement.isFabOpen} onToggle={placement.toggleFab} />
+          <ObjectCategorySheet
+            isOpen={placement.isCategoryOpen}
+            categories={['furniture', 'facility']}
+            onSelect={placement.selectCategory}
+            onClose={placement.cancel}
+          />
+          <FurniturePickerModal
+            isOpen={placement.isFurniturePickerOpen}
+            onSelect={placement.selectFurniture}
+            onClose={placement.cancel}
+          />
+          {placement.request && (
+            <GhostPlacementLayer
+              request={placement.request}
+              placement={placement.placement}
+              onConfirm={placement.confirm}
+              onCancel={placement.cancel}
+            />
+          )}
+        </>
       )}
 
       {editor.errorToast && <EditErrorToast key={editor.errorToast.id} message={editor.errorToast.message} />}

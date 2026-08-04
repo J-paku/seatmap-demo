@@ -36,6 +36,9 @@ export type SeatMapCanvasHandle = {
   // チーム矩形は画面外でも常に描画されているのでキャンバスを動かさずに測れる。
   // 引数は data-team-id 属性の値 = Team.idPrefix であり Team.id ではない
   measureTeamRect: (idPrefix: string) => DOMRect | null
+  // ゴーストで新規配置したあと、置いた場所へ「元に戻す」チップを出す。
+  // 配置フローはキャンバスの外(SeatMapView)にあるので、変換を持つこちら側へ依頼する
+  showUndoChipAt: (logicalX: number, logicalY: number) => void
 }
 
 export type Rect = { x: number; y: number; w: number; h: number }
