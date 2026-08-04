@@ -16,7 +16,6 @@ interface SettingsPanelProps {
   // デモ固有: 実物のヘッダーには無い機能をここへ移設した(§5.4)
   onEnterEdit?: () => void
   onResetLayout?: () => void
-  isDark: boolean
 }
 
 export function SettingsPanel({
@@ -29,7 +28,6 @@ export function SettingsPanel({
   onOpenAvatarCustomizer,
   onEnterEdit,
   onResetLayout,
-  isDark,
 }: SettingsPanelProps) {
   const [isRefreshing, setIsRefreshing] = useState(false)
 
@@ -51,8 +49,8 @@ export function SettingsPanel({
       <div
         className='flex h-14 shrink-0 items-center px-3'
         style={{
-          borderBottom: `1px solid ${isDark ? '#374151' : '#E5E7EB'}`,
-          backgroundColor: isDark ? '#1F2230' : '#FFFFFF',
+          borderBottom: `1px solid var(--color-border)`,
+          backgroundColor: 'var(--color-surface-elevated)',
         }}
       >
         <button
@@ -63,7 +61,7 @@ export function SettingsPanel({
             onBack()
           }}
           className='flex items-center justify-center w-11 h-11 rounded-lg transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500'
-          style={{ minWidth: 44, minHeight: 44, color: isDark ? '#F8F8F2' : '#1A1A1A' }}
+          style={{ minWidth: 44, minHeight: 44, color: 'var(--color-text-primary)' }}
         >
           <span className='icon-msr-filled text-xl' aria-hidden='true'>
             arrow_back
@@ -71,7 +69,7 @@ export function SettingsPanel({
         </button>
         <span
           className='flex-1 text-center text-base font-semibold'
-          style={{ color: isDark ? '#F8F8F2' : '#1A1A1A' }}
+          style={{ color: 'var(--color-text-primary)' }}
         >
           設定
         </span>
@@ -81,7 +79,7 @@ export function SettingsPanel({
       {/* コンテンツ */}
       <div
         className='flex-1 overflow-y-auto overscroll-contain touch-pan-y'
-        style={{ backgroundColor: isDark ? '#1F2230' : '#FFFFFF' }}
+        style={{ backgroundColor: 'var(--color-surface-elevated)' }}
       >
         {/* アバター編集 */}
         <button
@@ -160,14 +158,14 @@ export function SettingsPanel({
           disabled={isRefreshing}
           className='flex w-full items-center gap-3 px-4 py-4 transition-colors'
           style={{
-            color: isDark ? '#F8F8F2' : '#1A1A1A',
-            borderBottom: `1px solid ${isDark ? '#374151' : '#E5E7EB'}`,
+            color: 'var(--color-text-primary)',
+            borderBottom: `1px solid var(--color-border)`,
           }}
         >
           <span
             className={['icon-msr-filled text-lg', isRefreshing ? 'animate-spin' : ''].join(' ')}
             aria-hidden='true'
-            style={{ color: isDark ? '#B8C0DD' : '#6B7280' }}
+            style={{ color: 'var(--color-text-muted)' }}
           >
             sync
           </span>
@@ -175,14 +173,13 @@ export function SettingsPanel({
         </button>
 
         {/* テーマ */}
-        <ThemeSelector themeMode={themeMode} setTheme={setTheme} isDark={isDark} />
+        <ThemeSelector themeMode={themeMode} setTheme={setTheme} />
       </div>
 
       {/* パネル右下: Garoonログアウト導線 */}
       <GaroonLogoutBar
         isGaroonConnected={isGaroonConnected}
         onGaroonLogout={onGaroonLogout}
-        isDark={isDark}
       />
     </div>
   )
