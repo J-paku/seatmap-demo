@@ -4,6 +4,7 @@ import { EditDialogs } from './components/EditDialogs'
 import { EditModeLayer } from './components/EditModeLayer'
 import { useEditDialogs } from './hooks/use-edit-dialogs'
 import { useLayoutSave } from './hooks/use-layout-save'
+import { useMinimapPayload } from './hooks/use-minimap-payload'
 import { useSeatMapData } from './hooks/use-seat-map-data'
 import { useTeamSeatFocus } from './hooks/use-team-seat-focus'
 import type { FocusFailure } from './hooks/use-team-seat-focus'
@@ -62,6 +63,8 @@ export const SeatMapView = () => {
 
   // 10: チームバウンダリのタップ、および検索・自分の席からのヒット表示を束ねる
   const focus = useTeamSeatFocus({ layout: effectiveLayout, canvasRef, onFailure: handleFocusFailure })
+  // オーバーレイ内ミニマップ用のフロア情報(開いているチームが決まってから組み立てる)
+  const minimap = useMinimapPayload(effectiveLayout, focus.payload?.teamId ?? null)
 
   // 検索でヒットした社員の席 → 所属チームのオーバーレイを開き、その席をヒット表示する。
   // キャンバス側に座席カードは無いので、旧来の座席へのズームは行わない
@@ -145,6 +148,10 @@ export const SeatMapView = () => {
           onSeatClick={openSeatDetail}
           highlightSeatId={focus.highlightSeatId}
           onClearHighlight={focus.clearHighlight}
+          minimapAreas={minimap?.areas}
+          minimapFurniture={minimap?.furniture}
+          minimapTeamArea={minimap?.currentArea}
+          minimapViewBox={minimap?.viewBox}
         />
       )}
       {!editor.isEditMode &&
