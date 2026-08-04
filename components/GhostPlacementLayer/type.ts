@@ -15,6 +15,8 @@ export type GhostRequest = {
   // ヒントとアクションバーに出す対象名
   label: string
   size: { width: number; height: number }
+  // リサイズの下限。会議室は座席1つ分を下回らせない
+  minSize: { width: number; height: number }
   // 再配置のときの現在位置。新規配置では null
   initialRect: Rect | null
   resizable: boolean

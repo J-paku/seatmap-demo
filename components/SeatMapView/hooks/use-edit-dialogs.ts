@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react'
 import type { LayoutEditor } from '../type'
-import type { Employee, Seat, Team } from '@/types'
+import type { Employee, Facility, LayoutObjectRef, Seat, Team } from '@/types'
 
 // 07: 座席削除確認・チーム変更シート・チームレイアウトエディタの開閉と対象解決
 
@@ -12,7 +12,12 @@ type EditDialogs = {
   relayoutTeamId: string | null
   relayoutTargetTeam: Team | null
   relayoutTargetSeatCount: number
+  deleteObjectTarget: Facility | null
   requestSeatDelete: (seatId: string) => void
+  // 会議室は確認を挟み、家具は即時削除する。呼び出し側は結果だけ受け取る
+  requestObjectDelete: (ref: LayoutObjectRef) => void
+  confirmObjectDelete: () => void
+  closeObjectDelete: () => void
   requestTeamChange: (seatId: string) => void
   requestRelayout: (teamId: string) => void
   closeDeleteConfirm: () => void
@@ -20,10 +25,20 @@ type EditDialogs = {
   closeRelayout: () => void
 }
 
-export const useEditDialogs = (editor: LayoutEditor, employeeById: Map<string, Employee>): EditDialogs => {
+type Options = {
+  // 削除の実行そのものは呼び出し側が握る(「元に戻す」チップを同時に出すため)
+  onDeleteObject: (ref: LayoutObjectRef) => void
+}
+
+export const useEditDialogs = (
+  editor: LayoutEditor,
+  employeeById: Map<string, Employee>,
+  { onDeleteObject }: Options
+): EditDialogs => {
   const [deleteConfirmSeatId, setDeleteConfirmSeatId] = useState<string | null>(null)
   const [teamChangeSeatId, setTeamChangeSeatId] = useState<string | null>(null)
   const [relayoutTeamId, setRelayoutTeamId] = useState<string | null>(null)
+  const [deleteObjectId, setDeleteObjectId] = useState<string | null>(null)
 
   // 着席中は確認ダイアログを経由し、空席は即時削除(seat-delete発行)
   const requestSeatDelete = useCallback(
@@ -34,6 +49,21 @@ export const useEditDialogs = (editor: LayoutEditor, employeeById: Map<string, E
     },
     [editor]
   )
+
+  // 家具は名前も持たず誤操作の被害が小さいので即時削除。会議室は名前つきで確認する
+  const requestObjectDelete = useCallback(
+    (ref: LayoutObjectRef) => {
+      if (ref.kind === 'facility') setDeleteObjectId(ref.id)
+      else onDeleteObject(ref)
+    },
+    [onDeleteObject]
+  )
+
+  const confirmObjectDelete = useCallback(() => {
+    if (!deleteObjectId) return
+    onDeleteObject({ kind: 'facility', id: deleteObjectId })
+    setDeleteObjectId(null)
+  }, [deleteObjectId, onDeleteObject])
 
   const deleteTargetSeat = editor.editingLayout?.seats.find((s) => s.id === deleteConfirmSeatId) ?? null
 
@@ -49,7 +79,11 @@ export const useEditDialogs = (editor: LayoutEditor, employeeById: Map<string, E
     relayoutTargetSeatCount: relayoutTeamId
       ? editor.editingLayout?.seats.filter((s) => s.teamId === relayoutTeamId).length ?? 0
       : 0,
+    deleteObjectTarget: editor.editingLayout?.facilities.find((f) => f.id === deleteObjectId) ?? null,
     requestSeatDelete,
+    requestObjectDelete,
+    confirmObjectDelete,
+    closeObjectDelete: useCallback(() => setDeleteObjectId(null), []),
     requestTeamChange: useCallback((seatId: string) => setTeamChangeSeatId(seatId), []),
     requestRelayout: useCallback((teamId: string) => setRelayoutTeamId(teamId), []),
     closeDeleteConfirm: useCallback(() => setDeleteConfirmSeatId(null), []),
