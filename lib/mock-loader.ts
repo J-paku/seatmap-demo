@@ -4,6 +4,7 @@ import type {
   Employee,
   Facility,
   FacilityMeeting,
+  Furniture,
   PixelAvatarConfig,
   ScheduleEvent,
   Seat,
@@ -20,6 +21,7 @@ import avatarsJson from '../mocks/avatars.json'
 import teamsJson from '../mocks/teams.json'
 import seatsJson from '../mocks/seats.json'
 import facilitiesJson from '../mocks/facilities.json'
+import furnitureJson from '../mocks/furniture.json'
 import schedulesJson from '../mocks/schedules.json'
 import facilityMeetingsJson from '../mocks/facility-meetings.json'
 
@@ -42,6 +44,8 @@ const FACILITIES: Facility[] = facilitiesJson.map((f) => ({
   ...f,
   kind: f.kind as Facility['kind'],
 }))
+// 家具の種データ。初期は空で、編集モードで置いたぶんは保存レイアウト側に載る
+const FURNITURE: Furniture[] = furnitureJson as Furniture[]
 // モックは生成時の1日分しか持たないので、日付を「今日」へ寄せてから配る
 // (寄せないと翌日以降は全員在席・予定ゼロになる)
 const SCHEDULES: ScheduleEvent[] = anchorSchedulesToDate(
@@ -141,6 +145,8 @@ export const useSeats = () => useCached('seats', SEATS)
 
 export const useFacilities = () => useCached('facilities', FACILITIES)
 
+export const useFurniture = () => useCached('furniture', FURNITURE)
+
 export const useSchedules = () => useCached('schedules', SCHEDULES)
 
 export const useFacilityMeetings = () => useCached('facility-meetings', FACILITY_MEETINGS)
@@ -155,8 +161,9 @@ export const useSeatLayout = () => {
   const { data: teams } = useTeams()
   const { data: seats } = useSeats()
   const { data: facilities } = useFacilities()
+  const { data: furniture } = useFurniture()
   const composed: SeatLayout | undefined =
-    teams && seats && facilities
+    teams && seats && facilities && furniture
       ? {
           floorId: FLOOR_ID,
           floorName: FLOOR_NAME,
@@ -164,6 +171,7 @@ export const useSeatLayout = () => {
           seats,
           teams,
           facilities,
+          furniture,
         }
       : undefined
 

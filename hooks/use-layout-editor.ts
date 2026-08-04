@@ -4,7 +4,7 @@ import { useErrorToast } from './use-error-toast'
 import type { ErrorToastState } from './use-error-toast'
 import { clampRectToViewBox } from '@/utils/rect'
 import type { Rect } from '@/utils/rect'
-import { findOverlappingSeat, findTeamContaining, seatOverlapsFacility, teamAreaOverlaps } from '@/utils/layout-rules'
+import { findOverlappingSeat, findTeamContaining, seatOverlapsFixture, teamAreaOverlaps } from '@/utils/layout-rules'
 import { fitAreaToSeats, relayoutSeatsInGrid } from '@/utils/seat-relayout'
 import type { Seat, SeatLayout } from '@/types'
 
@@ -60,8 +60,8 @@ export const useLayoutEditor = (sourceLayout: SeatLayout | undefined): UseLayout
         dispatch({ type: 'seat-swap', fromSeatId: seatId, toSeatId: overlapped.id }, [seatId, overlapped.id])
         return
       }
-      // Facility と重なる場合は拒否(ドラッグ原位置へ復帰=何もしない)
-      if (seatOverlapsFacility(layout.facilities, candidate)) {
+      // 会議室・家具と重なる場合は拒否(ドラッグ原位置へ復帰=何もしない)
+      if (seatOverlapsFixture(layout, candidate)) {
         showError(MSG_FACILITY)
         return
       }
@@ -109,7 +109,7 @@ export const useLayoutEditor = (sourceLayout: SeatLayout | undefined): UseLayout
       // fit後のareaが他area/Facilityと交差する場合は適用しない
       const fitted = fitAreaToSeats(relayoutSeatsInGrid(teamSeats, team.area, rows, cols), team.area)
       if (teamAreaOverlaps(layout.teams, teamId, fitted)) return { ok: false, message: MSG_TEAM_OVERLAP }
-      if (seatOverlapsFacility(layout.facilities, fitted)) return { ok: false, message: MSG_FACILITY }
+      if (seatOverlapsFixture(layout, fitted)) return { ok: false, message: MSG_FACILITY }
 
       dispatch({ type: 'team-relayout', teamId, rows, cols }, [teamId, ...teamSeats.map((s) => s.id)])
       return { ok: true }
