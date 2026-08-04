@@ -1,4 +1,5 @@
 import { useMemo, useRef } from 'react'
+import { Minimap } from './components/Minimap'
 import { SeatGridFrame } from './components/SeatGridFrame'
 import { SeatLayoutHeader } from './components/SeatLayoutHeader'
 import { TeamOverlayHeader } from './components/TeamOverlayHeader'
@@ -16,6 +17,7 @@ import { useSwipeDismiss } from '@/hooks/use-swipe-dismiss'
 // 幅 760px を境に、シェル形状・座席グリッド・入力モデルがまるごと切り替わる
 
 export type { TeamOverlayPayload } from './type'
+export type { MinimapArea, MinimapFurniture, MinimapKind, MinimapRect } from './type'
 
 type Props = TeamOverlayProps
 
@@ -28,6 +30,10 @@ export const TeamOverlay = ({
   onSeatClick,
   highlightSeatId = null,
   onClearHighlight,
+  minimapAreas,
+  minimapFurniture,
+  minimapTeamArea = null,
+  minimapViewBox,
 }: Props) => {
   const bodyRef = useRef<HTMLDivElement>(null)
   const isCompactMobile = useIsCompactMobile()
@@ -114,6 +120,16 @@ export const TeamOverlay = ({
               onClearHighlight={onClearHighlight}
             />
           </section>
+          {/* ミニマップは座席グリッドの下。渡されなければ描かない */}
+          {minimapAreas && minimapFurniture && (
+            <Minimap
+              areas={minimapAreas}
+              furniture={minimapFurniture}
+              currentArea={minimapTeamArea}
+              viewBox={minimapViewBox}
+              teamName={teamName}
+            />
+          )}
         </div>
       </div>
     </div>
