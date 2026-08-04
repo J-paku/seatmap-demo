@@ -1,8 +1,9 @@
-import { useEffect, useMemo } from 'react'
+import { useEffect } from 'react'
+import { FacilityCurrentEvent } from './components/FacilityCurrentEvent'
 import { FacilityPanelHeader } from './components/FacilityPanelHeader'
 import { FacilityScheduleSection } from './components/FacilityScheduleSection'
 import { useEmployees, useFacilities, useFacilityMeetings } from '@/lib/mock-loader'
-import { deriveFacilityState, minToHHMM } from '@/utils/facility-status'
+import { deriveFacilityState } from '@/utils/facility-status'
 import type { FacilityState } from '@/utils/facility-status'
 import { useSelectedDate } from '@/contexts/selected-date-context'
 import { useFacilityScheduleForDate } from '@/hooks/use-facility-schedule-for-date'
@@ -19,7 +20,6 @@ export const FacilityDetail = ({ facilityId }: { facilityId: string }) => {
   const { closeTop } = useDetailPanel()
   const nowMs = useQuantizedClock(isTodaySelected)
 
-  const empById = useMemo(() => new Map((employees ?? []).map((e) => [e.id, e])), [employees])
   const facility = facilities?.find((f) => f.id === facilityId)
 
   const { meetings: scheduleMeetings, isLoading: isFetchLoading } = useFacilityScheduleForDate({
@@ -38,7 +38,6 @@ export const FacilityDetail = ({ facilityId }: { facilityId: string }) => {
   const now = new Date(nowMs)
   const nowMin = now.getHours() * 60 + now.getMinutes()
   const state: FacilityState = deriveFacilityState(facility, meetings ?? [], nowMin)
-  const nameOf = (id: string) => empById.get(id)?.name ?? id
 
   return (
     <div className='facility-detail'>
@@ -51,19 +50,7 @@ export const FacilityDetail = ({ facilityId }: { facilityId: string }) => {
       {facility.capacity != null && <span className='fac-cap'>定員{facility.capacity}名</span>}
 
       {isTodaySelected && state.current && (
-        <div className='fac-current'>
-          <div className='fac-current-title'>{state.current.title}</div>
-          <div className='fac-current-time'>
-            {minToHHMM(state.current.startMin)}–{minToHHMM(state.current.endMin)} · 残り{state.current.endMin - nowMin}分
-          </div>
-          <div className='fac-current-org'>主催: {nameOf(state.current.organizerId)}</div>
-          <div className='fac-parts-label'>参加者 {state.current.participantIds.length}名</div>
-          <ul className='fac-parts'>
-            {state.current.participantIds.map((id) => (
-              <li key={id}>{nameOf(id)}</li>
-            ))}
-          </ul>
-        </div>
+        <FacilityCurrentEvent meeting={state.current} nowMin={nowMin} employees={employees ?? []} />
       )}
 
       <FacilityScheduleSection
