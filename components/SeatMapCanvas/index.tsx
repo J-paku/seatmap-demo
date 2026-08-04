@@ -8,6 +8,7 @@ import { useViewport } from './hooks/use-viewport'
 import { useZoomControls } from './hooks/use-zoom-controls'
 import type { SeatMapCanvasHandle, SeatMapCanvasProps } from './type'
 import { FacilityBlock } from '@/components/FacilityBlock'
+import { FurnitureBlock } from '@/components/FurnitureBlock'
 import { SeatMirrorLayer } from '@/components/SeatMirrorLayer'
 import { SEATMAP_BG_ID } from '@/components/SheetShell'
 import { ZoomControls } from '@/components/ZoomControls'
@@ -68,7 +69,11 @@ export const SeatMapCanvas = forwardRef<SeatMapCanvasHandle, Props>(function Sea
     [viewport.containerRef]
   )
 
-  useImperativeHandle(ref, () => ({ measureTeamRect }), [measureTeamRect])
+  useImperativeHandle(
+    ref,
+    () => ({ measureTeamRect, showUndoChipAt: edit.showUndoChipAt }),
+    [measureTeamRect, edit.showUndoChipAt]
+  )
 
   // 07: 空き領域クリックで座席の編集選択を解除(各要素側は stopPropagation 済み)
   const handleBackgroundClick = useCallback(() => {
@@ -112,6 +117,9 @@ export const SeatMapCanvas = forwardRef<SeatMapCanvasHandle, Props>(function Sea
             lod={view.lod}
             onHover={onFacilityHover}
           />
+        ))}
+        {layout.furniture.map((f) => (
+          <FurnitureBlock key={f.id} furniture={f} counterScale={view.counterScale} isEditMode={isEditMode} />
         ))}
         {isEditMode && (
           <EditSeatLayer

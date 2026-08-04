@@ -4,9 +4,9 @@ import { useErrorToast } from './use-error-toast'
 import type { ErrorToastState } from './use-error-toast'
 import { clampRectToViewBox } from '@/utils/rect'
 import type { Rect } from '@/utils/rect'
-import { findOverlappingSeat, findTeamContaining, seatOverlapsFixture, teamAreaOverlaps } from '@/utils/layout-rules'
+import { findOverlappingSeat, findTeamContaining, placementBlocked, seatOverlapsFixture, teamAreaOverlaps } from '@/utils/layout-rules'
 import { fitAreaToSeats, relayoutSeatsInGrid } from '@/utils/seat-relayout'
-import type { Seat, SeatLayout } from '@/types'
+import type { FurnitureKind, Seat, SeatLayout } from '@/types'
 
 // 07-admin-edit: 編集アクションの発行口。セッション管理は useEditSession、
 // 判定規則は utils/layout-rules が持ち、ここは「発行してよいか」を決めるだけ。
@@ -28,6 +28,8 @@ export type UseLayoutEditorApi = {
   deleteSeat: (seatId: string) => void
   moveTeam: (teamId: string, x: number, y: number) => void
   relayoutTeam: (teamId: string, rows: number, cols: number) => { ok: true } | { ok: false; message: string }
+  addFurniture: (furnitureKind: FurnitureKind, rect: Rect) => boolean
+  addFacility: (rect: Rect) => boolean
 }
 
 const seatsOfTeam = (seats: Seat[], teamId: string): Seat[] => seats.filter((s) => s.teamId === teamId)
@@ -35,6 +37,7 @@ const seatsOfTeam = (seats: Seat[], teamId: string): Seat[] => seats.filter((s) 
 const MSG_FACILITY = '設備と重なるため配置できません'
 const MSG_TEAM_OVERLAP = 'チームエリアが重なるため適用できません'
 const MSG_NOT_FIT = '座席が収まらないため適用できません'
+const MSG_OVERLAP = 'ここには配置できません'
 
 export const useLayoutEditor = (sourceLayout: SeatLayout | undefined): UseLayoutEditorApi => {
   const session = useEditSession(sourceLayout)
@@ -117,6 +120,48 @@ export const useLayoutEditor = (sourceLayout: SeatLayout | undefined): UseLayout
     [editingLayout, dispatch]
   )
 
+  // 新規配置の共通ガード。ゴースト側の表示判定と同じ placementBlocked を通す。
+  // ここで座標をクランプして押し込むと、ゴーストが指した場所と違う所へ静かに置かれるので、
+  // はみ出しはクランプせず拒否する
+  const guardPlacement = useCallback(
+    (rect: Rect): Rect | null => {
+      const layout = editingLayout
+      if (!layout) return null
+      if (placementBlocked(layout, null, rect)) {
+        showError(MSG_OVERLAP)
+        return null
+      }
+      return rect
+    },
+    [editingLayout, showError]
+  )
+
+  const addFurniture = useCallback(
+    (furnitureKind: FurnitureKind, rect: Rect): boolean => {
+      const placed = guardPlacement(rect)
+      if (!placed) return false
+      dispatch(
+        { type: 'furniture-add', furnitureKind, x: placed.x, y: placed.y, width: placed.w, height: placed.h },
+        [`furniture:${furnitureKind}:${placed.x}:${placed.y}`]
+      )
+      return true
+    },
+    [guardPlacement, dispatch]
+  )
+
+  const addFacility = useCallback(
+    (rect: Rect): boolean => {
+      const placed = guardPlacement(rect)
+      if (!placed) return false
+      dispatch(
+        { type: 'facility-add', x: placed.x, y: placed.y, width: placed.w, height: placed.h },
+        [`facility:${placed.x}:${placed.y}`]
+      )
+      return true
+    },
+    [guardPlacement, dispatch]
+  )
+
   return {
     isEditMode: session.isEditMode,
     editingLayout,
@@ -136,5 +181,7 @@ export const useLayoutEditor = (sourceLayout: SeatLayout | undefined): UseLayout
     deleteSeat: useCallback((seatId: string) => dispatch({ type: 'seat-delete', seatId }, [seatId]), [dispatch]),
     moveTeam,
     relayoutTeam,
+    addFurniture,
+    addFacility,
   }
 }

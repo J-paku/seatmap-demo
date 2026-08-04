@@ -22,7 +22,7 @@ export const useFacilityDelete = ({ facilityId, facilityName, onDeleted, onClose
   const confirm = useCallback(async () => {
     if (!layout || isDeleting) return
     setIsDeleting(true)
-    await persistLayout(applyLayoutAction(layout, { type: 'facility-delete', facilityId }))
+    await persistLayout(applyLayoutAction(layout, { type: 'object-delete', kind: 'facility', id: facilityId }))
     setIsDeleting(false)
     setIsDialogOpen(false)
     onDeleted(facilityName)

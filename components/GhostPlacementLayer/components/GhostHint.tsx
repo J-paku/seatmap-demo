@@ -23,7 +23,7 @@ export const GhostHint = ({ rect, blocked }: Props) => {
       role='status'
     >
       {blocked
-        ? 'ほかのものと重なっています。位置をずらしてください'
+        ? 'ここには置けません。位置をずらしてください'
         : 'キャンバスを動かすか枠をドラッグして位置を決めます'}
     </p>
   )
