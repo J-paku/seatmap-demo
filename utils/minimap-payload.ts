@@ -1,10 +1,11 @@
 // チームオーバーレイのミニマップへ渡すデータを SeatLayout から組み立てる純関数。
 // チーム色の解決と「ミニマップ上でどう描き分けるか」の区分をここだけで決める。
 // 組み立てを呼び出し側に散らすと同じ判定が二重化するため、team-overlay-payload.ts と同じ方針で共通化する
+import { isStructuralKind } from './furniture-catalog'
 import { resolveTeamColor } from './team-colors'
 import type { TeamColorEntry } from './team-colors'
 import type { MinimapArea, MinimapFurniture, MinimapKind } from '@/components/TeamOverlay'
-import type { Facility, SeatLayout, Team } from '@/types'
+import type { Facility, Furniture, SeatLayout, Team } from '@/types'
 
 export type MinimapPayload = {
   areas: MinimapArea[]
@@ -36,6 +37,17 @@ const toFurniture = (facility: Facility): MinimapFurniture => ({
   height: facility.height,
 })
 
+// 家具は名前を出さない。建設設備(壁・柱など)は濃く、その他のオブジェクトは薄く描く
+const fromFurniture = (item: Furniture): MinimapFurniture => ({
+  id: item.id,
+  kind: isStructuralKind(item.kind) ? 'structure' : 'object',
+  name: '',
+  x: item.x,
+  y: item.y,
+  width: item.width,
+  height: item.height,
+})
+
 export const buildMinimapPayload = (
   layout: SeatLayout,
   colorMap: Map<string, TeamColorEntry>,
@@ -45,8 +57,7 @@ export const buildMinimapPayload = (
   const current = layout.teams.find((team) => team.id === currentTeamId)
   return {
     areas,
-    // 家具(Furniture)が入ったらこの配列へ連結するだけでミニマップ側は無改修で載る
-    furniture: layout.facilities.map(toFurniture),
+    furniture: [...layout.facilities.map(toFurniture), ...layout.furniture.map(fromFurniture)],
     currentArea: current ? toArea(current, colorMap) : null,
     viewBox: layout.viewBox,
   }

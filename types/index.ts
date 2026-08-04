@@ -226,6 +226,39 @@ export type Facility = {
   facilityId?: string
 }
 
+// 家具。会議室(Facility)とは別型にする。Facility.kind へ家具種別を混ぜると
+// 既存の会議室ロジック(状態色・ホバーカード・詳細パネル)が全て巻き添えになるため分ける
+export type FurnitureKind =
+  | 'wall'
+  | 'column'
+  | 'stairs'
+  | 'door'
+  | 'window'
+  | 'sofa'
+  | 'table'
+  | 'shelf'
+  | 'plant'
+  | 'bed'
+
+// name は建設設備(壁・柱・階段・ドア・窓)では空文字固定。ラベル・既定サイズ・
+// グループ分けは utils/furniture-catalog.ts が持つ
+export type Furniture = {
+  id: string
+  kind: FurnitureKind
+  name: string
+  x: number
+  y: number
+  width: number
+  height: number
+  rotation: 0 | 90 | 180 | 270
+}
+
+// 編集対象になりうるオブジェクトの種別。当たり判定・吸着・選択の対象を
+// 1つの列挙で束ね、種別追加時の取りこぼしを型で塞ぐ(utils/layout-objects.ts)
+export type LayoutObjectKind = 'seat' | 'team' | 'facility' | 'furniture'
+
+export type LayoutObjectRef = { kind: LayoutObjectKind; id: string }
+
 // 10/11: 会議室の予約状態(available=空室 / in_meeting=会議中 / upcoming=まもなく / unlinked=施設未連携)
 export type FacilityStatus = 'available' | 'in_meeting' | 'upcoming' | 'unlinked'
 
@@ -240,7 +273,9 @@ export type FacilityMeeting = {
   participantIds: string[]
 }
 
-// フロアレイアウト(ローダーが teams+seats+facilities を合成)
+// フロアレイアウト(ローダーが teams+seats+facilities+furniture を合成)。
+// furniture は必須にして、保存済みレイアウトの読み込み口(lib/layout-persistence.ts)で
+// 既定 [] を埋める。任意にすると各利用側が undefined を意識する必要が出る
 export type SeatLayout = {
   floorId: string
   floorName: string
@@ -248,6 +283,7 @@ export type SeatLayout = {
   seats: Seat[]
   teams: Team[]
   facilities: Facility[]
+  furniture: Furniture[]
 }
 
 // 予定イベント
