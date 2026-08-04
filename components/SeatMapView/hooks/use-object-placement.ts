@@ -6,9 +6,12 @@ import { useGhostPlacement } from '@/hooks/use-ghost-placement'
 import type { GhostPlacement } from '@/hooks/use-ghost-placement'
 import type { UseLayoutEditorApi } from '@/hooks/use-layout-editor'
 import { FURNITURE_DEFAULT_SIZE, FURNITURE_KIND_LABEL } from '@/utils/furniture-catalog'
+import { rectOfRef } from '@/utils/layout-objects'
 import { placementBlocked } from '@/utils/layout-rules'
 import type { Rect } from '@/utils/rect'
-import type { FurnitureKind } from '@/types'
+import { DEFAULT_SEAT_HEIGHT, DEFAULT_SEAT_WIDTH } from '@/utils/seat-relayout'
+import { GHOST_MIN_SIZE } from '@/hooks/use-ghost-placement'
+import type { FurnitureKind, LayoutObjectRef } from '@/types'
 
 // 追加導線の状態機械。FAB → カテゴリ → (家具なら)ピッカー → ゴースト → 確定。
 // ゴーストの幾何は use-ghost-placement、置けるかどうかの規則は utils/layout-rules が持ち、
@@ -18,6 +21,9 @@ import type { FurnitureKind } from '@/types'
 const FACILITY_DEFAULT_SIZE = { width: 200, height: 150 }
 // 配置していない間に渡す寸法。参照を固定しないとゴースト側の初期化が毎レンダー走る
 const IDLE_SIZE = { width: 0, height: 0 }
+// 会議室は座席1つ分より小さくしない。家具は共通の最小辺まで縮められる
+const FACILITY_MIN_SIZE = { width: DEFAULT_SEAT_WIDTH, height: DEFAULT_SEAT_HEIGHT }
+const FURNITURE_MIN_SIZE = { width: GHOST_MIN_SIZE, height: GHOST_MIN_SIZE }
 
 type PlacementFlow =
   | { step: 'idle' }
@@ -30,10 +36,13 @@ export type ObjectPlacement = {
   isCategoryOpen: boolean
   isFurniturePickerOpen: boolean
   request: GhostRequest | null
+  // ゴーストで掴み直し中の対象。キャンバス側が実体を淡く描くのに使う
+  repositioningRef: LayoutObjectRef | null
   placement: GhostPlacement
   toggleFab: () => void
   selectCategory: (category: ObjectCategory) => void
   selectFurniture: (kind: FurnitureKind) => void
+  startReposition: (ref: LayoutObjectRef) => void
   confirm: () => void
   cancel: () => void
 }
@@ -62,6 +71,7 @@ export const useObjectPlacement = (editor: UseLayoutEditorApi, { onPlaced }: Opt
     size: request?.size ?? IDLE_SIZE,
     initialRect: request?.initialRect ?? null,
     resizable: request?.resizable ?? false,
+    minSize: request?.minSize,
     siblings,
     isBlocked,
   })
@@ -82,6 +92,7 @@ export const useObjectPlacement = (editor: UseLayoutEditorApi, { onPlaced }: Opt
           target: { type: 'add-facility' },
           label: '会議室',
           size: FACILITY_DEFAULT_SIZE,
+          minSize: FACILITY_MIN_SIZE,
           initialRect: null,
           resizable: true,
           outline: 'solid',
@@ -98,6 +109,7 @@ export const useObjectPlacement = (editor: UseLayoutEditorApi, { onPlaced }: Opt
         target: { type: 'add-furniture', furnitureKind: kind },
         label: FURNITURE_KIND_LABEL[kind],
         size: FURNITURE_DEFAULT_SIZE[kind],
+        minSize: FURNITURE_MIN_SIZE,
         initialRect: null,
         resizable: true,
         outline: 'solid',
@@ -105,6 +117,33 @@ export const useObjectPlacement = (editor: UseLayoutEditorApi, { onPlaced }: Opt
       },
     })
   }, [])
+
+  // 既存オブジェクトを現在位置・現在サイズのゴーストで掴み直す
+  const startReposition = useCallback(
+    (ref: LayoutObjectRef) => {
+      if (!layout) return
+      const rect = rectOfRef(layout, ref)
+      if (!rect) return
+      const name =
+        ref.kind === 'facility'
+          ? layout.facilities.find((f) => f.id === ref.id)?.name ?? '会議室'
+          : layout.furniture.find((f) => f.id === ref.id)?.name || '家具'
+      setFlow({
+        step: 'placing',
+        request: {
+          target: { type: 'reposition', ref },
+          label: name,
+          size: { width: rect.w, height: rect.h },
+          minSize: ref.kind === 'facility' ? FACILITY_MIN_SIZE : FURNITURE_MIN_SIZE,
+          initialRect: rect,
+          resizable: true,
+          outline: 'solid',
+          selfRef: ref,
+        },
+      })
+    },
+    [layout]
+  )
 
   const cancel = useCallback(() => setFlow({ step: 'idle' }), [])
 
@@ -119,7 +158,9 @@ export const useObjectPlacement = (editor: UseLayoutEditorApi, { onPlaced }: Opt
         ? editor.addFurniture(target.furnitureKind, rect)
         : target.type === 'add-facility'
           ? editor.addFacility(rect)
-          : false
+          : target.type === 'reposition'
+            ? editor.resizeObject(target.ref, rect)
+            : false
     if (!ok) return
     setFlow({ step: 'idle' })
     onPlaced?.(rect)
@@ -130,10 +171,12 @@ export const useObjectPlacement = (editor: UseLayoutEditorApi, { onPlaced }: Opt
     isCategoryOpen: flow.step === 'category',
     isFurniturePickerOpen: flow.step === 'furniture-picker',
     request,
+    repositioningRef: request?.target.type === 'reposition' ? request.target.ref : null,
     placement,
     toggleFab,
     selectCategory,
     selectFurniture,
+    startReposition,
     confirm,
     cancel,
   }

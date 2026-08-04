@@ -6,7 +6,9 @@ import { clampRectToViewBox } from '@/utils/rect'
 import type { Rect } from '@/utils/rect'
 import { findOverlappingSeat, findTeamContaining, placementBlocked, seatOverlapsFixture, teamAreaOverlaps } from '@/utils/layout-rules'
 import { fitAreaToSeats, relayoutSeatsInGrid } from '@/utils/seat-relayout'
-import type { FurnitureKind, Seat, SeatLayout } from '@/types'
+import { rectOfRef } from '@/utils/layout-objects'
+import type { EditableObjectKind } from '@/utils/layout-actions'
+import type { FurnitureKind, LayoutObjectRef, Seat, SeatLayout } from '@/types'
 
 // 07-admin-edit: 編集アクションの発行口。セッション管理は useEditSession、
 // 判定規則は utils/layout-rules が持ち、ここは「発行してよいか」を決めるだけ。
@@ -30,6 +32,9 @@ export type UseLayoutEditorApi = {
   relayoutTeam: (teamId: string, rows: number, cols: number) => { ok: true } | { ok: false; message: string }
   addFurniture: (furnitureKind: FurnitureKind, rect: Rect) => boolean
   addFacility: (rect: Rect) => boolean
+  moveObject: (ref: LayoutObjectRef, x: number, y: number) => void
+  resizeObject: (ref: LayoutObjectRef, rect: Rect) => boolean
+  deleteObject: (ref: LayoutObjectRef) => void
 }
 
 const seatsOfTeam = (seats: Seat[], teamId: string): Seat[] => seats.filter((s) => s.teamId === teamId)
@@ -162,6 +167,55 @@ export const useLayoutEditor = (sourceLayout: SeatLayout | undefined): UseLayout
     [guardPlacement, dispatch]
   )
 
+  // 会議室・家具の移動。ゴースト配置と同じ placementBlocked を通し、自分自身だけ障害物から外す
+  const moveObject = useCallback(
+    (ref: LayoutObjectRef, x: number, y: number) => {
+      const layout = editingLayout
+      if (!layout) return
+      const rect = rectOfRef(layout, ref)
+      if (!rect) return
+      const candidate: Rect = { x, y, w: rect.w, h: rect.h }
+      if (placementBlocked(layout, ref, candidate)) {
+        showError(MSG_OVERLAP)
+        return
+      }
+      dispatch({ type: 'object-move', kind: ref.kind as EditableObjectKind, id: ref.id, x, y }, [ref.id])
+    },
+    [editingLayout, dispatch, showError]
+  )
+
+  const resizeObject = useCallback(
+    (ref: LayoutObjectRef, rect: Rect): boolean => {
+      const layout = editingLayout
+      if (!layout) return false
+      if (placementBlocked(layout, ref, rect)) {
+        showError(MSG_OVERLAP)
+        return false
+      }
+      dispatch(
+        {
+          type: 'object-resize',
+          kind: ref.kind as EditableObjectKind,
+          id: ref.id,
+          x: rect.x,
+          y: rect.y,
+          width: rect.w,
+          height: rect.h,
+        },
+        [ref.id]
+      )
+      return true
+    },
+    [editingLayout, dispatch, showError]
+  )
+
+  const deleteObject = useCallback(
+    (ref: LayoutObjectRef) => {
+      dispatch({ type: 'object-delete', kind: ref.kind as EditableObjectKind, id: ref.id }, [ref.id])
+    },
+    [dispatch]
+  )
+
   return {
     isEditMode: session.isEditMode,
     editingLayout,
@@ -183,5 +237,8 @@ export const useLayoutEditor = (sourceLayout: SeatLayout | undefined): UseLayout
     relayoutTeam,
     addFurniture,
     addFacility,
+    moveObject,
+    resizeObject,
+    deleteObject,
   }
 }

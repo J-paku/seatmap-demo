@@ -1,4 +1,5 @@
 import { DeleteConfirmDialog } from '@/components/edit/DeleteConfirmDialog'
+import { ObjectDeleteDialog } from '@/components/edit/ObjectDeleteDialog'
 import { TeamChangeSheet } from '@/components/edit/TeamChangeSheet'
 import { TeamRelayoutModal } from '@/components/edit/TeamRelayoutModal'
 import { resolveTeamColor } from '@/utils/team-colors'
@@ -26,6 +27,14 @@ export const EditDialogs = ({ editor, dialogs }: Props) => {
             editor.deleteSeat(dialogs.deleteConfirmSeatId as string)
             dialogs.closeDeleteConfirm()
           }}
+        />
+      )}
+
+      {dialogs.deleteObjectTarget && (
+        <ObjectDeleteDialog
+          facilityName={dialogs.deleteObjectTarget.name}
+          onCancel={dialogs.closeObjectDelete}
+          onConfirm={dialogs.confirmObjectDelete}
         />
       )}
 

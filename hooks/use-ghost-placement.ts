@@ -32,6 +32,8 @@ type Options = {
   // 再配置のとき現在の論理矩形。新規配置では省く
   initialRect?: Rect | null
   resizable: boolean
+  // 最小寸法の上書き(会議室は座席1つ分 105×75 を下回らせない)
+  minSize?: { width: number; height: number }
   // 吸着相手(viewBox 系)
   siblings: Rect[]
   // 置けるかどうかの判定。ポリシーは utils/layout-rules 側に置き、ここは呼ぶだけ
@@ -71,6 +73,7 @@ export const useGhostPlacement = ({
   size,
   initialRect = null,
   resizable,
+  minSize = { width: GHOST_MIN_SIZE, height: GHOST_MIN_SIZE },
   siblings,
   isBlocked,
 }: Options): GhostPlacement => {
@@ -88,11 +91,13 @@ export const useGhostPlacement = ({
   const sizeRef = useRef(size)
   const siblingsRef = useRef(siblings)
   const dragRef = useRef<DragState>({ kind: 'none' })
+  const minSizeRef = useRef(minSize)
 
   siblingsRef.current = siblings
   transformRef.current = transform
   centerRef.current = center
   sizeRef.current = logicalSize
+  minSizeRef.current = minSize
 
   // 画面座標 → viewBox 座標
   const toLogicalRect = useCallback(
@@ -265,7 +270,11 @@ export const useGhostPlacement = ({
       // リサイズは論理座標で計算する。掴んだ反対側エッジは論理位置が動かない
       const dx = (e.clientX - drag.startX) / t.scale
       const dy = (e.clientY - drag.startY) / t.scale
-      const resized = resizeRect(drag.startRect, drag.handle, dx, dy, GHOST_MIN_SIZE, GHOST_MAX_SIZE)
+      const resized = resizeRect(drag.startRect, drag.handle, dx, dy, {
+        minW: minSizeRef.current.width,
+        minH: minSizeRef.current.height,
+        max: GHOST_MAX_SIZE,
+      })
       const snap = computeSnap(resized, siblingsRef.current, SNAP_THRESHOLD_SCREEN_PX / t.scale)
       const snappedRect: Rect = { ...resized, x: snap.x, y: snap.y }
       sizeRef.current = { width: snappedRect.w, height: snappedRect.h }

@@ -27,8 +27,9 @@ import { useSeatLayout } from '@/lib/mock-loader'
 import { useTheme } from '@/hooks/use-theme'
 import { SELF_EMPLOYEE_ID } from '@/utils/demo-identity'
 import { useLayoutEditor } from '@/hooks/use-layout-editor'
+import { rectOfRef } from '@/utils/layout-objects'
 import type { Rect } from '@/utils/rect'
-import type { Seat } from '@/types'
+import type { LayoutObjectRef, Seat } from '@/types'
 
 // 座席マップ画面の組み立て。データ合成・保存・ダイアログ状態はそれぞれのフックが持つ
 
@@ -47,16 +48,26 @@ export const SeatMapView = () => {
   // 移植版サイドバーは社員配列を直接受け取る
   const directoryEmployees = useMemo(() => [...employeeById.values()], [employeeById])
   const save = useLayoutSave(editor)
-  const dialogs = useEditDialogs(editor, employeeById)
   const canvasRef = useRef<SeatMapCanvasHandle>(null)
 
-  // 追加導線(FAB → カテゴリ → ピッカー → ゴースト)。
-  // 置いた直後は対象の直下へ「元に戻す」チップを出す — 追加も undo の対象なので、
-  // ドラッグ移動と同じ導線で取り消せるようにする
-  const handlePlaced = useCallback((rect: Rect) => {
+  // 追加・削除の直後は対象の直下へ「元に戻す」チップを出す。
+  // どちらも undo スタックに載るので、ドラッグ移動と同じ導線で取り消せるようにする
+  const showUndoChipAt = useCallback((rect: Rect) => {
     canvasRef.current?.showUndoChipAt(rect.x + rect.w / 2, rect.y + rect.h)
   }, [])
-  const placement = useObjectPlacement(editor, { onPlaced: handlePlaced })
+
+  // 削除の実行はここに集約する。ダイアログ経由(会議室)も即時(家具)も同じ後始末を通す
+  const handleDeleteObject = useCallback(
+    (ref: LayoutObjectRef) => {
+      const rect = effectiveLayout ? rectOfRef(effectiveLayout, ref) : null
+      editor.deleteObject(ref)
+      if (rect) showUndoChipAt(rect)
+    },
+    [editor, effectiveLayout, showUndoChipAt]
+  )
+
+  const dialogs = useEditDialogs(editor, employeeById, { onDeleteObject: handleDeleteObject })
+  const placement = useObjectPlacement(editor, { onPlaced: showUndoChipAt })
 
   const [isDirectoryOpen, setIsDirectoryOpen] = useState(false)
   const [hoverFacility, setHoverFacility] = useState<FacilityHoverPayload | null>(null)
@@ -132,6 +143,10 @@ export const SeatMapView = () => {
           onTeamLabelTap={dialogs.requestRelayout}
           onSeatChangeTeamRequest={dialogs.requestTeamChange}
           onSeatDeleteRequest={dialogs.requestSeatDelete}
+          onObjectMove={editor.moveObject}
+          onObjectRepositionRequest={placement.startReposition}
+          onObjectDeleteRequest={dialogs.requestObjectDelete}
+          repositioningRef={placement.repositioningRef}
           onUndo={editor.undo}
           canUndo={editor.canUndo}
         />
