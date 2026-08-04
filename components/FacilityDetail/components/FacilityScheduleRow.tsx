@@ -1,5 +1,6 @@
 import { minToHHMM } from '@/utils/facility-status'
 import type { FacilityMeeting } from '@/types'
+import type { AttendeeHandlers } from '../type'
 
 type Props = {
   meeting: FacilityMeeting
@@ -7,11 +8,12 @@ type Props = {
   isNow: boolean
   isDone: boolean
   isNext: boolean
+  attendee: AttendeeHandlers
 }
 
 // 予約一覧の1行。進行中/終了済み/次の判定は本日を表示している時だけ親から渡る
 // 参加者ボタンの data-attendee-popover は STEP6 の外側クリック判定が依存するため必須
-export const FacilityScheduleRow = ({ meeting, organizerName, isNow, isDone, isNext }: Props) => {
+export const FacilityScheduleRow = ({ meeting, organizerName, isNow, isDone, isNext, attendee }: Props) => {
   const attendeeCount = meeting.participantIds.length
 
   return (
@@ -34,6 +36,9 @@ export const FacilityScheduleRow = ({ meeting, organizerName, isNow, isDone, isN
           className='fac-attendee-btn'
           data-attendee-popover=''
           aria-label={`参加者 ${attendeeCount}名を表示`}
+          onMouseEnter={(e) => attendee.onEnter(meeting.id, e.currentTarget)}
+          onMouseLeave={attendee.onLeave}
+          onClick={(e) => attendee.onToggle(meeting.id, e.currentTarget)}
         >
           <span className='icon-msr-filled fac-attendee-icon' aria-hidden='true'>
             people
