@@ -1,4 +1,4 @@
-import { DEFAULT_SEAT_HEIGHT, DEFAULT_SEAT_WIDTH, RELAYOUT_COL_GAP } from './seat-relayout'
+import { DEFAULT_SEAT_HEIGHT, DEFAULT_SEAT_WIDTH, RELAYOUT_COL_GAP, RELAYOUT_ROW_GAP } from './seat-relayout'
 import type { Seat } from '@/types'
 
 // 07-admin-edit: チームオーバーレイの座席編集グリッド初案(`SeatGridDraft`)を作る純粋関数群
@@ -12,14 +12,8 @@ import type { Seat } from '@/types'
 //
 // 全演算はイミュータブル。ガード違反時は元の`draft`をそのまま返す(呼び出し側にエラー分岐を作らせない)
 
-// `seat-relayout.ts`の`RELAYOUT_ROW_GAP`は同ファイル内専用でexportされていないため、
-// このファイルから直接importできない。行ピッチをグリッドリファク結果と揃えるため
-// 同じ値をここに複製する。値を変える場合は両ファイルを揃えること
-// (`RELAYOUT_ROW_GAP`をexportへ昇格できれば、この複製は不要になる)
-const ROW_GAP = 20
-
 const COL_PITCH = DEFAULT_SEAT_WIDTH + RELAYOUT_COL_GAP
-const ROW_PITCH = DEFAULT_SEAT_HEIGHT + ROW_GAP
+const ROW_PITCH = DEFAULT_SEAT_HEIGHT + RELAYOUT_ROW_GAP
 
 // グリッドセル1件の番地
 export type GridCell = { row: number; col: number }
