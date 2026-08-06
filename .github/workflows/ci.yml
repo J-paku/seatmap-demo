@@ -1,0 +1,45 @@
+# push / PR ごとに静的検査を走らせる。
+# 型・Lint・ビルドは1ジョブに直列で置く(前段が落ちたら後段を走らせる意味が無いため)。
+# 未使用検出(knip)は独立ジョブにする — 実装途中の未配線モジュールで赤くなる時期があり、
+# それで型やビルドの結果まで隠れると検査全体が見られなくなる。
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+# 同じブランチへ連続 push したときは最新だけ検査する
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Lint
+        run: npm run lint
+      - name: Build
+        run: npm run build
+
+  unused:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - name: Knip
+        run: npm run knip
