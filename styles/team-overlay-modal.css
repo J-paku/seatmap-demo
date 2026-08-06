@@ -352,6 +352,10 @@
   background: var(--color-surface-sunken);
   box-shadow: none;
   cursor: default;
+  /* disabled ボタンはブラウザが click を一切発火しないため、パネル側の
+     HIT 解除ハンドラまでイベントが届かない。クリックを素通しして背後の
+     グリッド枠(data-seat-id を持たない)に当てることでハンドラに拾わせる */
+  pointer-events: none;
 }
 
 .team-ovl-card.is-hit {
