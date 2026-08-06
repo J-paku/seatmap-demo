@@ -983,3 +983,10 @@
   border: 2px solid var(--color-accent);
   box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-accent) 20%, transparent);
 }
+
+/* STEP B2/B3: ゴミ箱アンカーの配置。幅固定のブロック要素へ margin-left: auto を与えて
+   セクション内の右端へ寄せる(親をflex化しなくても効く)。実体円の座標はこのアンカーの
+   getBoundingClientRectをJS側で測って決まるため、位置決めはここだけで完結する */
+.team-ovl-trash-anchor {
+  margin-left: auto;
+}

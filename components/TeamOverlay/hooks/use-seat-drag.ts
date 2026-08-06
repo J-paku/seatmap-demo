@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { DragEvent as ReactDragEvent, PointerEvent as ReactPointerEvent } from 'react'
+import { TRASH_DROP_ZONE_ATTR } from '../components/TrashDropZone'
 import { safeSetPointerCapture } from '@/lib/gesture/pointer-capture'
 import { suppressGhostClick } from '@/lib/gesture/suppress-ghost-click'
 import type { GridCell } from '@/utils/seat-grid-draft'
@@ -47,6 +48,11 @@ const resolveSeatIdFromElement = (el: Element | null): string | null => {
   return seatEl?.dataset.seatId ?? null
 }
 
+// ゴミ箱ゾーン(TrashDropZone)の上に乗っているかをdata属性から判定する。
+// TrashDropZoneはSeatMapPortal経由でbody直下に描かれるためReactツリーを跨げず、
+// elementFromPointで得たDOMから直接判定する必要がある
+const resolveIsOverTrashZone = (el: Element | null): boolean => !!el?.closest(`[${TRASH_DROP_ZONE_ATTR}]`)
+
 // タッチ側の内部状態機械。pending(長押し待ち)→dragging(確定)の一方向遷移
 type TouchDragState =
   | { kind: 'idle' }
@@ -58,6 +64,10 @@ export type SeatDragGhostPosition = { x: number; y: number }
 export type UseSeatDragOptions = {
   // 入替/移動の確定口。moveSeatが空セルなら移動・席セルなら入替を1本で賄う
   moveSeat: (from: GridCell, to: GridCell) => void
+  // 削除の確定口。タッチ経路でゴミ箱ゾーンへドロップした時だけこのフックの内部から呼ぶ。
+  // マウス経路はTrashDropZone自身のonDragOver/onDropで判定するため、呼び出し側が
+  // TrashDropZoneのonDropへ直接同じ関数を渡す(このフックは経由しない)
+  clearSeat: (cell: GridCell) => void
 }
 
 export type UseSeatDragResult = {
@@ -67,6 +77,9 @@ export type UseSeatDragResult = {
   hoverCell: GridCell | null
   // タッチドラッグ中だけ非null。指に追従させるゴーストの現在位置(SeatDragGhostへ渡す)
   touchGhostPosition: SeatDragGhostPosition | null
+  // タッチドラッグ中、指がゴミ箱ゾーンの上に乗っているか。TrashDropZoneのisOverへそのまま渡す
+  // (マウス経路はTrashDropZone内部のonDragOver/onDragLeaveで判定するためこの値を使わない)
+  isOverTrash: boolean
   // マウス経路: draggableにする席要素へ spread する
   seatMouseDragProps: {
     draggable: true
@@ -88,10 +101,11 @@ export type UseSeatDragResult = {
   }
 }
 
-export const useSeatDrag = ({ moveSeat }: UseSeatDragOptions): UseSeatDragResult => {
+export const useSeatDrag = ({ moveSeat, clearSeat }: UseSeatDragOptions): UseSeatDragResult => {
   const [draggingCell, setDraggingCell] = useState<GridCell | null>(null)
   const [hoverCell, setHoverCell] = useState<GridCell | null>(null)
   const [touchGhostPosition, setTouchGhostPosition] = useState<SeatDragGhostPosition | null>(null)
+  const [isOverTrash, setIsOverTrash] = useState(false)
 
   const dragStateRef = useRef<TouchDragState>({ kind: 'idle' })
   const longPressTimerRef = useRef<number | null>(null)
@@ -113,7 +127,9 @@ export const useSeatDrag = ({ moveSeat }: UseSeatDragOptions): UseSeatDragResult
       rafRef.current = null
       const point = latestPointRef.current
       if (!point || dragStateRef.current.kind !== 'dragging') return
-      setHoverCell(resolveCellFromElement(document.elementFromPoint(point.x, point.y)))
+      const elementAtPoint = document.elementFromPoint(point.x, point.y)
+      setHoverCell(resolveCellFromElement(elementAtPoint))
+      setIsOverTrash(resolveIsOverTrashZone(elementAtPoint))
       setTouchGhostPosition(point)
     })
   }, [])
@@ -135,6 +151,7 @@ export const useSeatDrag = ({ moveSeat }: UseSeatDragOptions): UseSeatDragResult
     setDraggingCell(null)
     setHoverCell(null)
     setTouchGhostPosition(null)
+    setIsOverTrash(false)
   }, [detachTouchMove])
 
   // アンマウント時の保険。ドラッグ中に離脱してもdocumentリスナを必ず外す
@@ -231,14 +248,19 @@ export const useSeatDrag = ({ moveSeat }: UseSeatDragOptions): UseSeatDragResult
       }
       if (state.kind === 'dragging') {
         const point = latestPointRef.current ?? { x: e.clientX, y: e.clientY }
-        const toCell = resolveCellFromElement(document.elementFromPoint(point.x, point.y))
-        if (toCell) moveSeat(state.cell, toCell)
+        const elementAtPoint = document.elementFromPoint(point.x, point.y)
+        if (resolveIsOverTrashZone(elementAtPoint)) {
+          clearSeat(state.cell)
+        } else {
+          const toCell = resolveCellFromElement(elementAtPoint)
+          if (toCell) moveSeat(state.cell, toCell)
+        }
         // ドロップ直後の合成clickがそのまま席選択にならないよう抑止する
         suppressGhostClick()
       }
       resetTouchDrag()
     },
-    [moveSeat, resetTouchDrag]
+    [moveSeat, clearSeat, resetTouchDrag]
   )
 
   const handleSeatPointerCancel = useCallback(
@@ -258,6 +280,7 @@ export const useSeatDrag = ({ moveSeat }: UseSeatDragOptions): UseSeatDragResult
     draggingCell,
     hoverCell,
     touchGhostPosition,
+    isOverTrash,
     seatMouseDragProps: {
       draggable: true,
       onDragStart: handleSeatDragStart,

@@ -29,6 +29,9 @@ export const DesktopSeatGrid = ({
   isEmptyCellSelected,
   onSelectSeat,
   onSelectEmptyCell,
+  seatMouseDragProps,
+  cellMouseDropProps,
+  seatTouchProps,
 }: Props) => {
   const scrollRef = useRef<HTMLDivElement>(null)
   const { hasOverflow, atStart, atEnd } = useScrollHints(scrollRef, grid.cols)
@@ -62,6 +65,7 @@ export const DesktopSeatGrid = ({
             key={`empty-${row}-${col}`}
             style={{ gridRow: row + 1, gridColumn: col + 1, display: 'flex' }}
             data-seat-grid-cell={formatSeatGridCellAttr(cell)}
+            {...cellMouseDropProps}
           >
             <EmptyGridCell isSelected={isEmptyCellSelected(cell)} onSelect={() => onSelectEmptyCell(cell)} />
           </div>
@@ -77,6 +81,7 @@ export const DesktopSeatGrid = ({
           key={seat.id}
           style={{ gridRow: row + 1, gridColumn: col + 1, display: 'flex' }}
           data-seat-grid-cell={isEditMode ? formatSeatGridCellAttr({ row, col }) : undefined}
+          {...(isEditMode ? cellMouseDropProps : {})}
         >
           {isEditMode ? (
             <EditSeatCell
@@ -85,6 +90,8 @@ export const DesktopSeatGrid = ({
               teamName={teamName}
               isSelected={isSeatSelected(seat.id)}
               onSelect={() => onSelectSeat(seat.id)}
+              seatMouseDragProps={seatMouseDragProps}
+              seatTouchProps={seatTouchProps}
             />
           ) : (
             <SeatCard
