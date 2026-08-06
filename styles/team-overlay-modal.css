@@ -818,3 +818,27 @@
 .team-ovl-mini-pin {
   font-size: 9px;
 }
+
+/* STEP B2: タッチドラッグ中に指へ追従するゴースト(SeatDragGhost)。座標はJS側でleft/topへ渡し、
+   指に隠れないよう指の上方へオフセットする。マウスはネイティブDnDの既定画像に任せるためここは
+   タッチ専用 */
+.team-ovl-seat-drag-ghost {
+  position: fixed;
+  z-index: var(--z-index-overlay);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  border: 2px solid var(--color-edit-mode-border);
+  background: var(--color-edit-mode-bg);
+  box-shadow: var(--glass-shadow-sm);
+  pointer-events: none;
+  transform: translate(-50%, calc(-100% - 16px));
+}
+
+.team-ovl-seat-drag-ghost-icon {
+  font-size: 20px;
+  color: var(--color-accent);
+}
