@@ -19,6 +19,7 @@ import { FacilityHoverCard } from '@/components/FacilityHoverCard'
 import type { FacilityHoverPayload } from '@/components/FacilityHoverCard'
 import { FurniturePickerModal } from '@/components/FurniturePickerModal'
 import { GhostPlacementLayer } from '@/components/GhostPlacementLayer'
+import { LayoutSwitcher } from '@/components/LayoutSwitcher'
 import { ObjectCategorySheet } from '@/components/ObjectCategorySheet'
 import { TeamActionSheet } from '@/components/TeamActionSheet'
 import { TeamCreatePopover } from '@/components/TeamCreatePopover'
@@ -95,6 +96,8 @@ export const SeatMapView = () => {
   const [hoverFacility, setHoverFacility] = useState<FacilityHoverPayload | null>(null)
   // 05: 座席未設定(防御分岐)時の一時通知文言
   const [unassignedNotice, setUnassignedNotice] = useState<string | null>(null)
+  // レイアウト切り替えアイランドの展開状態。開いている間は左下FABを隠す
+  const [isLayoutSwitcherOpen, setIsLayoutSwitcherOpen] = useState(false)
 
   // 連続で通知すると、前回のタイマーが後から発火して新しい文言を消してしまう。
   // 立て続けの配属操作では毎回起きるので、出す前に前のタイマーを畳む
@@ -130,6 +133,7 @@ export const SeatMapView = () => {
     isPlacementActive: placement.isActive,
     assignSeatId: assign.assignSeatId,
     tour,
+    isLayoutSwitcherOpen,
   })
 
   // サイドバーで押された社員はまずカードで見せる。座席へ飛ぶかどうかはカードのCTAが決める
@@ -176,6 +180,8 @@ export const SeatMapView = () => {
           isDirectoryOpen={isDirectoryOpen}
         />
       )}
+      {/* 編集中は土台(公式/カスタム)を差し替えさせない。差し替えるとワーキングコピーが宙に浮く */}
+      {!editor.isEditMode && <LayoutSwitcher onExpandedChange={setIsLayoutSwitcherOpen} />}
       {ready && effectiveLayout && (
         <SeatMapCanvas
           ref={canvasRef}

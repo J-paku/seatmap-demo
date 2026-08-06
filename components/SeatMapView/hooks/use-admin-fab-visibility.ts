@@ -19,6 +19,8 @@ type Params = {
   // 座席への配属シートが見ている座席
   assignSeatId: string | null
   tour: TourState
+  // レイアウト切り替えアイランドを展開している間
+  isLayoutSwitcherOpen: boolean
 }
 
 export const useAdminFabVisibility = ({
@@ -27,6 +29,7 @@ export const useAdminFabVisibility = ({
   isPlacementActive,
   assignSeatId,
   tour,
+  isLayoutSwitcherOpen,
 }: Params): boolean => {
   const { seatDetailId, personDetailId, facilityDetailId, scheduleDetailId } = useDetailPanel()
 
@@ -40,6 +43,7 @@ export const useAdminFabVisibility = ({
     isDirectoryOpen ||
     isPlacementActive ||
     assignSeatId !== null ||
-    isTourPlaying
+    isTourPlaying ||
+    isLayoutSwitcherOpen
   )
 }
