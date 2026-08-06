@@ -1,5 +1,4 @@
 import { useDetailPanel } from '@/contexts/detail-panel-context'
-import { useSeats } from '@/lib/mock-loader'
 import type { Employee, FacilityMeeting } from '@/types'
 import type { AttendeePopoverState } from '../type'
 
@@ -15,8 +14,7 @@ type Props = {
 // 参加者ポップオーバー。シートの overflow に切られないよう position:fixed で描く
 // data-attendee-popover は外側クリック判定が参照するのでボタン側と揃えて必ず付ける
 export const AttendeePopover = ({ state, meeting, employees, onMouseEnter, onMouseLeave, onClose }: Props) => {
-  const { data: seats } = useSeats()
-  const { openSeatDetail } = useDetailPanel()
+  const { openPersonDetail } = useDetailPanel()
 
   const empById = new Map(employees.map((employee) => [employee.id, employee]))
   const organizer = empById.get(meeting.organizerId)
@@ -26,41 +24,22 @@ export const AttendeePopover = ({ state, meeting, employees, onMouseEnter, onMou
 
   if (!organizer && participants.length === 0) return null
 
-  const seatIdOf = (employeeId: string) => (seats ?? []).find((s) => s.employeeId === employeeId)?.id
-
-  const renderPerson = (employee: Employee) => {
-    const seatId = seatIdOf(employee.id)
-    const content = (
-      <>
-        <span className='fac-attendee-name'>{employee.name}</span>
-        {employee.position && <span className='fac-attendee-role'>{employee.position}</span>}
-        <span className='fac-attendee-dept'>{employee.team}</span>
-      </>
-    )
-
-    // 座席が無い社員は押せることを見せない
-    if (!seatId) {
-      return (
-        <div key={employee.id} className='fac-attendee-person'>
-          {content}
-        </div>
-      )
-    }
-
-    return (
-      <button
-        key={employee.id}
-        type='button'
-        className='fac-attendee-person fac-attendee-person-clickable'
-        onClick={() => {
-          onClose()
-          openSeatDetail(seatId)
-        }}
-      >
-        {content}
-      </button>
-    )
-  }
+  // 席の有無に関わらずカードを開けるため、押せる/押せないを分けない
+  const renderPerson = (employee: Employee) => (
+    <button
+      key={employee.id}
+      type='button'
+      className='fac-attendee-person fac-attendee-person-clickable'
+      onClick={() => {
+        onClose()
+        openPersonDetail(employee.id)
+      }}
+    >
+      <span className='fac-attendee-name'>{employee.name}</span>
+      {employee.position && <span className='fac-attendee-role'>{employee.position}</span>}
+      <span className='fac-attendee-dept'>{employee.team}</span>
+    </button>
+  )
 
   return (
     <div

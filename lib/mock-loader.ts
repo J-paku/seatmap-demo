@@ -141,7 +141,9 @@ export const useEmployees = () => useCached('employees', EMPLOYEES)
 
 export const useTeams = () => useCached('teams', TEAMS)
 
-export const useSeats = () => useCached('seats', SEATS)
+// 座席は useSeatLayout(保存済みレイアウトを被せる)経由でしか配らない。
+// 種データを直接引くと編集結果と食い違うため export しない
+const useSeats = () => useCached('seats', SEATS)
 
 export const useFacilities = () => useCached('facilities', FACILITIES)
 

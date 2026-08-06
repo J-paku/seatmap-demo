@@ -1,8 +1,7 @@
 // 社員ディレクトリのスライドインパネルを提供するメインコンポーネント
 import { useMemo, useState, useCallback } from 'react'
-import type { ThemeMode, Employee, Seat } from '@/types'
+import type { ThemeMode, Employee } from '@/types'
 import { triggerHaptic } from '@/lib/haptic'
-import { createVirtualSeat } from '@/lib/seat/seat-utils'
 import { useScrollChainGuard } from '@/hooks/use-scroll-chain-guard'
 import { FocusTrap } from '@/components/a11y/components/FocusTrap'
 import { SheetDragHandle } from '@/components/SheetDragHandle'
@@ -18,9 +17,9 @@ interface EmployeeDirectoryProps {
   isOpen: boolean
   onClose: () => void
   employees: Employee[]
-  seats: Seat[]
   currentUserId?: string
-  onSeatSelect: (seat: Seat) => void
+  // 席の解決は詳細パネル側が持つ。ここは押された社員を渡すだけ
+  onEmployeeSelect: (employee: Employee) => void
   isGaroonConnected?: boolean
   onGaroonLogout?: () => void
   onRefresh?: () => void
@@ -35,9 +34,8 @@ export function EmployeeDirectory({
   isOpen,
   onClose,
   employees,
-  seats,
   currentUserId,
-  onSeatSelect,
+  onEmployeeSelect,
   isGaroonConnected,
   onGaroonLogout,
   onRefresh,
@@ -77,7 +75,6 @@ export function EmployeeDirectory({
     togglePinned,
     expandedDepts,
     toggleDept,
-    handleEmployeeTap,
     favoriteIds,
     favoriteDeptNames,
     isFavoritesExpanded,
@@ -85,7 +82,7 @@ export function EmployeeDirectory({
     toggleFavorite,
     toggleFavoriteDept,
     toggleFavoritesExpanded,
-  } = useEmployeeDirectory(employees, seats, currentUserId)
+  } = useEmployeeDirectory(employees, currentUserId)
 
   // フッター表示用に自分の社員情報を取得
   const currentUser = useMemo(
@@ -205,14 +202,7 @@ export function EmployeeDirectory({
                   currentUserId={currentUserId}
                   onEmployeeTap={employee => {
                     // 触覚は葉のEmployeeCardボタンで発火済み（ここで再発火すると二重になる）
-                    const result = handleEmployeeTap(employee)
-                    if (result) {
-                      // 座席が見つかった場合はその座席で DetailPanel を表示
-                      onSeatSelect(result.seat)
-                    } else {
-                      // 座席未割当: 仮想 Seat を生成して DetailPanel に社員情報のみ表示
-                      onSeatSelect(createVirtualSeat(employee))
-                    }
+                    onEmployeeSelect(employee)
                   }}
                   favoriteIds={favoriteIds}
                   favoriteDeptNames={favoriteDeptNames}

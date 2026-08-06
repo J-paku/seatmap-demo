@@ -33,7 +33,7 @@ export const useTeamSeatFocus = ({ layout, canvasRef, onFailure }: Options): Tea
 
   const focusSeat = useCallback(
     (seat: Seat) => {
-      // 座席未設定は createVirtualSeat 由来の id 空文字で来る
+      // レイアウト未取得・id 空の座席は移動先を決められないので座席未設定として扱う
       if (!seat.id || !layout) {
         onFailure('no-seat')
         return

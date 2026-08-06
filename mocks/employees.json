@@ -8,8 +8,8 @@
     "ownerCode": "0001",
     "furiganaSei": "ｴｲｷﾞｮｳﾌﾞ1",
     "position": "部長",
-    "email": "aoyama001@example.co.jp",
-    "phone": "07020304264"
+    "email": "ei0001@example.co.jp",
+    "phone": "0702030xxxx"
   },
   {
     "id": "emp-002",
@@ -19,8 +19,8 @@
     "team": "営業部",
     "ownerCode": "0002",
     "furiganaSei": "ｴｲｷﾞｮｳﾌﾞ2",
-    "email": "shiraishi002@example.co.jp",
-    "phone": "07065554145"
+    "email": "ei0002@example.co.jp",
+    "phone": "0706555xxxx"
   },
   {
     "id": "emp-003",
@@ -30,8 +30,8 @@
     "team": "営業部",
     "ownerCode": "0003",
     "furiganaSei": "ｴｲｷﾞｮｳﾌﾞ3",
-    "email": "takahashi003@example.co.jp",
-    "phone": "07080478090"
+    "email": "ei0003@example.co.jp",
+    "phone": "0708047xxxx"
   },
   {
     "id": "emp-004",
@@ -42,8 +42,8 @@
     "ownerCode": "0004",
     "furiganaSei": "ｴｲｷﾞｮｳﾌﾞ4",
     "position": "課長",
-    "email": "tanaka004@example.co.jp",
-    "phone": "08060408363"
+    "email": "ei0004@example.co.jp",
+    "phone": "0806040xxxx"
   },
   {
     "id": "emp-005",
@@ -53,8 +53,8 @@
     "team": "営業部",
     "ownerCode": "0005",
     "furiganaSei": "ｴｲｷﾞｮｳﾌﾞ5",
-    "email": "nakamura005@example.co.jp",
-    "phone": "09055676145"
+    "email": "ei0005@example.co.jp",
+    "phone": "0905567xxxx"
   },
   {
     "id": "emp-006",
@@ -64,7 +64,7 @@
     "team": "営業部",
     "ownerCode": "0006",
     "furiganaSei": "ｴｲｷﾞｮｳﾌﾞ6",
-    "email": "fujii006@example.co.jp"
+    "email": "ei0006@example.co.jp"
   },
   {
     "id": "emp-007",
@@ -74,8 +74,8 @@
     "team": "営業部",
     "ownerCode": "0007",
     "furiganaSei": "ｴｲｷﾞｮｳﾌﾞ7",
-    "email": "matsumoto007@example.co.jp",
-    "phone": "08022212546"
+    "email": "ei0007@example.co.jp",
+    "phone": "0802221xxxx"
   },
   {
     "id": "emp-008",
@@ -85,8 +85,8 @@
     "team": "営業部",
     "ownerCode": "0008",
     "furiganaSei": "ｴｲｷﾞｮｳﾌﾞ8",
-    "email": "inoue008@example.co.jp",
-    "phone": "07034261229"
+    "email": "ei0008@example.co.jp",
+    "phone": "0703426xxxx"
   },
   {
     "id": "emp-009",
@@ -96,8 +96,8 @@
     "team": "営業部",
     "ownerCode": "0009",
     "furiganaSei": "ｴｲｷﾞｮｳﾌﾞ9",
-    "email": "kimura009@example.co.jp",
-    "phone": "08062147800"
+    "email": "ei0009@example.co.jp",
+    "phone": "0806214xxxx"
   },
   {
     "id": "emp-010",
@@ -107,8 +107,8 @@
     "team": "営業部",
     "ownerCode": "0010",
     "furiganaSei": "ｴｲｷﾞｮｳﾌﾞ10",
-    "email": "hayashi010@example.co.jp",
-    "phone": "07077377856"
+    "email": "ei0010@example.co.jp",
+    "phone": "0707737xxxx"
   },
   {
     "id": "emp-011",
@@ -119,8 +119,8 @@
     "ownerCode": "0011",
     "furiganaSei": "ｶｲﾊﾂﾌﾞ1",
     "position": "部長",
-    "email": "shimizu011@example.co.jp",
-    "phone": "07009636463"
+    "email": "ka0011@example.co.jp",
+    "phone": "0700963xxxx"
   },
   {
     "id": "emp-012",
@@ -130,8 +130,8 @@
     "team": "開発部",
     "ownerCode": "0012",
     "furiganaSei": "ｶｲﾊﾂﾌﾞ2",
-    "email": "yamamoto012@example.co.jp",
-    "phone": "08015583129"
+    "email": "ka0012@example.co.jp",
+    "phone": "0801558xxxx"
   },
   {
     "id": "emp-013",
@@ -141,8 +141,8 @@
     "team": "開発部",
     "ownerCode": "0013",
     "furiganaSei": "ｶｲﾊﾂﾌﾞ3",
-    "email": "morita013@example.co.jp",
-    "phone": "08068180014"
+    "email": "ka0013@example.co.jp",
+    "phone": "0806818xxxx"
   },
   {
     "id": "emp-014",
@@ -153,8 +153,8 @@
     "ownerCode": "0014",
     "furiganaSei": "ｶｲﾊﾂﾌﾞ4",
     "position": "課長",
-    "email": "kobayashi014@example.co.jp",
-    "phone": "09058884577"
+    "email": "ka0014@example.co.jp",
+    "phone": "0905888xxxx"
   },
   {
     "id": "emp-015",
@@ -164,7 +164,7 @@
     "team": "開発部",
     "ownerCode": "0015",
     "furiganaSei": "ｶｲﾊﾂﾌﾞ5",
-    "email": "kato015@example.co.jp"
+    "email": "ka0015@example.co.jp"
   },
   {
     "id": "emp-016",
@@ -174,7 +174,7 @@
     "team": "開発部",
     "ownerCode": "0016",
     "furiganaSei": "ｶｲﾊﾂﾌﾞ6",
-    "email": "yoshida016@example.co.jp"
+    "email": "ka0016@example.co.jp"
   },
   {
     "id": "emp-017",
@@ -184,8 +184,8 @@
     "team": "開発部",
     "ownerCode": "0017",
     "furiganaSei": "ｶｲﾊﾂﾌﾞ7",
-    "email": "yamada017@example.co.jp",
-    "phone": "07073217665"
+    "email": "ka0017@example.co.jp",
+    "phone": "0707321xxxx"
   },
   {
     "id": "emp-018",
@@ -195,8 +195,8 @@
     "team": "開発部",
     "ownerCode": "0018",
     "furiganaSei": "ｶｲﾊﾂﾌﾞ8",
-    "email": "sasaki018@example.co.jp",
-    "phone": "08043618276"
+    "email": "ka0018@example.co.jp",
+    "phone": "0804361xxxx"
   },
   {
     "id": "emp-019",
@@ -206,8 +206,8 @@
     "team": "開発部",
     "ownerCode": "0019",
     "furiganaSei": "ｶｲﾊﾂﾌﾞ9",
-    "email": "yamaguchi019@example.co.jp",
-    "phone": "09017811095"
+    "email": "ka0019@example.co.jp",
+    "phone": "0901781xxxx"
   },
   {
     "id": "emp-020",
@@ -217,8 +217,8 @@
     "team": "開発部",
     "ownerCode": "0020",
     "furiganaSei": "ｶｲﾊﾂﾌﾞ10",
-    "email": "saito020@example.co.jp",
-    "phone": "07088817473"
+    "email": "ka0020@example.co.jp",
+    "phone": "0708881xxxx"
   },
   {
     "id": "emp-021",
@@ -229,8 +229,8 @@
     "ownerCode": "0021",
     "furiganaSei": "ｿｳﾑﾌﾞ1",
     "position": "部長",
-    "email": "ikeda021@example.co.jp",
-    "phone": "07057783320"
+    "email": "so0021@example.co.jp",
+    "phone": "0705778xxxx"
   },
   {
     "id": "emp-022",
@@ -240,8 +240,8 @@
     "team": "総務部",
     "ownerCode": "0022",
     "furiganaSei": "ｿｳﾑﾌﾞ2",
-    "email": "hashimoto022@example.co.jp",
-    "phone": "09032154708"
+    "email": "so0022@example.co.jp",
+    "phone": "0903215xxxx"
   },
   {
     "id": "emp-023",
@@ -251,8 +251,8 @@
     "team": "総務部",
     "ownerCode": "0023",
     "furiganaSei": "ｿｳﾑﾌﾞ3",
-    "email": "ishikawa023@example.co.jp",
-    "phone": "08081473887"
+    "email": "so0023@example.co.jp",
+    "phone": "0808147xxxx"
   },
   {
     "id": "emp-024",
@@ -263,8 +263,8 @@
     "ownerCode": "0024",
     "furiganaSei": "ｿｳﾑﾌﾞ4",
     "position": "課長",
-    "email": "maeda024@example.co.jp",
-    "phone": "08017057776"
+    "email": "so0024@example.co.jp",
+    "phone": "0801705xxxx"
   },
   {
     "id": "emp-025",
@@ -274,8 +274,8 @@
     "team": "総務部",
     "ownerCode": "0025",
     "furiganaSei": "ｿｳﾑﾌﾞ5",
-    "email": "fujiwara025@example.co.jp",
-    "phone": "08036924479"
+    "email": "so0025@example.co.jp",
+    "phone": "0803692xxxx"
   },
   {
     "id": "emp-026",
@@ -285,8 +285,8 @@
     "team": "総務部",
     "ownerCode": "0026",
     "furiganaSei": "ｿｳﾑﾌﾞ6",
-    "email": "okada026@example.co.jp",
-    "phone": "07071139990"
+    "email": "so0026@example.co.jp",
+    "phone": "0707113xxxx"
   },
   {
     "id": "emp-027",
@@ -296,8 +296,8 @@
     "team": "総務部",
     "ownerCode": "0027",
     "furiganaSei": "ｿｳﾑﾌﾞ7",
-    "email": "goto027@example.co.jp",
-    "phone": "07067006389"
+    "email": "so0027@example.co.jp",
+    "phone": "0706700xxxx"
   },
   {
     "id": "emp-028",
@@ -307,7 +307,7 @@
     "team": "総務部",
     "ownerCode": "0028",
     "furiganaSei": "ｿｳﾑﾌﾞ8",
-    "email": "hasegawa028@example.co.jp"
+    "email": "so0028@example.co.jp"
   },
   {
     "id": "emp-029",
@@ -317,8 +317,8 @@
     "team": "総務部",
     "ownerCode": "0029",
     "furiganaSei": "ｿｳﾑﾌﾞ9",
-    "email": "murakami029@example.co.jp",
-    "phone": "07069676969"
+    "email": "so0029@example.co.jp",
+    "phone": "0706967xxxx"
   },
   {
     "id": "emp-030",
@@ -329,8 +329,8 @@
     "ownerCode": "0030",
     "furiganaSei": "ｹｲﾘﾌﾞ1",
     "position": "部長",
-    "email": "kondo030@example.co.jp",
-    "phone": "09059397204"
+    "email": "ke0030@example.co.jp",
+    "phone": "0905939xxxx"
   },
   {
     "id": "emp-031",
@@ -340,8 +340,8 @@
     "team": "経理部",
     "ownerCode": "0031",
     "furiganaSei": "ｹｲﾘﾌﾞ2",
-    "email": "aoyama031@example.co.jp",
-    "phone": "09076554346"
+    "email": "ke0031@example.co.jp",
+    "phone": "0907655xxxx"
   },
   {
     "id": "emp-032",
@@ -351,8 +351,8 @@
     "team": "経理部",
     "ownerCode": "0032",
     "furiganaSei": "ｹｲﾘﾌﾞ3",
-    "email": "shiraishi032@example.co.jp",
-    "phone": "09092991462"
+    "email": "ke0032@example.co.jp",
+    "phone": "0909299xxxx"
   },
   {
     "id": "emp-033",
@@ -363,7 +363,7 @@
     "ownerCode": "0033",
     "furiganaSei": "ｹｲﾘﾌﾞ4",
     "position": "課長",
-    "email": "takahashi033@example.co.jp"
+    "email": "ke0033@example.co.jp"
   },
   {
     "id": "emp-034",
@@ -373,8 +373,8 @@
     "team": "経理部",
     "ownerCode": "0034",
     "furiganaSei": "ｹｲﾘﾌﾞ5",
-    "email": "tanaka034@example.co.jp",
-    "phone": "08041151655"
+    "email": "ke0034@example.co.jp",
+    "phone": "0804115xxxx"
   },
   {
     "id": "emp-035",
@@ -384,8 +384,8 @@
     "team": "経理部",
     "ownerCode": "0035",
     "furiganaSei": "ｹｲﾘﾌﾞ6",
-    "email": "nakamura035@example.co.jp",
-    "phone": "09078395069"
+    "email": "ke0035@example.co.jp",
+    "phone": "0907839xxxx"
   },
   {
     "id": "emp-036",
@@ -395,7 +395,7 @@
     "team": "経理部",
     "ownerCode": "0036",
     "furiganaSei": "ｹｲﾘﾌﾞ7",
-    "email": "fujii036@example.co.jp"
+    "email": "ke0036@example.co.jp"
   },
   {
     "id": "emp-037",
@@ -405,8 +405,8 @@
     "team": "経理部",
     "ownerCode": "0037",
     "furiganaSei": "ｹｲﾘﾌﾞ8",
-    "email": "matsumoto037@example.co.jp",
-    "phone": "09083429202"
+    "email": "ke0037@example.co.jp",
+    "phone": "0908342xxxx"
   },
   {
     "id": "emp-038",
@@ -417,8 +417,8 @@
     "ownerCode": "0038",
     "furiganaSei": "ｷｶｸﾌﾞ1",
     "position": "部長",
-    "email": "inoue038@example.co.jp",
-    "phone": "09085779935"
+    "email": "ki0038@example.co.jp",
+    "phone": "0908577xxxx"
   },
   {
     "id": "emp-039",
@@ -428,8 +428,8 @@
     "team": "企画部",
     "ownerCode": "0039",
     "furiganaSei": "ｷｶｸﾌﾞ2",
-    "email": "kimura039@example.co.jp",
-    "phone": "09020128555"
+    "email": "ki0039@example.co.jp",
+    "phone": "0902012xxxx"
   },
   {
     "id": "emp-040",
@@ -439,8 +439,8 @@
     "team": "企画部",
     "ownerCode": "0040",
     "furiganaSei": "ｷｶｸﾌﾞ3",
-    "email": "hayashi040@example.co.jp",
-    "phone": "07056805725"
+    "email": "ki0040@example.co.jp",
+    "phone": "0705680xxxx"
   },
   {
     "id": "emp-041",
@@ -451,8 +451,8 @@
     "ownerCode": "0041",
     "furiganaSei": "ｷｶｸﾌﾞ4",
     "position": "課長",
-    "email": "shimizu041@example.co.jp",
-    "phone": "08041515357"
+    "email": "ki0041@example.co.jp",
+    "phone": "0804151xxxx"
   },
   {
     "id": "emp-042",
@@ -462,8 +462,8 @@
     "team": "企画部",
     "ownerCode": "0042",
     "furiganaSei": "ｷｶｸﾌﾞ5",
-    "email": "yamamoto042@example.co.jp",
-    "phone": "09076529094"
+    "email": "ki0042@example.co.jp",
+    "phone": "0907652xxxx"
   },
   {
     "id": "emp-043",
@@ -473,7 +473,7 @@
     "team": "企画部",
     "ownerCode": "0043",
     "furiganaSei": "ｷｶｸﾌﾞ6",
-    "email": "morita043@example.co.jp"
+    "email": "ki0043@example.co.jp"
   },
   {
     "id": "emp-044",
@@ -483,7 +483,7 @@
     "team": "企画部",
     "ownerCode": "0044",
     "furiganaSei": "ｷｶｸﾌﾞ7",
-    "email": "kobayashi044@example.co.jp",
-    "phone": "09038651007"
+    "email": "ki0044@example.co.jp",
+    "phone": "0903865xxxx"
   }
 ]

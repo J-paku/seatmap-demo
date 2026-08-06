@@ -1,8 +1,11 @@
+import { ActionBar } from './ActionBar'
 import { ContactRow } from './ContactRow'
+import { AlertDialog } from '@/components/AlertDialog'
 import { PixelAvatar } from '@/components/PixelAvatar'
 import { PresenceBadge } from '@/components/StatusChip'
 import { formatPhone } from '../utils/format-phone'
 import { useCopyField } from '../hooks/use-copy-field'
+import { useIosOnlyNotice } from '../hooks/use-ios-only-notice'
 import type { PixelAvatarConfig, Employee, PresenceStatus, Team } from '@/types'
 
 // 12-member-detail: グラデーション帯 + はみ出しアバター + 4段テキスト + 連絡先
@@ -14,10 +17,22 @@ type Props = {
   status: PresenceStatus | undefined
   isBadgeVisible: boolean
   isScheduleLoading: boolean
+  onGoToSeat?: () => void
+  showSeatUnsetNotice?: boolean
 }
 
-export const ProfileCard = ({ employee, team, avatar, status, isBadgeVisible, isScheduleLoading }: Props) => {
+export const ProfileCard = ({
+  employee,
+  team,
+  avatar,
+  status,
+  isBadgeVisible,
+  isScheduleLoading,
+  onGoToSeat,
+  showSeatUnsetNotice,
+}: Props) => {
   const { copiedField, copy } = useCopyField()
+  const iosNotice = useIosOnlyNotice()
 
   return (
     <div className='profile-card'>
@@ -57,7 +72,6 @@ export const ProfileCard = ({ employee, team, avatar, status, isBadgeVisible, is
                 copyLabel='電話番号をコピー'
                 displayValue={formatPhone(employee.phone)}
                 copyValue={formatPhone(employee.phone)}
-                href={`tel:${employee.phone}`}
                 isCopied={copiedField === 'phone'}
                 onCopy={copy}
               />
@@ -65,6 +79,22 @@ export const ProfileCard = ({ employee, team, avatar, status, isBadgeVisible, is
           </div>
         )}
       </div>
+
+      <ActionBar
+        employeeName={employee.name}
+        onRegisterContact={iosNotice.open}
+        onGoToSeat={onGoToSeat}
+        showSeatUnsetNotice={showSeatUnsetNotice}
+      />
+
+      <AlertDialog
+        isOpen={iosNotice.isOpen}
+        icon='contacts'
+        title='iOSアプリ専用の機能です'
+        body='電話帳への登録はiOSアプリでのみご利用いただけます。このデモはブラウザ版のため連絡先は保存されません。'
+        confirmLabel='確認'
+        onClose={iosNotice.close}
+      />
     </div>
   )
 }

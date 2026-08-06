@@ -1,7 +1,6 @@
-// 社員ディレクトリの検索・展開・座席解決状態を管理するフック
+// 社員ディレクトリの検索・展開状態を管理するフック
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import type { Employee, Seat } from '@/types'
-import { normalizeName } from '@/lib/seat/display-utils'
+import type { Employee } from '@/types'
 import { matchesEmployeeQuery, normalizeSearchText } from '@/utils/employee-search'
 import { useFavorites } from '@/hooks/use-favorites'
 import type { FavoritesContent } from '../components/DepartmentTree/types'
@@ -20,7 +19,6 @@ interface UseEmployeeDirectoryResult {
   togglePinned: () => void
   expandedDepts: Set<string>
   toggleDept: (dept: string) => void
-  handleEmployeeTap: (emp: Employee) => { seat: Seat } | null
   favoriteIds: Set<string>
   favoriteDeptNames: Set<string>
   isFavoritesExpanded: boolean
@@ -102,7 +100,6 @@ const resolvePositionRank = (employee: Employee): number => {
 
 export function useEmployeeDirectory(
   employees: Employee[],
-  seats: Seat[],
   currentUserId?: string
 ): UseEmployeeDirectoryResult {
   const [searchQuery, setSearchQuery] = useState('')
@@ -246,24 +243,6 @@ export function useEmployeeDirectory(
     setIsFavoritesExpanded(prev => !prev)
   }, [])
 
-  const handleEmployeeTap = useCallback(
-    (employee: Employee) => {
-      // デモの Seat は employeeId 参照型。ID 一致を優先し、無ければ名前(空白正規化)でフォールバック
-      const byId = seats.find(seat => seat.employeeId === employee.id)
-      if (byId) return { seat: byId }
-      const normalizedName = normalizeName(employee.name)
-      const byName = seats.find(seat => {
-        const seated = seat.employeeId
-          ? employees.find(candidate => candidate.id === seat.employeeId)
-          : undefined
-        return seated !== undefined && normalizeName(seated.name) === normalizedName
-      })
-      if (byName) return { seat: byName }
-      return null
-    },
-    [seats, employees]
-  )
-
   return {
     searchQuery,
     setSearchQuery,
@@ -273,7 +252,6 @@ export function useEmployeeDirectory(
     togglePinned,
     expandedDepts,
     toggleDept,
-    handleEmployeeTap,
     favoriteIds,
     favoriteDeptNames,
     isFavoritesExpanded,

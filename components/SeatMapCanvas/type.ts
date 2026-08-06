@@ -35,6 +35,8 @@ export type SeatMapCanvasProps = {
   repositioningRef?: LayoutObjectRef | null
   onUndo?: () => void
   canUndo?: boolean
+  // リモコンの自席ボタン。編集モードでは渡さない(オーバーレイが出ないため)
+  onGoToMySeat?: () => void
 }
 
 // 親が ref 経由で呼び出すキャンバスの命令

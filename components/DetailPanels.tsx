@@ -9,15 +9,18 @@ import { useFacilities, useSchedules } from '@/lib/mock-loader'
 type Props = {
   // 施設削除の完了通知。トースト状態は SeatMapView が持つ
   onFacilityDeleted: (facilityName: string) => void
+  // 座席の解決と遷移は SeatMapView が持つ(focus と canvasRef がそこにしか無い)
+  onGoToSeat?: () => void
+  showSeatUnsetNotice?: boolean
 }
 
 // 03: 詳細パネル群のオーケストレーター(排他=社員/施設・スタック=予定)
-export const DetailPanels = ({ onFacilityDeleted }: Props) => {
-  const { seatDetailId, facilityDetailId, scheduleDetailId, closeTop } = useDetailPanel()
+export const DetailPanels = ({ onFacilityDeleted, onGoToSeat, showSeatUnsetNotice }: Props) => {
+  const { seatDetailId, personDetailId, facilityDetailId, scheduleDetailId, closeTop } = useDetailPanel()
   const { data: facilities } = useFacilities()
   const { data: schedules } = useSchedules()
 
-  const anyOpen = seatDetailId !== null || facilityDetailId !== null
+  const anyOpen = seatDetailId !== null || personDetailId !== null || facilityDetailId !== null
 
   // ESC で最前面のみ閉じる。stopPropagation で window レベルの他リスナー(例: 背後の
   // TeamOverlay 自身の ESC ハンドラ)への伝播を止め、2段スタック中の誤同時クローズを防ぐ
@@ -39,9 +42,14 @@ export const DetailPanels = ({ onFacilityDeleted }: Props) => {
 
   return (
     <>
-      {seatDetailId && (
+      {(seatDetailId || personDetailId) && (
         <SheetShell title='社員詳細' variant='employee' active={scheduleDetailId === null} onClose={closeTop}>
-          <EmployeeDetail seatId={seatDetailId} />
+          <EmployeeDetail
+            seatId={seatDetailId}
+            employeeId={personDetailId}
+            onGoToSeat={onGoToSeat}
+            showSeatUnsetNotice={showSeatUnsetNotice}
+          />
         </SheetShell>
       )}
       {facilityDetailId && facility && (

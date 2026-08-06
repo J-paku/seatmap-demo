@@ -212,15 +212,22 @@
   font-weight: 700;
 }
 
-/* ズームコントロール(画面固定) */
+/* リモコン(画面固定)。拡大・縮小・自席・リセットを3段で並べる */
 .zoom-controls {
   position: absolute;
   right: 16px;
   bottom: 16px;
   display: flex;
   flex-direction: column;
+  align-items: flex-end;
   gap: 8px;
   z-index: var(--z-index-sticky);
+}
+
+/* 3段目だけ横2連(自席 → リセット) */
+.zoom-controls-row {
+  display: flex;
+  gap: 8px;
 }
 
 .zoom-controls button {
@@ -248,41 +255,9 @@
   outline-offset: 2px;
 }
 
-/* 「リセット」は全角4文字。ボタンの内容幅は 44px − border 2px = 42px なので
-   12px(=48px)・11px(=44px)では折り返す。10px(=40px)が折り返さない最大値
-   nowrap は環境フォント差で 42px を数px超えたときの保険 */
-/* 上の `.zoom-controls button`(font-size:18px)より詳細度を上げる必要がある */
-.zoom-controls button.zoom-controls-reset {
-  font-size: 10px;
-  white-space: nowrap;
-}
-
-/* 自分の席へ。ズームは右下の親指圏に残し、モーダルを開く操作は左下へ分ける */
-.my-seat-button {
-  position: absolute;
-  left: 16px;
-  bottom: 16px;
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
-  border: 1px solid var(--color-border);
-  background: var(--color-surface-elevated);
-  box-shadow: var(--shadow-card);
-  color: var(--color-accent);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: var(--z-index-sticky);
-}
-
-.my-seat-button:hover {
-  background: var(--color-surface-muted);
-}
-
-.my-seat-button:focus-visible {
-  outline: 2px solid var(--color-accent);
-  outline-offset: 2px;
+/* アイコンボタンの字面。既定(26px)のままだと 44px の枠に対して大きすぎる */
+.zoom-controls .material-symbols-outlined {
+  font-size: 18px;
 }
 
 /* Material Symbols(リガチャ方式) */
