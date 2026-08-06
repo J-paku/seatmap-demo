@@ -244,6 +244,64 @@
   font-variant-numeric: tabular-nums;
 }
 
+/* 編集モードの入口(鉛筆)。オーバーレイ右上の閉じる✕(.team-ovl-close)とは別位置なので隣接しない */
+.team-ovl-edit-toggle {
+  flex-shrink: 0;
+  margin-left: 8px;
+  width: 36px;
+  height: 36px;
+  border-radius: 9999px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface-muted);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.team-ovl-edit-toggle:hover {
+  background: var(--color-surface-muted-hover);
+}
+
+.team-ovl-edit-toggle .material-symbols-outlined {
+  font-size: 20px;
+}
+
+/* 編集モードの出口。鉛筆と同じ位置(.team-ovl-section-head 右端)へ入れ替わる */
+.team-ovl-edit-status {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: 8px;
+}
+
+.team-ovl-edit-badge {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  background: var(--color-surface-muted);
+  color: var(--color-text-secondary);
+}
+
+.team-ovl-edit-finish {
+  flex-shrink: 0;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  cursor: pointer;
+}
+
+.team-ovl-edit-finish:hover {
+  background: var(--color-surface-muted);
+}
+
 .team-ovl-sync {
   font-size: 11px;
   color: var(--color-text-muted);
