@@ -55,6 +55,7 @@ export const SeatMapCanvas = forwardRef<SeatMapCanvasHandle, Props>(function Sea
     repositioningRef = null,
     onUndo,
     canUndo,
+    onGoToMySeat,
   },
   ref
 ) {
@@ -196,7 +197,12 @@ export const SeatMapCanvas = forwardRef<SeatMapCanvasHandle, Props>(function Sea
         onSelect={view.handleSeatSelect}
       />
       {/* 原本には常時表示の凡例パネルは無い(チーム名は各アイランドのラベル板で表示) */}
-      <ZoomControls onZoomIn={zoom.zoomIn} onZoomOut={zoom.zoomOut} onReset={zoom.reset} />
+      <ZoomControls
+        onZoomIn={zoom.zoomIn}
+        onZoomOut={zoom.zoomOut}
+        onReset={zoom.reset}
+        onGoToMySeat={onGoToMySeat}
+      />
       {isEditMode && view.seatActionBarPos && edit.editSelectedSeatId && (
         <SeatActionBar
           x={view.seatActionBarPos.x}

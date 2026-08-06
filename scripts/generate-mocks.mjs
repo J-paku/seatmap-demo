@@ -16,30 +16,17 @@ const BASE_DATE = '2026-07-27'
 
 // ── プール定義 ──────────────────────────────────────────
 
-// 姓プール30種([漢字, カナ, ヘボン式ローマ字])
-// ローマ字はメールアドレスの local part 生成専用(長音・撥音・拗音を字面通りではなくヘボン式で表記)
-const SURNAMES = [
-  ['青山', 'アオヤマ', 'aoyama'], ['白石', 'シライシ', 'shiraishi'], ['高橋', 'タカハシ', 'takahashi'], ['田中', 'タナカ', 'tanaka'],
-  ['中村', 'ナカムラ', 'nakamura'], ['藤井', 'フジイ', 'fujii'], ['松本', 'マツモト', 'matsumoto'], ['井上', 'イノウエ', 'inoue'],
-  ['木村', 'キムラ', 'kimura'], ['林', 'ハヤシ', 'hayashi'], ['清水', 'シミズ', 'shimizu'], ['山本', 'ヤマモト', 'yamamoto'],
-  ['森田', 'モリタ', 'morita'], ['小林', 'コバヤシ', 'kobayashi'], ['加藤', 'カトウ', 'kato'], ['吉田', 'ヨシダ', 'yoshida'],
-  ['山田', 'ヤマダ', 'yamada'], ['佐々木', 'ササキ', 'sasaki'], ['山口', 'ヤマグチ', 'yamaguchi'], ['斉藤', 'サイトウ', 'saito'],
-  ['池田', 'イケダ', 'ikeda'], ['橋本', 'ハシモト', 'hashimoto'], ['石川', 'イシカワ', 'ishikawa'], ['前田', 'マエダ', 'maeda'],
-  ['藤原', 'フジワラ', 'fujiwara'], ['岡田', 'オカダ', 'okada'], ['後藤', 'ゴトウ', 'goto'], ['長谷川', 'ハセガワ', 'hasegawa'],
-  ['村上', 'ムラカミ', 'murakami'], ['近藤', 'コンドウ', 'kondo'],
-]
-
 // チーム定義(名称順が定義順 team-01..05)
 // idPrefix: 座席ID接頭辞(11-layout-pipeline.md — seat.id.startsWith(idPrefix + '-') が唯一の結束キー)
 // kana: 部署名の読み(全角カタカナ)。かな検索用。社員 nameKana(=kana+連番)の元にもなる
 // size: 箱幅算出専用の想定列数(座席2行化に合わせて箱高だけ変更・幅はここを据え置いて7/7/6/6/5列を維持)
 // empCount: 実際の社員数(再席率70%前後に合わせて size とは独立に増員)
 const TEAM_DEFS = [
-  { name: '営業部', kana: 'エイギョウブ', size: 8, empCount: 10, idPrefix: 'dept-sales' },
-  { name: '開発部', kana: 'カイハツブ', size: 8, empCount: 10, idPrefix: 'dept-dev' },
-  { name: '総務部', kana: 'ソウムブ', size: 7, empCount: 9, idPrefix: 'dept-general' },
-  { name: '経理部', kana: 'ケイリブ', size: 7, empCount: 8, idPrefix: 'dept-account' },
-  { name: '企画部', kana: 'キカクブ', size: 6, empCount: 7, idPrefix: 'dept-planning' },
+  { name: '営業部', kana: 'エイギョウブ', mail: 'ei', size: 8, empCount: 10, idPrefix: 'dept-sales' },
+  { name: '開発部', kana: 'カイハツブ', mail: 'ka', size: 8, empCount: 10, idPrefix: 'dept-dev' },
+  { name: '総務部', kana: 'ソウムブ', mail: 'so', size: 7, empCount: 9, idPrefix: 'dept-general' },
+  { name: '経理部', kana: 'ケイリブ', mail: 'ke', size: 7, empCount: 8, idPrefix: 'dept-account' },
+  { name: '企画部', kana: 'キカクブ', mail: 'ki', size: 6, empCount: 7, idPrefix: 'dept-planning' },
 ]
 
 // 携帯電話番号プレフィックス(070/080/090)
@@ -133,13 +120,15 @@ const pad4 = (n) => String(n).padStart(4, '0')
 
 // 社員IDから携帯電話番号を決定論的に生成(数字のみで保持し、tel:リンク・表示整形の両方を単一値で賄う)
 // 約20%判定(実結果は15〜20%レンジに収まる)は電話番号なしとし、詳細パネルの未設定表示分岐を実データで踏ませる
+// 公開リポジトリなので下4桁は伏せ字にし、実在番号と衝突しうる完全な11桁を残さない。
+// 表示整形(3-4-4)は文字数だけを見るので伏せ字のままで通る
 const buildPhone = (empId) => {
   const rand = mulberry32(hashString(`phone-${empId}`))
   if (rand() < 0.2) return undefined
   const prefix = MOBILE_PREFIXES[Math.floor(rand() * MOBILE_PREFIXES.length)]
-  let rest = ''
-  for (let i = 0; i < 8; i++) rest += Math.floor(rand() * 10)
-  return `${prefix}${rest}`
+  let middle = ''
+  for (let i = 0; i < 4; i++) middle += Math.floor(rand() * 10)
+  return `${prefix}${middle}xxxx`
 }
 
 // ── チーム生成 ──────────────────────────────────────────
@@ -226,10 +215,8 @@ TEAM_DEFS.forEach((def, ti) => {
   const teamId = `team-${pad2(ti + 1)}`
   for (let local = 0; local < def.empCount; local++) {
     const gi = empSeq - 1 // 通し index
-    const [, , skr] = SURNAMES[gi % SURNAMES.length]
     const id = `emp-${pad3(empSeq)}`
     const position = local === 0 ? '部長' : local === 3 ? '課長' : undefined
-    const surnameRoman = skr
     const phone = buildPhone(id)
     // 表示名は実名ではなく「部署名+連番」(例: 営業部1)。nameKana は「部署名の読み+同じ連番」(例: エイギョウブ1)
     const displayName = `${def.name}${local + 1}`
@@ -246,7 +233,8 @@ TEAM_DEFS.forEach((def, ti) => {
       // 表示名が「部署名+連番」の合成なので姓/名に割れない。読み全体を姓側に入れる(半角カタカナ)
       furiganaSei: toHalfWidthKana(nameKana),
       ...(position ? { position } : {}),
-      email: `${surnameRoman}${pad3(empSeq)}@example.co.jp`,
+      // 部署ローマ字2文字+4桁社員番号。ownerCode と同じ番号なので突合できる
+      email: `${def.mail}${pad4(empSeq)}@example.co.jp`,
       ...(phone ? { phone } : {}),
     }
     employees.push(emp)

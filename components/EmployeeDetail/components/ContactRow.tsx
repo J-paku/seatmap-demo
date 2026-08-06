@@ -1,6 +1,7 @@
 import type { ContactField } from '../type'
 
-// 連絡先1行。メールは素のテキスト・電話は tel: リンクで、右端に 44px のコピー領域を置く
+// 連絡先1行。値は素のテキストで、右端に 44px のコピー領域を置く
+// 電話番号は下4桁を伏せ字にしたモックなので tel: リンクにはしない(発信できない番号のため)
 
 type Props = {
   field: ContactField
@@ -8,21 +9,14 @@ type Props = {
   copyLabel: string
   displayValue: string
   copyValue: string
-  href?: string
   isCopied: boolean
   onCopy: (field: ContactField, value: string) => void
 }
 
-export const ContactRow = ({ field, icon, copyLabel, displayValue, copyValue, href, isCopied, onCopy }: Props) => (
+export const ContactRow = ({ field, icon, copyLabel, displayValue, copyValue, isCopied, onCopy }: Props) => (
   <div className='contact-row'>
     <span className='material-symbols-outlined contact-icon'>{icon}</span>
-    {href ? (
-      <a className='contact-value contact-value-link' href={href}>
-        {displayValue}
-      </a>
-    ) : (
-      <span className='contact-value'>{displayValue}</span>
-    )}
+    <span className='contact-value'>{displayValue}</span>
     <button
       type='button'
       className={`contact-copy-btn${isCopied ? ' is-copied' : ''}`}

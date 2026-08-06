@@ -13,9 +13,10 @@ import { DEFAULT_SEAT_HEIGHT, DEFAULT_SEAT_WIDTH } from '@/utils/seat-relayout'
 import { GHOST_MIN_SIZE } from '@/hooks/use-ghost-placement'
 import type { FurnitureKind, LayoutObjectRef } from '@/types'
 
-// 追加導線の状態機械。FAB → カテゴリ → (家具なら)ピッカー → ゴースト → 確定。
+// 追加導線の状態機械。カテゴリ → (家具なら)ピッカー → ゴースト → 確定。
 // ゴーストの幾何は use-ghost-placement、置けるかどうかの規則は utils/layout-rules が持ち、
-// ここは「今どの段にいるか」と「確定したら何を発行するか」だけを持つ
+// ここは「今どの段にいるか」と「確定したら何を発行するか」だけを持つ。
+// メニューの開閉は FAB 側(useAdminAddFab)の持ち物なのでここには無い
 
 // 会議室の既定サイズ
 const FACILITY_DEFAULT_SIZE = { width: 200, height: 150 }
@@ -35,7 +36,8 @@ type PlacementFlow =
   | { step: 'placing'; request: GhostRequest }
 
 export type ObjectPlacement = {
-  isFabOpen: boolean
+  // idle でない = 追加導線のどこかに居る
+  isActive: boolean
   isCategoryOpen: boolean
   isFurniturePickerOpen: boolean
   isTeamFormOpen: boolean
@@ -43,7 +45,7 @@ export type ObjectPlacement = {
   // ゴーストで掴み直し中の対象。キャンバス側が実体を淡く描くのに使う
   repositioningRef: LayoutObjectRef | null
   placement: GhostPlacement
-  toggleFab: () => void
+  openCategory: () => void
   selectCategory: (category: ObjectCategory) => void
   selectFurniture: (kind: FurnitureKind) => void
   submitTeam: (name: string, color: string) => void
@@ -52,10 +54,17 @@ export type ObjectPlacement = {
   cancel: () => void
 }
 
-// 配置が成立したことの通知。呼び出し側が「元に戻す」チップを出すのに使う
-type Options = { onPlaced?: (rect: Rect) => void }
+type Options = {
+  // 配置が成立したことの通知。呼び出し側が「元に戻す」チップを出すのに使う
+  onPlaced?: (rect: Rect) => void
+  // 閲覧モードから置き始めた時に編集セッションを起こす。冪等であることは呼び出し側が保証する
+  onEnsureEditMode: () => void
+}
 
-export const useObjectPlacement = (editor: UseLayoutEditorApi, { onPlaced }: Options = {}): ObjectPlacement => {
+export const useObjectPlacement = (
+  editor: UseLayoutEditorApi,
+  { onPlaced, onEnsureEditMode }: Options
+): ObjectPlacement => {
   const [flow, setFlow] = useState<PlacementFlow>({ step: 'idle' })
   const layout = editor.editingLayout
   const request = flow.step === 'placing' ? flow.request : null
@@ -81,68 +90,83 @@ export const useObjectPlacement = (editor: UseLayoutEditorApi, { onPlaced }: Opt
     isBlocked,
   })
 
-  const toggleFab = useCallback(() => {
-    setFlow((prev) => (prev.step === 'idle' ? { step: 'category' } : { step: 'idle' }))
-  }, [])
+  // 入口はどれも同じ手順で始める。閲覧モードなら先に編集セッションを起こし、
+  // 同じフレームでゴースト層まで描けるようにする
+  const openCategory = useCallback(() => {
+    onEnsureEditMode()
+    setFlow({ step: 'category' })
+  }, [onEnsureEditMode])
 
-  const selectCategory = useCallback((category: ObjectCategory) => {
-    if (category === 'furniture') {
-      setFlow({ step: 'furniture-picker' })
-      return
-    }
-    if (category === 'team') {
-      setFlow({ step: 'team-form' })
-      return
-    }
-    if (category === 'facility') {
+  const selectCategory = useCallback(
+    (category: ObjectCategory) => {
+      onEnsureEditMode()
+      if (category === 'furniture') {
+        setFlow({ step: 'furniture-picker' })
+        return
+      }
+      if (category === 'team') {
+        setFlow({ step: 'team-form' })
+        return
+      }
+      if (category === 'facility') {
+        setFlow({
+          step: 'placing',
+          request: {
+            target: { type: 'add-facility' },
+            label: '会議室',
+            size: FACILITY_DEFAULT_SIZE,
+            minSize: FACILITY_MIN_SIZE,
+            initialRect: null,
+            resizable: true,
+            outline: 'solid',
+            selfRef: null,
+          },
+        })
+      }
+    },
+    [onEnsureEditMode]
+  )
+
+  const selectFurniture = useCallback(
+    (kind: FurnitureKind) => {
+      onEnsureEditMode()
       setFlow({
         step: 'placing',
         request: {
-          target: { type: 'add-facility' },
-          label: '会議室',
-          size: FACILITY_DEFAULT_SIZE,
-          minSize: FACILITY_MIN_SIZE,
+          target: { type: 'add-furniture', furnitureKind: kind },
+          label: FURNITURE_KIND_LABEL[kind],
+          size: FURNITURE_DEFAULT_SIZE[kind],
+          minSize: FURNITURE_MIN_SIZE,
           initialRect: null,
           resizable: true,
           outline: 'solid',
           selfRef: null,
         },
       })
-    }
-  }, [])
-
-  const selectFurniture = useCallback((kind: FurnitureKind) => {
-    setFlow({
-      step: 'placing',
-      request: {
-        target: { type: 'add-furniture', furnitureKind: kind },
-        label: FURNITURE_KIND_LABEL[kind],
-        size: FURNITURE_DEFAULT_SIZE[kind],
-        minSize: FURNITURE_MIN_SIZE,
-        initialRect: null,
-        resizable: true,
-        outline: 'solid',
-        selfRef: null,
-      },
-    })
-  }, [])
+    },
+    [onEnsureEditMode]
+  )
 
   // チームの枠は座席数で決まるので、ゴーストでは引き伸ばさせない(破線・リサイズ不可)
-  const submitTeam = useCallback((name: string, color: string) => {
-    setFlow({
-      step: 'placing',
-      request: {
-        target: { type: 'add-team', name, color },
-        label: name,
-        size: TEAM_DEFAULT_SIZE,
-        minSize: TEAM_DEFAULT_SIZE,
-        initialRect: null,
-        resizable: false,
-        outline: 'dashed',
-        selfRef: null,
-      },
-    })
-  }, [])
+  const submitTeam = useCallback(
+    (name: string, color: string) => {
+      onEnsureEditMode()
+      setFlow({
+        step: 'placing',
+        request: {
+          target: { type: 'add-team', name, color },
+          label: name,
+          size: TEAM_DEFAULT_SIZE,
+          minSize: TEAM_DEFAULT_SIZE,
+          initialRect: null,
+          resizable: false,
+          outline: 'dashed',
+          selfRef: null,
+        },
+      })
+    },
+    [onEnsureEditMode]
+  )
 
   // 既存オブジェクトを現在位置・現在サイズのゴーストで掴み直す
   const startReposition = useCallback(
@@ -195,14 +219,14 @@ export const useObjectPlacement = (editor: UseLayoutEditorApi, { onPlaced }: Opt
   }, [request, placement, editor, onPlaced])
 
   return {
-    isFabOpen: flow.step !== 'idle',
+    isActive: flow.step !== 'idle',
     isCategoryOpen: flow.step === 'category',
     isFurniturePickerOpen: flow.step === 'furniture-picker',
     isTeamFormOpen: flow.step === 'team-form',
     request,
     repositioningRef: request?.target.type === 'reposition' ? request.target.ref : null,
     placement,
-    toggleFab,
+    openCategory,
     selectCategory,
     selectFurniture,
     submitTeam,

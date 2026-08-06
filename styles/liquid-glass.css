@@ -1,0 +1,67 @@
+/* 管理パネル(FAB + スピードダイヤル)用のリキッドグラス層。
+   このファイルはスタイルのみを持つ。コンポーネントは後続ステップで実装する */
+
+.liquid-glass {
+  background: var(--glass-bg);
+  backdrop-filter: blur(28px) saturate(170%);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+}
+
+.glass-fab-accent {
+  background: var(--glass-accent-bg);
+  backdrop-filter: blur(28px) saturate(170%);
+  border: 1px solid var(--glass-border);
+}
+
+/* backdrop-filter 非対応環境向けの不透明フォールバック。無いと文字が背景に沈む */
+@supports not (backdrop-filter: blur(1px)) {
+  .liquid-glass {
+    background: var(--glass-bg-opaque);
+  }
+
+  .glass-fab-accent {
+    background: var(--color-accent);
+  }
+}
+
+/* 押下フィードバックは color のみで表現する。
+   登場アニメーションが transform を占有しているため衝突を避ける */
+.glass-dial-row {
+  transition: background-color 0.15s ease-out;
+}
+
+.glass-dial-row:hover {
+  background: color-mix(in srgb, var(--color-text-primary) 8%, transparent);
+}
+
+.glass-dial-row:active {
+  background: color-mix(in srgb, var(--color-text-primary) 12%, transparent);
+}
+
+.glass-stagger-item {
+  animation: glass-pop-in 0.28s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  animation-delay: calc(var(--glass-stagger-i, 0) * 45ms);
+}
+
+@keyframes glass-pop-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.96);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .glass-stagger-item {
+    animation: none;
+  }
+
+  .glass-dial-row {
+    transition: none;
+  }
+}

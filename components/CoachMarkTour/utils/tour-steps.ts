@@ -40,7 +40,7 @@ export const TOUR_STEPS: Record<TourFlow, readonly TourStep[]> = {
     { selector: '[data-facility="true"]', text: '動かしたい会議室をタップして選びます' },
     { selector: '[data-facility="true"]', text: 'そのままドラッグして、好きな位置へ動かせます' },
     {
-      selector: '.add-obj-fab',
+      selector: '[data-coach="admin-fab"]',
       text: '左下の + から家具や会議室を新しく置けます',
     },
     FINISH_STEP,

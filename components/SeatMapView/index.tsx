@@ -2,6 +2,7 @@ import { useCallback, useMemo, useRef, useState } from 'react'
 import { AppHeader } from './components/AppHeader'
 import { EditDialogs } from './components/EditDialogs'
 import { EditModeLayer } from './components/EditModeLayer'
+import { useAdminFabVisibility } from './hooks/use-admin-fab-visibility'
 import { useEditDialogs } from './hooks/use-edit-dialogs'
 import { useLayoutSave } from './hooks/use-layout-save'
 import { useMinimapPayload } from './hooks/use-minimap-payload'
@@ -10,7 +11,7 @@ import { useSeatAssign } from './hooks/use-seat-assign'
 import { useSeatMapData } from './hooks/use-seat-map-data'
 import { useTeamSeatFocus } from './hooks/use-team-seat-focus'
 import type { FocusFailure } from './hooks/use-team-seat-focus'
-import { AddObjectFab } from '@/components/AddObjectFab'
+import { AdminAddFab } from '@/components/AdminAddFab'
 import { DetailPanels } from '@/components/DetailPanels'
 import { EmployeeAssignSheet } from '@/components/EmployeeAssignSheet'
 import { EmployeeDirectory } from '@/components/EmployeeDirectory'
@@ -25,7 +26,6 @@ import { CoachMarkTour } from '@/components/CoachMarkTour'
 import { useCoachMarkTour } from '@/components/CoachMarkTour/hooks/use-coach-mark-tour'
 import { ConfirmDialog } from '@/components/edit/ConfirmDialog'
 import { LiveRegion } from '@/components/a11y/components/LiveRegion'
-import { MySeatButton } from '@/components/MySeatButton'
 import { SeatMapCanvas } from '@/components/SeatMapCanvas'
 import type { SeatMapCanvasHandle } from '@/components/SeatMapCanvas'
 import { TeamOverlay } from '@/components/TeamOverlay'
@@ -37,7 +37,7 @@ import { SELF_EMPLOYEE_ID } from '@/utils/demo-identity'
 import { useLayoutEditor } from '@/hooks/use-layout-editor'
 import { rectOfRef } from '@/utils/layout-objects'
 import type { Rect } from '@/utils/rect'
-import type { LayoutObjectRef, Seat } from '@/types'
+import type { Employee, LayoutObjectRef } from '@/types'
 
 // 座席マップ画面の組み立て。データ合成・保存・ダイアログ状態はそれぞれのフックが持つ
 
@@ -45,7 +45,7 @@ import type { LayoutObjectRef, Seat } from '@/types'
 const NOTICE_MS = 2400
 
 export const SeatMapView = () => {
-  const { openSeatDetail, openFacilityDetail } = useDetailPanel()
+  const { openSeatDetail, openPersonDetail, openFacilityDetail, personDetailId, closeAll } = useDetailPanel()
   const { layout } = useSeatLayout()
   const { themeMode, setTheme } = useTheme()
   // アバター編集モーダルは移植版 EmployeeDirectory が内包する(設定パネル・フッターのアバターから開く)
@@ -74,8 +74,17 @@ export const SeatMapView = () => {
     [editor, effectiveLayout, showUndoChipAt]
   )
 
+  // 閲覧モードのまま置き始めた時だけ編集セッションを起こす。既に編集中なら何もしない
+  // (enterEditMode はワーキングコピーと undo スタックを作り直すので、二度呼ぶと編集内容が消える)
+  const ensureEditSession = useCallback(() => {
+    if (!editor.isEditMode) editor.enterEditMode()
+  }, [editor])
+
   const dialogs = useEditDialogs(editor, employeeById, { onDeleteObject: handleDeleteObject })
-  const placement = useObjectPlacement(editor, { onPlaced: showUndoChipAt })
+  const placement = useObjectPlacement(editor, {
+    onPlaced: showUndoChipAt,
+    onEnsureEditMode: ensureEditSession,
+  })
   // 操作ガイド。編集モード初回だけ自動再生し、？ ボタンで何度でも見られる
   const centerOnSelector = useCallback((selector: string) => canvasRef.current?.centerOnSelector(selector), [])
   const tour = useCoachMarkTour({ isActive: editor.isEditMode, centerOnSelector })
@@ -96,8 +105,8 @@ export const SeatMapView = () => {
     noticeTimerRef.current = window.setTimeout(() => setUnassignedNotice(null), NOTICE_MS)
   }, [])
 
-  // 編集モードへはサイドバーの設定から入る。閉じずに入るとサイドバーの暗幕が
-  // キャンバスと編集用の操作子を覆ったままになる
+  // 編集モードへは FAB のメニューか長押しから入る。サイドバーを開いたまま入ると
+  // サイドバーの暗幕がキャンバスと編集用の操作子を覆ったままになるので先に畳む
   const handleEnterEdit = useCallback(() => {
     setIsDirectoryOpen(false)
     editor.enterEditMode()
@@ -114,16 +123,40 @@ export const SeatMapView = () => {
   const focus = useTeamSeatFocus({ layout: effectiveLayout, canvasRef, onFailure: handleFocusFailure })
   // オーバーレイ内ミニマップ用のフロア情報(開いているチームが決まってから組み立てる)
   const minimap = useMinimapPayload(effectiveLayout, focus.payload?.teamId ?? null)
+  // 左下 FAB の可否。条件が増えても組み立てが太らないよう判定はフックへ寄せる
+  const isAdminFabVisible = useAdminFabVisibility({
+    teamOverlayPayload: focus.payload,
+    isDirectoryOpen,
+    isPlacementActive: placement.isActive,
+    assignSeatId: assign.assignSeatId,
+    tour,
+  })
 
-  // 検索でヒットした社員の席 → 所属チームのオーバーレイを開き、その席をヒット表示する。
-  // キャンバス側に座席カードは無いので、旧来の座席へのズームは行わない
-  const handleDirectorySeatSelect = useCallback(
-    (seat: Seat) => {
+  // サイドバーで押された社員はまずカードで見せる。座席へ飛ぶかどうかはカードのCTAが決める
+  const handleDirectoryEmployeeSelect = useCallback(
+    (employee: Employee) => {
       setIsDirectoryOpen(false)
-      focus.focusSeat(seat)
+      openPersonDetail(employee.id)
     },
-    [focus]
+    [openPersonDetail, setIsDirectoryOpen]
   )
+
+  // 人物詳細を開いている社員の席。引けない社員にはCTAを出さず「座席未設定」を見せる
+  const personSeat = useMemo(
+    () =>
+      personDetailId
+        ? effectiveLayout?.seats.find((candidate) => candidate.employeeId === personDetailId) ?? null
+        : null,
+    [personDetailId, effectiveLayout]
+  )
+
+  // カードの「座席へ移動」。畳んでから飛ばす — 逆順だとオーバーレイの上にシートの暗幕が残る
+  const handleGoToSeat = useCallback(() => {
+    if (!personSeat) return
+    closeAll()
+    setIsDirectoryOpen(false)
+    focus.focusSeat(personSeat)
+  }, [personSeat, closeAll, focus, setIsDirectoryOpen])
 
   // 「自分の席」ボタン。検索と同じ focusSeat を通し、分岐はここ(席の引き当て)だけに持つ
   const handleGoToMySeat = useCallback(() => {
@@ -167,25 +200,22 @@ export const SeatMapView = () => {
           repositioningRef={placement.repositioningRef}
           onUndo={editor.undo}
           canUndo={editor.canUndo}
+          onGoToMySeat={editor.isEditMode ? undefined : handleGoToMySeat}
         />
       )}
       <EmployeeDirectory
         isOpen={isDirectoryOpen}
         onClose={() => setIsDirectoryOpen(false)}
         employees={directoryEmployees}
-        seats={effectiveLayout?.seats ?? []}
         currentUserId={SELF_EMPLOYEE_ID}
-        onSeatSelect={handleDirectorySeatSelect}
+        onEmployeeSelect={handleDirectoryEmployeeSelect}
         themeMode={themeMode}
         setTheme={setTheme}
-        onEnterEdit={handleEnterEdit}
         onResetLayout={save.resetLayout}
         onRefresh={() => {}}
         isGaroonConnected
         onGaroonLogout={() => {}}
       />
-      {/* 編集モードでは TeamOverlay 自体が描画されないため、この入口も出さない */}
-      {!editor.isEditMode && ready && effectiveLayout && <MySeatButton onClick={handleGoToMySeat} />}
       {unassignedNotice && <div className='emp-dir-unassigned-toast'>{unassignedNotice}</div>}
       {/* 画面を見ていない人にも同じ文言を渡す。トーストと同一の文字列を使う */}
       <LiveRegion message={unassignedNotice ?? ''} />
@@ -226,7 +256,11 @@ export const SeatMapView = () => {
           ) : null
         })()}
       {!editor.isEditMode && (
-        <DetailPanels onFacilityDeleted={(name) => showNotice(`「${name}」を削除しました`)} />
+        <DetailPanels
+          onFacilityDeleted={(name) => showNotice(`「${name}」を削除しました`)}
+          onGoToSeat={personSeat ? handleGoToSeat : undefined}
+          showSeatUnsetNotice={personDetailId !== null && !personSeat}
+        />
       )}
 
       {editor.isEditMode && (
@@ -240,36 +274,40 @@ export const SeatMapView = () => {
         />
       )}
 
-      {/* 追加導線。ゴースト層はキャンバスの DOM 木の外に置く —
+      {/* 追加導線。閲覧モードでも常設し、置き始めた時に編集セッションを起こす。
+          シートとゴースト層を編集モードの内側に置くと、起動と同じフレームで描かれず1フレーム空く。
+          ゴースト層はキャンバスの DOM 木の外に置く —
           中に入れると暗幕がキャンバスの pointerdown を奪い、配置中にパン/ズームできなくなる */}
-      {editor.isEditMode && (
-        <>
-          <AddObjectFab isOpen={placement.isFabOpen} onToggle={placement.toggleFab} />
-          <ObjectCategorySheet
-            isOpen={placement.isCategoryOpen}
-            categories={['team', 'furniture', 'facility']}
-            onSelect={placement.selectCategory}
-            onClose={placement.cancel}
-          />
-          <FurniturePickerModal
-            isOpen={placement.isFurniturePickerOpen}
-            onSelect={placement.selectFurniture}
-            onClose={placement.cancel}
-          />
-          <TeamCreatePopover
-            isOpen={placement.isTeamFormOpen}
-            onSubmit={placement.submitTeam}
-            onClose={placement.cancel}
-          />
-          {placement.request && (
-            <GhostPlacementLayer
-              request={placement.request}
-              placement={placement.placement}
-              onConfirm={placement.confirm}
-              onCancel={placement.cancel}
-            />
-          )}
-        </>
+      {isAdminFabVisible && (
+        <AdminAddFab
+          onSelectTeam={() => placement.selectCategory('team')}
+          onSelectFacility={placement.openCategory}
+          onEnterEdit={handleEnterEdit}
+        />
+      )}
+      <ObjectCategorySheet
+        isOpen={placement.isCategoryOpen}
+        categories={['furniture', 'facility']}
+        onSelect={placement.selectCategory}
+        onClose={placement.cancel}
+      />
+      <FurniturePickerModal
+        isOpen={placement.isFurniturePickerOpen}
+        onSelect={placement.selectFurniture}
+        onClose={placement.cancel}
+      />
+      <TeamCreatePopover
+        isOpen={placement.isTeamFormOpen}
+        onSubmit={placement.submitTeam}
+        onClose={placement.cancel}
+      />
+      {placement.request && (
+        <GhostPlacementLayer
+          request={placement.request}
+          placement={placement.placement}
+          onConfirm={placement.confirm}
+          onCancel={placement.cancel}
+        />
       )}
 
       {editor.errorToast && <EditErrorToast key={editor.errorToast.id} message={editor.errorToast.message} />}

@@ -13,8 +13,9 @@ interface SettingsPanelProps {
   isGaroonConnected?: boolean
   onGaroonLogout?: () => void
   onOpenAvatarCustomizer: () => void
-  // デモ固有: 実物のヘッダーには無い機能をここへ移設した(§5.4)
+  // 編集への入口は左下 FAB へ移したので、ここでは受け取っても行を出さない
   onEnterEdit?: () => void
+  // デモ固有: 実物には無いレイアウト初期化をここへ移設した(§5.4)
   onResetLayout?: () => void
 }
 
@@ -26,7 +27,6 @@ export function SettingsPanel({
   isGaroonConnected,
   onGaroonLogout,
   onOpenAvatarCustomizer,
-  onEnterEdit,
   onResetLayout,
 }: SettingsPanelProps) {
   const [isRefreshing, setIsRefreshing] = useState(false)
@@ -100,31 +100,6 @@ export function SettingsPanel({
           </span>
           <span className='text-sm'>アバター編集</span>
         </button>
-
-        {/* デモ固有の行: 実物のヘッダーに無いレイアウト編集機能をここへ移設した(§5.4) */}
-        {onEnterEdit && (
-          <button
-            type='button'
-            onClick={() => {
-              triggerHaptic('light')
-              onEnterEdit()
-            }}
-            className='flex w-full items-center gap-3 px-4 py-4 transition-colors'
-            style={{
-              color: 'var(--color-text-primary)',
-              borderBottom: '1px solid var(--color-border)',
-            }}
-          >
-            <span
-              className='icon-msr-filled text-lg'
-              aria-hidden='true'
-              style={{ color: 'var(--color-accent)' }}
-            >
-              edit
-            </span>
-            <span className='text-sm'>レイアウト編集</span>
-          </button>
-        )}
 
         {/* デモ固有の行: レイアウトのリセット(確認ダイアログは呼び出し側が持つ) */}
         {onResetLayout && (

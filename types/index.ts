@@ -179,7 +179,7 @@ export type Employee = {
   isForeign?: boolean
   position?: string
   email?: string
-  // 携帯電話番号(数字のみ・ハイフン無し。tel:リンクはそのまま使い、表示側で整形する)
+  // 携帯電話番号(ハイフン無し11文字。公開リポジトリのため下4桁は 'xxxx' の伏せ字。表示側で 3-4-4 に整形する)
   phone?: string
 }
 

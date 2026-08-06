@@ -1,9 +1,10 @@
 import { useEffect, useMemo } from 'react'
 import { ProfileCard } from './components/ProfileCard'
 import { ScheduleSection } from './components/ScheduleSection'
+import { useEmployeeDetailTarget } from './hooks/use-employee-detail-target'
 import { useScheduleRefresh } from '@/hooks/use-schedule-refresh'
 import type { EmployeeDetailProps } from './type'
-import { useEmployees, useSchedules, useSeats, useTeams } from '@/lib/mock-loader'
+import { useSchedules } from '@/lib/mock-loader'
 import { computePresenceMap } from '@/utils/presence'
 import { useQuantizedClock } from '@/hooks/use-quantized-clock'
 import { useDetailPanel } from '@/contexts/detail-panel-context'
@@ -15,20 +16,15 @@ import { useEmployeeAvatar } from '@/hooks/use-employee-avatar'
 
 type Props = EmployeeDetailProps
 
-export const EmployeeDetail = ({ seatId }: Props) => {
-  const { data: seats } = useSeats()
-  const { data: employees } = useEmployees()
-  const { data: teams } = useTeams()
+export const EmployeeDetail = ({ seatId, employeeId, onGoToSeat, showSeatUnsetNotice }: Props) => {
   const { data: schedules, error: scheduleError } = useSchedules()
   const { date, debouncedDate, isTodaySelected, goToPrevDay, goToNextDay, goToToday } = useSelectedDate()
   const nowMs = useQuantizedClock(isTodaySelected)
   const { openScheduleDetail } = useDetailPanel()
   const { isRefreshing, cooldown, refresh } = useScheduleRefresh()
 
-  const seat = seats?.find((s) => s.id === seatId)
-  const employee = seat?.employeeId ? employees?.find((e) => e.id === seat.employeeId) : null
+  const { employee, team, isVacantSeat, isMissingSeat } = useEmployeeDetailTarget({ seatId, employeeId })
   const avatarConfig = useEmployeeAvatar(employee)
-  const team = employee ? teams?.find((t) => t.id === employee.teamId) ?? null : null
 
   // debouncedDate 当日分の予定に絞って時刻順に並べる
   const mySchedules = useMemo(() => {
@@ -50,12 +46,12 @@ export const EmployeeDetail = ({ seatId }: Props) => {
   // パネルを閉じる(=アンマウント)と選択日を今日へリセット(パネル内限定の状態)
   useEffect(() => () => goToToday(), [goToToday])
 
-  if (!seat) return null
+  if (isMissingSeat) return null
 
   return (
     <div className='employee-detail'>
       {!employee ? (
-        <p className='seat-vacant-notice'>この座席は現在空席です</p>
+        isVacantSeat && <p className='seat-vacant-notice'>この座席は現在空席です</p>
       ) : (
         <>
           <ProfileCard
@@ -63,12 +59,12 @@ export const EmployeeDetail = ({ seatId }: Props) => {
             team={team}
             avatar={avatarConfig}
             status={status}
-            isBadgeVisible={!!seat.id && isTodaySelected}
+            // 在席状態は予定から導出するため座席の有無とは無関係
+            isBadgeVisible={isTodaySelected}
             isScheduleLoading={isScheduleLoading}
+            onGoToSeat={onGoToSeat}
+            showSeatUnsetNotice={showSeatUnsetNotice}
           />
-
-          {/* 座席へ移動ボタン/座席未設定文言はこのデモの侵入経路(座席カード・キャンバス)では発生しないため
-              アクションバー自体を描画しない(スペック: 該当なしなら非表示) */}
 
           <ScheduleSection
             dateKey={jstDateKey(debouncedDate)}

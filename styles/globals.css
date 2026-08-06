@@ -16,9 +16,11 @@
 @import './facility-detail.css';
 @import './date-navigator.css';
 @import './admin-edit.css';
+@import './liquid-glass.css';
 @import './object-picker.css';
 @import './ghost-placement.css';
 @import './coach-mark.css';
+@import './alert-dialog.css';
 @import './icon.css';
 
 html,

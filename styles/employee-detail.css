@@ -123,9 +123,6 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.contact-value-link {
-  color: var(--color-accent);
-}
 /* 視覚は16pxアイコンだが margin -8 でヒット領域を44×44へ拡張 */
 .contact-copy-btn {
   flex-shrink: 0;
@@ -172,3 +169,62 @@
   }
 }
 
+
+/* ④ 下部アクション行(カードの角丸に切り取られるので自前の角丸は持たない) */
+.profile-action-bar {
+  display: flex;
+  border-top: 1px solid color-mix(in srgb, var(--color-accent) 45%, var(--color-border));
+}
+.profile-action-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 14px 12px;
+  border: 0;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.profile-action-btn:active {
+  opacity: 0.8;
+}
+/* バーが端に接しているため輪郭は内側へ出す */
+.profile-action-btn:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: -2px;
+}
+.profile-action-icon {
+  font-size: 18px;
+}
+.profile-action-secondary {
+  gap: 6px;
+  color: var(--color-accent);
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--color-accent) 20%, var(--color-surface-elevated)),
+    color-mix(in srgb, var(--color-accent) 9%, var(--color-surface-elevated))
+  );
+}
+.profile-action-primary {
+  gap: 4px;
+  color: var(--color-text-on-accent);
+  background: linear-gradient(
+    135deg,
+    var(--color-accent),
+    color-mix(in srgb, var(--color-accent) 60%, var(--color-band-highlight))
+  );
+}
+/* 座席を引けない社員。押せる見た目にしない */
+.profile-action-unset {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 14px 12px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+}
