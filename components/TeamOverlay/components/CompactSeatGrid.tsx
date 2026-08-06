@@ -1,7 +1,8 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import type { RefObject } from 'react'
 import { EditSeatCell } from './EditSeatCell'
 import { EmptyGridCell } from './EmptyGridCell'
+import { GRID_HEADER_TRACK_PX, GridEdgeAddButtons, GridRemoveHeaders } from './GridEdgeControls'
 import { ScrollHint } from './ScrollHint'
 import { ViewSeatCell } from './ViewSeatCell'
 import {
@@ -42,6 +43,23 @@ const useCompactCellWidth = (ref: RefObject<HTMLElement | null>): number => {
   return cellWidth
 }
 
+// STEP B4: 列を左へ足すと新しい空列ぶん内容が右へ押し出され、見ていた場所が横へ飛ぶ。
+// 左挿入の累計本数を持ち、増分ぶんだけ scrollLeft を足して視界を保つ
+const useCompensateLeftInsert = (
+  ref: RefObject<HTMLElement | null>,
+  leftInsertCount: number,
+  colStridePx: number
+): void => {
+  const compensatedRef = useRef(0)
+  useLayoutEffect(() => {
+    const el = ref.current
+    const delta = leftInsertCount - compensatedRef.current
+    if (!el || colStridePx <= 0 || delta <= 0) return
+    el.scrollLeft += delta * colStridePx
+    compensatedRef.current = leftInsertCount
+  })
+}
+
 export const CompactSeatGrid = ({
   grid,
   employeeById,
@@ -59,6 +77,11 @@ export const CompactSeatGrid = ({
   seatMouseDragProps,
   cellMouseDropProps,
   seatTouchProps,
+  editGrid,
+  onAddRow,
+  onAddCol,
+  onRemoveRow,
+  onRemoveCol,
 }: Props) => {
   const scrollRef = useRef<HTMLDivElement>(null)
   const cellWidth = useCompactCellWidth(scrollRef)
@@ -66,6 +89,20 @@ export const CompactSeatGrid = ({
   const isScrollingRef = useScrollActivity()
   const glowing = useSeatHighlightAnimation(scrollRef, highlightSeatId)
   const spotlight = highlightSeatId !== null
+
+  // 編集中はヘッダー行・列トラック(GRID_HEADER_TRACK_PX)を1本ずつ足すため、既存セルは+1オフセットする
+  const hasGridEdgeControls = isEditMode && editGrid !== null
+  const rowOffset = hasGridEdgeControls ? 1 : 0
+  const colOffset = hasGridEdgeControls ? 1 : 0
+
+  // 左へ列を足した回数を数え、増分ぶんだけ scrollLeft を補正する。render中にref.currentを
+  // 読まないよう、カウンタ自体はstateで持つ(コミット後の副作用はuseCompensateLeftInsert内のrefが担う)
+  const [leftInsertCount, setLeftInsertCount] = useState(0)
+  const handleAddCol = (edge: 'left' | 'right') => {
+    if (edge === 'left') setLeftInsertCount((count) => count + 1)
+    onAddCol(edge)
+  }
+  useCompensateLeftInsert(scrollRef, leftInsertCount, cellWidth + COMPACT_SEAT_GAP_PX)
 
   // ヒントのタップで 1 列ぶんだけ滑らかに送る
   const nudge = (direction: -1 | 1) => {
@@ -78,7 +115,10 @@ export const CompactSeatGrid = ({
         <div
           className='team-ovl-grid-inner'
           style={{
-            gridTemplateColumns: `repeat(${grid.cols}, minmax(${cellWidth}px, 1fr))`,
+            gridTemplateColumns: hasGridEdgeControls
+              ? `${GRID_HEADER_TRACK_PX}px repeat(${grid.cols}, minmax(${cellWidth}px, 1fr))`
+              : `repeat(${grid.cols}, minmax(${cellWidth}px, 1fr))`,
+            gridTemplateRows: hasGridEdgeControls ? `${GRID_HEADER_TRACK_PX}px` : undefined,
             gridAutoRows: `minmax(${COMPACT_SEAT_MIN_HEIGHT_PX}px, auto)`,
             gap: COMPACT_SEAT_GAP_PX,
             width: '100%',
@@ -92,7 +132,7 @@ export const CompactSeatGrid = ({
             return (
               <div
                 key={seat.id}
-                style={{ gridRow: row + 1, gridColumn: col + 1, display: 'flex' }}
+                style={{ gridRow: row + 1 + rowOffset, gridColumn: col + 1 + colOffset, display: 'flex' }}
                 data-seat-grid-cell={isEditMode ? formatSeatGridCellAttr({ row, col }) : undefined}
                 {...(isEditMode ? cellMouseDropProps : {})}
               >
@@ -134,18 +174,24 @@ export const CompactSeatGrid = ({
             (grid.emptyCells ?? []).map((cell) => (
               <div
                 key={`empty-${cell.row}-${cell.col}`}
-                style={{ gridRow: cell.row + 1, gridColumn: cell.col + 1, display: 'flex' }}
+                style={{ gridRow: cell.row + 1 + rowOffset, gridColumn: cell.col + 1 + colOffset, display: 'flex' }}
                 data-seat-grid-cell={formatSeatGridCellAttr(cell)}
                 {...cellMouseDropProps}
               >
                 <EmptyGridCell isSelected={isEmptyCellSelected(cell)} onSelect={() => onSelectEmptyCell(cell)} />
               </div>
             ))}
+          {/* STEP B4: 空行・空列のヘッダにだけ出す削除ボタン(ヘッダー行・列トラックの分は上でオフセット済み) */}
+          {hasGridEdgeControls && editGrid && (
+            <GridRemoveHeaders grid={editGrid} onRemoveRow={onRemoveRow} onRemoveCol={onRemoveCol} />
+          )}
         </div>
       </div>
       {/* onNudge を渡す = ボタン化。端に達した側は is-faded でフェード(アンマウントはしない) */}
       {hasOverflow && <ScrollHint side='left' onNudge={() => nudge(-1)} faded={atStart} />}
       {hasOverflow && <ScrollHint side='right' onNudge={() => nudge(1)} faded={atEnd} />}
+      {/* STEP B4: グリッド4辺の＋ボタン。編集中のみ */}
+      {isEditMode && <GridEdgeAddButtons onAddRow={onAddRow} onAddCol={handleAddCol} />}
     </div>
   )
 }

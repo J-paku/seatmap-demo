@@ -198,6 +198,11 @@ export const TeamOverlay = ({
               seatMouseDragProps={seatDrag.seatMouseDragProps}
               cellMouseDropProps={seatDrag.cellMouseDropProps}
               seatTouchProps={seatDrag.seatTouchProps}
+              editGrid={editMode.grid}
+              onAddRow={editMode.addRow}
+              onAddCol={editMode.addCol}
+              onRemoveRow={editMode.removeRow}
+              onRemoveCol={editMode.removeCol}
             />
           </section>
           {/* タッチドラッグ中だけ指へ追従するゴースト。マウスはネイティブDnDの既定画像に任せる */}

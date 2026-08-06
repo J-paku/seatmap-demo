@@ -990,3 +990,80 @@
 .team-ovl-trash-anchor {
   margin-left: auto;
 }
+
+/* STEP B4: グリッド編集の行・列増減。.team-ovl-gridwrap(position: relative)を基準に
+   絶対配置し、内部スクロールに関わらずグリッドの外周に留まる。横スクロールヒント
+   (.team-ovl-hint、上下中央固定)と重ならないよう、上下左右いずれも角寄りへ配置する */
+.team-ovl-edge-add {
+  position: absolute;
+  width: 26px;
+  height: 26px;
+  border-radius: 9999px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface-muted);
+  color: var(--color-accent);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--glass-shadow-sm);
+}
+
+.team-ovl-edge-add:hover {
+  background: var(--color-surface-muted-hover);
+}
+
+.team-ovl-edge-add .material-symbols-outlined {
+  font-size: 16px;
+}
+
+.team-ovl-edge-add.is-top {
+  top: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.team-ovl-edge-add.is-bottom {
+  bottom: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.team-ovl-edge-add.is-left {
+  top: 8px;
+  left: -8px;
+}
+
+.team-ovl-edge-add.is-right {
+  top: 8px;
+  right: -8px;
+}
+
+/* 空行・空列のヘッダに出す削除ボタンの受け皿。行ヘッダは縦長セル・列ヘッダは横長セルに
+   1つだけ小さく中央配置する(GRID_HEADER_TRACK_PXぶんのトラックは呼び出し側が用意する) */
+.team-ovl-grid-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.team-ovl-edge-remove {
+  width: 20px;
+  height: 20px;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--color-danger);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.team-ovl-edge-remove:hover {
+  background: var(--color-danger-soft);
+}
+
+.team-ovl-edge-remove .material-symbols-outlined {
+  font-size: 16px;
+}

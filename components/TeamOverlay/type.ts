@@ -1,6 +1,6 @@
 import type { UseSeatDragResult } from './hooks/use-seat-drag'
 import type { Rect } from '@/utils/rect'
-import type { GridCell } from '@/utils/seat-grid-draft'
+import type { GridCell, SeatGridDraft } from '@/utils/seat-grid-draft'
 import type { Employee, PresenceStatus, Seat } from '@/types'
 
 // チームバウンダリのクリックで渡ってくる情報。rect が拡大の原点になる
@@ -98,4 +98,12 @@ export type SeatGridProps = {
   seatMouseDragProps: UseSeatDragResult['seatMouseDragProps']
   cellMouseDropProps: UseSeatDragResult['cellMouseDropProps']
   seatTouchProps: UseSeatDragResult['seatTouchProps']
+  // STEP B4: グリッド編集の行・列増減。値自体は常に渡してよく、isEditMode=falseの間は
+  // 呼び出し側(各グリッド)が描画自体をスキップする(ドラッグ配線と同じ方針)。
+  // editGridは行・列の空判定(isRowEmpty/isColEmpty)にそのまま使う生のSeatGridDraft
+  editGrid: SeatGridDraft | null
+  onAddRow: (edge: 'top' | 'bottom') => void
+  onAddCol: (edge: 'left' | 'right') => void
+  onRemoveRow: (row: number) => void
+  onRemoveCol: (col: number) => void
 }
