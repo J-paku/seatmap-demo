@@ -22,6 +22,7 @@
 @import './coach-mark.css';
 @import './alert-dialog.css';
 @import './icon.css';
+@import './layout-switcher.css';
 
 html,
 body {

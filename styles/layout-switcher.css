@@ -1,0 +1,103 @@
+/* LayoutSwitcher: Dynamic Island風のレイアウト切り替えアイランド。この段は外殻とmorphのみ持つ。
+   展開パネルの中身(公式ボタン・一覧行・作成フォーム)はSTEP4が担当する */
+
+.layout-switcher {
+  position: fixed;
+  left: 50%;
+  top: calc(env(safe-area-inset-top) + 72px);
+  transform: translateX(-50%);
+  z-index: var(--z-index-dropdown);
+  width: min(50vw, 176px);
+  overflow: hidden;
+  border-radius: 22px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface-elevated);
+  box-shadow: var(--shadow-card);
+  /* 幅・角丸・パネル高・矢印の4要素が共有するduration/easing。ここだけ直せば全て揃う */
+  --lsw-duration: 400ms;
+  --lsw-easing: cubic-bezier(0.32, 0.72, 0, 1);
+  transition:
+    width var(--lsw-duration) var(--lsw-easing),
+    border-radius var(--lsw-duration) var(--lsw-easing);
+}
+
+.layout-switcher.is-open {
+  width: min(80vw, 236px);
+  border-radius: 18px;
+}
+
+.layout-switcher-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 36px;
+  padding: 6px 16px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: var(--color-text-primary);
+}
+.layout-switcher-toggle:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: -2px;
+}
+
+.layout-switcher-toggle-icon {
+  flex-shrink: 0;
+  font-size: 18px;
+  color: var(--color-text-secondary);
+}
+.layout-switcher-toggle-icon.is-custom {
+  color: var(--color-accent);
+}
+
+.layout-switcher-toggle-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: left;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.layout-switcher-toggle-caret {
+  flex-shrink: 0;
+  font-size: 18px;
+  color: var(--color-text-muted);
+  transform: rotate(0deg);
+  transition: transform var(--lsw-duration) var(--lsw-easing);
+}
+.layout-switcher-toggle.is-open .layout-switcher-toggle-caret {
+  transform: rotate(180deg);
+}
+
+/* height:autoはトランジションが効かないためgrid-template-rowsで開閉する。
+   0frでも子要素を実際に潰すにはmin-height:0とoverflow:hiddenが必須 */
+.layout-switcher-panel {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  transition:
+    grid-template-rows var(--lsw-duration) var(--lsw-easing),
+    opacity var(--lsw-duration) var(--lsw-easing);
+}
+.layout-switcher.is-open .layout-switcher-panel {
+  grid-template-rows: 1fr;
+  opacity: 1;
+}
+
+.layout-switcher-panel-inner {
+  min-height: 0;
+  overflow: hidden;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .layout-switcher,
+  .layout-switcher-toggle-caret,
+  .layout-switcher-panel {
+    transition: none;
+  }
+}

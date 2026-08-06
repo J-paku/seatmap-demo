@@ -67,7 +67,7 @@ const FACILITY_MEETINGS: FacilityMeeting[] = facilityMeetingsJson
 
 // デモは 1フロア固定
 const FLOOR_ID = 'floor-1'
-const FLOOR_NAME = '本社1F'
+export const FLOOR_NAME = '本社1F'
 // lib/geometry.ts の定数から生成(数値を重複させず、キャンバス側と乖離しないようにする)
 const VIEWBOX = { width: VIEWBOX_W, height: VIEWBOX_H }
 
