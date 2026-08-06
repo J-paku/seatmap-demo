@@ -887,3 +887,99 @@
     transition: none;
   }
 }
+
+/* STEP B1: 編集中の座席カード。表示用(.team-ovl-card/.team-ovl-cell)とは別クラスで、
+   氏名・部署・操作(ドラッグハンドル)だけを持つ。高さは表示用カードに合わせ、
+   グリッド種別(Desktop/Compact)ごとに親セレクタで揃える */
+.team-ovl-editcard {
+  position: relative;
+  width: 100%;
+  border-radius: 10px;
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  text-align: left;
+  cursor: pointer;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface-elevated);
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+}
+
+.team-ovl-grid.is-desktop .team-ovl-editcard {
+  height: 88px;
+}
+
+.team-ovl-grid.is-compact .team-ovl-editcard {
+  min-height: 96px;
+}
+
+.team-ovl-editcard-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.team-ovl-editcard-name {
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--color-text-primary);
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.team-ovl-editcard-dept {
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  opacity: 0.75;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.team-ovl-editcard-handle {
+  flex-shrink: 0;
+  font-size: 18px;
+  color: var(--color-text-muted);
+}
+
+/* 空セル。破線枠+中央に薄い add アイコン。高さは編集カードと同じ基準で揃える */
+.team-ovl-emptycell {
+  width: 100%;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border: 1px dashed var(--color-border);
+  background: var(--color-surface-sunken);
+}
+
+.team-ovl-grid.is-desktop .team-ovl-emptycell {
+  height: 88px;
+}
+
+.team-ovl-grid.is-compact .team-ovl-emptycell {
+  min-height: 96px;
+}
+
+.team-ovl-emptycell-icon {
+  font-size: 22px;
+  color: var(--color-text-muted);
+  opacity: 0.6;
+}
+
+/* 選択中。席・空セルどちらも同じ見せ方(2px の accent 枠+外側にわずかなグロー) */
+.team-ovl-editcard.is-selected,
+.team-ovl-emptycell.is-selected {
+  border: 2px solid var(--color-accent);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-accent) 20%, transparent);
+}

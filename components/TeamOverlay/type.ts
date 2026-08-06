@@ -70,7 +70,7 @@ export type SeatGrid = {
   seatByGridCell: Map<string, Seat>
   rows: number
   cols: number
-  // 編集中だけ埋まる空セル一覧(表示時は常に空配列)。空セルの描画は次 STEP の担当。
+  // 編集中だけ埋まる空セル一覧(表示時は常に空配列)。CompactSeatGrid が EmptyGridCell の描画に使う。
   // utils/seat-grid.ts の buildSeatGrid(座標クラスタリング側)は空セルを持たないため任意にしてある
   emptyCells?: GridCell[]
 }
@@ -86,4 +86,10 @@ export type SeatGridProps = {
   highlightSeatId: string | null
   onSeatClick: (seatId: string) => void
   onClearHighlight?: () => void
+  // STEP B1: 編集モード。true の間はカードが EditSeatCell / EmptyGridCell へ差し替わる
+  isEditMode: boolean
+  isSeatSelected: (seatId: string) => boolean
+  isEmptyCellSelected: (cell: GridCell) => boolean
+  onSelectSeat: (seatId: string) => void
+  onSelectEmptyCell: (cell: GridCell) => void
 }
