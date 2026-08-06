@@ -1,12 +1,13 @@
 import { useCallback, useState } from 'react'
 
 // ミニマップの開閉状態。別のチームを開いても引き継ぐので localStorage に置く。
-// 既定は閉 — オーバーレイを開いた瞬間に主役(座席グリッド)が押し下げられないようにする
+// 既定は開 — 保存値が無ければ展開状態で見せる(閉じたい場合は明示的にトグルさせる)
 const STORAGE_KEY = 'seatmap::minimap-open'
 
 const readStored = (): boolean => {
-  if (typeof window === 'undefined') return false
-  return window.localStorage.getItem(STORAGE_KEY) === 'true'
+  if (typeof window === 'undefined') return true
+  const stored = window.localStorage.getItem(STORAGE_KEY)
+  return stored === null ? true : stored === 'true'
 }
 
 const writeStored = (isOpen: boolean): void => {
