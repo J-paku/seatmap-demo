@@ -77,7 +77,16 @@ export const TeamOverlay = ({
           transformOrigin: anchorTransformOrigin(rect),
           pointerEvents: clickLocked ? 'none' : 'auto',
         }}
-        onClick={(e) => e.stopPropagation()}
+        onClick={(e) => {
+          e.stopPropagation()
+          // ヒット表示はその席自身のクリック以外で解除する。座席以外(空白・ヘッダー・
+          // ミニマップ等)をクリックした時に消えなかったのが元の不具合。ヒット席自身の
+          // クリックだけは社員詳細を開く経路と競合するため除外する
+          if (highlightSeatId) {
+            const seatEl = (e.target as HTMLElement).closest<HTMLElement>('[data-seat-id]')
+            if (seatEl?.dataset.seatId !== highlightSeatId) onClearHighlight?.()
+          }
+        }}
         {...bind}
       >
         {loading && <div className='team-ovl-loadbar' style={{ background: teamColor }} />}
