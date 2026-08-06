@@ -11,7 +11,7 @@ export const DEFAULT_SEAT_HEIGHT = 75
 // チーム内グリッドリファクのパラメータ(viewBox px)
 export const RELAYOUT_PADDING = 20
 export const RELAYOUT_COL_GAP = 18
-const RELAYOUT_ROW_GAP = 20
+export const RELAYOUT_ROW_GAP = 20
 const AREA_MIN_W = 200
 const AREA_MIN_H = 100
 // area fit 用パディング(座席バウンディングボックス+20)
