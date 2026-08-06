@@ -1,4 +1,5 @@
 import type { Rect } from '@/utils/rect'
+import type { GridCell } from '@/utils/seat-grid-draft'
 import type { Employee, PresenceStatus, Seat } from '@/types'
 
 // チームバウンダリのクリックで渡ってくる情報。rect が拡大の原点になる
@@ -69,6 +70,9 @@ export type SeatGrid = {
   seatByGridCell: Map<string, Seat>
   rows: number
   cols: number
+  // 編集中だけ埋まる空セル一覧(表示時は常に空配列)。空セルの描画は次 STEP の担当。
+  // utils/seat-grid.ts の buildSeatGrid(座標クラスタリング側)は空セルを持たないため任意にしてある
+  emptyCells?: GridCell[]
 }
 
 // 両グリッドが受け取る共通 props。描画・入力・スクロール戦略だけが別実装になる

@@ -1,16 +1,19 @@
-import { useMemo, useRef } from 'react'
+import { useCallback, useMemo, useRef } from 'react'
 import { Minimap } from './components/Minimap'
 import { SeatGridFrame } from './components/SeatGridFrame'
 import { SeatLayoutHeader } from './components/SeatLayoutHeader'
 import { TeamOverlayHeader } from './components/TeamOverlayHeader'
 import { useIsCompactMobile } from './hooks/use-compact-mobile'
 import { useModalShell } from './hooks/use-modal-shell'
+import { useOverlayEditMode } from './hooks/use-overlay-edit-mode'
 import { useOverlaySession } from './hooks/use-overlay-session'
+import { useSeatLayoutCompose } from './hooks/use-seat-layout-compose'
 import { anchorTransformOrigin } from './utils/anchor-origin'
-import { COMPACT_SIDE_PADDING_PX, buildSeatGrid } from './utils/seat-grid'
+import { COMPACT_SIDE_PADDING_PX } from './utils/seat-grid'
 import type { TeamOverlayProps } from './type'
 import { SheetHandle } from '@/components/SheetHandle'
 import { useSwipeDismiss } from '@/hooks/use-swipe-dismiss'
+import type { Rect } from '@/utils/rect'
 
 // 10: チームバウンダリクリックで開く大型オーバーレイ(座席グリッド全体)
 // クリックしたバウンダリ中心から膨らむように開く。中央固定拡大ではない
@@ -38,35 +41,50 @@ export const TeamOverlay = ({
   const bodyRef = useRef<HTMLDivElement>(null)
   const isCompactMobile = useIsCompactMobile()
   const { loading, clickLocked, syncedAt } = useOverlaySession(payload !== null, bodyRef)
-  // 下スワイプで閉じるのは Compact だけの挙動
-  const { sheetRef, bind } = useSwipeDismiss({
-    onClose,
-    enabled: payload !== null && isCompactMobile,
-    scrollGateRef: bodyRef,
-  })
-  useModalShell(payload !== null, sheetRef, onClose)
 
   const teamSeats = useMemo(
     () => (payload ? seats.filter((s) => s.teamId === payload.teamId) : []),
     [seats, payload]
   )
-  const grid = useMemo(() => buildSeatGrid(teamSeats), [teamSeats])
+  const editMode = useOverlayEditMode()
+  const seatGrid = useSeatLayoutCompose({
+    teamSeats,
+    isEditMode: editMode.isEditMode,
+    grid: editMode.grid,
+    draft: editMode.draft,
+  })
   const occupiedCount = useMemo(() => teamSeats.filter((s) => s.employeeId).length, [teamSeats])
+
+  // 編集中は✕・背景・Escで閉じられないようにする(未保存の変更を無言で捨てない)。
+  // 編集モードを抜けられるのは SeatLayoutHeader の「終了」(onExitEdit)だけにする
+  const guardedClose = useCallback(() => {
+    if (editMode.isEditMode) return
+    onClose()
+  }, [editMode.isEditMode, onClose])
+
+  // 下スワイプで閉じるのは Compact だけの挙動
+  const { sheetRef, bind } = useSwipeDismiss({
+    onClose: guardedClose,
+    enabled: payload !== null && isCompactMobile,
+    scrollGateRef: bodyRef,
+  })
+  useModalShell(payload !== null, sheetRef, guardedClose)
 
   if (!payload) return null
 
   const { teamColor, teamName, rect } = payload
   const sidePadding = isCompactMobile ? COMPACT_SIDE_PADDING_PX : 0
+  const teamRect: Rect = minimapTeamArea ?? { x: 0, y: 0, w: 0, h: 0 }
 
   return (
     <div
       className={`team-ovl-wrap${isCompactMobile ? ' is-compact' : ''}`}
       onClick={(e) => {
         // ラッパー余白クリックで閉じる(パネル自身のクリックは stopPropagation)
-        if (e.target === e.currentTarget) onClose()
+        if (e.target === e.currentTarget) guardedClose()
       }}
     >
-      <div className='team-ovl-backdrop' onClick={onClose} />
+      <div className='team-ovl-backdrop' onClick={guardedClose} />
       <div
         ref={sheetRef}
         className={`team-ovl-panel${isCompactMobile ? ' is-compact' : ''}`}
@@ -96,7 +114,7 @@ export const TeamOverlay = ({
             stripClassName='team-ovl-handle'
             barClassName='team-ovl-handle-bar'
             heightPx={48}
-            onClose={onClose}
+            onClose={guardedClose}
           />
         )}
         <TeamOverlayHeader
@@ -104,7 +122,7 @@ export const TeamOverlay = ({
           teamColor={teamColor}
           occupiedCount={occupiedCount}
           isCompactMobile={isCompactMobile}
-          onClose={onClose}
+          onClose={guardedClose}
         />
 
         {/* 本文 — 座席配置セクション */}
@@ -115,10 +133,13 @@ export const TeamOverlay = ({
               loading={loading}
               syncedAt={syncedAt}
               sidePadding={sidePadding}
+              isEditMode={editMode.isEditMode}
+              onEnterEdit={() => editMode.enterEditMode(teamSeats, teamRect)}
+              onExitEdit={editMode.cancel}
             />
             <SeatGridFrame
               isCompactMobile={isCompactMobile}
-              grid={grid}
+              grid={seatGrid}
               employeeById={employeeById}
               presenceMap={presenceMap}
               teamName={teamName}
