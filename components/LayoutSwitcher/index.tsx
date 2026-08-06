@@ -1,14 +1,29 @@
 import { useId } from 'react'
 import { useLayoutSwitcher } from './hooks/use-layout-switcher'
 import { IslandToggleButton } from './components/IslandToggleButton'
+import { OfficialLayoutButton } from './components/OfficialLayoutButton'
+import { CustomLayoutList } from './components/CustomLayoutList'
+import { CreateLayoutForm } from './components/CreateLayoutForm'
 import { useLayoutSource } from '@/contexts/layout-source-context'
 
-// Dynamic Island風のレイアウト切り替えアイランド。この段は外殻とmorphのみを持ち、
-// 展開パネルの中身(公式ボタン・一覧行・作成フォーム)はSTEP4が担当するため
-// ここでは空のプレースホルダを描く
+// STEP5がデフォルト設定・削除の実処理を実装するまでの仮の口。ここではpropsの型を満たすだけで何もしない
+const handleToggleDefault = () => {}
+const handleDelete = () => {}
+
+// Dynamic Island風のレイアウト切り替えアイランド。外殻とmorphに加え、展開パネルの中身
+// (公式ボタン・カスタム一覧・作成フォーム)を組み立てる
 export const LayoutSwitcher = () => {
   const { source } = useLayoutSource()
-  const { isOpen, layoutMetas, rootRef, toggle } = useLayoutSwitcher()
+  const {
+    isOpen,
+    layoutMetas,
+    defaultLayoutId,
+    rootRef,
+    toggle,
+    selectOfficial,
+    selectCustom,
+    createLayout,
+  } = useLayoutSwitcher()
   const panelId = useId()
 
   return (
@@ -30,7 +45,16 @@ export const LayoutSwitcher = () => {
           display:noneにしないのはmorphのトランジションを効かせ続けるため */}
       <div className='layout-switcher-panel' id={panelId} inert={!isOpen}>
         <div className='layout-switcher-panel-inner'>
-          {/* STEP4: 公式ボタン・一覧行・作成フォームをここに実装する */}
+          <OfficialLayoutButton isSelected={source.type === 'official'} onSelect={selectOfficial} />
+          <CustomLayoutList
+            layoutMetas={layoutMetas}
+            source={source}
+            defaultLayoutId={defaultLayoutId}
+            onSelect={selectCustom}
+            onToggleDefault={handleToggleDefault}
+            onDelete={handleDelete}
+          />
+          <CreateLayoutForm layoutCount={layoutMetas.length} onCreate={createLayout} />
         </div>
       </div>
     </div>

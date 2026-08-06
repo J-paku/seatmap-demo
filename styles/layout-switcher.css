@@ -1,5 +1,5 @@
-/* LayoutSwitcher: Dynamic Island風のレイアウト切り替えアイランド。この段は外殻とmorphのみ持つ。
-   展開パネルの中身(公式ボタン・一覧行・作成フォーム)はSTEP4が担当する */
+/* LayoutSwitcher: Dynamic Island風のレイアウト切り替えアイランド。外殻とmorphに加え、
+   展開パネルの中身(公式ボタン・一覧行・作成フォーム)のスタイルを持つ */
 
 .layout-switcher {
   position: fixed;
@@ -90,8 +90,195 @@
 }
 
 .layout-switcher-panel-inner {
+  display: flex;
+  flex-direction: column;
   min-height: 0;
   overflow: hidden;
+  padding: 6px 8px;
+}
+
+/* 公式ボタン・カスタム行が共有する見出しテキスト。truncateのためflex:1/min-width:0/
+   overflow:hiddenを揃え、右端のcheckアイコンとの間はこのspanのflex:1が押し広げる */
+.layout-switcher-row-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: left;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.layout-switcher-row-icon {
+  flex-shrink: 0;
+  font-size: 18px;
+  color: currentColor;
+}
+
+.layout-switcher-row-check {
+  flex-shrink: 0;
+  font-size: 16px;
+  color: currentColor;
+}
+
+/* 展開パネル最上段: 公式レイアウトボタン */
+.layout-switcher-official {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 44px;
+  padding-inline: 10px;
+  border: none;
+  border-radius: 8px;
+  background: var(--color-surface-muted);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+}
+.layout-switcher-official.is-selected {
+  background: var(--color-accent-soft);
+  color: var(--color-accent);
+}
+.layout-switcher-official:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: -2px;
+}
+
+/* カスタム一覧: 0件の時はコンポーネント側がnullを返すため描かれない。
+   1件以上ある時だけ区切り線+上余白を足す */
+.layout-switcher-custom-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px solid var(--color-border);
+}
+
+.layout-switcher-custom-row {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  min-height: 44px;
+  border-radius: 8px;
+}
+.layout-switcher-custom-row.is-selected {
+  background: var(--color-accent-soft);
+}
+
+.layout-switcher-row-name-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  min-height: 44px;
+  padding-inline: 10px;
+  border: none;
+  background: none;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+}
+.layout-switcher-custom-row.is-selected .layout-switcher-row-name-button {
+  color: var(--color-accent);
+}
+.layout-switcher-row-name-button:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: -2px;
+}
+
+.layout-switcher-star-button,
+.layout-switcher-delete-button {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 8px;
+  background: none;
+  cursor: pointer;
+}
+.layout-switcher-star-button:focus-visible,
+.layout-switcher-delete-button:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: -2px;
+}
+
+.layout-switcher-star-icon {
+  font-size: 16px;
+  color: var(--color-text-secondary);
+  opacity: 0.25;
+}
+.layout-switcher-star-icon.is-default {
+  opacity: 1;
+}
+
+.layout-switcher-delete-icon {
+  font-size: 16px;
+  color: var(--color-danger);
+}
+
+/* 展開パネル最下段: 作成フォーム。上限時は入力欄自体を出さずカウンターだけ残す */
+.layout-switcher-create-form {
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px solid var(--color-border);
+}
+
+.layout-switcher-create-counter {
+  padding-inline: 10px;
+  text-align: right;
+  font-size: 10px;
+  color: var(--color-text-muted);
+}
+.layout-switcher-create-counter.is-full {
+  color: var(--color-accent);
+  font-weight: 700;
+}
+
+.layout-switcher-create-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding-inline: 10px;
+}
+
+.layout-switcher-create-input {
+  flex: 1;
+  min-width: 0;
+  min-height: 36px;
+  padding-inline: 10px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  font-size: 12px;
+}
+.layout-switcher-create-input:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: -2px;
+}
+
+.layout-switcher-create-submit {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 8px;
+  background: var(--color-accent);
+  color: var(--color-text-on-accent);
+  cursor: pointer;
+}
+.layout-switcher-create-submit:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
 }
 
 @media (prefers-reduced-motion: reduce) {
