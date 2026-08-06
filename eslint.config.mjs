@@ -12,6 +12,9 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // エージェント作業用の worktree(git 管理外のローカル複製)。
+    // 除外しないと同じソースを複製ぶんだけ二重三重に検査してしまう
+    ".claude/**",
   ]),
   {
     rules: {

@@ -110,7 +110,7 @@ export const SeatMapView = () => {
   const handleEnterEdit = useCallback(() => {
     setIsDirectoryOpen(false)
     editor.enterEditMode()
-  }, [editor])
+  }, [editor, setIsDirectoryOpen])
 
   const handleFocusFailure = useCallback(
     (reason: FocusFailure) => {

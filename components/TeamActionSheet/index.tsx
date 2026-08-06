@@ -2,7 +2,7 @@ import { PickerSheet } from '@/components/PickerSheet'
 
 // チームラベルをタップしたときの操作選択。座席追加とグリッド再配置の入口
 
-export type TeamAction = 'add-seat' | 'relayout'
+type TeamAction = 'add-seat' | 'relayout'
 
 type Props = {
   isOpen: boolean

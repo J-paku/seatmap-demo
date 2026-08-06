@@ -21,7 +21,7 @@ import type { SnapGuide } from '@/utils/snap-guides'
 
 // 実物由来のゴースト最小・最大辺(viewBox 単位)
 export const GHOST_MIN_SIZE = 40
-export const GHOST_MAX_SIZE = 2500
+const GHOST_MAX_SIZE = 2500
 
 type Transform = { scale: number; tx: number; ty: number }
 
@@ -72,7 +72,6 @@ export const useGhostPlacement = ({
   active,
   size,
   initialRect = null,
-  resizable,
   minSize = { width: GHOST_MIN_SIZE, height: GHOST_MIN_SIZE },
   siblings,
   isBlocked,
@@ -93,11 +92,15 @@ export const useGhostPlacement = ({
   const dragRef = useRef<DragState>({ kind: 'none' })
   const minSizeRef = useRef(minSize)
 
+  // ポインタ/rAF ハンドラは「今の値」を読む必要がある。effect へ移すと、同じコミットで
+  // 張ったハンドラが1フレーム古い値を掴んでドラッグが1フレーム遅れて追従する
+  /* eslint-disable react-hooks/refs */
   siblingsRef.current = siblings
   transformRef.current = transform
   centerRef.current = center
   sizeRef.current = logicalSize
   minSizeRef.current = minSize
+  /* eslint-enable react-hooks/refs */
 
   // 画面座標 → viewBox 座標
   const toLogicalRect = useCallback(
@@ -161,9 +164,11 @@ export const useGhostPlacement = ({
     }
   }, [toLogicalRect])
 
-  // 起動時: キャンバス矩形と変換を実測し、初期位置を決める
+  // 起動時: キャンバス矩形と変換を実測し、初期位置を決める。
+  // 非活性化時の後始末も同じ effect が持つ(実測値は描画中には作れない)
   useEffect(() => {
     if (!active) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setCenter(null)
       setGuides([])
       dragRef.current = { kind: 'none' }
@@ -302,6 +307,9 @@ export const useGhostPlacement = ({
     }
   }, [active, applySnap, clampCenter, toScreenCenter, toScreenGuides])
 
+  // 実測したキャンバス矩形(ref)から描画用の論理矩形を導く。state に持たせると
+  // 実測 → setState → 再描画 の1往復が挟まり、ゴーストが1フレーム遅れて出る
+  // eslint-disable-next-line react-hooks/refs
   const logicalRect = center ? toLogicalRect(center, logicalSize) : null
   const blocked = logicalRect && isBlocked ? isBlocked(logicalRect) : false
 
@@ -337,4 +345,3 @@ export const useGhostPlacement = ({
   }
 }
 
-export type { ResizeHandle }

@@ -3,7 +3,7 @@ import type { FurnitureKind, LayoutObjectRef } from '@/types'
 
 // 何を置こうとしているか。配置の入口(FAB・再配置ボタン)がこれを組み立て、
 // ゴースト層は「どう描くか」だけを見る
-export type GhostTarget =
+type GhostTarget =
   | { type: 'add-furniture'; furnitureKind: FurnitureKind }
   | { type: 'add-facility' }
   | { type: 'add-team'; name: string; color: string }

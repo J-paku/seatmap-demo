@@ -60,8 +60,10 @@ export const useCoachMarkTour = ({ isActive, centerOnSelector }: Options): TourS
     setTargetRect(null)
   }, [])
 
-  // 編集モードを抜けたら畳む
+  // 編集モードを抜けたら畳む。close() は状態4本をまとめて戻す後始末で、
+  // 描画由来の派生値ではないので effect から呼ぶ以外の置き場が無い
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (!isActive && isOpen) close()
   }, [isActive, isOpen, close])
 
@@ -91,15 +93,15 @@ export const useCoachMarkTour = ({ isActive, centerOnSelector }: Options): TourS
       }, 360)
       return () => window.clearTimeout(timer)
     }
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setTargetRect(rect)
   }, [isOpen, step, stepIndex, centerOnSelector])
 
-  // 最後まで進んだら閉じる
+  // 最後まで進んだら閉じる。ステップ数の到達判定は描画後にしか出来ないので effect に置く
   useEffect(() => {
     if (!isOpen || !flow) return
     if (stepIndex < steps.length) return
     markSeen(flow)
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     close()
   }, [isOpen, flow, stepIndex, steps.length, close])
 
