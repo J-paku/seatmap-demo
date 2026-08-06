@@ -1,0 +1,61 @@
+# main への push で静的 export をビルドし、gh-pages ブランチへ配信する。
+# Pages の配信元は gh-pages ブランチ(legacy build)なので、成果物をそこへ載せ替える。
+# basePath はプロジェクトサイト配信のときだけ必要なので GITHUB_PAGES=true で有効化する。
+name: deploy-pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# 既定のワークフロー権限が read のため、gh-pages へ push する分だけ明示的に足す
+permissions:
+  contents: write
+
+# 連続 push 時は最新のコミットだけ配信する(古い配信で上書きしない)
+concurrency:
+  group: deploy-pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - run: npm ci
+
+      - name: Build static export
+        env:
+          GITHUB_PAGES: 'true'
+        run: npm run build
+
+      - name: Checkout gh-pages
+        uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+          path: .gh-pages
+
+      # .nojekyll が無いと _next/ 配下(先頭アンダースコア)が Jekyll に無視されて 404 になる
+      - name: Sync artifacts
+        run: |
+          rsync -a --delete --exclude .git out/ .gh-pages/
+          touch .gh-pages/.nojekyll
+
+      - name: Commit and push
+        working-directory: .gh-pages
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          if git diff --cached --quiet; then
+            echo '配信物に差分なし。何も push しない'
+            exit 0
+          fi
+          git commit -m "deploy: ${GITHUB_SHA::7} をビルドして配信する"
+          git push
