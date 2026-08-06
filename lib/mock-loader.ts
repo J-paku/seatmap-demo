@@ -13,9 +13,20 @@ import type {
   Team,
 } from '@/types'
 import { VIEWBOX_W, VIEWBOX_H } from '@/utils/geometry'
-import { clearStoredLayout, loadStoredLayout, saveStoredLayout } from '@/lib/layout-persistence'
+import {
+  clearStoredLayout,
+  loadCustomLayout,
+  loadLayoutMetas,
+  loadStoredLayout,
+  saveCustomLayout,
+  saveLayoutMetas,
+  saveStoredLayout,
+} from '@/lib/layout-persistence'
 import { anchorSchedulesToDate } from '@/utils/schedule-anchor'
 import { hashString } from '@/utils/hash-string'
+import { useLayoutSource } from '@/contexts/layout-source-context'
+import type { LayoutSource } from '@/contexts/layout-source-context'
+import { useGlobalAnnouncement } from '@/components/a11y'
 import employeesJson from '../mocks/employees.json'
 import avatarsJson from '../mocks/avatars.json'
 import teamsJson from '../mocks/teams.json'
@@ -153,13 +164,28 @@ export const useSchedules = () => useCached('schedules', SCHEDULES)
 
 export const useFacilityMeetings = () => useCached('facility-meetings', FACILITY_MEETINGS)
 
-// 07: 保存済みレイアウトの上書き分を扱うSWRキー(mock/系に合わせ、mutateで表示即時更新できるようにする)
-const LAYOUT_OVERRIDE_SWR_KEY = 'mock/layout-override'
+// 07: 保存済みレイアウトの上書き分を扱うSWRキー(mock/系に合わせ、mutateで表示即時更新できるようにする)。
+// STEP2: source(公式/カスタム)ごとにキーを分ける。固定のままだと切り替えても前のキャッシュが返り続ける
+const OFFICIAL_LAYOUT_SWR_KEY = 'mock/layout-override'
+const customLayoutSwrKey = (layoutId: string): string => `mock/layout:${layoutId}`
+const layoutSwrKey = (source: LayoutSource): string =>
+  source.type === 'official' ? OFFICIAL_LAYOUT_SWR_KEY : customLayoutSwrKey(source.layoutId)
+
+// カスタムレイアウトのメタ一覧から対象1件だけ updatedAt を打ち直す
+const touchLayoutMetaUpdatedAt = (layoutId: string): void => {
+  const updatedAt = new Date().toISOString()
+  saveLayoutMetas(
+    loadLayoutMetas().map((meta) => (meta.layoutId === layoutId ? { ...meta, updatedAt } : meta))
+  )
+}
 
 // SeatLayout はローダーが teams+seats+facilities を合成(種データ側)。
-// その上に、あればlocalStorage保存分を上書き適用する。読み込みはSWRのfetcherが
-// マウント後に実行される既存の仕組み(useCached参照)に乗せるためSSR不整合は起きない
+// その上に、source(公式/カスタム)に応じた保存分をlocalStorageから上書き適用する。
+// 読み込みはSWRのfetcherがマウント後に実行される既存の仕組み(useCached参照)に乗せるため
+// SSR不整合は起きない
 export const useSeatLayout = () => {
+  const { source } = useLayoutSource()
+  const { announce } = useGlobalAnnouncement()
   const { data: teams } = useTeams()
   const { data: seats } = useSeats()
   const { data: facilities } = useFacilities()
@@ -178,28 +204,43 @@ export const useSeatLayout = () => {
       : undefined
 
   const { data: override, mutate: mutateOverride } = useSWR<SeatLayout | null>(
-    LAYOUT_OVERRIDE_SWR_KEY,
-    async () => loadStoredLayout(),
+    layoutSwrKey(source),
+    async () => {
+      if (source.type === 'official') return loadStoredLayout()
+      const custom = loadCustomLayout(source.layoutId)
+      if (custom) return custom
+      // カスタムの保存分が見つからない(削除済み等): 公式へフォールバックして通知する
+      announce('[warning]表示中のレイアウトが見つからないため公式レイアウトを表示しています')
+      return loadStoredLayout()
+    },
     { revalidateOnFocus: false }
   )
 
   // 保存分があればそちらを採用、無ければ種データ合成分にフォールバック
   const layout = override ?? composed
 
-  // 完了時: 保存書き込み+SWRキャッシュへ直接反映(再取得を挟まず表示を即時更新)
+  // 完了時: 保存書き込み+SWRキャッシュへ直接反映(再取得を挟まず表示を即時更新)。
+  // カスタム表示中はカスタムの保存先へ書き、LayoutMeta.updatedAt も併せて更新する
   const persistLayout = useCallback(
     async (next: SeatLayout) => {
-      saveStoredLayout(next)
+      if (source.type === 'official') {
+        saveStoredLayout(next)
+      } else {
+        saveCustomLayout(source.layoutId, next)
+        touchLayoutMetaUpdatedAt(source.layoutId)
+      }
       await mutateOverride(next, false)
     },
-    [mutateOverride]
+    [source, mutateOverride]
   )
 
-  // 設定操作「レイアウトをリセット」: 保存分を削除して種データ合成分へ復帰
+  // 設定操作「レイアウトをリセット」: 公式表示中のみ有効。保存分を削除して種データ合成分へ復帰する。
+  // カスタム表示中はリセット対象が無いため no-op
   const resetLayout = useCallback(async () => {
+    if (source.type !== 'official') return
     clearStoredLayout()
     await mutateOverride(null, false)
-  }, [mutateOverride])
+  }, [source, mutateOverride])
 
   return { layout, isLoading: !layout, persistLayout, resetLayout }
 }
