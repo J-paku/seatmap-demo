@@ -286,6 +286,15 @@ export type SeatLayout = {
   furniture: Furniture[]
 }
 
+// STEP1: 複数レイアウト対応 — カスタムレイアウトのメタ一覧(lib/layout-persistence.ts の
+// seatmap-demo/layouts に配列で保存)。実物の ownerCode は持たない
+// (デモに認証が無く常に単独利用のため)
+export type LayoutMeta = {
+  layoutId: string
+  layoutName: string
+  updatedAt: string
+}
+
 // 予定イベント
 export type ScheduleEvent = {
   id: string
