@@ -1,14 +1,16 @@
 import { useCallback, useMemo, useRef } from 'react'
 import { Minimap } from './components/Minimap'
+import { SeatDragGhost } from './components/SeatDragGhost'
 import { SeatGridFrame } from './components/SeatGridFrame'
 import { SeatLayoutHeader } from './components/SeatLayoutHeader'
 import { TeamOverlayHeader } from './components/TeamOverlayHeader'
+import { TrashDropZone } from './components/TrashDropZone'
 import { useIsCompactMobile } from './hooks/use-compact-mobile'
 import { useModalShell } from './hooks/use-modal-shell'
 import { useOverlayEditMode } from './hooks/use-overlay-edit-mode'
 import { useOverlaySession } from './hooks/use-overlay-session'
 import { useSeatCommit } from './hooks/use-seat-commit'
-import { SEAT_GRID_CELL_ATTR } from './hooks/use-seat-drag'
+import { SEAT_GRID_CELL_ATTR, useSeatDrag } from './hooks/use-seat-drag'
 import { useSeatLayoutCompose } from './hooks/use-seat-layout-compose'
 import { useSeatSelection } from './hooks/use-seat-selection'
 import { anchorTransformOrigin } from './utils/anchor-origin'
@@ -60,6 +62,10 @@ export const TeamOverlay = ({
 
   // STEP B1: 編集中セルの選択(席か空セルのどちらか1件だけ)。編集モードを抜けると自動で消える
   const seatSelection = useSeatSelection(editMode.isEditMode)
+
+  // STEP B2/B3: 編集中セルのドラッグ移動/入替とゴミ箱への削除。moveSeat/clearSeatは
+  // どちらもuseOverlayEditModeが持つ唯一のgrid差分適用口をそのまま渡す
+  const seatDrag = useSeatDrag({ moveSeat: editMode.moveSeat, clearSeat: editMode.clearSeat })
 
   // STEP A5: 保存(commit)の呼び口。保存ボタン付きの編集ドックは PHASE D の担当なので、
   // ここでは「終了」から保存できるところまでを配線する
@@ -165,6 +171,14 @@ export const TeamOverlay = ({
               onEnterEdit={() => editMode.enterEditMode(teamSeats, teamRect)}
               onExitEdit={handleFinishEdit}
             />
+            {/* ドラッグ中だけ現れるゴミ箱。落とすとドラッグ元セルを空にする */}
+            <TrashDropZone
+              isVisible={seatDrag.draggingCell !== null}
+              isOver={seatDrag.isOverTrash}
+              onDrop={() => {
+                if (seatDrag.draggingCell) editMode.clearSeat(seatDrag.draggingCell)
+              }}
+            />
             <SeatGridFrame
               isCompactMobile={isCompactMobile}
               grid={seatGrid}
@@ -181,8 +195,15 @@ export const TeamOverlay = ({
               isEmptyCellSelected={seatSelection.isEmptyCellSelected}
               onSelectSeat={seatSelection.selectSeat}
               onSelectEmptyCell={seatSelection.selectEmptyCell}
+              seatMouseDragProps={seatDrag.seatMouseDragProps}
+              cellMouseDropProps={seatDrag.cellMouseDropProps}
+              seatTouchProps={seatDrag.seatTouchProps}
             />
           </section>
+          {/* タッチドラッグ中だけ指へ追従するゴースト。マウスはネイティブDnDの既定画像に任せる */}
+          {seatDrag.touchGhostPosition && (
+            <SeatDragGhost x={seatDrag.touchGhostPosition.x} y={seatDrag.touchGhostPosition.y} />
+          )}
           {/* ミニマップは座席グリッドの下。渡されなければ描かない */}
           {minimapAreas && minimapFurniture && (
             <Minimap

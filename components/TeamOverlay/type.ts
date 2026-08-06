@@ -1,3 +1,4 @@
+import type { UseSeatDragResult } from './hooks/use-seat-drag'
 import type { Rect } from '@/utils/rect'
 import type { GridCell } from '@/utils/seat-grid-draft'
 import type { Employee, PresenceStatus, Seat } from '@/types'
@@ -92,4 +93,9 @@ export type SeatGridProps = {
   isEmptyCellSelected: (cell: GridCell) => boolean
   onSelectSeat: (seatId: string) => void
   onSelectEmptyCell: (cell: GridCell) => void
+  // STEP B2/B3: ドラッグ配線。isEditMode=falseの間は呼び出し側(各グリッド)が
+  // スプレッドを止めるため、値自体は常に渡してよい(表示モードのDOMは変わらない)
+  seatMouseDragProps: UseSeatDragResult['seatMouseDragProps']
+  cellMouseDropProps: UseSeatDragResult['cellMouseDropProps']
+  seatTouchProps: UseSeatDragResult['seatTouchProps']
 }
