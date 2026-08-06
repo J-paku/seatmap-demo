@@ -31,6 +31,14 @@ export const DesktopSeatGrid = ({
   useSeatHighlightAnimation(scrollRef, highlightSeatId)
   const spotlight = highlightSeatId !== null
 
+  // ヒントのタップで 1 列ぶんだけ滑らかに送る
+  const nudge = (direction: -1 | 1) => {
+    scrollRef.current?.scrollBy({
+      left: direction * (DESKTOP_SEAT_CARD_WIDTH_PX + DESKTOP_SEAT_GAP_PX),
+      behavior: 'smooth',
+    })
+  }
+
   const cells = []
   // seatByGridCell を row×col で全走査する。座席の無いセルは閲覧中なら描かない
   for (let row = 0; row < grid.rows; row += 1) {
@@ -81,9 +89,9 @@ export const DesktopSeatGrid = ({
           {cells}
         </div>
       </div>
-      {/* onNudge を渡さない = 表示のみのヒント */}
-      {hasOverflow && !atStart && <ScrollHint side='left' />}
-      {hasOverflow && !atEnd && <ScrollHint side='right' />}
+      {/* onNudge を渡す = ボタン化。端に達した側は is-faded でフェード(アンマウントはしない) */}
+      {hasOverflow && <ScrollHint side='left' onNudge={() => nudge(-1)} faded={atStart} />}
+      {hasOverflow && <ScrollHint side='right' onNudge={() => nudge(1)} faded={atEnd} />}
     </div>
   )
 }
