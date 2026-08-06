@@ -293,8 +293,8 @@
   justify-content: center;
   border: 0;
   border-radius: 8px;
-  background: var(--glass-bg);
-  backdrop-filter: blur(14px) saturate(150%);
+  background: color-mix(in srgb, var(--glass-bg) 45%, transparent);
+  backdrop-filter: blur(6px) saturate(120%);
   color: var(--color-text-secondary);
   box-shadow: var(--glass-shadow-sm);
   pointer-events: none;
@@ -304,7 +304,7 @@
 /* backdrop-filter 非対応環境用の不透明フォールバック */
 @supports not (backdrop-filter: blur(1px)) {
   .team-ovl-hint {
-    background: var(--glass-bg-opaque);
+    background: color-mix(in srgb, var(--glass-bg-opaque) 37%, transparent);
   }
 }
 
