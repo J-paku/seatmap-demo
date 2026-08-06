@@ -1,6 +1,7 @@
 import { useRef } from 'react'
 import { EditSeatCell } from './EditSeatCell'
 import { EmptyGridCell } from './EmptyGridCell'
+import { GRID_HEADER_TRACK_PX, GridEdgeAddButtons, GridRemoveHeaders } from './GridEdgeControls'
 import { ScrollHint } from './ScrollHint'
 import { SeatCard } from './SeatCard'
 import { DESKTOP_SEAT_CARD_WIDTH_PX, DESKTOP_SEAT_GAP_PX, gridCellKey } from '../utils/seat-grid'
@@ -32,6 +33,11 @@ export const DesktopSeatGrid = ({
   seatMouseDragProps,
   cellMouseDropProps,
   seatTouchProps,
+  editGrid,
+  onAddRow,
+  onAddCol,
+  onRemoveRow,
+  onRemoveCol,
 }: Props) => {
   const scrollRef = useRef<HTMLDivElement>(null)
   const { hasOverflow, atStart, atEnd } = useScrollHints(scrollRef, grid.cols)
@@ -41,6 +47,11 @@ export const DesktopSeatGrid = ({
   // 枠+リング+影+HITバッジを既に持つため使わない)
   useSeatHighlightAnimation(scrollRef, highlightSeatId)
   const spotlight = highlightSeatId !== null
+
+  // 編集中はヘッダー行・列トラック(GRID_HEADER_TRACK_PX)を1本ずつ足すため、既存セルは+1オフセットする
+  const hasGridEdgeControls = isEditMode && editGrid !== null
+  const rowOffset = hasGridEdgeControls ? 1 : 0
+  const colOffset = hasGridEdgeControls ? 1 : 0
 
   // ヒントのタップで 1 列ぶんだけ滑らかに送る
   const nudge = (direction: -1 | 1) => {
@@ -63,7 +74,7 @@ export const DesktopSeatGrid = ({
         cells.push(
           <div
             key={`empty-${row}-${col}`}
-            style={{ gridRow: row + 1, gridColumn: col + 1, display: 'flex' }}
+            style={{ gridRow: row + 1 + rowOffset, gridColumn: col + 1 + colOffset, display: 'flex' }}
             data-seat-grid-cell={formatSeatGridCellAttr(cell)}
             {...cellMouseDropProps}
           >
@@ -79,7 +90,7 @@ export const DesktopSeatGrid = ({
       cells.push(
         <div
           key={seat.id}
-          style={{ gridRow: row + 1, gridColumn: col + 1, display: 'flex' }}
+          style={{ gridRow: row + 1 + rowOffset, gridColumn: col + 1 + colOffset, display: 'flex' }}
           data-seat-grid-cell={isEditMode ? formatSeatGridCellAttr({ row, col }) : undefined}
           {...(isEditMode ? cellMouseDropProps : {})}
         >
@@ -118,13 +129,28 @@ export const DesktopSeatGrid = ({
     }
   }
 
+  // STEP B4: 空行・空列のヘッダにだけ出す削除ボタン(ヘッダー行・列トラックの分は上でオフセット済み)
+  if (hasGridEdgeControls && editGrid) {
+    cells.push(
+      <GridRemoveHeaders
+        key='grid-edge-remove-headers'
+        grid={editGrid}
+        onRemoveRow={onRemoveRow}
+        onRemoveCol={onRemoveCol}
+      />
+    )
+  }
+
   return (
     <div className='team-ovl-gridwrap'>
       <div ref={scrollRef} className={`team-ovl-grid is-desktop${loading ? ' is-loading' : ''}`} aria-busy={loading}>
         <div
           className='team-ovl-grid-inner'
           style={{
-            gridTemplateColumns: `repeat(${grid.cols}, ${DESKTOP_SEAT_CARD_WIDTH_PX}px)`,
+            gridTemplateColumns: hasGridEdgeControls
+              ? `${GRID_HEADER_TRACK_PX}px repeat(${grid.cols}, ${DESKTOP_SEAT_CARD_WIDTH_PX}px)`
+              : `repeat(${grid.cols}, ${DESKTOP_SEAT_CARD_WIDTH_PX}px)`,
+            gridTemplateRows: hasGridEdgeControls ? `${GRID_HEADER_TRACK_PX}px` : undefined,
             gap: DESKTOP_SEAT_GAP_PX,
             width: 'fit-content',
             margin: '0 auto',
@@ -136,6 +162,8 @@ export const DesktopSeatGrid = ({
       {/* onNudge を渡す = ボタン化。端に達した側は is-faded でフェード(アンマウントはしない) */}
       {hasOverflow && <ScrollHint side='left' onNudge={() => nudge(-1)} faded={atStart} />}
       {hasOverflow && <ScrollHint side='right' onNudge={() => nudge(1)} faded={atEnd} />}
+      {/* STEP B4: グリッド4辺の＋ボタン。編集中のみ */}
+      {isEditMode && <GridEdgeAddButtons onAddRow={onAddRow} onAddCol={onAddCol} />}
     </div>
   )
 }
