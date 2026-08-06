@@ -1,4 +1,4 @@
-import { useId } from 'react'
+import { useEffect, useId } from 'react'
 import { useLayoutSwitcher } from './hooks/use-layout-switcher'
 import { IslandToggleButton } from './components/IslandToggleButton'
 import { OfficialLayoutButton } from './components/OfficialLayoutButton'
@@ -7,9 +7,14 @@ import { CreateLayoutForm } from './components/CreateLayoutForm'
 import { LayoutDeleteConfirmDialog } from './components/LayoutDeleteConfirmDialog'
 import { useLayoutSource } from '@/contexts/layout-source-context'
 
+type LayoutSwitcherProps = {
+  // 展開/折りたたみの状態を親へ伝える。左下FABの表示制御に使う
+  onExpandedChange?: (isExpanded: boolean) => void
+}
+
 // Dynamic Island風のレイアウト切り替えアイランド。外殻とmorphに加え、展開パネルの中身
 // (公式ボタン・カスタム一覧・作成フォーム)を組み立てる
-export const LayoutSwitcher = () => {
+export const LayoutSwitcher = ({ onExpandedChange }: LayoutSwitcherProps = {}) => {
   const { source } = useLayoutSource()
   const {
     isOpen,
@@ -27,6 +32,11 @@ export const LayoutSwitcher = () => {
     confirmDelete,
   } = useLayoutSwitcher()
   const panelId = useId()
+
+  // 開閉状態を親へ通知する。左下FABの表示条件(use-admin-fab-visibility)に使われる
+  useEffect(() => {
+    onExpandedChange?.(isOpen)
+  }, [isOpen, onExpandedChange])
 
   return (
     <>

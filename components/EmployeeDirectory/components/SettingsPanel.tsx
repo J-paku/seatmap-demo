@@ -4,6 +4,8 @@ import { ThemeSelector } from './ThemeSelector'
 import { GaroonLogoutBar } from './GaroonLogoutBar'
 import type { ThemeMode } from '@/types'
 import { triggerHaptic } from '@/lib/haptic'
+import { useLayoutSource } from '@/contexts/layout-source-context'
+import { FLOOR_NAME } from '@/lib/mock-loader'
 
 interface SettingsPanelProps {
   onBack: () => void
@@ -30,6 +32,8 @@ export function SettingsPanel({
   onResetLayout,
 }: SettingsPanelProps) {
   const [isRefreshing, setIsRefreshing] = useState(false)
+  const { source } = useLayoutSource()
+  const isViewingCustomLayout = source.type === 'custom'
 
   const handleRefresh = useCallback(() => {
     triggerHaptic('medium')
@@ -101,7 +105,8 @@ export function SettingsPanel({
           <span className='text-sm'>アバター編集</span>
         </button>
 
-        {/* デモ固有の行: レイアウトのリセット(確認ダイアログは呼び出し側が持つ) */}
+        {/* デモ固有の行: 本社1Fの初期化(確認ダイアログは呼び出し側が持つ)。
+            カスタムレイアウト表示中は本社1Fを触っていないため無効化する */}
         {onResetLayout && (
           <button
             type='button'
@@ -109,10 +114,13 @@ export function SettingsPanel({
               triggerHaptic('light')
               onResetLayout()
             }}
+            disabled={isViewingCustomLayout}
             className='flex w-full items-center gap-3 px-4 py-4 transition-colors'
             style={{
               color: 'var(--color-text-primary)',
               borderBottom: '1px solid var(--color-border)',
+              opacity: isViewingCustomLayout ? 0.4 : 1,
+              cursor: isViewingCustomLayout ? 'not-allowed' : 'pointer',
             }}
           >
             <span
@@ -122,7 +130,7 @@ export function SettingsPanel({
             >
               restart_alt
             </span>
-            <span className='text-sm'>レイアウトをリセット</span>
+            <span className='text-sm'>{`${FLOOR_NAME}を初期化`}</span>
           </button>
         )}
 
