@@ -15,7 +15,7 @@ export type LayoutObjectEntry = { id: string; rect: Rect }
 
 const areaRect = (area: Team['area']): Rect => ({ x: area.x, y: area.y, w: area.w, h: area.h })
 
-export const entriesOfKind = (layout: SeatLayout, kind: LayoutObjectKind): LayoutObjectEntry[] => {
+const entriesOfKind = (layout: SeatLayout, kind: LayoutObjectKind): LayoutObjectEntry[] => {
   switch (kind) {
     case 'seat':
       return layout.seats.map((s) => ({ id: s.id, rect: rectOf(s) }))

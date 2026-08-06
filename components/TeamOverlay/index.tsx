@@ -17,7 +17,7 @@ import { useSwipeDismiss } from '@/hooks/use-swipe-dismiss'
 // 幅 760px を境に、シェル形状・座席グリッド・入力モデルがまるごと切り替わる
 
 export type { TeamOverlayPayload } from './type'
-export type { MinimapArea, MinimapFurniture, MinimapKind, MinimapRect } from './type'
+export type { MinimapArea, MinimapFurniture, MinimapKind } from './type'
 
 type Props = TeamOverlayProps
 

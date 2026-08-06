@@ -55,7 +55,10 @@ export const useFacilityScheduleForDate = ({
 
     // isTodaySelectedは遅延・ローディング表示のみを制御する。種データ/生成の分岐は
     // meetingsForDate内のdateKey===todayKey比較が単独で決める(真のtodayKeyを両分岐に渡す)
+    // 当日は遅延を挟まず即時確定させる。取得の擬似遅延を伴う非同期処理なので
+    // 描画中に導出できず、effect から状態を確定する以外の置き場が無い
     if (isTodaySelected) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setIsLoading(false)
       setMeetings(meetingsForDate(seed, facilityId, dateKey, todayKey, employeeIds))
       return

@@ -48,9 +48,6 @@ export const FURNITURE_DEFAULT_SIZE: Record<FurnitureKind, { width: number; heig
   bed: { width: 90, height: 120 },
 }
 
-// 建設設備は名前を持たない(name は空文字固定・リサイズと削除のみ)
-export const STRUCTURAL_KINDS: readonly FurnitureKind[] = kindsOf('structural')
-
 export const isStructuralKind = (kind: FurnitureKind): boolean => FURNITURE_CATEGORY[kind] === 'structural'
 
 // 家具ピッカーの見出しと並び

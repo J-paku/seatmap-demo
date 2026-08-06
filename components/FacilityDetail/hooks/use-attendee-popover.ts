@@ -39,6 +39,8 @@ export const useAttendeePopover = () => {
   // 固定中はホバー離脱で閉じないため、タイマー側から最新の固定状態を読む
   const isStickyRef = useRef(false)
 
+  // effect へ移すと、同じコミットで張ったタイマーが1フレーム古い値を読むため描画中に写す
+  // eslint-disable-next-line react-hooks/refs
   isStickyRef.current = state?.isSticky ?? false
 
   const clearCloseTimer = useCallback(() => {

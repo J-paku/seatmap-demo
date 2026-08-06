@@ -21,7 +21,7 @@ type Options = {
   viewBox?: { width: number; height: number }
 }
 
-export type MinimapCurrentCenter = {
+type MinimapCurrentCenter = {
   centerX: number
   centerY: number
   xRate: number

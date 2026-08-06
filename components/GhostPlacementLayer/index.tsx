@@ -14,7 +14,7 @@ import type { GhostPlacement } from '@/hooks/use-ghost-placement'
 // またこの層はキャンバスの DOM 木の外(SeatMapView 直下)に置く。中に入れると
 // 余白クリックによる選択解除へ誤って伝播する
 
-export type { GhostRequest, GhostTarget } from './type'
+export type { GhostRequest } from './type'
 
 type Props = {
   request: GhostRequest

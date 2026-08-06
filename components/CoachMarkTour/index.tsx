@@ -4,8 +4,6 @@ import type { useCoachMarkTour } from './hooks/use-coach-mark-tour'
 // スポットライト式コーチマーク。対象の矩形をくり抜いて周囲を暗くする。
 // くり抜きは巨大な box-shadow で表現するので、対象の上にだけ何も被らない
 
-export type { TourFlow } from './utils/tour-steps'
-
 // カードを対象の下に出す余裕。足りなければ上へ回す
 const CARD_GAP_PX = 14
 const CARD_MIN_SPACE_PX = 180
