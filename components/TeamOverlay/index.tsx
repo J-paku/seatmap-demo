@@ -7,6 +7,7 @@ import { useIsCompactMobile } from './hooks/use-compact-mobile'
 import { useModalShell } from './hooks/use-modal-shell'
 import { useOverlayEditMode } from './hooks/use-overlay-edit-mode'
 import { useOverlaySession } from './hooks/use-overlay-session'
+import { useSeatCommit } from './hooks/use-seat-commit'
 import { useSeatLayoutCompose } from './hooks/use-seat-layout-compose'
 import { anchorTransformOrigin } from './utils/anchor-origin'
 import { COMPACT_SIDE_PADDING_PX } from './utils/seat-grid'
@@ -54,6 +55,23 @@ export const TeamOverlay = ({
     draft: editMode.draft,
   })
   const occupiedCount = useMemo(() => teamSeats.filter((s) => s.employeeId).length, [teamSeats])
+
+  // STEP A5: 保存(commit)の呼び口。保存ボタン付きの編集ドックは PHASE D の担当なので、
+  // ここでは「終了」から保存できるところまでを配線する
+  const seatCommit = useSeatCommit({
+    teamId: payload?.teamId ?? null,
+    grid: editMode.grid,
+    draft: editMode.draft,
+  })
+
+  // 「終了」= 保存してから編集モードを抜ける。editMode.cancel自体は「破棄」ではなく
+  // grid/draft/isEditModeの後始末だけを担う関数で、保存済みの内容を打ち消す意味は持たない
+  // (保存が無い=変更0件の場合はcommitが即座に戻るため、結果的に旧来の「終了」と同じになる)。
+  // isSaving中の二重押下はここで弾く(SeatLayoutHeaderのボタン自体は無効化できないため)
+  const handleFinishEdit = useCallback(() => {
+    if (seatCommit.isSaving) return
+    void seatCommit.commit().then(() => editMode.cancel())
+  }, [seatCommit, editMode])
 
   // 編集中は✕・背景・Escで閉じられないようにする(未保存の変更を無言で捨てない)。
   // 編集モードを抜けられるのは SeatLayoutHeader の「終了」(onExitEdit)だけにする
@@ -135,7 +153,7 @@ export const TeamOverlay = ({
               sidePadding={sidePadding}
               isEditMode={editMode.isEditMode}
               onEnterEdit={() => editMode.enterEditMode(teamSeats, teamRect)}
-              onExitEdit={editMode.cancel}
+              onExitEdit={handleFinishEdit}
             />
             <SeatGridFrame
               isCompactMobile={isCompactMobile}
