@@ -8,7 +8,9 @@ import { useModalShell } from './hooks/use-modal-shell'
 import { useOverlayEditMode } from './hooks/use-overlay-edit-mode'
 import { useOverlaySession } from './hooks/use-overlay-session'
 import { useSeatCommit } from './hooks/use-seat-commit'
+import { SEAT_GRID_CELL_ATTR } from './hooks/use-seat-drag'
 import { useSeatLayoutCompose } from './hooks/use-seat-layout-compose'
+import { useSeatSelection } from './hooks/use-seat-selection'
 import { anchorTransformOrigin } from './utils/anchor-origin'
 import { COMPACT_SIDE_PADDING_PX } from './utils/seat-grid'
 import type { TeamOverlayProps } from './type'
@@ -55,6 +57,9 @@ export const TeamOverlay = ({
     draft: editMode.draft,
   })
   const occupiedCount = useMemo(() => teamSeats.filter((s) => s.employeeId).length, [teamSeats])
+
+  // STEP B1: 編集中セルの選択(席か空セルのどちらか1件だけ)。編集モードを抜けると自動で消える
+  const seatSelection = useSeatSelection(editMode.isEditMode)
 
   // STEP A5: 保存(commit)の呼び口。保存ボタン付きの編集ドックは PHASE D の担当なので、
   // ここでは「終了」から保存できるところまでを配線する
@@ -122,6 +127,11 @@ export const TeamOverlay = ({
             const seatEl = (e.target as HTMLElement).closest<HTMLElement>('[data-seat-id]')
             if (seatEl?.dataset.seatId !== highlightSeatId) onClearHighlight?.()
           }
+          // 編集中はセル(席・空セルどちらも data-seat-grid-cell を持つ)以外のタップで選択解除する。
+          // グリッド余白・オーバーレイ余白のどちらもこの1箇所で拾える
+          if (editMode.isEditMode && !(e.target as HTMLElement).closest(`[${SEAT_GRID_CELL_ATTR}]`)) {
+            seatSelection.clearSelection()
+          }
         }}
         {...bind}
       >
@@ -166,6 +176,11 @@ export const TeamOverlay = ({
               highlightSeatId={highlightSeatId}
               onSeatClick={onSeatClick}
               onClearHighlight={onClearHighlight}
+              isEditMode={editMode.isEditMode}
+              isSeatSelected={seatSelection.isSeatSelected}
+              isEmptyCellSelected={seatSelection.isEmptyCellSelected}
+              onSelectSeat={seatSelection.selectSeat}
+              onSelectEmptyCell={seatSelection.selectEmptyCell}
             />
           </section>
           {/* ミニマップは座席グリッドの下。渡されなければ描かない */}

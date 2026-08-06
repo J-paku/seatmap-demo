@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import type { RefObject } from 'react'
+import { EditSeatCell } from './EditSeatCell'
+import { EmptyGridCell } from './EmptyGridCell'
 import { ScrollHint } from './ScrollHint'
 import { ViewSeatCell } from './ViewSeatCell'
 import {
@@ -11,6 +13,7 @@ import {
 import type { SeatGridProps } from '../type'
 import { useScrollActivity } from '../hooks/use-scroll-activity'
 import { useScrollHints } from '../hooks/use-scroll-hints'
+import { formatSeatGridCellAttr } from '../hooks/use-seat-drag'
 import { useSeatHighlightAnimation } from '../hooks/use-seat-highlight-animation'
 import type { PresenceStatus } from '@/types'
 
@@ -48,6 +51,11 @@ export const CompactSeatGrid = ({
   highlightSeatId,
   onSeatClick,
   onClearHighlight,
+  isEditMode,
+  isSeatSelected,
+  isEmptyCellSelected,
+  onSelectSeat,
+  onSelectEmptyCell,
 }: Props) => {
   const scrollRef = useRef<HTMLDivElement>(null)
   const cellWidth = useCompactCellWidth(scrollRef)
@@ -79,28 +87,53 @@ export const CompactSeatGrid = ({
             const isHit = highlightSeatId === seat.id
             const dimmed = spotlight && !isHit
             return (
-              <div key={seat.id} style={{ gridRow: row + 1, gridColumn: col + 1, display: 'flex' }}>
-                <ViewSeatCell
-                  seat={seat}
-                  employee={employee}
-                  status={status}
-                  teamName={teamName}
-                  loading={loading}
-                  isHit={isHit}
-                  glowing={glowing && isHit}
-                  dimmed={dimmed}
-                  isScrollingRef={isScrollingRef}
-                  onSelect={() => {
-                    if (dimmed) {
-                      onClearHighlight?.()
-                      return
-                    }
-                    onSeatClick(seat.id)
-                  }}
-                />
+              <div
+                key={seat.id}
+                style={{ gridRow: row + 1, gridColumn: col + 1, display: 'flex' }}
+                data-seat-grid-cell={isEditMode ? formatSeatGridCellAttr({ row, col }) : undefined}
+              >
+                {isEditMode ? (
+                  <EditSeatCell
+                    seat={seat}
+                    employee={employee}
+                    teamName={teamName}
+                    isSelected={isSeatSelected(seat.id)}
+                    onSelect={() => onSelectSeat(seat.id)}
+                  />
+                ) : (
+                  <ViewSeatCell
+                    seat={seat}
+                    employee={employee}
+                    status={status}
+                    teamName={teamName}
+                    loading={loading}
+                    isHit={isHit}
+                    glowing={glowing && isHit}
+                    dimmed={dimmed}
+                    isScrollingRef={isScrollingRef}
+                    onSelect={() => {
+                      if (dimmed) {
+                        onClearHighlight?.()
+                        return
+                      }
+                      onSeatClick(seat.id)
+                    }}
+                  />
+                )}
               </div>
             )
           })}
+          {/* 空セルは編集中だけ埋まる(use-seat-layout-compose 参照)。表示モードでは常に空配列 */}
+          {isEditMode &&
+            (grid.emptyCells ?? []).map((cell) => (
+              <div
+                key={`empty-${cell.row}-${cell.col}`}
+                style={{ gridRow: cell.row + 1, gridColumn: cell.col + 1, display: 'flex' }}
+                data-seat-grid-cell={formatSeatGridCellAttr(cell)}
+              >
+                <EmptyGridCell isSelected={isEmptyCellSelected(cell)} onSelect={() => onSelectEmptyCell(cell)} />
+              </div>
+            ))}
         </div>
       </div>
       {/* onNudge を渡す = ボタン化。端に達した側は is-faded でフェード(アンマウントはしない) */}

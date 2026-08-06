@@ -1,9 +1,12 @@
 import { useRef } from 'react'
+import { EditSeatCell } from './EditSeatCell'
+import { EmptyGridCell } from './EmptyGridCell'
 import { ScrollHint } from './ScrollHint'
 import { SeatCard } from './SeatCard'
 import { DESKTOP_SEAT_CARD_WIDTH_PX, DESKTOP_SEAT_GAP_PX, gridCellKey } from '../utils/seat-grid'
 import type { SeatGridProps } from '../type'
 import { useScrollHints } from '../hooks/use-scroll-hints'
+import { formatSeatGridCellAttr } from '../hooks/use-seat-drag'
 import { useSeatHighlightAnimation } from '../hooks/use-seat-highlight-animation'
 import type { PresenceStatus } from '@/types'
 
@@ -21,6 +24,11 @@ export const DesktopSeatGrid = ({
   highlightSeatId,
   onSeatClick,
   onClearHighlight,
+  isEditMode,
+  isSeatSelected,
+  isEmptyCellSelected,
+  onSelectSeat,
+  onSelectEmptyCell,
 }: Props) => {
   const scrollRef = useRef<HTMLDivElement>(null)
   const { hasOverflow, atStart, atEnd } = useScrollHints(scrollRef, grid.cols)
@@ -40,35 +48,64 @@ export const DesktopSeatGrid = ({
   }
 
   const cells = []
-  // seatByGridCell を row×col で全走査する。座席の無いセルは閲覧中なら描かない
+  // seatByGridCell を row×col で全走査する。座席の無いセルは閲覧中なら描かず、編集中は空セルを描く
   for (let row = 0; row < grid.rows; row += 1) {
     for (let col = 0; col < grid.cols; col += 1) {
       const seat = grid.seatByGridCell.get(gridCellKey(row, col))
-      if (!seat) continue
+      if (!seat) {
+        if (!isEditMode) continue
+        // ループ変数(row/col)をそのまま閉じ込めるとイテレーションを跨いだ書き換えとみなされるため、
+        // このセル分だけの不変な束縛(cell)を作ってから閉じる
+        const cell = { row, col }
+        cells.push(
+          <div
+            key={`empty-${row}-${col}`}
+            style={{ gridRow: row + 1, gridColumn: col + 1, display: 'flex' }}
+            data-seat-grid-cell={formatSeatGridCellAttr(cell)}
+          >
+            <EmptyGridCell isSelected={isEmptyCellSelected(cell)} onSelect={() => onSelectEmptyCell(cell)} />
+          </div>
+        )
+        continue
+      }
       const employee = seat.employeeId ? employeeById.get(seat.employeeId) ?? null : null
       const status: PresenceStatus = employee ? presenceMap.get(employee.id) ?? 'present' : 'present'
       const isHit = highlightSeatId === seat.id
       const dimmed = spotlight && !isHit
       cells.push(
-        <div key={seat.id} style={{ gridRow: row + 1, gridColumn: col + 1, display: 'flex' }}>
-          <SeatCard
-            seat={seat}
-            employee={employee}
-            status={status}
-            teamName={teamName}
-            teamColor={teamColor}
-            loading={loading}
-            isHit={isHit}
-            dimmed={dimmed}
-            onSelect={() => {
-              if (!employee) return
-              if (dimmed) {
-                onClearHighlight?.()
-                return
-              }
-              onSeatClick(seat.id)
-            }}
-          />
+        <div
+          key={seat.id}
+          style={{ gridRow: row + 1, gridColumn: col + 1, display: 'flex' }}
+          data-seat-grid-cell={isEditMode ? formatSeatGridCellAttr({ row, col }) : undefined}
+        >
+          {isEditMode ? (
+            <EditSeatCell
+              seat={seat}
+              employee={employee}
+              teamName={teamName}
+              isSelected={isSeatSelected(seat.id)}
+              onSelect={() => onSelectSeat(seat.id)}
+            />
+          ) : (
+            <SeatCard
+              seat={seat}
+              employee={employee}
+              status={status}
+              teamName={teamName}
+              teamColor={teamColor}
+              loading={loading}
+              isHit={isHit}
+              dimmed={dimmed}
+              onSelect={() => {
+                if (!employee) return
+                if (dimmed) {
+                  onClearHighlight?.()
+                  return
+                }
+                onSeatClick(seat.id)
+              }}
+            />
+          )}
         </div>
       )
     }
