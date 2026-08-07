@@ -84,6 +84,7 @@ export const CompactSeatGrid = ({
   onRemoveRow,
   onRemoveCol,
   onAddSeat,
+  onAssignSeat,
 }: Props) => {
   const scrollRef = useRef<HTMLDivElement>(null)
   const cellWidth = useCompactCellWidth(scrollRef)
@@ -134,7 +135,13 @@ export const CompactSeatGrid = ({
             return (
               <div
                 key={seat.id}
-                style={{ gridRow: row + 1 + rowOffset, gridColumn: col + 1 + colOffset, display: 'flex' }}
+                style={{
+                  gridRow: row + 1 + rowOffset,
+                  gridColumn: col + 1 + colOffset,
+                  display: 'flex',
+                  // STEP C1: 選択中の席にSeatActionOverlay(ピル)を絶対配置するための起点(EmptyGridCellと同じ方針)
+                  position: isEditMode ? 'relative' : undefined,
+                }}
                 data-seat-grid-cell={isEditMode ? formatSeatGridCellAttr({ row, col }) : undefined}
                 {...(isEditMode ? cellMouseDropProps : {})}
               >
@@ -168,6 +175,10 @@ export const CompactSeatGrid = ({
                     }}
                   />
                 )}
+                {/* STEP C1: 選択中の席にだけ操作ピルを重ねる。空席/在席でラベルが変わる */}
+                {isEditMode && isSeatSelected(seat.id) && (
+                  <SeatActionOverlay variant='seat' hasEmployee={employee !== null} onAssign={() => onAssignSeat(seat.id)} />
+                )}
               </div>
             )
           })}
@@ -188,7 +199,9 @@ export const CompactSeatGrid = ({
               >
                 <EmptyGridCell isSelected={isEmptyCellSelected(cell)} onSelect={() => onSelectEmptyCell(cell)} />
                 {/* STEP B5: 選択中のセルにだけ「席追加」ピルを重ねる */}
-                {isEmptyCellSelected(cell) && <SeatActionOverlay onAddSeat={() => onAddSeat(cell)} />}
+                {isEmptyCellSelected(cell) && (
+                  <SeatActionOverlay variant='emptyCell' onAddSeat={() => onAddSeat(cell)} />
+                )}
               </div>
             ))}
           {/* STEP B4: 空行・空列のヘッダにだけ出す削除ボタン(ヘッダー行・列トラックの分は上でオフセット済み) */}
