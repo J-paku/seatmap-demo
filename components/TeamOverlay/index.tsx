@@ -7,6 +7,7 @@ import { TeamOverlayHeader } from './components/TeamOverlayHeader'
 import { TrashDropZone } from './components/TrashDropZone'
 import { useBulkAssign } from './hooks/use-bulk-assign'
 import { useIsCompactMobile } from './hooks/use-compact-mobile'
+import { useDraftAppliedSeats } from './hooks/use-draft-applied-seats'
 import { useModalShell } from './hooks/use-modal-shell'
 import { useOverlayEditMode } from './hooks/use-overlay-edit-mode'
 import { useOverlaySession } from './hooks/use-overlay-session'
@@ -128,6 +129,12 @@ export const TeamOverlay = ({
   // 検索対象は組織全員。employeeById は SeatMapView から渡ってくる同じ Map をそのまま使う
   const assignEmployees = useMemo(() => [...employeeById.values()], [employeeById])
 
+  // STEP C4: 検索シート・一括配置へ渡す「全座席」は下書き反映済みのものに統一する。base(seats)の
+  // ままだと同一セッション内の配属がシートから見えず、「今どこに座っているか」の判定が保存済みの
+  // 席を指し続けて同じ人を複数席へ重複配置できてしまう。判定基準を二重に持たないよう、
+  // 一括配置(useBulkAssign)側にも同じ配列を渡す
+  const draftAppliedSeats = useDraftAppliedSeats(seats, editMode.draft)
+
   const handleAssignSeat = useCallback((seatId: string) => setAssignSeatId(seatId), [])
 
   const handleAssignSelect = useCallback(
@@ -146,11 +153,12 @@ export const TeamOverlay = ({
   const handleAssignClose = useCallback(() => setAssignSeatId(null), [])
 
   // STEP C3: 部署ごとの一括配置。EmployeeAssignSheetの「この部署をまとめて配属」から呼ぶ。
-  // 対象は seats(全座席)から引くため、選択中の特定席とは独立に部署全員を空セルへ詰めていく
+  // 対象は draftAppliedSeats(下書き反映済みの全座席)から引くため、選択中の特定席とは独立に
+  // 部署全員を空セルへ詰めていく
   const bulkAssign = useBulkAssign({
     teamId: payload?.teamId ?? null,
     employees: assignEmployees,
-    seats,
+    seats: draftAppliedSeats,
     grid: editMode.grid,
     draft: editMode.draft,
     addRow: editMode.addRow,
@@ -365,7 +373,7 @@ export const TeamOverlay = ({
           isOpen={assignSeatId !== null}
           seat={assignTargetSeat}
           employees={assignEmployees}
-          seats={seats}
+          seats={draftAppliedSeats}
           employeeById={employeeById}
           onSelect={handleAssignSelect}
           onClear={handleAssignClear}

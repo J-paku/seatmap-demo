@@ -37,7 +37,9 @@ export type UseBulkAssignResult = {
 type Options = {
   teamId: string | null
   employees: Employee[]
-  // 全社員の現在の着席先を解決するための全座席(保存済みの生データ。下書き反映はdraft側で行う)
+  // STEP C4: 全社員の現在の着席先を解決するための全座席。呼び出し元(TeamOverlay/index.tsx)で
+  // 下書き反映済み(useDraftAppliedSeats)にしてから渡ってくるため、ここでは削除・割当上書きを
+  // 二重に解決しない(同じ概念の判定基準を2つ作らないため)
   seats: Seat[]
   grid: SeatGridDraft | null
   draft: SeatDraftState
@@ -45,21 +47,14 @@ type Options = {
   placeSeat: UseOverlayEditModeResult['placeSeat']
 }
 
-// 社員が今座っている座席そのもの。下書き追加席はemployeeIdを直読みし、既存席は割当の唯一の
-// 解決口(resolveEffectiveEmployeeId)を通す。削除済み座席は対象から外す
-const findCurrentSeat = (employeeId: string, seats: Seat[], draft: SeatDraftState): Seat | null => {
-  const added = draft.addedSeats.find((s) => s.employeeId === employeeId)
-  if (added) return added
-  const saved = seats.find(
-    (s) => !draft.removedSeatIds.has(s.id) && draft.resolveEffectiveEmployeeId(s.id, s.employeeId) === employeeId
-  )
-  return saved ?? null
-}
+// 社員が今座っている座席そのもの。seats は下書き反映済みなので employeeId をそのまま照合するだけでよい
+const findCurrentSeat = (employeeId: string, seats: Seat[]): Seat | null =>
+  seats.find((s) => s.employeeId === employeeId) ?? null
 
-const buildPlan = (teamId: string, employees: Employee[], seats: Seat[], draft: SeatDraftState): BulkAssignPlan => {
+const buildPlan = (teamId: string, employees: Employee[], seats: Seat[]): BulkAssignPlan => {
   const targets: BulkAssignTarget[] = []
   for (const employee of employees.filter((e) => e.teamId === teamId)) {
-    const currentSeat = findCurrentSeat(employee.id, seats, draft)
+    const currentSeat = findCurrentSeat(employee.id, seats)
     // 既にこのチームの席に座っている人は対象から外す(触らずそのまま)。外さないと、
     // 部署が既に正しく着席済みでも全員が一旦空席化→新しい席へ作り直される無駄な入れ替えが起きる
     if (currentSeat && currentSeat.teamId === teamId) continue
@@ -115,14 +110,14 @@ export const useBulkAssign = ({ teamId, employees, seats, grid, draft, addRow, p
 
   const requestBulkAssign = useCallback(() => {
     if (!teamId || !grid) return
-    const plan = buildPlan(teamId, employees, seats, draft)
+    const plan = buildPlan(teamId, employees, seats)
     if (plan.targets.length === 0) return
     if (plan.confirmMessage) {
       setPendingPlan(plan)
       return
     }
     commitPlan(plan)
-  }, [teamId, grid, employees, seats, draft, commitPlan])
+  }, [teamId, grid, employees, seats, commitPlan])
 
   const confirmBulkAssign = useCallback(() => {
     if (!pendingPlan) return
