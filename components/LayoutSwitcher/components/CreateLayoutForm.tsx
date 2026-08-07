@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import type { FormEvent } from 'react'
-import { MAX_CUSTOM_LAYOUTS } from '../constants'
+import { MAX_CUSTOM_LAYOUTS } from '../utils/custom-layout-limit'
 import { triggerHaptic } from '@/lib/haptic'
 
 type Props = {
