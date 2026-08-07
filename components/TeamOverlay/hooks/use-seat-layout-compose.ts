@@ -24,12 +24,16 @@ const resolveCellSeat = (
   teamSeats: Seat[],
   addedSeats: Seat[],
   removedSeatIds: Set<string>,
-  resolveEffectiveEmployeeId: SeatDraftState['resolveEffectiveEmployeeId']
+  resolveEffectiveEmployeeId: SeatDraftState['resolveEffectiveEmployeeId'],
+  rotationOverrides: SeatDraftState['rotationOverrides']
 ): Seat | null => {
   if (removedSeatIds.has(seatId)) return null
   const base = addedSeats.find((s) => s.id === seatId) ?? teamSeats.find((s) => s.id === seatId)
   if (!base) return null
-  return { ...base, employeeId: resolveEffectiveEmployeeId(seatId, base.employeeId) }
+  // STEP D1: 回転の差分はrotationOverridesにしか載らない。下書き追加席はrotateSeatがaddedSeats
+  // 自身を直接書き換えるためbaseが既に最新で、上書きが無ければbase.rotationをそのまま使う
+  const rotation = rotationOverrides.get(seatId) ?? base.rotation
+  return { ...base, employeeId: resolveEffectiveEmployeeId(seatId, base.employeeId), rotation }
 }
 
 // grid.cells を行列としてそのまま使い、差分を反映した SeatGrid を組み立てる。
@@ -39,7 +43,8 @@ const buildEditingSeatGrid = (
   teamSeats: Seat[],
   addedSeats: Seat[],
   removedSeatIds: Set<string>,
-  resolveEffectiveEmployeeId: SeatDraftState['resolveEffectiveEmployeeId']
+  resolveEffectiveEmployeeId: SeatDraftState['resolveEffectiveEmployeeId'],
+  rotationOverrides: SeatDraftState['rotationOverrides']
 ): SeatGrid => {
   const positionedSeats: SeatGrid['positionedSeats'] = []
   const seatByGridCell = new Map<string, Seat>()
@@ -49,7 +54,7 @@ const buildEditingSeatGrid = (
     for (let col = 0; col < grid.cells[row].length; col += 1) {
       const seatId = grid.cells[row][col]
       const seat = seatId
-        ? resolveCellSeat(seatId, teamSeats, addedSeats, removedSeatIds, resolveEffectiveEmployeeId)
+        ? resolveCellSeat(seatId, teamSeats, addedSeats, removedSeatIds, resolveEffectiveEmployeeId, rotationOverrides)
         : null
       if (!seat) {
         emptyCells.push({ row, col })
@@ -64,12 +69,14 @@ const buildEditingSeatGrid = (
 }
 
 export const useSeatLayoutCompose = ({ teamSeats, isEditMode, grid, draft }: UseSeatLayoutComposeParams): SeatGrid => {
-  const { addedSeats, removedSeatIds, resolveEffectiveEmployeeId } = draft
+  const { addedSeats, removedSeatIds, resolveEffectiveEmployeeId, rotationOverrides } = draft
 
-  // grid と差分3種が変わった時だけ組み立て直す。draft オブジェクト自体は呼び出し側で
+  // grid と差分4種が変わった時だけ組み立て直す。draft オブジェクト自体は呼び出し側で
   // 毎レンダー新規生成されるため依存に入れない(入れると下流の Map/配列が毎回作り直しになる)
   return useMemo(() => {
-    if (isEditMode && grid) return buildEditingSeatGrid(grid, teamSeats, addedSeats, removedSeatIds, resolveEffectiveEmployeeId)
+    if (isEditMode && grid) {
+      return buildEditingSeatGrid(grid, teamSeats, addedSeats, removedSeatIds, resolveEffectiveEmployeeId, rotationOverrides)
+    }
     return { ...buildSeatGrid(teamSeats), emptyCells: [] }
-  }, [isEditMode, grid, teamSeats, addedSeats, removedSeatIds, resolveEffectiveEmployeeId])
+  }, [isEditMode, grid, teamSeats, addedSeats, removedSeatIds, resolveEffectiveEmployeeId, rotationOverrides])
 }

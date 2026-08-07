@@ -1,3 +1,4 @@
+import { SeatRotationGrip } from './SeatRotationGrip'
 import type { UseSeatDragResult } from '../hooks/use-seat-drag'
 import type { Employee, Seat } from '@/types'
 
@@ -14,6 +15,8 @@ type Props = {
   // STEP B2: マウス(HTML5 DnD)とタッチ(Pointer)、両経路のドラッグ開始点をこのボタンへ集約する
   seatMouseDragProps: UseSeatDragResult['seatMouseDragProps']
   seatTouchProps: UseSeatDragResult['seatTouchProps']
+  // STEP D1: 回転グリップの確定口。選択中だけ描くグリップからそのまま渡す
+  onRotateSeat: (seatId: string, rotation: Seat['rotation']) => void
 }
 
 export const EditSeatCell = ({
@@ -24,21 +27,28 @@ export const EditSeatCell = ({
   onSelect,
   seatMouseDragProps,
   seatTouchProps,
+  onRotateSeat,
 }: Props) => (
-  <button
-    type='button'
-    data-seat-id={seat.id}
-    className={`team-ovl-editcard${isSelected ? ' is-selected' : ''}`}
-    onClick={onSelect}
-    {...seatMouseDragProps}
-    {...seatTouchProps}
-  >
-    <span className='team-ovl-editcard-text'>
-      <span className='team-ovl-editcard-name'>{employee ? employee.name : '空席'}</span>
-      {employee && <span className='team-ovl-editcard-dept'>{teamName}</span>}
-    </span>
-    <span className='material-symbols-outlined team-ovl-editcard-handle' aria-hidden='true'>
-      drag_indicator
-    </span>
-  </button>
+  <>
+    <button
+      type='button'
+      data-seat-id={seat.id}
+      data-seat-rotation={seat.rotation}
+      className={`team-ovl-editcard${isSelected ? ' is-selected' : ''}`}
+      onClick={onSelect}
+      {...seatMouseDragProps}
+      {...seatTouchProps}
+    >
+      <span className='team-ovl-editcard-text'>
+        <span className='team-ovl-editcard-name'>{employee ? employee.name : '空席'}</span>
+        {employee && <span className='team-ovl-editcard-dept'>{teamName}</span>}
+      </span>
+      <span className='material-symbols-outlined team-ovl-editcard-handle' aria-hidden='true'>
+        drag_indicator
+      </span>
+    </button>
+    {/* STEP D1: 回転グリップは編集中かつ選択中の時だけ。カード本体と兄弟にして
+        ボタンのdraggable継承・要素ネストの問題を避ける(触ってもカードのドラッグを誘発しない) */}
+    {isSelected && <SeatRotationGrip seatId={seat.id} rotation={seat.rotation} onRotate={onRotateSeat} />}
+  </>
 )
