@@ -106,4 +106,7 @@ export type SeatGridProps = {
   onAddCol: (edge: 'left' | 'right') => void
   onRemoveRow: (row: number) => void
   onRemoveCol: (col: number) => void
+  // STEP B5: 空セルへ新規席を追加する。仮IDの採番は呼び出し側(use-seat-draft-state.addSeat)に
+  // 任せ、ここでは新しい採番口を作らない
+  onAddSeat: (cell: GridCell) => void
 }

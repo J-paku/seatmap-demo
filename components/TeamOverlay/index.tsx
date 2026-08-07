@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Minimap } from './components/Minimap'
 import { SeatDragGhost } from './components/SeatDragGhost'
 import { SeatGridFrame } from './components/SeatGridFrame'
@@ -19,10 +19,16 @@ import type { TeamOverlayProps } from './type'
 import { SheetHandle } from '@/components/SheetHandle'
 import { useSwipeDismiss } from '@/hooks/use-swipe-dismiss'
 import type { Rect } from '@/utils/rect'
+import type { GridCell } from '@/utils/seat-grid-draft'
+import { DEFAULT_SEAT_HEIGHT, DEFAULT_SEAT_WIDTH } from '@/utils/seat-relayout'
 
 // 10: チームバウンダリクリックで開く大型オーバーレイ(座席グリッド全体)
 // クリックしたバウンダリ中心から膨らむように開く。中央固定拡大ではない
 // 幅 760px を境に、シェル形状・座席グリッド・入力モデルがまるごと切り替わる
+
+// STEP B5: 追加直後の席をハイライト(選択状態を流用)しておく時間。この間に別のセル/席を
+// 選択し直した場合はハイライトを奪わない(下のuseEffectがisSeatSelectedの変化で再評価する)
+const SEAT_ADD_HIGHLIGHT_MS = 1800
 
 export type { TeamOverlayPayload } from './type'
 export type { MinimapArea, MinimapFurniture, MinimapKind } from './type'
@@ -66,6 +72,67 @@ export const TeamOverlay = ({
   // STEP B2/B3: 編集中セルのドラッグ移動/入替とゴミ箱への削除。moveSeat/clearSeatは
   // どちらもuseOverlayEditModeが持つ唯一のgrid差分適用口をそのまま渡す
   const seatDrag = useSeatDrag({ moveSeat: editMode.moveSeat, clearSeat: editMode.clearSeat })
+
+  // STEP B5: 空セルからの席追加。仮IDの採番はuseSeatDraftState.addSeatに一本化し、ここでは
+  // 採番しない。置いた直後は選択状態(既存のis-selected見せ方)をハイライト代わりに流用する
+  const [justAddedSeatId, setJustAddedSeatId] = useState<string | null>(null)
+
+  // useEffect/useCallbackの依存配列にメンバー式(seatSelection.xxx)をそのまま書くとlintが
+  // 親オブジェクト自体の追跡を求めてくるため、使う関数だけ先に取り出しておく
+  const { selectSeat, selectEmptyCell, isSeatSelected, isEmptyCellSelected, clearSelection } = seatSelection
+
+  // STEP B5: 空セルの再タップで選択解除できるようにする。selectEmptyCell自体は「常にそのセルを
+  // 選ぶ」だけでトグルではないため、既に選択中のセルを再度渡された時だけここでclearSelectionへ
+  // 差し替える(SeatActionOverlayのコンテナがpointer-events:noneで背後のEmptyGridCellへタップを
+  // 素通しする設計と対になる箇所)
+  const handleSelectEmptyCell = useCallback(
+    (cell: GridCell) => {
+      if (isEmptyCellSelected(cell)) {
+        clearSelection()
+        return
+      }
+      selectEmptyCell(cell)
+    },
+    [isEmptyCellSelected, clearSelection, selectEmptyCell]
+  )
+
+  const handleAddSeat = useCallback(
+    (cell: GridCell) => {
+      if (!payload) return
+      // x/y はグリッドセルの位置がそのまま採用され、保存(commit)時にセル位置から座標を
+      // 直列化し直すため、ここでの値は使われない(0で安全)
+      const newSeat = editMode.draft.addSeat({
+        teamId: payload.teamId,
+        x: 0,
+        y: 0,
+        width: DEFAULT_SEAT_WIDTH,
+        height: DEFAULT_SEAT_HEIGHT,
+        rotation: 0,
+        employeeId: null,
+      })
+      editMode.placeSeat(cell, newSeat.id)
+      selectSeat(newSeat.id)
+      setJustAddedSeatId(newSeat.id)
+    },
+    [payload, editMode, selectSeat]
+  )
+
+  // 追加直後の席を一定時間だけハイライトし続け、その間に選択が変わらなければ自動で消す。
+  // isSeatSelectedはselectionが変わるたびに参照が変わるため、途中で別のセル/席が選択されたら
+  // このeffectが再評価されタイマーを張り直さない(他人の選択を誤って消さないための唯一の判定)
+  useEffect(() => {
+    if (!justAddedSeatId || !isSeatSelected(justAddedSeatId)) return
+    if (isCompactMobile) {
+      const target = bodyRef.current?.querySelector<HTMLElement>(`[data-seat-id="${justAddedSeatId}"]`)
+      const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+      target?.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'nearest', inline: 'center' })
+    }
+    const timer = window.setTimeout(() => {
+      clearSelection()
+      setJustAddedSeatId(null)
+    }, SEAT_ADD_HIGHLIGHT_MS)
+    return () => window.clearTimeout(timer)
+  }, [justAddedSeatId, isCompactMobile, isSeatSelected, clearSelection])
 
   // STEP A5: 保存(commit)の呼び口。保存ボタン付きの編集ドックは PHASE D の担当なので、
   // ここでは「終了」から保存できるところまでを配線する
@@ -194,7 +261,7 @@ export const TeamOverlay = ({
               isSeatSelected={seatSelection.isSeatSelected}
               isEmptyCellSelected={seatSelection.isEmptyCellSelected}
               onSelectSeat={seatSelection.selectSeat}
-              onSelectEmptyCell={seatSelection.selectEmptyCell}
+              onSelectEmptyCell={handleSelectEmptyCell}
               seatMouseDragProps={seatDrag.seatMouseDragProps}
               cellMouseDropProps={seatDrag.cellMouseDropProps}
               seatTouchProps={seatDrag.seatTouchProps}
@@ -203,6 +270,7 @@ export const TeamOverlay = ({
               onAddCol={editMode.addCol}
               onRemoveRow={editMode.removeRow}
               onRemoveCol={editMode.removeCol}
+              onAddSeat={handleAddSeat}
             />
           </section>
           {/* タッチドラッグ中だけ指へ追従するゴースト。マウスはネイティブDnDの既定画像に任せる */}

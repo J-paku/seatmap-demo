@@ -4,6 +4,7 @@ import { EditSeatCell } from './EditSeatCell'
 import { EmptyGridCell } from './EmptyGridCell'
 import { GRID_HEADER_TRACK_PX, GridEdgeAddButtons, GridRemoveHeaders } from './GridEdgeControls'
 import { ScrollHint } from './ScrollHint'
+import { SeatActionOverlay } from './SeatActionOverlay'
 import { ViewSeatCell } from './ViewSeatCell'
 import {
   COMPACT_SEAT_GAP_PX,
@@ -82,6 +83,7 @@ export const CompactSeatGrid = ({
   onAddCol,
   onRemoveRow,
   onRemoveCol,
+  onAddSeat,
 }: Props) => {
   const scrollRef = useRef<HTMLDivElement>(null)
   const cellWidth = useCompactCellWidth(scrollRef)
@@ -174,11 +176,19 @@ export const CompactSeatGrid = ({
             (grid.emptyCells ?? []).map((cell) => (
               <div
                 key={`empty-${cell.row}-${cell.col}`}
-                style={{ gridRow: cell.row + 1 + rowOffset, gridColumn: cell.col + 1 + colOffset, display: 'flex' }}
+                style={{
+                  gridRow: cell.row + 1 + rowOffset,
+                  gridColumn: cell.col + 1 + colOffset,
+                  display: 'flex',
+                  // STEP B5: SeatActionOverlay(pill)をこのセル基準で絶対配置するための起点
+                  position: 'relative',
+                }}
                 data-seat-grid-cell={formatSeatGridCellAttr(cell)}
                 {...cellMouseDropProps}
               >
                 <EmptyGridCell isSelected={isEmptyCellSelected(cell)} onSelect={() => onSelectEmptyCell(cell)} />
+                {/* STEP B5: 選択中のセルにだけ「席追加」ピルを重ねる */}
+                {isEmptyCellSelected(cell) && <SeatActionOverlay onAddSeat={() => onAddSeat(cell)} />}
               </div>
             ))}
           {/* STEP B4: 空行・空列のヘッダにだけ出す削除ボタン(ヘッダー行・列トラックの分は上でオフセット済み) */}
