@@ -16,6 +16,8 @@ import { useSeatSelection } from './hooks/use-seat-selection'
 import { anchorTransformOrigin } from './utils/anchor-origin'
 import { COMPACT_SIDE_PADDING_PX } from './utils/seat-grid'
 import type { TeamOverlayProps } from './type'
+import { EmployeeAssignSheet } from '@/components/EmployeeAssignSheet'
+import { SeatMapPortal } from '@/components/SeatMapPortal'
 import { SheetHandle } from '@/components/SheetHandle'
 import { useSwipeDismiss } from '@/hooks/use-swipe-dismiss'
 import type { Rect } from '@/utils/rect'
@@ -109,8 +111,37 @@ export const TeamOverlay = ({
     [isSeatSelected, clearSelection, selectSeat]
   )
 
-  // STEP C2: ここで社員検索シートを開く。この STEP では選択→呼び出しの配線だけを用意する
-  const handleAssignSeat = useCallback((_seatId: string) => {}, [])
+  // STEP C2: 社員検索シートはキャンバス編集(SeatMapView)と同じ EmployeeAssignSheet をそのまま使う。
+  // 確定先だけこちらは assignmentsOverride(draft.assignEmployee)へ差し替え、localStorage への保存は
+  // 一切行わない(保存は SeatLayoutHeader の「終了」→ seatCommit.commit のみが担う)
+  const [assignSeatId, setAssignSeatId] = useState<string | null>(null)
+
+  // 対象席は seatGrid(差分反映済み)から引く。判定基準を二重に持たないため、下書き追加席・
+  // 割当上書きの解決は use-seat-layout-compose 側の1本にそのまま委ねる
+  const assignTargetSeat = useMemo(
+    () => seatGrid.positionedSeats.find((p) => p.seat.id === assignSeatId)?.seat ?? null,
+    [seatGrid, assignSeatId]
+  )
+
+  // 検索対象は組織全員。employeeById は SeatMapView から渡ってくる同じ Map をそのまま使う
+  const assignEmployees = useMemo(() => [...employeeById.values()], [employeeById])
+
+  const handleAssignSeat = useCallback((seatId: string) => setAssignSeatId(seatId), [])
+
+  const handleAssignSelect = useCallback(
+    (employeeId: string) => {
+      if (assignSeatId) editMode.draft.assignEmployee(assignSeatId, employeeId)
+      setAssignSeatId(null)
+    },
+    [assignSeatId, editMode]
+  )
+
+  const handleAssignClear = useCallback(() => {
+    if (assignSeatId) editMode.draft.assignEmployee(assignSeatId, null)
+    setAssignSeatId(null)
+  }, [assignSeatId, editMode])
+
+  const handleAssignClose = useCallback(() => setAssignSeatId(null), [])
 
   const handleAddSeat = useCallback(
     (cell: GridCell) => {
@@ -307,6 +338,20 @@ export const TeamOverlay = ({
           )}
         </div>
       </div>
+      {/* STEP C2: .team-ovl-panel は backdrop-filter + overflow:hidden で fixed 子を閉じ込めるため、
+          TrashDropZone と同じ理由で SeatMapPortal 経由で body 直下へ描く */}
+      <SeatMapPortal>
+        <EmployeeAssignSheet
+          isOpen={assignSeatId !== null}
+          seat={assignTargetSeat}
+          employees={assignEmployees}
+          seats={seats}
+          employeeById={employeeById}
+          onSelect={handleAssignSelect}
+          onClear={handleAssignClear}
+          onClose={handleAssignClose}
+        />
+      </SeatMapPortal>
     </div>
   )
 }
