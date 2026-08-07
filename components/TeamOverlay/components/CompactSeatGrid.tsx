@@ -66,6 +66,7 @@ export const CompactSeatGrid = ({
   employeeById,
   presenceMap,
   teamName,
+  teamColor,
   loading,
   highlightSeatId,
   onSeatClick,
@@ -151,6 +152,7 @@ export const CompactSeatGrid = ({
                     seat={seat}
                     employee={employee}
                     teamName={teamName}
+                    teamColor={teamColor}
                     isSelected={isSeatSelected(seat.id)}
                     onSelect={() => onSelectSeat(seat.id)}
                     seatMouseDragProps={seatMouseDragProps}
