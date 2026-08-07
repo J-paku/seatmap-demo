@@ -96,6 +96,22 @@ export const TeamOverlay = ({
     [isEmptyCellSelected, clearSelection, selectEmptyCell]
   )
 
+  // STEP C1: 席の再タップで選択解除できるようにする。selectSeat自体は「常にその席を選ぶ」だけで
+  // トグルではないため、空セル側(handleSelectEmptyCell)と同じ方針でここに差し替える
+  const handleSelectSeat = useCallback(
+    (seatId: string) => {
+      if (isSeatSelected(seatId)) {
+        clearSelection()
+        return
+      }
+      selectSeat(seatId)
+    },
+    [isSeatSelected, clearSelection, selectSeat]
+  )
+
+  // STEP C2: ここで社員検索シートを開く。この STEP では選択→呼び出しの配線だけを用意する
+  const handleAssignSeat = useCallback((_seatId: string) => {}, [])
+
   const handleAddSeat = useCallback(
     (cell: GridCell) => {
       if (!payload) return
@@ -261,7 +277,7 @@ export const TeamOverlay = ({
               isEditMode={editMode.isEditMode}
               isSeatSelected={seatSelection.isSeatSelected}
               isEmptyCellSelected={seatSelection.isEmptyCellSelected}
-              onSelectSeat={seatSelection.selectSeat}
+              onSelectSeat={handleSelectSeat}
               onSelectEmptyCell={handleSelectEmptyCell}
               seatMouseDragProps={seatDrag.seatMouseDragProps}
               cellMouseDropProps={seatDrag.cellMouseDropProps}
@@ -272,6 +288,7 @@ export const TeamOverlay = ({
               onRemoveRow={editMode.removeRow}
               onRemoveCol={editMode.removeCol}
               onAddSeat={handleAddSeat}
+              onAssignSeat={handleAssignSeat}
             />
           </section>
           {/* タッチドラッグ中だけ指へ追従するゴースト。マウスはネイティブDnDの既定画像に任せる */}

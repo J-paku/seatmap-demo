@@ -109,4 +109,7 @@ export type SeatGridProps = {
   // STEP B5: 空セルへ新規席を追加する。仮IDの採番は呼び出し側(use-seat-draft-state.addSeat)に
   // 任せ、ここでは新しい採番口を作らない
   onAddSeat: (cell: GridCell) => void
+  // STEP C1: 選択中の席の操作ピル(登録/変更)から呼ばれる。実際に社員検索シートを開く処理は
+  // STEP C2 が実装し、この段階では配線だけを用意する
+  onAssignSeat: (seatId: string) => void
 }
