@@ -222,6 +222,14 @@
   outline-offset: 1px;
 }
 
+/* STEP C3: 部署一括配置。個別配属の pixel-btn と揃えつつ、accent 色で強調する */
+.assign-bulk {
+  width: 100%;
+  margin-top: 8px;
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+
 .assign-clear {
   width: 100%;
   margin-top: 8px;

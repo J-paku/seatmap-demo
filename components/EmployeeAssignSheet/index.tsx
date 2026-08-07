@@ -16,6 +16,9 @@ type Props = {
   onSelect: (employeeId: string) => void
   onClear: () => void
   onClose: () => void
+  // STEP C3: オーバーレイ経由の時だけ渡す。渡された時だけ「この部署をまとめて配属」を出す
+  // (キャンバス編集のSeatMapViewは渡さないため、既存の個別配属導線は影響を受けない)
+  onBulkAssign?: () => void
 }
 
 const CandidateRow = ({
@@ -57,8 +60,9 @@ export const EmployeeAssignSheet = ({
   onSelect,
   onClear,
   onClose,
+  onBulkAssign,
 }: Props) => {
-  const { query, setQuery, candidates } = useEmployeeAssign(employees, seats)
+  const { query, setQuery, candidates, canBulkAssign } = useEmployeeAssign(employees, seats, seat)
   const occupant = seat?.employeeId ? employeeById.get(seat.employeeId) ?? null : null
 
   return (
@@ -77,6 +81,11 @@ export const EmployeeAssignSheet = ({
         onChange={(e) => setQuery(e.target.value)}
         autoFocus
       />
+      {onBulkAssign && canBulkAssign && (
+        <button type='button' className='pixel-btn assign-bulk' onClick={onBulkAssign}>
+          この部署をまとめて配属
+        </button>
+      )}
       {occupant && (
         <button type='button' className='pixel-btn assign-clear' onClick={onClear}>
           この席を空席にする
