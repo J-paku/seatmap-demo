@@ -1230,3 +1230,147 @@
   left: 6px;
   transform: translateY(-50%);
 }
+
+/* STEP D3: 編集モード下部のフローティングドック(保存/キャンセルの2つだけ)。
+   .team-ovl-panel(position: relative)を基準に絶対配置する。パネルのoverflow: hiddenの
+   内側に収まる高さに留めるため、TrashDropZoneのようにSeatMapPortalへ逃がす必要はない
+   (viewport基準のfixed位置決めが要らないため) */
+.team-ovl-dock {
+  position: absolute;
+  left: 50%;
+  bottom: 16px;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px;
+  border-radius: 9999px;
+  border: 1px solid var(--glass-border);
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px) saturate(160%);
+  box-shadow: var(--glass-shadow);
+  transform: translateX(-50%);
+  animation: team-ovl-dock-enter 180ms ease-out;
+}
+
+/* backdrop-filter 非対応環境用の不透明フォールバック(.team-ovl-hintと同じ方針) */
+@supports not (backdrop-filter: blur(1px)) {
+  .team-ovl-dock {
+    background: var(--glass-bg-opaque);
+  }
+}
+
+@keyframes team-ovl-dock-enter {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 12px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .team-ovl-dock {
+    animation: none;
+  }
+}
+
+.team-ovl-dock-cancel {
+  flex-shrink: 0;
+  width: 46px;
+  height: 44px;
+  border-radius: 9999px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface-muted);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.team-ovl-dock-cancel:hover {
+  background: var(--color-surface-muted-hover);
+}
+
+.team-ovl-dock-cancel .material-symbols-outlined {
+  font-size: 20px;
+}
+
+/* 保存。changeCount>0の間だけ出るバッジは常に白系(--color-band-highlight、profile-band用に
+   全テーマ共通の白として定義済みのトークンを流用)を薄めて使う。--color-text-on-accentは
+   テーマにより暗色(dracula/kuroxxx)になるため「半透明白」の指定には使えない */
+.team-ovl-dock-save {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  padding-inline: 18px;
+  border: 0;
+  border-radius: 9999px;
+  background: linear-gradient(
+    135deg,
+    var(--color-accent),
+    color-mix(in srgb, var(--color-accent) 42%, var(--color-band-highlight))
+  );
+  color: var(--color-text-on-accent);
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+  box-shadow: var(--glass-shadow-sm);
+}
+
+.team-ovl-dock-save:hover:not(:disabled) {
+  filter: brightness(1.05);
+}
+
+/* 変更0件では押せない。保存中(isSaving)はhasChangesのままdisabledにしないため
+   opacity 0.4は「変更なし」の1状態にだけ紐づく(:disabledと1:1対応、二重の判定を作らない) */
+.team-ovl-dock-save:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.team-ovl-dock-save-icon {
+  font-size: 16px;
+}
+
+.team-ovl-dock-save-icon.is-spinning {
+  animation: team-ovl-dock-spin 1s linear infinite;
+}
+
+@keyframes team-ovl-dock-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.team-ovl-dock-save-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  border-radius: 9999px;
+  background: color-mix(in srgb, var(--color-band-highlight) 30%, transparent);
+  color: var(--color-band-highlight);
+  font-size: 11px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+/* STEP D3: 編集中の座席カード・空セル・変更/登録ピル・ドックの2ボタンにキーボードフォーカスの
+   可視化を足す。.team-ovl-mini-toggle:focus-visibleと同じ方針(accentの2pxアウトライン) */
+.team-ovl-editcard:focus-visible,
+.team-ovl-emptycell:focus-visible,
+.team-ovl-seat-add-btn:focus-visible,
+.team-ovl-dock-cancel:focus-visible,
+.team-ovl-dock-save:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
