@@ -3,6 +3,7 @@ import { EditSeatCell } from './EditSeatCell'
 import { EmptyGridCell } from './EmptyGridCell'
 import { GRID_HEADER_TRACK_PX, GridEdgeAddButtons, GridRemoveHeaders } from './GridEdgeControls'
 import { ScrollHint } from './ScrollHint'
+import { SeatActionOverlay } from './SeatActionOverlay'
 import { SeatCard } from './SeatCard'
 import { DESKTOP_SEAT_CARD_WIDTH_PX, DESKTOP_SEAT_GAP_PX, gridCellKey } from '../utils/seat-grid'
 import type { SeatGridProps } from '../type'
@@ -38,6 +39,7 @@ export const DesktopSeatGrid = ({
   onAddCol,
   onRemoveRow,
   onRemoveCol,
+  onAddSeat,
 }: Props) => {
   const scrollRef = useRef<HTMLDivElement>(null)
   const { hasOverflow, atStart, atEnd } = useScrollHints(scrollRef, grid.cols)
@@ -74,11 +76,19 @@ export const DesktopSeatGrid = ({
         cells.push(
           <div
             key={`empty-${row}-${col}`}
-            style={{ gridRow: row + 1 + rowOffset, gridColumn: col + 1 + colOffset, display: 'flex' }}
+            style={{
+              gridRow: row + 1 + rowOffset,
+              gridColumn: col + 1 + colOffset,
+              display: 'flex',
+              // STEP B5: SeatActionOverlay(pill)をこのセル基準で絶対配置するための起点
+              position: 'relative',
+            }}
             data-seat-grid-cell={formatSeatGridCellAttr(cell)}
             {...cellMouseDropProps}
           >
             <EmptyGridCell isSelected={isEmptyCellSelected(cell)} onSelect={() => onSelectEmptyCell(cell)} />
+            {/* STEP B5: 選択中のセルにだけ「席追加」ピルを重ねる */}
+            {isEmptyCellSelected(cell) && <SeatActionOverlay onAddSeat={() => onAddSeat(cell)} />}
           </div>
         )
         continue

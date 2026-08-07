@@ -1067,3 +1067,50 @@
 .team-ovl-edge-remove .material-symbols-outlined {
   font-size: 16px;
 }
+
+/* STEP B5: 選択中の空セル中央に出す「席追加」ピル(SeatActionOverlay)。
+   コンテナは pointer-events: none にしてボタン以外の領域を素通しし、背後の
+   .team-ovl-emptycell(セル全体を覆うボタン)へタップを届かせる。素通しにしないと
+   選択中セルの再タップで選択解除ができなくなる(docs/team-overlay/spec.md STEP B5参照) */
+.team-ovl-seat-add {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.team-ovl-seat-add-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border: 0;
+  border-radius: 9999px;
+  background: var(--color-accent);
+  color: var(--color-text-on-accent);
+  box-shadow: var(--glass-shadow-sm);
+  cursor: pointer;
+  pointer-events: auto;
+  white-space: nowrap;
+}
+
+.team-ovl-seat-add-icon {
+  font-size: 14px;
+}
+
+/* サイズは2種。通常(Desktop)/コンパクト(モバイルのカード幅 ~70px に収める) */
+.team-ovl-grid.is-desktop .team-ovl-seat-add-btn {
+  min-height: 36px;
+  padding-inline: 14px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.team-ovl-grid.is-compact .team-ovl-seat-add-btn {
+  min-height: 32px;
+  padding-inline: 9px;
+  font-size: 11px;
+  font-weight: 700;
+}
