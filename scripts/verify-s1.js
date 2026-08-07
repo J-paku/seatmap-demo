@@ -8,8 +8,14 @@
   const canvasText = layer ? layer.innerText : ''
 
   // 1. キャンバスに個人座席カードが無い(在席状態語が出たら座席カードを描いている)
+  // 会議室ブロックの状態ラベル(.facility-status、例: 会議中)は仕様上キャンバスに描いてよいので
+  // 走査対象から除外する。除外は「.facility-status のテキストだけ」に限定し、
+  // 座席カードが同じ語を描いた場合(=本来の違反)は検出できるようにする
+  const layerClone = layer ? layer.cloneNode(true) : null
+  if (layerClone) layerClone.querySelectorAll('.facility-status').forEach(el => el.remove())
+  const seatCheckText = layerClone ? layerClone.textContent : ''
   const seatWords = ['在席', '空席', '会議中', '外出', 'リモート', '出張', '退勤', '休み']
-  const hit = seatWords.filter(w => canvasText.includes(w))
+  const hit = seatWords.filter(w => seatCheckText.includes(w))
   ck('キャンバスに個人座席カードが無い', hit.length === 0, hit.join(','))
 
   // 2. sr-only ミラーレイヤーに座席ボタンがある
