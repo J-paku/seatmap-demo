@@ -10,7 +10,7 @@ export type AssignCandidate = {
   seatedAt: string | null
 }
 
-export const useEmployeeAssign = (employees: Employee[], seats: Seat[]) => {
+export const useEmployeeAssign = (employees: Employee[], seats: Seat[], targetSeat: Seat | null) => {
   const [query, setQuery] = useState('')
 
   const seatIdByEmployee = useMemo(() => {
@@ -29,5 +29,12 @@ export const useEmployeeAssign = (employees: Employee[], seats: Seat[]) => {
     [employees, query, seatIdByEmployee]
   )
 
-  return { query, setQuery, candidates }
+  // STEP C3: 部署一括配置ボタンの押下可否。対象席のチームに社員が1人もいなければボタンを
+  // 出しても何も起きないため、ここで判定しておく(実際の一括配置処理はuse-bulk-assignへ寄せる)
+  const canBulkAssign = useMemo(
+    () => targetSeat !== null && employees.some((employee) => employee.teamId === targetSeat.teamId),
+    [employees, targetSeat]
+  )
+
+  return { query, setQuery, candidates, canBulkAssign }
 }

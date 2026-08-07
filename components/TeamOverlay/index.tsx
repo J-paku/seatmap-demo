@@ -5,6 +5,7 @@ import { SeatGridFrame } from './components/SeatGridFrame'
 import { SeatLayoutHeader } from './components/SeatLayoutHeader'
 import { TeamOverlayHeader } from './components/TeamOverlayHeader'
 import { TrashDropZone } from './components/TrashDropZone'
+import { useBulkAssign } from './hooks/use-bulk-assign'
 import { useIsCompactMobile } from './hooks/use-compact-mobile'
 import { useModalShell } from './hooks/use-modal-shell'
 import { useOverlayEditMode } from './hooks/use-overlay-edit-mode'
@@ -16,6 +17,7 @@ import { useSeatSelection } from './hooks/use-seat-selection'
 import { anchorTransformOrigin } from './utils/anchor-origin'
 import { COMPACT_SIDE_PADDING_PX } from './utils/seat-grid'
 import type { TeamOverlayProps } from './type'
+import { ConfirmDialog } from '@/components/edit/ConfirmDialog'
 import { EmployeeAssignSheet } from '@/components/EmployeeAssignSheet'
 import { SeatMapPortal } from '@/components/SeatMapPortal'
 import { SheetHandle } from '@/components/SheetHandle'
@@ -142,6 +144,24 @@ export const TeamOverlay = ({
   }, [assignSeatId, editMode])
 
   const handleAssignClose = useCallback(() => setAssignSeatId(null), [])
+
+  // STEP C3: 部署ごとの一括配置。EmployeeAssignSheetの「この部署をまとめて配属」から呼ぶ。
+  // 対象は seats(全座席)から引くため、選択中の特定席とは独立に部署全員を空セルへ詰めていく
+  const bulkAssign = useBulkAssign({
+    teamId: payload?.teamId ?? null,
+    employees: assignEmployees,
+    seats,
+    grid: editMode.grid,
+    draft: editMode.draft,
+    addRow: editMode.addRow,
+    placeSeat: editMode.placeSeat,
+  })
+
+  // シートを閉じてから一括配置を要求する。移動確認が要れば ConfirmDialog 側で続きを引き継ぐ
+  const handleBulkAssignRequest = useCallback(() => {
+    setAssignSeatId(null)
+    bulkAssign.requestBulkAssign()
+  }, [bulkAssign])
 
   const handleAddSeat = useCallback(
     (cell: GridCell) => {
@@ -350,7 +370,18 @@ export const TeamOverlay = ({
           onSelect={handleAssignSelect}
           onClear={handleAssignClear}
           onClose={handleAssignClose}
+          onBulkAssign={handleBulkAssignRequest}
         />
+        {/* STEP C3: 他所配属者(movers)がいる時だけ出す移動確認。newcomers だけなら確認を挟まない */}
+        {bulkAssign.pendingPlan?.confirmMessage && (
+          <ConfirmDialog
+            ariaLabel='部署一括配置の確認'
+            message={bulkAssign.pendingPlan.confirmMessage}
+            confirmLabel='実行する'
+            onConfirm={bulkAssign.confirmBulkAssign}
+            onCancel={bulkAssign.cancelBulkAssign}
+          />
+        )}
       </SeatMapPortal>
     </div>
   )
