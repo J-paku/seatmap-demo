@@ -18,7 +18,7 @@ export type TrashDropZoneProps = {
   // タッチ経路など外部で判定した「ドラッグがゾーン上にあるか」。マウス経路は内部の
   // onDragOver/onDragLeave で判定するため、外部判定が無ければ内部判定だけを使う
   isOver?: boolean
-  // ドロップ確定時に呼ばれる。席の削除自体は呼び出し側(clearSeat)が行う
+  // ドロップ確定時に呼ばれる。席の削除自体は呼び出し側(removeSeatAtCell)が行う
   onDrop: () => void
 }
 
@@ -78,7 +78,7 @@ export const TrashDropZone = ({ isVisible, isOver: isOverExternal = false, onDro
             className={`team-ovl-trash-zone${isOver ? ' is-over' : ''}`}
             style={{ top: center.top, left: center.left }}
             data-trash-drop-zone='true'
-            aria-label='ここへドロップして席を空にする'
+            aria-label='ここへドロップして席を削除する'
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}

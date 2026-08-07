@@ -64,10 +64,11 @@ export type SeatDragGhostPosition = { x: number; y: number }
 export type UseSeatDragOptions = {
   // 入替/移動の確定口。moveSeatが空セルなら移動・席セルなら入替を1本で賄う
   moveSeat: (from: GridCell, to: GridCell) => void
-  // 削除の確定口。タッチ経路でゴミ箱ゾーンへドロップした時だけこのフックの内部から呼ぶ。
-  // マウス経路はTrashDropZone自身のonDragOver/onDropで判定するため、呼び出し側が
-  // TrashDropZoneのonDropへ直接同じ関数を渡す(このフックは経由しない)
-  clearSeat: (cell: GridCell) => void
+  // 削除の確定口。gridのセルを空にすると同時にdraftへも削除を記録する。タッチ経路で
+  // ゴミ箱ゾーンへドロップした時だけこのフックの内部から呼ぶ。マウス経路はTrashDropZone
+  // 自身のonDragOver/onDropで判定するため、呼び出し側がTrashDropZoneのonDropへ直接
+  // 同じ関数を渡す(このフックは経由しない)
+  removeSeatAtCell: (cell: GridCell) => void
 }
 
 export type UseSeatDragResult = {
@@ -101,7 +102,7 @@ export type UseSeatDragResult = {
   }
 }
 
-export const useSeatDrag = ({ moveSeat, clearSeat }: UseSeatDragOptions): UseSeatDragResult => {
+export const useSeatDrag = ({ moveSeat, removeSeatAtCell }: UseSeatDragOptions): UseSeatDragResult => {
   const [draggingCell, setDraggingCell] = useState<GridCell | null>(null)
   const [hoverCell, setHoverCell] = useState<GridCell | null>(null)
   const [touchGhostPosition, setTouchGhostPosition] = useState<SeatDragGhostPosition | null>(null)
@@ -250,7 +251,7 @@ export const useSeatDrag = ({ moveSeat, clearSeat }: UseSeatDragOptions): UseSea
         const point = latestPointRef.current ?? { x: e.clientX, y: e.clientY }
         const elementAtPoint = document.elementFromPoint(point.x, point.y)
         if (resolveIsOverTrashZone(elementAtPoint)) {
-          clearSeat(state.cell)
+          removeSeatAtCell(state.cell)
         } else {
           const toCell = resolveCellFromElement(elementAtPoint)
           if (toCell) moveSeat(state.cell, toCell)
@@ -260,7 +261,7 @@ export const useSeatDrag = ({ moveSeat, clearSeat }: UseSeatDragOptions): UseSea
       }
       resetTouchDrag()
     },
-    [moveSeat, clearSeat, resetTouchDrag]
+    [moveSeat, removeSeatAtCell, resetTouchDrag]
   )
 
   const handleSeatPointerCancel = useCallback(
