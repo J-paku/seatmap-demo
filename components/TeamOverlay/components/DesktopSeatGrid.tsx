@@ -117,6 +117,7 @@ export const DesktopSeatGrid = ({
               seat={seat}
               employee={employee}
               teamName={teamName}
+              teamColor={teamColor}
               isSelected={isSeatSelected(seat.id)}
               onSelect={() => onSelectSeat(seat.id)}
               seatMouseDragProps={seatMouseDragProps}

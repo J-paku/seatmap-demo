@@ -8,10 +8,12 @@ type Props = {
   seatId: string
   rotation: Seat['rotation']
   onRotate: (seatId: string, rotation: Seat['rotation']) => void
+  // STEP D2: ドラッグ中フラグを親(EditSeatCell)へ出す。コンパスガイドの表示切り替えに使う
+  onDraggingChange: (dragging: boolean) => void
 }
 
-export const SeatRotationGrip = ({ seatId, rotation, onRotate }: Props) => {
-  const gripProps = useSeatRotationGrip({ seatId, rotation, onRotate })
+export const SeatRotationGrip = ({ seatId, rotation, onRotate, onDraggingChange }: Props) => {
+  const gripProps = useSeatRotationGrip({ seatId, rotation, onRotate, onDraggingChange })
   return (
     <button
       type='button'

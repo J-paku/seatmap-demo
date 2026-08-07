@@ -1144,3 +1144,89 @@
 .team-ovl-rotation-grip-icon {
   font-size: 16px;
 }
+
+/* STEP D2: 席の向きの帯。編集中の席カード(.team-ovl-editcard、position: relativeを持つ)の
+   縁のうち、その席が向いている辺だけに短く出す。矢印にはしない(小さいカードで潰れるため)。
+   背景色は呼び出し側(SeatDirectionMarker)がチーム色を薄めてインラインで渡す */
+.team-ovl-dir-marker {
+  position: absolute;
+  border-radius: 9999px;
+  pointer-events: none;
+}
+
+.team-ovl-dir-marker.is-edge-north {
+  top: 0;
+  left: 50%;
+  width: 28px;
+  height: 3px;
+  transform: translateX(-50%);
+}
+
+.team-ovl-dir-marker.is-edge-south {
+  bottom: 0;
+  left: 50%;
+  width: 28px;
+  height: 3px;
+  transform: translateX(-50%);
+}
+
+.team-ovl-dir-marker.is-edge-east {
+  top: 50%;
+  right: 0;
+  width: 3px;
+  height: 28px;
+  transform: translateY(-50%);
+}
+
+.team-ovl-dir-marker.is-edge-west {
+  top: 50%;
+  left: 0;
+  width: 3px;
+  height: 28px;
+  transform: translateY(-50%);
+}
+
+/* STEP D2: 回転グリップをドラッグしている間だけ出す方角ガイド。セルラッパー(.team-ovl-rotation-grip
+   と同じ親、position: relative)基準でinset: 0のセンタリングをし、カード中心に東西南北の
+   目安を薄く示す(.team-ovl-seat-addと同じ配置方針) */
+.team-ovl-compass-guide {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.team-ovl-compass-tick {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  border-radius: 9999px;
+  background: var(--color-text-muted);
+  opacity: 0.6;
+}
+
+.team-ovl-compass-tick.is-north {
+  top: 6px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.team-ovl-compass-tick.is-south {
+  bottom: 6px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.team-ovl-compass-tick.is-east {
+  top: 50%;
+  right: 6px;
+  transform: translateY(-50%);
+}
+
+.team-ovl-compass-tick.is-west {
+  top: 50%;
+  left: 6px;
+  transform: translateY(-50%);
+}

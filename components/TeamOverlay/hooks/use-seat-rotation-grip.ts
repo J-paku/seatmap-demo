@@ -46,6 +46,9 @@ export type UseSeatRotationGripOptions = {
   // 現在の回転値。propsのため1フレーム遅れる前提で、実際の判定基準はlastRotationRefへ持つ
   rotation: Seat['rotation']
   onRotate: (seatId: string, rotation: Seat['rotation']) => void
+  // STEP D2: デッドゾーンを超えてドラッグへ切り替わった/戻った瞬間だけ呼ぶ。
+  // 親(EditSeatCell)がコンパスガイドの表示切り替えに使う
+  onDraggingChange: (dragging: boolean) => void
 }
 
 export type UseSeatRotationGripResult = {
@@ -59,6 +62,7 @@ export const useSeatRotationGrip = ({
   seatId,
   rotation,
   onRotate,
+  onDraggingChange,
 }: UseSeatRotationGripOptions): UseSeatRotationGripResult => {
   const stateRef = useRef<GripPointerState>({ kind: 'idle' })
   // 直近に自分が発行した回転値。イベントハンドラ内での書き換えが基準そのものなので、
@@ -86,6 +90,7 @@ export const useSeatRotationGrip = ({
       if (!state.dragging) {
         if (Math.hypot(dx, dy) < DRAG_DEAD_ZONE_PX) return
         stateRef.current = { ...state, dragging: true }
+        onDraggingChange(true)
       }
       const snapped = angleToRotation(dx, dy)
       if (snapped !== lastRotationRef.current) {
@@ -93,7 +98,7 @@ export const useSeatRotationGrip = ({
         onRotate(seatId, snapped)
       }
     },
-    [seatId, onRotate]
+    [seatId, onRotate, onDraggingChange]
   )
 
   const handlePointerUp = useCallback(
@@ -105,18 +110,24 @@ export const useSeatRotationGrip = ({
         const next = CLOCKWISE_NEXT[lastRotationRef.current]
         lastRotationRef.current = next
         onRotate(seatId, next)
+      } else {
+        onDraggingChange(false)
       }
       stateRef.current = { kind: 'idle' }
     },
-    [seatId, onRotate]
+    [seatId, onRotate, onDraggingChange]
   )
 
-  const handlePointerCancel = useCallback((e: ReactPointerEvent<HTMLElement>) => {
-    const state = stateRef.current
-    if (state.kind !== 'active' || state.pointerId !== e.pointerId) return
-    e.stopPropagation()
-    stateRef.current = { kind: 'idle' }
-  }, [])
+  const handlePointerCancel = useCallback(
+    (e: ReactPointerEvent<HTMLElement>) => {
+      const state = stateRef.current
+      if (state.kind !== 'active' || state.pointerId !== e.pointerId) return
+      e.stopPropagation()
+      if (state.dragging) onDraggingChange(false)
+      stateRef.current = { kind: 'idle' }
+    },
+    [onDraggingChange]
+  )
 
   return {
     onPointerDown: handlePointerDown,
