@@ -4,12 +4,17 @@
 // isEditMode / onEnterEdit / onExitEdit は STEP A3 時点では任意。呼び出し側(TeamOverlay/index.tsx)
 // の配線は別 STEP の担当で、渡されない間は何も描かず既存表示を1ピクセルも変えない
 
+// STEP D3: 「終了」はもう commit を兼ねない(保存は編集ドックの保存ボタンの1本だけに集約した)。
+// ここでの終了は取消(discard)で、保存中に押すと保存中のdraft/gridが後始末されてしまうため
+// isSavingの間はボタンごと無効化する
+
 type Props = {
   seatCount: number
   loading: boolean
   syncedAt: string
   sidePadding: number
   isEditMode?: boolean
+  isSaving?: boolean
   onEnterEdit?: () => void
   onExitEdit?: () => void
 }
@@ -20,6 +25,7 @@ export const SeatLayoutHeader = ({
   syncedAt,
   sidePadding,
   isEditMode = false,
+  isSaving = false,
   onEnterEdit,
   onExitEdit,
 }: Props) => (
@@ -31,7 +37,7 @@ export const SeatLayoutHeader = ({
       {isEditMode && onExitEdit ? (
         <span className='team-ovl-edit-status'>
           <span className='team-ovl-edit-badge'>編集中</span>
-          <button type='button' className='team-ovl-edit-finish' onClick={onExitEdit}>
+          <button type='button' className='team-ovl-edit-finish' onClick={onExitEdit} disabled={isSaving}>
             終了
           </button>
         </span>

@@ -45,6 +45,9 @@ type Options = {
   draft: SeatDraftState
   addRow: UseOverlayEditModeResult['addRow']
   placeSeat: UseOverlayEditModeResult['placeSeat']
+  // STEP D3: 一括配置の結果をLiveRegionへ流す唯一の口。呼び出し元(TeamOverlay/index.tsx)が
+  // useGlobalAnnouncementから渡す(このフック自身はa11yの配線を持たない)
+  announce: (message: string) => void
 }
 
 // 社員が今座っている座席そのもの。seats は下書き反映済みなので employeeId をそのまま照合するだけでよい
@@ -69,7 +72,16 @@ const buildPlan = (teamId: string, employees: Employee[], seats: Seat[]): BulkAs
   }
 }
 
-export const useBulkAssign = ({ teamId, employees, seats, grid, draft, addRow, placeSeat }: Options): UseBulkAssignResult => {
+export const useBulkAssign = ({
+  teamId,
+  employees,
+  seats,
+  grid,
+  draft,
+  addRow,
+  placeSeat,
+  announce,
+}: Options): UseBulkAssignResult => {
   const [pendingPlan, setPendingPlan] = useState<BulkAssignPlan | null>(null)
 
   // 実際の反映。空セルが尽きたらaddRow('bottom')で行を足しながら、行優先で1人ずつ新規座席を置く。
@@ -104,8 +116,9 @@ export const useBulkAssign = ({ teamId, employees, seats, grid, draft, addRow, p
           draft.recordMoveOrigin(newSeat.id, target.originSeatId)
         }
       }
+      announce(`[success]${plan.targets.length}名を配置しました`)
     },
-    [grid, addRow, placeSeat, draft]
+    [grid, addRow, placeSeat, draft, announce]
   )
 
   const requestBulkAssign = useCallback(() => {

@@ -47,6 +47,9 @@ export const EditSeatCell = ({
         data-seat-rotation={seat.rotation}
         className={`team-ovl-editcard${isSelected ? ' is-selected' : ''}`}
         aria-label={`${employee ? employee.name : '空席'} ${seatDirectionLabel(seat.rotation)}`}
+        // STEP D3: ネイティブbuttonなのでキーボード到達・Enter選択は既定で効くが、選択状態は
+        // 見た目(is-selected枠)でしか伝わっていなかったため、支援技術にもaria-pressedで伝える
+        aria-pressed={isSelected}
         onClick={onSelect}
         {...seatMouseDragProps}
         {...seatTouchProps}

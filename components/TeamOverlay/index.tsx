@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { EditDock } from './components/EditDock'
 import { Minimap } from './components/Minimap'
 import { SeatDragGhost } from './components/SeatDragGhost'
 import { SeatGridFrame } from './components/SeatGridFrame'
@@ -18,6 +19,7 @@ import { useSeatSelection } from './hooks/use-seat-selection'
 import { anchorTransformOrigin } from './utils/anchor-origin'
 import { COMPACT_SIDE_PADDING_PX } from './utils/seat-grid'
 import type { TeamOverlayProps } from './type'
+import { useGlobalAnnouncement } from '@/components/a11y'
 import { ConfirmDialog } from '@/components/edit/ConfirmDialog'
 import { EmployeeAssignSheet } from '@/components/EmployeeAssignSheet'
 import { SeatMapPortal } from '@/components/SeatMapPortal'
@@ -57,6 +59,9 @@ export const TeamOverlay = ({
   const bodyRef = useRef<HTMLDivElement>(null)
   const isCompactMobile = useIsCompactMobile()
   const { loading, clickLocked, syncedAt } = useOverlaySession(payload !== null, bodyRef)
+  // STEP D3: 編集の開始・保存・キャンセル・一括配置の結果はここから唯一のLiveRegion(a11y全体で
+  // 共有するAnnouncementProvider)へ流す。TeamOverlay専用のLiveRegionは新設しない
+  const { announce } = useGlobalAnnouncement()
 
   const teamSeats = useMemo(
     () => (payload ? seats.filter((s) => s.teamId === payload.teamId) : []),
@@ -116,7 +121,7 @@ export const TeamOverlay = ({
 
   // STEP C2: 社員検索シートはキャンバス編集(SeatMapView)と同じ EmployeeAssignSheet をそのまま使う。
   // 確定先だけこちらは assignmentsOverride(draft.assignEmployee)へ差し替え、localStorage への保存は
-  // 一切行わない(保存は SeatLayoutHeader の「終了」→ seatCommit.commit のみが担う)
+  // 一切行わない(保存は EditDock の保存ボタン → seatCommit.commit のみが担う。STEP D3)
   const [assignSeatId, setAssignSeatId] = useState<string | null>(null)
 
   // 対象席は seatGrid(差分反映済み)から引く。判定基準を二重に持たないため、下書き追加席・
@@ -163,6 +168,7 @@ export const TeamOverlay = ({
     draft: editMode.draft,
     addRow: editMode.addRow,
     placeSeat: editMode.placeSeat,
+    announce,
   })
 
   // シートを閉じてから一括配置を要求する。移動確認が要れば ConfirmDialog 側で続きを引き継ぐ
@@ -209,8 +215,7 @@ export const TeamOverlay = ({
     return () => window.clearTimeout(timer)
   }, [justAddedSeatId, isCompactMobile, isSeatSelected, clearSelection])
 
-  // STEP A5: 保存(commit)の呼び口。保存ボタン付きの編集ドックは PHASE D の担当なので、
-  // ここでは「終了」から保存できるところまでを配線する
+  // STEP A5→D3: 保存(commit)の呼び口。呼び出すのは編集ドック(EditDock)の保存ボタンだけにする
   const seatCommit = useSeatCommit({
     teamId: payload?.teamId ?? null,
     grid: editMode.grid,
@@ -218,17 +223,29 @@ export const TeamOverlay = ({
     isGridChanged: editMode.isGridChanged,
   })
 
-  // 「終了」= 保存してから編集モードを抜ける。editMode.cancel自体は「破棄」ではなく
-  // grid/draft/isEditModeの後始末だけを担う関数で、保存済みの内容を打ち消す意味は持たない
-  // (保存が無い=変更0件の場合はcommitが即座に戻るため、結果的に旧来の「終了」と同じになる)。
-  // isSaving中の二重押下はここで弾く(SeatLayoutHeaderのボタン自体は無効化できないため)
-  const handleFinishEdit = useCallback(() => {
+  // STEP D3: 保存経路はこの1本だけにする(ヘッダー「終了」はもうcommitを兼ねない)。
+  // 保存後はeditMode.cancelで編集モードを抜ける — 抜けずに居続けると、既に確定済みの
+  // draft.addedSeats/gridがそのまま残り、再度保存を押した時に同じ席を二重追加してしまうため。
+  // isSaving中の二重押下はここで弾く
+  const handleSaveEdit = useCallback(() => {
     if (seatCommit.isSaving) return
-    void seatCommit.commit().then(() => editMode.cancel())
-  }, [seatCommit, editMode])
+    void seatCommit.commit().then(() => {
+      editMode.cancel()
+      announce('[success]座席配置を保存しました')
+    })
+  }, [seatCommit, editMode, announce])
+
+  // 取消(破棄)。ドックのキャンセルボタンとヘッダーの「終了」ボタンの両方から呼ぶ唯一の経路。
+  // editMode.cancelは既に確定保存された内容までは打ち消さない(grid/draft/isEditModeの後始末のみ)ため、
+  // 確認は挟まない
+  const handleCancelEdit = useCallback(() => {
+    editMode.cancel()
+    announce('[info]編集をキャンセルしました')
+  }, [editMode, announce])
 
   // 編集中は✕・背景・Escで閉じられないようにする(未保存の変更を無言で捨てない)。
-  // 編集モードを抜けられるのは SeatLayoutHeader の「終了」(onExitEdit)だけにする
+  // 編集モードを抜けられるのは SeatLayoutHeader の「終了」と EditDock のキャンセル・保存
+  // (いずれも editMode.cancel を最終的に通す)だけにする。STEP D3
   const guardedClose = useCallback(() => {
     if (editMode.isEditMode) return
     onClose()
@@ -247,6 +264,10 @@ export const TeamOverlay = ({
   const { teamColor, teamName, rect } = payload
   const sidePadding = isCompactMobile ? COMPACT_SIDE_PADDING_PX : 0
   const teamRect: Rect = minimapTeamArea ?? { x: 0, y: 0, w: 0, h: 0 }
+  // STEP D3: 編集ドックの保存可否。changeCountだけ見ると、行・列の増減や席の移動(gridにしか
+  // 現れずchangeCountでは1件も数えない)をした時に保存できない不具合が起きるため、
+  // seatCommit.commitの内部ゲートと同じ2値(draft.changeCount / editMode.isGridChanged)を見る
+  const hasEditChanges = editMode.draft.changeCount > 0 || editMode.isGridChanged
 
   return (
     <div
@@ -311,8 +332,12 @@ export const TeamOverlay = ({
               syncedAt={syncedAt}
               sidePadding={sidePadding}
               isEditMode={editMode.isEditMode}
-              onEnterEdit={() => editMode.enterEditMode(teamSeats, teamRect)}
-              onExitEdit={handleFinishEdit}
+              isSaving={seatCommit.isSaving}
+              onEnterEdit={() => {
+                editMode.enterEditMode(teamSeats, teamRect)
+                announce('[info]座席編集を開始しました')
+              }}
+              onExitEdit={handleCancelEdit}
             />
             {/* ドラッグ中だけ現れるゴミ箱。落とすとドラッグ元の席を削除する */}
             <TrashDropZone
@@ -366,6 +391,18 @@ export const TeamOverlay = ({
             />
           )}
         </div>
+        {/* STEP D3: 保存/キャンセルの編集ドック。.team-ovl-panel(position: relative)基準の
+            絶対配置で下部に浮かせるだけなので、TrashDropZoneと違いSeatMapPortalへは逃がさない
+            (viewport基準のfixed位置決めが要らないため) */}
+        {editMode.isEditMode && (
+          <EditDock
+            changeCount={editMode.draft.changeCount}
+            hasChanges={hasEditChanges}
+            isSaving={seatCommit.isSaving}
+            onSave={handleSaveEdit}
+            onCancel={handleCancelEdit}
+          />
+        )}
       </div>
       {/* STEP C2: .team-ovl-panel は backdrop-filter + overflow:hidden で fixed 子を閉じ込めるため、
           TrashDropZone と同じ理由で SeatMapPortal 経由で body 直下へ描く */}
