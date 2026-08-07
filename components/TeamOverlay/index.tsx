@@ -69,9 +69,9 @@ export const TeamOverlay = ({
   // STEP B1: 編集中セルの選択(席か空セルのどちらか1件だけ)。編集モードを抜けると自動で消える
   const seatSelection = useSeatSelection(editMode.isEditMode)
 
-  // STEP B2/B3: 編集中セルのドラッグ移動/入替とゴミ箱への削除。moveSeat/clearSeatは
+  // STEP B2/B3: 編集中セルのドラッグ移動/入替とゴミ箱への削除。moveSeat/removeSeatAtCellは
   // どちらもuseOverlayEditModeが持つ唯一のgrid差分適用口をそのまま渡す
-  const seatDrag = useSeatDrag({ moveSeat: editMode.moveSeat, clearSeat: editMode.clearSeat })
+  const seatDrag = useSeatDrag({ moveSeat: editMode.moveSeat, removeSeatAtCell: editMode.removeSeatAtCell })
 
   // STEP B5: 空セルからの席追加。仮IDの採番はuseSeatDraftState.addSeatに一本化し、ここでは
   // 採番しない。置いた直後は選択状態(既存のis-selected見せ方)をハイライト代わりに流用する
@@ -239,12 +239,12 @@ export const TeamOverlay = ({
               onEnterEdit={() => editMode.enterEditMode(teamSeats, teamRect)}
               onExitEdit={handleFinishEdit}
             />
-            {/* ドラッグ中だけ現れるゴミ箱。落とすとドラッグ元セルを空にする */}
+            {/* ドラッグ中だけ現れるゴミ箱。落とすとドラッグ元の席を削除する */}
             <TrashDropZone
               isVisible={seatDrag.draggingCell !== null}
               isOver={seatDrag.isOverTrash}
               onDrop={() => {
-                if (seatDrag.draggingCell) editMode.clearSeat(seatDrag.draggingCell)
+                if (seatDrag.draggingCell) editMode.removeSeatAtCell(seatDrag.draggingCell)
               }}
             />
             <SeatGridFrame

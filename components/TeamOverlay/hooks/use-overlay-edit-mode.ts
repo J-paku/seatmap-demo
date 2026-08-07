@@ -53,7 +53,9 @@ export type UseOverlayEditModeResult = {
   removeRow: (row: number) => void
   removeCol: (col: number) => void
   placeSeat: (cell: GridCell, seatId: string) => void
-  clearSeat: (cell: GridCell) => void
+  // ゴミ箱ドロップの唯一の入口。gridのセルを空にすると同時にdraftへ削除を記録する。
+  // 「席が消えた」の判定基準をgridとdraftの二重に作らないよう、呼び出し側は必ずこの1本を通す
+  removeSeatAtCell: (cell: GridCell) => void
   moveSeat: (from: GridCell, to: GridCell) => void
   draft: SeatDraftState
 }
@@ -95,7 +97,17 @@ export const useOverlayEditMode = (): UseOverlayEditModeResult => {
     (cell: GridCell, seatId: string) => updateGrid((g) => placeSeat(g, cell, seatId)),
     [updateGrid]
   )
-  const handleClearSeat = useCallback((cell: GridCell) => updateGrid((g) => clearSeat(g, cell)), [updateGrid])
+  // 削除対象の席id(下書き追加席なら仮id)をgridから先に読んでからセルを空にし、draftへも
+  // 削除を記録する。下書き追加席の取り消しはuseSeatDraftState.removeSeat側で判定済みのため
+  // ここでは分岐しない
+  const removeSeatAtCell = useCallback(
+    (cell: GridCell) => {
+      const seatId = grid?.cells[cell.row]?.[cell.col] ?? null
+      updateGrid((g) => clearSeat(g, cell))
+      if (seatId) draft.removeSeat(seatId)
+    },
+    [grid, updateGrid, draft]
+  )
   const handleMoveSeat = useCallback(
     (from: GridCell, to: GridCell) => updateGrid((g) => moveSeat(g, from, to)),
     [updateGrid]
@@ -112,7 +124,7 @@ export const useOverlayEditMode = (): UseOverlayEditModeResult => {
     removeRow: handleRemoveRow,
     removeCol: handleRemoveCol,
     placeSeat: handlePlaceSeat,
-    clearSeat: handleClearSeat,
+    removeSeatAtCell,
     moveSeat: handleMoveSeat,
     draft,
   }
