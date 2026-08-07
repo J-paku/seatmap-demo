@@ -140,6 +140,7 @@ export const TeamOverlay = ({
     teamId: payload?.teamId ?? null,
     grid: editMode.grid,
     draft: editMode.draft,
+    isGridChanged: editMode.isGridChanged,
   })
 
   // 「終了」= 保存してから編集モードを抜ける。editMode.cancel自体は「破棄」ではなく

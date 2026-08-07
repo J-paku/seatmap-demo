@@ -26,9 +26,24 @@ import type { Seat } from '@/types'
 // 割当・追加・削除・回転の下書き(draft)は use-seat-draft-state にそのまま委譲する。
 // 二重に状態を持たないよう、この1インスタンスを唯一の draft ソースとして返す
 
+// 2つのグリッドが同じ内容か。行・列の本数と各セルの中身(席id/空)が全て一致すれば同じとみなす。
+// 保存要否の判定にしか使わないためこのフックの内部に閉じる
+const isSameSeatGridDraft = (a: SeatGridDraft, b: SeatGridDraft): boolean => {
+  if (a.originX !== b.originX || a.originY !== b.originY) return false
+  if (a.colPitch !== b.colPitch || a.rowPitch !== b.rowPitch) return false
+  if (a.cells.length !== b.cells.length) return false
+  return a.cells.every((row, r) => {
+    const other = b.cells[r]
+    return row.length === other.length && row.every((cell, c) => cell === other[c])
+  })
+}
+
 export type UseOverlayEditModeResult = {
   isEditMode: boolean
   grid: SeatGridDraft | null
+  // 編集開始時のグリッドから中身が変わったか。行・列の増減と席の移動・グリッドからの除去は
+  // gridにしか現れずdraft.changeCountには一切載らないため、保存要否はこの値と併せて判定する
+  isGridChanged: boolean
   // 編集開始。座標から grid を1回だけ起こす。席0件なら teamRect 左上+パディングへ1×1を作る
   enterEditMode: (seats: Seat[], teamRect: Rect) => void
   // draft と grid を破棄して表示モードへ戻る。確認は挟まない(取消は意図が明確な操作)
@@ -47,18 +62,23 @@ export const useOverlayEditMode = (): UseOverlayEditModeResult => {
   const draft = useSeatDraftState()
   const [isEditMode, setIsEditMode] = useState(false)
   const [grid, setGrid] = useState<SeatGridDraft | null>(null)
+  // 編集開始時のグリッドを取っておき、保存要否はこれとの差分だけで決める。
+  // 変更回数を数える方式だと「足してから戻した」が変更ありになるため内容比較にする
+  const [baselineGrid, setBaselineGrid] = useState<SeatGridDraft | null>(null)
 
   const enterEditMode = useCallback((seats: Seat[], teamRect: Rect) => {
     const initial =
       buildSeatGridDraft(seats) ??
       createInitialGrid(teamRect.x + RELAYOUT_PADDING, teamRect.y + RELAYOUT_PADDING)
     setGrid(initial)
+    setBaselineGrid(initial)
     setIsEditMode(true)
   }, [])
 
   const cancel = useCallback(() => {
     draft.clearDraft()
     setGrid(null)
+    setBaselineGrid(null)
     setIsEditMode(false)
   }, [draft])
 
@@ -84,6 +104,7 @@ export const useOverlayEditMode = (): UseOverlayEditModeResult => {
   return {
     isEditMode,
     grid,
+    isGridChanged: grid !== null && baselineGrid !== null && !isSameSeatGridDraft(grid, baselineGrid),
     enterEditMode,
     cancel,
     addRow: handleAddRow,
