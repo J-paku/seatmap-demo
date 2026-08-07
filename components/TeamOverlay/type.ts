@@ -112,4 +112,6 @@ export type SeatGridProps = {
   // STEP C1: 選択中の席の操作ピル(登録/変更)から呼ばれる。実際に社員検索シートを開く処理は
   // STEP C2 が実装し、この段階では配線だけを用意する
   onAssignSeat: (seatId: string) => void
+  // STEP D1: 選択中の席カードに出す回転グリップから呼ばれる。draft.rotateSeatをそのまま渡してよい
+  onRotateSeat: (seatId: string, rotation: Seat['rotation']) => void
 }

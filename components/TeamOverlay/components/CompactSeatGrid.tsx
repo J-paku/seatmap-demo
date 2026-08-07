@@ -85,6 +85,7 @@ export const CompactSeatGrid = ({
   onRemoveCol,
   onAddSeat,
   onAssignSeat,
+  onRotateSeat,
 }: Props) => {
   const scrollRef = useRef<HTMLDivElement>(null)
   const cellWidth = useCompactCellWidth(scrollRef)
@@ -154,6 +155,7 @@ export const CompactSeatGrid = ({
                     onSelect={() => onSelectSeat(seat.id)}
                     seatMouseDragProps={seatMouseDragProps}
                     seatTouchProps={seatTouchProps}
+                    onRotateSeat={onRotateSeat}
                   />
                 ) : (
                   <ViewSeatCell

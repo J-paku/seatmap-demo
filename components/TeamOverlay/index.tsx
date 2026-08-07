@@ -348,6 +348,7 @@ export const TeamOverlay = ({
               onRemoveCol={editMode.removeCol}
               onAddSeat={handleAddSeat}
               onAssignSeat={handleAssignSeat}
+              onRotateSeat={editMode.draft.rotateSeat}
             />
           </section>
           {/* タッチドラッグ中だけ指へ追従するゴースト。マウスはネイティブDnDの既定画像に任せる */}

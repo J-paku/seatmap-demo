@@ -41,6 +41,7 @@ export const DesktopSeatGrid = ({
   onRemoveCol,
   onAddSeat,
   onAssignSeat,
+  onRotateSeat,
 }: Props) => {
   const scrollRef = useRef<HTMLDivElement>(null)
   const { hasOverflow, atStart, atEnd } = useScrollHints(scrollRef, grid.cols)
@@ -120,6 +121,7 @@ export const DesktopSeatGrid = ({
               onSelect={() => onSelectSeat(seat.id)}
               seatMouseDragProps={seatMouseDragProps}
               seatTouchProps={seatTouchProps}
+              onRotateSeat={onRotateSeat}
             />
           ) : (
             <SeatCard
