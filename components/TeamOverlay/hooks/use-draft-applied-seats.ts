@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo } from 'react'
 import type { SeatDraftState } from './use-seat-draft-state'
 import type { Seat } from '@/types'
 
@@ -11,9 +11,9 @@ import type { Seat } from '@/types'
 // 側の候補一覧など)が全席分で剥がれ、席が数十件あるチームで体感できるほど重くなる
 
 export const useDraftAppliedSeats = (allSeats: Seat[], draft: SeatDraftState): Seat[] => {
-  const { addedSeats, removedSeatIds, resolveEffectiveEmployeeId } = draft
+  const { addedSeats, removedSeatIds, resolveEffectiveEmployeeId, syncSeatSources } = draft
 
-  return useMemo(() => {
+  const seats = useMemo(() => {
     const kept: Seat[] = []
     for (const seat of allSeats) {
       // ①削除済みを除く
@@ -26,4 +26,13 @@ export const useDraftAppliedSeats = (allSeats: Seat[], draft: SeatDraftState): S
     // ③追加席を足す
     return addedSeats.length > 0 ? [...kept, ...addedSeats] : kept
   }, [allSeats, addedSeats, removedSeatIds, resolveEffectiveEmployeeId])
+
+  // 下書きの配属(draft.assignEmployee)が元席を空ける時も、シート・一括配置と同じこの1本を土台に
+  // 「今どこに座っているか」を解決させる。draft 自身は保存済み座席を持たないため、ここから渡す。
+  // 反映はコミット後(=次の操作より前)で足り、描画には使わないので ref 側で受け取ってもらう
+  useEffect(() => {
+    syncSeatSources({ saved: allSeats, resolved: seats })
+  }, [allSeats, seats, syncSeatSources])
+
+  return seats
 }

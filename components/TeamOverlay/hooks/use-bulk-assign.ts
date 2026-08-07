@@ -1,6 +1,7 @@
 import { useCallback, useState } from 'react'
 import type { SeatDraftState } from './use-seat-draft-state'
 import type { UseOverlayEditModeResult } from './use-overlay-edit-mode'
+import { buildSeatByEmployee } from '@/components/EmployeeAssignSheet/hooks/use-employee-assign'
 import { addRow as addGridRow, findFirstEmptyCell, placeSeat as placeSeatInGrid } from '@/utils/seat-grid-draft'
 import type { SeatGridDraft } from '@/utils/seat-grid-draft'
 import { DEFAULT_SEAT_HEIGHT, DEFAULT_SEAT_WIDTH } from '@/utils/seat-relayout'
@@ -50,14 +51,13 @@ type Options = {
   announce: (message: string) => void
 }
 
-// 社員が今座っている座席そのもの。seats は下書き反映済みなので employeeId をそのまま照合するだけでよい
-const findCurrentSeat = (employeeId: string, seats: Seat[]): Seat | null =>
-  seats.find((s) => s.employeeId === employeeId) ?? null
-
 const buildPlan = (teamId: string, employees: Employee[], seats: Seat[]): BulkAssignPlan => {
+  // 「今どこに座っているか」は検索シート・下書きの配属と同じ1本(buildSeatByEmployee)で解決する。
+  // seats は下書き反映済みなので employeeId をそのまま照合するだけでよい
+  const seatByEmployee = buildSeatByEmployee(seats)
   const targets: BulkAssignTarget[] = []
   for (const employee of employees.filter((e) => e.teamId === teamId)) {
-    const currentSeat = findCurrentSeat(employee.id, seats)
+    const currentSeat = seatByEmployee.get(employee.id) ?? null
     // 既にこのチームの席に座っている人は対象から外す(触らずそのまま)。外さないと、
     // 部署が既に正しく着席済みでも全員が一旦空席化→新しい席へ作り直される無駄な入れ替えが起きる
     if (currentSeat && currentSeat.teamId === teamId) continue
