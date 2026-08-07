@@ -175,9 +175,11 @@ export const useSwipeDismiss = ({
       if (shouldDismiss(offset, el.offsetHeight || 1, flick)) {
         swallowNextClick()
         onCloseRef.current()
-      } else {
-        setTransform(null, true)
       }
+      // 追従分は閉じる判定でも必ず戻す。onCloseは呼び出し側の都合で閉じないことがあり
+      // (TeamOverlayは編集中の閉じるを拒否する)、アンマウント任せにするとズレたまま残って
+      // 中身がビューポート外へ出る。実際に閉じた場合は同じフレームで要素ごと消えるため見た目に出ない
+      setTransform(null, true)
     }
 
     const onTouchCancel = () => {
