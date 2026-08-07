@@ -92,21 +92,24 @@ export type UseSeatCommitParams = {
   teamId: string | null
   grid: SeatGridDraft | null
   draft: SeatDraftState
+  // 行・列の増減と席の移動・グリッドからの除去はgridにしか現れず、draft.changeCountでは
+  // 1件も数えられない。draftだけで保存要否を決めると、それらの編集が無言で捨てられる
+  isGridChanged: boolean
 }
 
 export type UseSeatCommitResult = {
   isSaving: boolean
-  // 下書きを確定して保存する。変更0件・grid未確立・teamId未確定のいずれかなら何もしない
-  // (保存もトーストも発生させない)
+  // 下書きを確定して保存する。変更0件(draft・gridとも無変更)・grid未確立・teamId未確定の
+  // いずれかなら何もしない(保存もトーストも発生させない)
   commit: () => Promise<void>
 }
 
-export const useSeatCommit = ({ teamId, grid, draft }: UseSeatCommitParams): UseSeatCommitResult => {
+export const useSeatCommit = ({ teamId, grid, draft, isGridChanged }: UseSeatCommitParams): UseSeatCommitResult => {
   const { layout, persistLayout } = useSeatLayout()
   const [isSaving, setIsSaving] = useState(false)
 
   const commit = useCallback(async () => {
-    if (draft.changeCount === 0 || !grid || !layout || !teamId) return
+    if ((draft.changeCount === 0 && !isGridChanged) || !grid || !layout || !teamId) return
     // ボタン押下時点のdraft/gridをその場で正規化してから保存する(use-layout-save.finishと同じ順序:
     // 保存対象を確定 → 疑似遅延 → persistLayout)
     const next = normalizeDraftIntoLayout(layout, teamId, grid, draft)
@@ -114,7 +117,7 @@ export const useSeatCommit = ({ teamId, grid, draft }: UseSeatCommitParams): Use
     await fetchMock(true, FINISH_DELAY_MS)
     await persistLayout(next)
     setIsSaving(false)
-  }, [draft, grid, layout, persistLayout, teamId])
+  }, [draft, grid, isGridChanged, layout, persistLayout, teamId])
 
   return { isSaving, commit }
 }
