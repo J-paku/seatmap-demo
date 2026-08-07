@@ -13,7 +13,7 @@ import type { Seat } from '@/types'
 //   (基準をpropsのままにすると、反映が追いつく前の連続タップ/連続スナップが同じ値を出し続ける)
 
 // ドラッグ扱いに切り替わる移動距離のしきい値(px)
-export const DRAG_DEAD_ZONE_PX = 12
+const DRAG_DEAD_ZONE_PX = 12
 
 const ROTATION_VALUES: Seat['rotation'][] = [0, 90, 180, 270]
 

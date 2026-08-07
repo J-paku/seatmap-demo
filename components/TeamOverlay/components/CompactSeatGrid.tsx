@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { RefObject } from 'react'
 import { EditSeatCell } from './EditSeatCell'
 import { EmptyGridCell } from './EmptyGridCell'
@@ -12,10 +12,11 @@ import {
   COMPACT_SIDE_PADDING_PX,
   COMPACT_VISIBLE_COLS,
 } from '../utils/seat-grid'
+import { formatSeatGridCellAttr } from '../utils/seat-drag-attrs'
 import type { SeatGridProps } from '../type'
+import { useCompensateLeftInsert } from '../hooks/use-compensate-left-insert'
 import { useScrollActivity } from '../hooks/use-scroll-activity'
 import { useScrollHints } from '../hooks/use-scroll-hints'
-import { formatSeatGridCellAttr } from '../hooks/use-seat-drag'
 import { useSeatHighlightAnimation } from '../hooks/use-seat-highlight-animation'
 import type { PresenceStatus } from '@/types'
 
@@ -42,23 +43,6 @@ const useCompactCellWidth = (ref: RefObject<HTMLElement | null>): number => {
   }, [ref])
 
   return cellWidth
-}
-
-// STEP B4: 列を左へ足すと新しい空列ぶん内容が右へ押し出され、見ていた場所が横へ飛ぶ。
-// 左挿入の累計本数を持ち、増分ぶんだけ scrollLeft を足して視界を保つ
-const useCompensateLeftInsert = (
-  ref: RefObject<HTMLElement | null>,
-  leftInsertCount: number,
-  colStridePx: number
-): void => {
-  const compensatedRef = useRef(0)
-  useLayoutEffect(() => {
-    const el = ref.current
-    const delta = leftInsertCount - compensatedRef.current
-    if (!el || colStridePx <= 0 || delta <= 0) return
-    el.scrollLeft += delta * colStridePx
-    compensatedRef.current = leftInsertCount
-  })
 }
 
 export const CompactSeatGrid = ({

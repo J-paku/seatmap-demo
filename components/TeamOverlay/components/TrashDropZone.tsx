@@ -1,5 +1,6 @@
 import { useCallback, useLayoutEffect, useRef, useState } from 'react'
 import type { DragEvent } from 'react'
+import { TRASH_DROP_ZONE_ATTR } from '../utils/seat-drag-attrs'
 import { SeatMapPortal } from '@/components/SeatMapPortal'
 
 // STEP B3: ドラッグ中だけ現れるゴミ箱ドロップゾーン
@@ -8,9 +9,6 @@ import { SeatMapPortal } from '@/components/SeatMapPortal'
 // top: 0; height: 0 の見えない点)の座標を getBoundingClientRect で測り、実体の円は
 // SeatMapPortal 経由で body 直下へ fixed で描く。シート内に直接置くと overflow と
 // スタッキングコンテキストで隠れるため、位置だけをアンカーから借りて別レイヤーに描く
-
-// タッチ経路(use-seat-drag が elementFromPoint で解決する)がこのゾーンを識別するための data 属性名
-export const TRASH_DROP_ZONE_ATTR = 'data-trash-drop-zone'
 
 export type TrashDropZoneProps = {
   // ドラッグ中かどうか。false の間はアンカーごと何も描かない
@@ -77,7 +75,7 @@ export const TrashDropZone = ({ isVisible, isOver: isOverExternal = false, onDro
           <div
             className={`team-ovl-trash-zone${isOver ? ' is-over' : ''}`}
             style={{ top: center.top, left: center.left }}
-            data-trash-drop-zone='true'
+            {...{ [TRASH_DROP_ZONE_ATTR]: 'true' }}
             aria-label='ここへドロップして席を削除する'
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}

@@ -158,7 +158,7 @@ const useSeats = () => useCached('seats', SEATS)
 
 export const useFacilities = () => useCached('facilities', FACILITIES)
 
-export const useFurniture = () => useCached('furniture', FURNITURE)
+const useFurniture = () => useCached('furniture', FURNITURE)
 
 export const useSchedules = () => useCached('schedules', SCHEDULES)
 

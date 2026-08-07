@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { DragEvent as ReactDragEvent, PointerEvent as ReactPointerEvent } from 'react'
-import { TRASH_DROP_ZONE_ATTR } from '../components/TrashDropZone'
+import { SEAT_GRID_CELL_ATTR, TRASH_DROP_ZONE_ATTR } from '../utils/seat-drag-attrs'
 import { safeSetPointerCapture } from '@/lib/gesture/pointer-capture'
 import { suppressGhostClick } from '@/lib/gesture/suppress-ghost-click'
 import type { GridCell } from '@/utils/seat-grid-draft'
@@ -17,15 +17,9 @@ import type { GridCell } from '@/utils/seat-grid-draft'
 // このフックが返す props を spread するだけでドラッグ/ドロップが成立する
 
 // タッチ: 長押しでドラッグ開始とみなすまでの時間(ms)
-export const TOUCH_LONG_PRESS_MS = 220
+const TOUCH_LONG_PRESS_MS = 220
 // タッチ: 開始前にこれ以上動いたらスクロール優先でキャンセルする距離(px)
-export const TOUCH_DRAG_TOLERANCE_PX = 10
-
-// セル番地(row:col)を伝える data 属性名。実セルのDOMは別STEPが描く
-export const SEAT_GRID_CELL_ATTR = 'data-seat-grid-cell'
-
-// セル番地を data 属性値へ直列化する。セルDOMを描く側がこれを使って属性を付与する
-export const formatSeatGridCellAttr = (cell: GridCell): string => `${cell.row}:${cell.col}`
+const TOUCH_DRAG_TOLERANCE_PX = 10
 
 const parseSeatGridCellAttr = (value: string | undefined): GridCell | null => {
   if (!value) return null
@@ -59,7 +53,7 @@ type TouchDragState =
   | { kind: 'pending'; pointerId: number; cell: GridCell; startX: number; startY: number }
   | { kind: 'dragging'; pointerId: number; cell: GridCell }
 
-export type SeatDragGhostPosition = { x: number; y: number }
+type SeatDragGhostPosition = { x: number; y: number }
 
 export type UseSeatDragOptions = {
   // 入替/移動の確定口。moveSeatが空セルなら移動・席セルなら入替を1本で賄う
