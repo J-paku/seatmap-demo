@@ -60,7 +60,7 @@ export const FacilityDetail = ({ facilityId, onDeleted }: Props) => {
     : undefined
 
   return (
-    <div className='facility-detail'>
+    <div className={styles.facilityDetail}>
       <FacilityPanelHeader
         facilityName={facility.name}
         status={state.status}
