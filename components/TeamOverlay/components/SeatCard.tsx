@@ -3,6 +3,7 @@ import { PixelAvatar } from '@/components/PixelAvatar'
 import { hexToRgba } from '@/utils/color'
 import { PRESENCE_COLOR, PRESENCE_LABEL } from '@/utils/format'
 import type { Employee, PresenceStatus, Seat } from '@/types'
+import styles from '../team-overlay-modal.module.css'
 
 // Desktop 用の座席カード。横並び(アバター左 + テキスト右)・氏名フルネーム・椅子あり
 
@@ -32,30 +33,30 @@ export const SeatCard = ({ seat, employee, status, teamName, teamColor, loading,
   <button
     type='button'
     data-seat-id={seat.id}
-    className={`team-ovl-card${employee ? '' : ' is-empty'}${isHit ? ' is-hit' : ''}${dimmed ? ' is-dimmed' : ''}`}
+    className={`${styles.card}${employee ? '' : ` ${styles.isEmpty}`}${isHit ? ` ${styles.isHit}` : ''}${dimmed ? ` ${styles.isDimmed}` : ''}`}
     disabled={!employee}
     style={{ flexDirection: DIRECTION[seat.rotation] }}
     onClick={onSelect}
   >
-    {employee?.position && <span className='team-ovl-card-accent' />}
-    <span className='team-ovl-card-avatar'>
+    {employee?.position && <span className={styles.cardAccent} />}
+    <span className={styles.cardAvatar}>
       {employee ? <PixelAvatar config={avatarConfig} size={32} /> : null}
     </span>
-    <span className='team-ovl-card-text'>
-      <span className='team-ovl-card-name'>{employee ? employee.name : '空席'}</span>
-      {employee?.position && <span className='team-ovl-card-position'>{employee.position}</span>}
-      {employee && <span className='team-ovl-card-dept'>{teamName}</span>}
+    <span className={styles.cardText}>
+      <span className={styles.cardName}>{employee ? employee.name : '空席'}</span>
+      {employee?.position && <span className={styles.cardPosition}>{employee.position}</span>}
+      {employee && <span className={styles.cardDept}>{teamName}</span>}
       {employee && (
-        <span className='team-ovl-card-status'>
-          <span className='team-ovl-card-statusdot' style={{ background: PRESENCE_COLOR[status] }} />
+        <span className={styles.cardStatus}>
+          <span className={styles.cardStatusdot} style={{ background: PRESENCE_COLOR[status] }} />
           <span style={{ color: PRESENCE_COLOR[status] }}>{loading ? '取得中…' : PRESENCE_LABEL[status]}</span>
         </span>
       )}
     </span>
-    {isHit && <span className='team-ovl-hit'>HIT</span>}
+    {isHit && <span className={styles.hit}>HIT</span>}
     {/* 椅子: 空席は点線の円で位置だけ示す */}
     <span
-      className='team-ovl-card-dir'
+      className={styles.cardDir}
       style={{
         border: employee ? `1.5px solid ${hexToRgba(teamColor, 0.7)}` : '1.5px dashed var(--color-border-strong)',
       }}

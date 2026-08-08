@@ -18,6 +18,7 @@ import { useCompensateLeftInsert } from '../hooks/use-compensate-left-insert'
 import { useScrollActivity } from '../hooks/use-scroll-activity'
 import { useScrollHints } from '../hooks/use-scroll-hints'
 import { useSeatHighlightAnimation } from '../hooks/use-seat-highlight-animation'
+import styles from '../team-overlay-modal.module.css'
 import type { PresenceStatus } from '@/types'
 
 // 列幅は可変。6 列がコンテナ幅にちょうど収まる幅を実測して minmax の下限に使う
@@ -99,10 +100,10 @@ export const CompactSeatGrid = ({
   }
 
   return (
-    <div className='team-ovl-gridwrap'>
-      <div ref={scrollRef} className={`team-ovl-grid is-compact${loading ? ' is-loading' : ''}`} aria-busy={loading}>
+    <div className={styles.gridwrap}>
+      <div ref={scrollRef} className={`${styles.grid} ${styles.isCompact}${loading ? ` ${styles.isLoading}` : ''}`} aria-busy={loading}>
         <div
-          className='team-ovl-grid-inner'
+          className={styles.gridInner}
           style={{
             gridTemplateColumns: hasGridEdgeControls
               ? `${GRID_HEADER_TRACK_PX}px repeat(${grid.cols}, minmax(${cellWidth}px, 1fr))`
@@ -198,7 +199,7 @@ export const CompactSeatGrid = ({
           )}
         </div>
       </div>
-      {/* onNudge を渡す = ボタン化。端に達した側は is-faded でフェード(アンマウントはしない) */}
+      {/* onNudge を渡す = ボタン化。端に達した側は isFaded でフェード(アンマウントはしない) */}
       {hasOverflow && <ScrollHint side='left' onNudge={() => nudge(-1)} faded={atStart} />}
       {hasOverflow && <ScrollHint side='right' onNudge={() => nudge(1)} faded={atEnd} />}
       {/* STEP B4: グリッド4辺の＋ボタン。編集中のみ */}

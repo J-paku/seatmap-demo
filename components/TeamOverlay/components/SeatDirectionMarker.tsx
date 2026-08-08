@@ -1,4 +1,6 @@
 import { SEAT_DIRECTION } from '../utils/seat-direction'
+import type { SeatCompassDirection } from '../utils/seat-direction'
+import styles from '../team-overlay-modal.module.css'
 import { hexToRgba } from '@/utils/color'
 import type { Seat } from '@/types'
 
@@ -6,6 +8,13 @@ import type { Seat } from '@/types'
 // 矢印アイコンにはしない(小さいカードでは潰れて読めないため)。チーム色は呼び出し側から
 // 受け取った解決済みの値をそのまま薄めるだけで、ここでは再解決しない。
 // 装飾のみなのでaria-hidden、向きの文字情報はEditSeatCellのaria-labelが持つ
+
+const EDGE_CLASS: Record<SeatCompassDirection, string> = {
+  north: styles.isEdgeNorth,
+  south: styles.isEdgeSouth,
+  east: styles.isEdgeEast,
+  west: styles.isEdgeWest,
+}
 
 type Props = {
   rotation: Seat['rotation']
@@ -15,7 +24,7 @@ type Props = {
 export const SeatDirectionMarker = ({ rotation, teamColor }: Props) => (
   <span
     aria-hidden='true'
-    className={`team-ovl-dir-marker is-edge-${SEAT_DIRECTION[rotation]}`}
+    className={`${styles.dirMarker} ${EDGE_CLASS[SEAT_DIRECTION[rotation]]}`}
     style={{ background: hexToRgba(teamColor, 0.55) }}
   />
 )

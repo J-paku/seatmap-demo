@@ -1,6 +1,7 @@
 import { useCallback, useLayoutEffect, useRef, useState } from 'react'
 import type { DragEvent } from 'react'
 import { TRASH_DROP_ZONE_ATTR } from '../utils/seat-drag-attrs'
+import styles from '../team-overlay-modal.module.css'
 import { SeatMapPortal } from '@/components/SeatMapPortal'
 
 // STEP B3: ドラッグ中だけ現れるゴミ箱ドロップゾーン
@@ -69,11 +70,11 @@ export const TrashDropZone = ({ isVisible, isOver: isOverExternal = false, onDro
 
   return (
     <>
-      <div ref={anchorRef} className='team-ovl-trash-anchor' aria-hidden='true' />
+      <div ref={anchorRef} className={styles.trashAnchor} aria-hidden='true' />
       {center && (
         <SeatMapPortal>
           <div
-            className={`team-ovl-trash-zone${isOver ? ' is-over' : ''}`}
+            className={`${styles.trashZone}${isOver ? ` ${styles.isOver}` : ''}`}
             style={{ top: center.top, left: center.left }}
             {...{ [TRASH_DROP_ZONE_ATTR]: 'true' }}
             aria-label='ここへドロップして席を削除する'
@@ -81,7 +82,7 @@ export const TrashDropZone = ({ isVisible, isOver: isOverExternal = false, onDro
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
           >
-            <span className='material-symbols-outlined team-ovl-trash-zone-icon' aria-hidden='true'>
+            <span className={`material-symbols-outlined ${styles.trashZoneIcon}`} aria-hidden='true'>
               delete
             </span>
           </div>

@@ -52,3 +52,52 @@ Playwright 実測ハーネスはリポジトリに常設せず、セッション
 
 **回避法**: `scripts/verify-s1.js` を実行中の画面で走らせ `verdict: "PASS"` を確認する。ローカル PASS
 だけで完了と言わず、プッシュ後の配信版でも同じスクリプトを走らせる(`CLAUDE.md` 完了条件を参照)。
+
+## 4. CSS Modules 化でカスケード順が逆転し、負けていた宣言が勝つ
+
+**症状**: `styles/team-overlay-modal.css` をモジュール化しただけで、オーバーレイのアイコン8種が
+26px から 14〜22px へ縮んだ。ソースの数値は一行も変えていない。
+
+**原因**: `.sectionIcon { font-size: 18px }` と グローバルの `.material-symbols-outlined
+{ font-size: 26px }` は**詳細度が同じ(0,1,0)**。グローバル CSS だった頃は `globals.css` 本体の
+ユーティリティ定義が `@import` より後に来るため後勝ちで 26px が適用されていた。モジュール化すると
+CSS チャンクが `globals.css` より後に読まれるので、同じソースのまま勝敗が入れ替わる。
+
+該当したのは `sectionIcon` `editcardHandle` `emptycellIcon` `trashZoneIcon` `seatDragGhostIcon`
+`dockSaveIcon` `seatAddIcon` `rotationGripIcon` の8クラス。いずれも `font-size` だけが競合していた。
+
+**なぜレビューで拾えないか**: 移行の diff はクラス名の置換だけで、数値も宣言も足していない。
+「純粋な移行」に見える。勝敗は2つのファイルを並べて詳細度と読み込み順を計算しないと分からない。
+
+**回避法**: グローバルユーティリティ(`.material-symbols-outlined` `.icon-msr-filled` `.pixel-btn`)と
+併用するクラスをモジュール化する時は、**そのユーティリティが宣言しているプロパティの一覧と突き合わせる**。
+重複していたら、移行では宣言を落として従来の見た目を保つ(見た目を変えるなら別コミットにする)。
+規則は `docs/styling.md` の「グローバルユーティリティと同じプロパティを宣言しない」。
+
+検出は目視ではなく実測で行う。移行前後で同じ状態を撮って computed style を突き合わせる
+(`~/dev/.seatmap-port/capture-css-migration.mjs` / `compare-css-migration.mjs`)。
+ただし**撮る状態に対象画面が含まれていなければ差は出ない** — B5 では当初 TeamOverlay の編集モードが
+状態一覧に無く、8件のうち1件しか検出できていなかった。
+
+## 5. ハネスのハッシュ名セレクタは、モジュール名まで固定しないと他モジュールを掴む
+
+**症状**: `check-minimap.mjs` が `:is([class$="__panel"],[class*="__panel "])` で待ち続けてタイムアウト。
+`locator resolved to 2 elements` と出て、1件目に `layout-switcher-module__jrhJ2W__panel` が来ていた。
+
+**原因**: CSS Modules の生成名は `<ファイル>-module__<ハッシュ>__<キー>`。キーだけを末尾固定しても、
+別のモジュールが同じキー名を持てば一致してしまう。実測で `panel` `body` `card` `close` `handle`
+`header` `hint` `hit` `title` `backdrop` `isCompact` `isCurrent` `isEmpty` `isSelected` の
+15キーが複数モジュールに存在した。
+
+**なぜレビューで拾えないか**: セレクタ単体は正しく見える。衝突は他モジュールの中身を知らないと分からず、
+しかも**後から別モジュールにキーが増えた時点で壊れる**ので、書いた時点では通ってしまう。
+
+**回避法**: モジュール接頭辞とキー末尾の両方を固定する。
+
+```js
+const k = (key) =>
+  `[class*="team-overlay-modal-module__"]:is([class$="__${key}"],[class*="__${key} "])`
+```
+
+末尾固定を省くと `__cell` が `__cellName` `__cellStatus` まで拾う。接頭辞を省くと上記の衝突が起きる。
+どちらも要る。詳細は `docs/styling.md` の「検証ハネスのセレクタ」。

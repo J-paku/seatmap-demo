@@ -1,4 +1,5 @@
 import { SeatMapPortal } from '@/components/SeatMapPortal'
+import styles from '../team-overlay-modal.module.css'
 
 // STEP B2: タッチドラッグ中に指へ追従するゴースト。SeatMapPortal で body 直下へ描き、
 // グリッドの overflow に切られないようにする。マウスは HTML5 DnD のネイティブなドラッグ画像に
@@ -12,8 +13,8 @@ type Props = {
 
 export const SeatDragGhost = ({ x, y }: Props) => (
   <SeatMapPortal>
-    <div className='team-ovl-seat-drag-ghost' style={{ left: x, top: y }} aria-hidden='true'>
-      <span className='material-symbols-outlined team-ovl-seat-drag-ghost-icon' aria-hidden='true'>
+    <div className={styles.seatDragGhost} style={{ left: x, top: y }} aria-hidden='true'>
+      <span className={`material-symbols-outlined ${styles.seatDragGhostIcon}`} aria-hidden='true'>
         drag_indicator
       </span>
     </div>

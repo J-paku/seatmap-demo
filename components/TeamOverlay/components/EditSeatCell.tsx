@@ -4,6 +4,7 @@ import { SeatDirectionMarker } from './SeatDirectionMarker'
 import { SeatRotationGrip } from './SeatRotationGrip'
 import { seatDirectionLabel } from '../utils/seat-direction'
 import type { UseSeatDragResult } from '../hooks/use-seat-drag'
+import styles from '../team-overlay-modal.module.css'
 import type { Employee, Seat } from '@/types'
 
 // STEP B1: 編集中の座席カード。表示用(SeatCard/ViewSeatCell)とは別コンポーネントにする。
@@ -45,20 +46,20 @@ export const EditSeatCell = ({
         type='button'
         data-seat-id={seat.id}
         data-seat-rotation={seat.rotation}
-        className={`team-ovl-editcard${isSelected ? ' is-selected' : ''}`}
+        className={`${styles.editcard}${isSelected ? ` ${styles.isSelected}` : ''}`}
         aria-label={`${employee ? employee.name : '空席'} ${seatDirectionLabel(seat.rotation)}`}
         // STEP D3: ネイティブbuttonなのでキーボード到達・Enter選択は既定で効くが、選択状態は
-        // 見た目(is-selected枠)でしか伝わっていなかったため、支援技術にもaria-pressedで伝える
+        // 見た目(isSelected枠)でしか伝わっていなかったため、支援技術にもaria-pressedで伝える
         aria-pressed={isSelected}
         onClick={onSelect}
         {...seatMouseDragProps}
         {...seatTouchProps}
       >
-        <span className='team-ovl-editcard-text'>
-          <span className='team-ovl-editcard-name'>{employee ? employee.name : '空席'}</span>
-          {employee && <span className='team-ovl-editcard-dept'>{teamName}</span>}
+        <span className={styles.editcardText}>
+          <span className={styles.editcardName}>{employee ? employee.name : '空席'}</span>
+          {employee && <span className={styles.editcardDept}>{teamName}</span>}
         </span>
-        <span className='material-symbols-outlined team-ovl-editcard-handle' aria-hidden='true'>
+        <span className={`material-symbols-outlined ${styles.editcardHandle}`} aria-hidden='true'>
           drag_indicator
         </span>
         {/* STEP D2: 向きの帯は編集中は常時出す。矢印アイコンにはしない(小さいカードで潰れるため) */}

@@ -1,9 +1,15 @@
 /* 10-main-interactions: チームバウンダリクリックで開く大型オーバーレイ(座席グリッド)
-   形状分岐は JS の isCompactMobile(760px)が付ける .is-compact で行う。
+   形状分岐は JS の isCompactMobile(760px)が付ける .isCompact で行う。
    閉じるボタン(640px)とドラッグハンドル(768px)だけは素の CSS ブレークポイントで、
-   結果として 641〜760px は「シート形状 + 閉じるボタン可視」が同時に成立する */
+   結果として 641〜760px は「シート形状 + 閉じるボタン可視」が同時に成立する。
 
-.team-ovl-wrap {
+   .material-symbols-outlined と併用するクラスには font-size を書かない。
+   グローバル側の .material-symbols-outlined が 26px を持ち、詳細度は同じ(0,1,0)。
+   グローバル CSS 化されていた頃は後勝ちでそちらが適用されていたが、モジュールは
+   globals より後に読まれるため、ここで書くと勝ってしまい見た目が変わる。
+   アイコンの大きさを変えるのは移行ではなく見た目の変更として別に扱う */
+
+.wrap {
   position: fixed;
   inset: 0;
   /* 12: 従来 --z-index-sidebar(500)をEmployeeDirectoryと共有していたため専用値へ分離。
@@ -16,12 +22,12 @@
     max(8px, env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-left));
 }
 
-.team-ovl-wrap.is-compact {
+.wrap.isCompact {
   align-items: flex-end;
   padding: 0;
 }
 
-.team-ovl-backdrop {
+.backdrop {
   position: fixed;
   inset: 0;
   background: var(--color-scrim-overlay);
@@ -29,7 +35,7 @@
   animation: team-ovl-fade 0.2s ease-out;
 }
 
-.team-ovl-panel {
+.panel {
   position: relative;
   z-index: 1;
   display: flex;
@@ -46,7 +52,7 @@
   animation: team-ovl-fade 0.2s ease-out, team-ovl-expand 0.3s cubic-bezier(0.2, 0.9, 0.2, 1);
 }
 
-.team-ovl-panel.is-compact {
+.panel.isCompact {
   width: 100vw;
   height: 95dvh;
   border-radius: 20px 20px 0 0;
@@ -73,13 +79,13 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .team-ovl-panel,
-  .team-ovl-backdrop {
+  .panel,
+  .backdrop {
     animation: none;
   }
 }
 
-.team-ovl-loadbar {
+.loadbar {
   position: absolute;
   top: 0;
   left: 0;
@@ -99,7 +105,7 @@
 }
 
 /* ドラッグハンドル(Compact のみ描画・768px 以上では素の CSS でも消す) */
-.team-ovl-handle {
+.handle {
   position: absolute;
   top: 0;
   left: 0;
@@ -114,7 +120,7 @@
   touch-action: none;
 }
 
-.team-ovl-handle-bar {
+.handleBar {
   width: 40px;
   height: 4px;
   border-radius: 9999px;
@@ -124,13 +130,13 @@
 }
 
 @media (min-width: 768px) {
-  .team-ovl-handle {
+  .handle {
     display: none;
   }
 }
 
 /* ヘッダー */
-.team-ovl-header {
+.header {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -139,14 +145,14 @@
   flex-shrink: 0;
 }
 
-.team-ovl-dot {
+.dot {
   flex-shrink: 0;
   width: 10px;
   height: 10px;
   border-radius: 9999px;
 }
 
-.team-ovl-title {
+.title {
   flex: 1;
   min-width: 0;
   font-size: 17px;
@@ -157,7 +163,7 @@
   text-overflow: ellipsis;
 }
 
-.team-ovl-count {
+.count {
   flex-shrink: 0;
   font-size: 11px;
   font-weight: 700;
@@ -166,7 +172,7 @@
   border-radius: 9999px;
 }
 
-.team-ovl-close {
+.close {
   flex-shrink: 0;
   width: 44px;
   height: 44px;
@@ -180,19 +186,19 @@
   justify-content: center;
 }
 
-.team-ovl-close:hover {
+.close:hover {
   background: var(--color-surface-muted);
 }
 
 /* 閉じるボタンは 640px 未満でのみ消える(isCompactMobile とは別ブレークポイント) */
 @media (max-width: 639px) {
-  .team-ovl-close {
+  .close {
     display: none;
   }
 }
 
 /* 本文 */
-.team-ovl-body {
+.body {
   flex: 1;
   min-height: 0;
   overflow: auto;
@@ -200,18 +206,18 @@
   padding: 14px;
 }
 
-.team-ovl-panel.is-compact .team-ovl-body {
+.panel.isCompact .body {
   padding: 14px 0;
 }
 
-.team-ovl-section {
+.section {
   border-radius: 14px;
   border: 1px solid var(--color-border);
   background: linear-gradient(165deg, var(--color-surface) 0%, var(--color-surface-sunken) 100%);
   padding: 12px;
 }
 
-.team-ovl-panel.is-compact .team-ovl-section {
+.panel.isCompact .section {
   border-radius: 0;
   border-left: 0;
   border-right: 0;
@@ -219,33 +225,32 @@
   padding-right: 0;
 }
 
-.team-ovl-section-head {
+.sectionHead {
   display: flex;
   align-items: center;
   gap: 6px;
   margin-bottom: 4px;
 }
 
-.team-ovl-section-icon {
-  font-size: 18px;
+.sectionIcon {
   color: var(--color-text-secondary);
 }
 
-.team-ovl-section-title {
+.sectionTitle {
   font-size: 12px;
   font-weight: 700;
   color: var(--color-text-secondary);
 }
 
-.team-ovl-section-count {
+.sectionCount {
   margin-left: auto;
   font-size: 11px;
   color: var(--color-text-muted);
   font-variant-numeric: tabular-nums;
 }
 
-/* 編集モードの入口(鉛筆)。オーバーレイ右上の閉じる✕(.team-ovl-close)とは別位置なので隣接しない */
-.team-ovl-edit-toggle {
+/* 編集モードの入口(鉛筆)。オーバーレイ右上の閉じる✕(.close)とは別位置なので隣接しない */
+.editToggle {
   flex-shrink: 0;
   margin-left: 8px;
   width: 36px;
@@ -260,16 +265,16 @@
   justify-content: center;
 }
 
-.team-ovl-edit-toggle:hover {
+.editToggle:hover {
   background: var(--color-surface-muted-hover);
 }
 
-.team-ovl-edit-toggle .material-symbols-outlined {
+.editToggle :global(.material-symbols-outlined) {
   font-size: 20px;
 }
 
-/* 編集モードの出口。鉛筆と同じ位置(.team-ovl-section-head 右端)へ入れ替わる */
-.team-ovl-edit-status {
+/* 編集モードの出口。鉛筆と同じ位置(.sectionHead 右端)へ入れ替わる */
+.editStatus {
   flex-shrink: 0;
   display: flex;
   align-items: center;
@@ -277,7 +282,7 @@
   margin-left: 8px;
 }
 
-.team-ovl-edit-badge {
+.editBadge {
   font-size: 11px;
   font-weight: 700;
   padding: 2px 8px;
@@ -286,7 +291,7 @@
   color: var(--color-text-secondary);
 }
 
-.team-ovl-edit-finish {
+.editFinish {
   flex-shrink: 0;
   font-size: 11px;
   font-weight: 700;
@@ -298,49 +303,49 @@
   cursor: pointer;
 }
 
-.team-ovl-edit-finish:hover {
+.editFinish:hover {
   background: var(--color-surface-muted);
 }
 
-.team-ovl-sync {
+.sync {
   font-size: 11px;
   color: var(--color-text-muted);
   margin-bottom: 10px;
 }
 
 /* グリッド枠(ヒントの配置基準) */
-.team-ovl-gridwrap {
+.gridwrap {
   position: relative;
 }
 
-.team-ovl-grid {
+.grid {
   transition: opacity 0.2s ease;
 }
 
 /* Desktop: 縦横とも自前でスクロールする */
-.team-ovl-grid.is-desktop {
+.grid.isDesktop {
   overflow: auto;
 }
 
 /* Compact: 横は自身で消費し、縦は親(シート本文)へ委譲する */
-.team-ovl-grid.is-compact {
+.grid.isCompact {
   overflow-x: auto;
   overflow-y: hidden;
   touch-action: pan-x pan-y;
   padding: 0 11px;
 }
 
-.team-ovl-grid.is-loading {
+.grid.isLoading {
   opacity: 0.5;
   pointer-events: none;
 }
 
-.team-ovl-grid-inner {
+.gridInner {
   display: grid;
 }
 
 /* 横スクロールヒント(座席がうっすら透ける glass 化) */
-.team-ovl-hint {
+.hint {
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
@@ -361,34 +366,34 @@
 
 /* backdrop-filter 非対応環境用の不透明フォールバック */
 @supports not (backdrop-filter: blur(1px)) {
-  .team-ovl-hint {
+  .hint {
     background: color-mix(in srgb, var(--glass-bg-opaque) 37%, transparent);
   }
 }
 
-.team-ovl-hint.is-left {
+.hint.isLeft {
   left: 0;
 }
 
-.team-ovl-hint.is-right {
+.hint.isRight {
   right: 0;
 }
 
 /* onNudge を受け取ったときだけ操作できる */
-.team-ovl-hint.is-button {
+.hint.isButton {
   pointer-events: auto;
   cursor: pointer;
 }
 
 /* 端まで到達したら非表示(display:none にせず opacity で滑らかに)
    is-button と特異度同値のため後方宣言で優先(順序依存) */
-.team-ovl-hint.is-faded {
+.hint.isFaded {
   opacity: 0;
   pointer-events: none;
 }
 
 /* ── 座席カード(Desktop) ───────────────────────── */
-.team-ovl-card {
+.card {
   position: relative;
   width: 100%;
   height: 88px;
@@ -405,7 +410,7 @@
   overflow: hidden;
 }
 
-.team-ovl-card.is-empty {
+.card.isEmpty {
   border: 1px dashed var(--color-border);
   background: var(--color-surface-sunken);
   box-shadow: none;
@@ -416,12 +421,12 @@
   pointer-events: none;
 }
 
-.team-ovl-card.is-hit {
+.card.isHit {
   border: 2px solid var(--color-hit);
   box-shadow: 0 0 0 4px var(--color-hit-ring), 0 10px 24px var(--color-hit-ring);
 }
 
-.team-ovl-card-accent {
+.cardAccent {
   position: absolute;
   top: 0;
   left: 0;
@@ -431,7 +436,7 @@
   border-radius: 12px 12px 0 0;
 }
 
-.team-ovl-card-avatar {
+.cardAvatar {
   flex-shrink: 0;
   width: 40px;
   height: 40px;
@@ -443,7 +448,7 @@
   overflow: hidden;
 }
 
-.team-ovl-card-text {
+.cardText {
   flex: 1;
   min-width: 0;
   display: flex;
@@ -451,7 +456,7 @@
   gap: 3px;
 }
 
-.team-ovl-card-name {
+.cardName {
   height: 28.8px;
   font-size: 12px;
   font-weight: 700;
@@ -463,7 +468,7 @@
   -webkit-box-orient: vertical;
 }
 
-.team-ovl-card-position {
+.cardPosition {
   font-size: 10px;
   font-weight: 600;
   color: var(--color-accent);
@@ -472,7 +477,7 @@
   text-overflow: ellipsis;
 }
 
-.team-ovl-card-dept {
+.cardDept {
   font-size: 10px;
   font-weight: 500;
   color: var(--color-text-secondary);
@@ -482,7 +487,7 @@
   text-overflow: ellipsis;
 }
 
-.team-ovl-card-status {
+.cardStatus {
   display: flex;
   align-items: center;
   gap: 4px;
@@ -490,14 +495,14 @@
   font-weight: 700;
 }
 
-.team-ovl-card-statusdot {
+.cardStatusdot {
   width: 6px;
   height: 6px;
   border-radius: 0;
 }
 
 /* 椅子(向きの可視化)。Compact には存在しない */
-.team-ovl-card-dir {
+.cardDir {
   flex-shrink: 0;
   width: 14px;
   height: 14px;
@@ -505,7 +510,7 @@
 }
 
 /* ── 座席セル(Compact) ────────────────────────── */
-.team-ovl-cell {
+.cell {
   position: relative;
   width: 100%;
   min-height: 96px;
@@ -524,7 +529,7 @@
   touch-action: pan-x pan-y;
 }
 
-.team-ovl-cell.is-empty {
+.cell.isEmpty {
   border: 1px dashed var(--color-border);
   background: var(--color-surface-sunken);
   box-shadow: none;
@@ -532,11 +537,11 @@
   cursor: default;
 }
 
-.team-ovl-cell.is-hit {
+.cell.isHit {
   border: 2px solid var(--color-hit);
 }
 
-.team-ovl-cell.is-glowing {
+.cell.isGlowing {
   animation: team-ovl-glow 2200ms ease-out;
 }
 
@@ -553,31 +558,31 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .team-ovl-cell.is-glowing {
+  .cell.isGlowing {
     animation-duration: 420ms;
   }
 }
 
 /* スポットライト。原本はセル側のインラインスタイルに 0.28 が2ファイル重複していたため
    トークン1つへ寄せる(同じ概念の判定基準を2つ持たない) */
-.team-ovl-cell.is-dimmed,
-.team-ovl-card.is-dimmed {
+.cell.isDimmed,
+.card.isDimmed {
   opacity: var(--opacity-seat-dimmed);
 }
 
-.team-ovl-cell,
-.team-ovl-card {
+.cell,
+.card {
   transition: opacity 180ms ease-out;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .team-ovl-cell,
-  .team-ovl-card {
+  .cell,
+  .card {
     transition: none;
   }
 }
 
-.team-ovl-cell-accent {
+.cellAccent {
   position: absolute;
   top: 0;
   left: 0;
@@ -586,7 +591,7 @@
   background: var(--color-accent);
 }
 
-.team-ovl-cell-avatar {
+.cellAvatar {
   flex-shrink: 0;
   width: 36px;
   height: 36px;
@@ -598,7 +603,7 @@
   overflow: hidden;
 }
 
-.team-ovl-cell-name {
+.cellName {
   max-width: 100%;
   font-weight: 700;
   line-height: 1.2;
@@ -608,7 +613,7 @@
   text-overflow: ellipsis;
 }
 
-.team-ovl-cell-dept {
+.cellDept {
   max-width: 100%;
   font-size: 10px;
   font-weight: 500;
@@ -619,7 +624,7 @@
   text-overflow: ellipsis;
 }
 
-.team-ovl-cell-status {
+.cellStatus {
   display: flex;
   align-items: center;
   gap: 3px;
@@ -627,13 +632,13 @@
   font-weight: 700;
 }
 
-.team-ovl-cell-statusdot {
+.cellStatusdot {
   width: 6px;
   height: 6px;
   border-radius: 9999px;
 }
 
-.team-ovl-hit {
+.hit {
   position: absolute;
   top: 6px;
   right: 6px;
@@ -647,7 +652,7 @@
 
 /* --- ミニマップ(オーバーレイ内でフロア内の現在地を示す折りたたみ図) --- */
 
-.team-ovl-mini {
+.mini {
   margin-top: 10px;
   border-radius: 14px;
   border: 1px solid var(--color-border);
@@ -655,13 +660,13 @@
   padding: 0 12px 12px;
 }
 
-.team-ovl-panel.is-compact .team-ovl-mini {
+.panel.isCompact .mini {
   border-radius: 0;
   border-left: 0;
   border-right: 0;
 }
 
-.team-ovl-mini-toggle {
+.miniToggle {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -674,28 +679,28 @@
   cursor: pointer;
 }
 
-.team-ovl-mini-toggle:focus-visible {
+.miniToggle:focus-visible {
   outline: 2px solid var(--color-accent);
   outline-offset: 2px;
   border-radius: 8px;
 }
 
-.team-ovl-mini-toggle-icon {
+.miniToggleIcon {
   font-size: 18px;
 }
 
-.team-ovl-mini-toggle-title {
+.miniToggleTitle {
   font-size: 11px;
   font-weight: 700;
 }
 
-.team-ovl-mini-toggle-caret {
+.miniToggleCaret {
   margin-left: auto;
   font-size: 18px;
 }
 
 /* 図の枠。中身は全て表示専用なのでポインタを一切受けない */
-.team-ovl-mini-frame {
+.miniFrame {
   position: relative;
   height: 320px;
   border-radius: 10px;
@@ -705,7 +710,7 @@
   pointer-events: none;
 }
 
-.team-ovl-mini-grid {
+.miniGrid {
   position: absolute;
   inset: 0;
   opacity: 0.3;
@@ -715,7 +720,7 @@
 }
 
 /* 十字線は会議室より上・領域ラベルより下 */
-.team-ovl-mini-cross-v {
+.miniCrossV {
   position: absolute;
   top: 0;
   bottom: 0;
@@ -723,7 +728,7 @@
   border-left: 1px dashed color-mix(in srgb, var(--color-minimap-here) 72%, transparent);
 }
 
-.team-ovl-mini-cross-h {
+.miniCrossH {
   position: absolute;
   left: 0;
   right: 0;
@@ -731,7 +736,7 @@
   border-top: 1px dashed color-mix(in srgb, var(--color-minimap-here) 72%, transparent);
 }
 
-.team-ovl-mini-fac {
+.miniFac {
   position: absolute;
   display: flex;
   align-items: center;
@@ -744,7 +749,7 @@
   color: var(--color-text-primary);
 }
 
-.team-ovl-mini-fac-icon {
+.miniFacIcon {
   position: absolute;
   top: 1px;
   left: 2px;
@@ -752,24 +757,24 @@
   color: var(--color-text-muted);
 }
 
-.team-ovl-mini-fac-name {
+.miniFacName {
   font-weight: 700;
   line-height: 1;
   white-space: nowrap;
 }
 
 /* 構造物・通路は名前を出さない。その他の家具はさらに薄く */
-.team-ovl-mini-struct {
+.miniStruct {
   position: absolute;
   border-radius: 2px;
   background: color-mix(in srgb, var(--color-text-secondary) 30%, transparent);
 }
 
-.team-ovl-mini-struct.is-object {
+.miniStruct.isObject {
   background: color-mix(in srgb, var(--color-text-secondary) 15%, transparent);
 }
 
-.team-ovl-mini-area {
+.miniArea {
   position: absolute;
   z-index: 2;
   display: flex;
@@ -780,13 +785,13 @@
   background: color-mix(in srgb, var(--color-text-secondary) 8%, transparent);
 }
 
-.team-ovl-mini-area.is-current {
+.miniArea.isCurrent {
   border: 2px solid color-mix(in srgb, var(--color-minimap-here) 92%, transparent);
   border-radius: 8px;
   box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-minimap-here) 24%, transparent);
 }
 
-.team-ovl-mini-pill {
+.miniPill {
   display: inline-flex;
   align-items: center;
   gap: 4px;
@@ -804,25 +809,25 @@
   text-overflow: ellipsis;
 }
 
-.team-ovl-mini-pill.is-current {
+.miniPill.isCurrent {
   color: var(--color-minimap-here-label);
 }
 
-.team-ovl-mini-dot {
+.miniDot {
   width: 6px;
   height: 6px;
   flex-shrink: 0;
   border-radius: 999px;
 }
 
-.team-ovl-mini-pin {
+.miniPin {
   font-size: 9px;
 }
 
 /* STEP B2: タッチドラッグ中に指へ追従するゴースト(SeatDragGhost)。座標はJS側でleft/topへ渡し、
    指に隠れないよう指の上方へオフセットする。マウスはネイティブDnDの既定画像に任せるためここは
    タッチ専用 */
-.team-ovl-seat-drag-ghost {
+.seatDragGhost {
   position: fixed;
   z-index: var(--z-index-overlay);
   display: flex;
@@ -838,15 +843,14 @@
   transform: translate(-50%, calc(-100% - 16px));
 }
 
-.team-ovl-seat-drag-ghost-icon {
-  font-size: 20px;
+.seatDragGhostIcon {
   color: var(--color-accent);
 }
 
 /* STEP B3: ドラッグ中だけ現れるゴミ箱ドロップゾーン(TrashDropZone)。
-   アンカーはシート内の位置測定専用で見た目を持たず、実体(.team-ovl-trash-zone)は
+   アンカーはシート内の位置測定専用で見た目を持たず、実体(.trashZone)は
    SeatMapPortal 経由で body 直下へ描く(overflow・スタッキングコンテキストの影響を避けるため) */
-.team-ovl-trash-anchor {
+.trashAnchor {
   position: sticky;
   top: 0;
   height: 0;
@@ -854,7 +858,7 @@
   pointer-events: none;
 }
 
-.team-ovl-trash-zone {
+.trashZone {
   position: fixed;
   z-index: var(--z-index-overlay);
   display: flex;
@@ -871,27 +875,26 @@
   transition: transform 140ms ease, border-color 140ms ease, background-color 140ms ease;
 }
 
-.team-ovl-trash-zone.is-over {
+.trashZone.isOver {
   border-color: var(--color-danger);
   background: color-mix(in srgb, var(--color-danger) 32%, var(--color-surface-elevated));
   transform: translate(-50%, -50%) scale(1.16);
 }
 
-.team-ovl-trash-zone-icon {
-  font-size: 22px;
+.trashZoneIcon {
   color: var(--color-danger);
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .team-ovl-trash-zone {
+  .trashZone {
     transition: none;
   }
 }
 
-/* STEP B1: 編集中の座席カード。表示用(.team-ovl-card/.team-ovl-cell)とは別クラスで、
+/* STEP B1: 編集中の座席カード。表示用(.card/.cell)とは別クラスで、
    氏名・部署・操作(ドラッグハンドル)だけを持つ。高さは表示用カードに合わせ、
    グリッド種別(Desktop/Compact)ごとに親セレクタで揃える */
-.team-ovl-editcard {
+.editcard {
   position: relative;
   width: 100%;
   border-radius: 10px;
@@ -908,15 +911,15 @@
   overflow: hidden;
 }
 
-.team-ovl-grid.is-desktop .team-ovl-editcard {
+.grid.isDesktop .editcard {
   height: 88px;
 }
 
-.team-ovl-grid.is-compact .team-ovl-editcard {
+.grid.isCompact .editcard {
   min-height: 96px;
 }
 
-.team-ovl-editcard-text {
+.editcardText {
   flex: 1;
   min-width: 0;
   display: flex;
@@ -924,7 +927,7 @@
   gap: 3px;
 }
 
-.team-ovl-editcard-name {
+.editcardName {
   font-size: 12px;
   font-weight: 700;
   line-height: 1.2;
@@ -935,7 +938,7 @@
   -webkit-box-orient: vertical;
 }
 
-.team-ovl-editcard-dept {
+.editcardDept {
   font-size: 10px;
   font-weight: 500;
   color: var(--color-text-secondary);
@@ -945,14 +948,13 @@
   text-overflow: ellipsis;
 }
 
-.team-ovl-editcard-handle {
+.editcardHandle {
   flex-shrink: 0;
-  font-size: 18px;
   color: var(--color-text-muted);
 }
 
 /* 空セル。破線枠+中央に薄い add アイコン。高さは編集カードと同じ基準で揃える */
-.team-ovl-emptycell {
+.emptycell {
   width: 100%;
   border-radius: 10px;
   display: flex;
@@ -963,23 +965,22 @@
   background: var(--color-surface-sunken);
 }
 
-.team-ovl-grid.is-desktop .team-ovl-emptycell {
+.grid.isDesktop .emptycell {
   height: 88px;
 }
 
-.team-ovl-grid.is-compact .team-ovl-emptycell {
+.grid.isCompact .emptycell {
   min-height: 96px;
 }
 
-.team-ovl-emptycell-icon {
-  font-size: 22px;
+.emptycellIcon {
   color: var(--color-text-muted);
   opacity: 0.6;
 }
 
 /* 選択中。席・空セルどちらも同じ見せ方(2px の accent 枠+外側にわずかなグロー) */
-.team-ovl-editcard.is-selected,
-.team-ovl-emptycell.is-selected {
+.editcard.isSelected,
+.emptycell.isSelected {
   border: 2px solid var(--color-accent);
   box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-accent) 20%, transparent);
 }
@@ -987,14 +988,14 @@
 /* STEP B2/B3: ゴミ箱アンカーの配置。幅固定のブロック要素へ margin-left: auto を与えて
    セクション内の右端へ寄せる(親をflex化しなくても効く)。実体円の座標はこのアンカーの
    getBoundingClientRectをJS側で測って決まるため、位置決めはここだけで完結する */
-.team-ovl-trash-anchor {
+.trashAnchor {
   margin-left: auto;
 }
 
-/* STEP B4: グリッド編集の行・列増減。.team-ovl-gridwrap(position: relative)を基準に
+/* STEP B4: グリッド編集の行・列増減。.gridwrap(position: relative)を基準に
    絶対配置し、内部スクロールに関わらずグリッドの外周に留まる。横スクロールヒント
-   (.team-ovl-hint、上下中央固定)と重ならないよう、上下左右いずれも角寄りへ配置する */
-.team-ovl-edge-add {
+   (.hint、上下中央固定)と重ならないよう、上下左右いずれも角寄りへ配置する */
+.edgeAdd {
   position: absolute;
   width: 26px;
   height: 26px;
@@ -1009,45 +1010,45 @@
   box-shadow: var(--glass-shadow-sm);
 }
 
-.team-ovl-edge-add:hover {
+.edgeAdd:hover {
   background: var(--color-surface-muted-hover);
 }
 
-.team-ovl-edge-add .material-symbols-outlined {
+.edgeAdd :global(.material-symbols-outlined) {
   font-size: 16px;
 }
 
-.team-ovl-edge-add.is-top {
+.edgeAdd.isTop {
   top: -8px;
   left: 50%;
   transform: translateX(-50%);
 }
 
-.team-ovl-edge-add.is-bottom {
+.edgeAdd.isBottom {
   bottom: -8px;
   left: 50%;
   transform: translateX(-50%);
 }
 
-.team-ovl-edge-add.is-left {
+.edgeAdd.isLeft {
   top: 8px;
   left: -8px;
 }
 
-.team-ovl-edge-add.is-right {
+.edgeAdd.isRight {
   top: 8px;
   right: -8px;
 }
 
 /* 空行・空列のヘッダに出す削除ボタンの受け皿。行ヘッダは縦長セル・列ヘッダは横長セルに
    1つだけ小さく中央配置する(GRID_HEADER_TRACK_PXぶんのトラックは呼び出し側が用意する) */
-.team-ovl-grid-header {
+.gridHeader {
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.team-ovl-edge-remove {
+.edgeRemove {
   width: 20px;
   height: 20px;
   border: 0;
@@ -1060,19 +1061,19 @@
   justify-content: center;
 }
 
-.team-ovl-edge-remove:hover {
+.edgeRemove:hover {
   background: var(--color-danger-soft);
 }
 
-.team-ovl-edge-remove .material-symbols-outlined {
+.edgeRemove :global(.material-symbols-outlined) {
   font-size: 16px;
 }
 
 /* STEP B5: 選択中の空セル中央に出す「席追加」ピル(SeatActionOverlay)。
    コンテナは pointer-events: none にしてボタン以外の領域を素通しし、背後の
-   .team-ovl-emptycell(セル全体を覆うボタン)へタップを届かせる。素通しにしないと
+   .emptycell(セル全体を覆うボタン)へタップを届かせる。素通しにしないと
    選択中セルの再タップで選択解除ができなくなる(docs/team-overlay/spec.md STEP B5参照) */
-.team-ovl-seat-add {
+.seatAdd {
   position: absolute;
   inset: 0;
   z-index: 1;
@@ -1082,7 +1083,7 @@
   pointer-events: none;
 }
 
-.team-ovl-seat-add-btn {
+.seatAddBtn {
   display: inline-flex;
   align-items: center;
   gap: 4px;
@@ -1096,19 +1097,15 @@
   white-space: nowrap;
 }
 
-.team-ovl-seat-add-icon {
-  font-size: 14px;
-}
-
 /* サイズは2種。通常(Desktop)/コンパクト(モバイルのカード幅 ~70px に収める) */
-.team-ovl-grid.is-desktop .team-ovl-seat-add-btn {
+.grid.isDesktop .seatAddBtn {
   min-height: 36px;
   padding-inline: 14px;
   font-size: 13px;
   font-weight: 700;
 }
 
-.team-ovl-grid.is-compact .team-ovl-seat-add-btn {
+.grid.isCompact .seatAddBtn {
   min-height: 32px;
   padding-inline: 9px;
   font-size: 11px;
@@ -1116,9 +1113,9 @@
 }
 
 /* STEP D1: 座席の回転グリップ。編集中かつ選択中の席カード左上隅にだけ出す26x26円。
-   .team-ovl-editcard/.team-ovl-emptycellの親(セルのラッパー、position: relative)を
+   .editcard/.emptycellの親(セルのラッパー、position: relative)を
    基準に絶対配置する兄弟要素として置く(カード本体のdraggable継承を避けるため) */
-.team-ovl-rotation-grip {
+.rotationGrip {
   position: absolute;
   top: 3px;
   left: 3px;
@@ -1137,24 +1134,20 @@
   box-shadow: var(--glass-shadow-sm);
 }
 
-.team-ovl-rotation-grip:active {
+.rotationGrip:active {
   cursor: grabbing;
 }
 
-.team-ovl-rotation-grip-icon {
-  font-size: 16px;
-}
-
-/* STEP D2: 席の向きの帯。編集中の席カード(.team-ovl-editcard、position: relativeを持つ)の
+/* STEP D2: 席の向きの帯。編集中の席カード(.editcard、position: relativeを持つ)の
    縁のうち、その席が向いている辺だけに短く出す。矢印にはしない(小さいカードで潰れるため)。
    背景色は呼び出し側(SeatDirectionMarker)がチーム色を薄めてインラインで渡す */
-.team-ovl-dir-marker {
+.dirMarker {
   position: absolute;
   border-radius: 9999px;
   pointer-events: none;
 }
 
-.team-ovl-dir-marker.is-edge-north {
+.dirMarker.isEdgeNorth {
   top: 0;
   left: 50%;
   width: 28px;
@@ -1162,7 +1155,7 @@
   transform: translateX(-50%);
 }
 
-.team-ovl-dir-marker.is-edge-south {
+.dirMarker.isEdgeSouth {
   bottom: 0;
   left: 50%;
   width: 28px;
@@ -1170,7 +1163,7 @@
   transform: translateX(-50%);
 }
 
-.team-ovl-dir-marker.is-edge-east {
+.dirMarker.isEdgeEast {
   top: 50%;
   right: 0;
   width: 3px;
@@ -1178,7 +1171,7 @@
   transform: translateY(-50%);
 }
 
-.team-ovl-dir-marker.is-edge-west {
+.dirMarker.isEdgeWest {
   top: 50%;
   left: 0;
   width: 3px;
@@ -1186,10 +1179,10 @@
   transform: translateY(-50%);
 }
 
-/* STEP D2: 回転グリップをドラッグしている間だけ出す方角ガイド。セルラッパー(.team-ovl-rotation-grip
+/* STEP D2: 回転グリップをドラッグしている間だけ出す方角ガイド。セルラッパー(.rotationGrip
    と同じ親、position: relative)基準でinset: 0のセンタリングをし、カード中心に東西南北の
-   目安を薄く示す(.team-ovl-seat-addと同じ配置方針) */
-.team-ovl-compass-guide {
+   目安を薄く示す(.seatAddと同じ配置方針) */
+.compassGuide {
   position: absolute;
   inset: 0;
   display: flex;
@@ -1198,7 +1191,7 @@
   pointer-events: none;
 }
 
-.team-ovl-compass-tick {
+.compassTick {
   position: absolute;
   width: 4px;
   height: 4px;
@@ -1207,35 +1200,35 @@
   opacity: 0.6;
 }
 
-.team-ovl-compass-tick.is-north {
+.compassTick.isNorth {
   top: 6px;
   left: 50%;
   transform: translateX(-50%);
 }
 
-.team-ovl-compass-tick.is-south {
+.compassTick.isSouth {
   bottom: 6px;
   left: 50%;
   transform: translateX(-50%);
 }
 
-.team-ovl-compass-tick.is-east {
+.compassTick.isEast {
   top: 50%;
   right: 6px;
   transform: translateY(-50%);
 }
 
-.team-ovl-compass-tick.is-west {
+.compassTick.isWest {
   top: 50%;
   left: 6px;
   transform: translateY(-50%);
 }
 
 /* STEP D3: 編集モード下部のフローティングドック(保存/キャンセルの2つだけ)。
-   .team-ovl-panel(position: relative)を基準に絶対配置する。パネルのoverflow: hiddenの
+   .panel(position: relative)を基準に絶対配置する。パネルのoverflow: hiddenの
    内側に収まる高さに留めるため、TrashDropZoneのようにSeatMapPortalへ逃がす必要はない
    (viewport基準のfixed位置決めが要らないため) */
-.team-ovl-dock {
+.dock {
   position: absolute;
   left: 50%;
   bottom: 16px;
@@ -1253,9 +1246,9 @@
   animation: team-ovl-dock-enter 180ms ease-out;
 }
 
-/* backdrop-filter 非対応環境用の不透明フォールバック(.team-ovl-hintと同じ方針) */
+/* backdrop-filter 非対応環境用の不透明フォールバック(.hintと同じ方針) */
 @supports not (backdrop-filter: blur(1px)) {
-  .team-ovl-dock {
+  .dock {
     background: var(--glass-bg-opaque);
   }
 }
@@ -1272,12 +1265,12 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .team-ovl-dock {
+  .dock {
     animation: none;
   }
 }
 
-.team-ovl-dock-cancel {
+.dockCancel {
   flex-shrink: 0;
   width: 46px;
   height: 44px;
@@ -1291,18 +1284,18 @@
   justify-content: center;
 }
 
-.team-ovl-dock-cancel:hover {
+.dockCancel:hover {
   background: var(--color-surface-muted-hover);
 }
 
-.team-ovl-dock-cancel .material-symbols-outlined {
+.dockCancel :global(.material-symbols-outlined) {
   font-size: 20px;
 }
 
 /* 保存。changeCount>0の間だけ出るバッジは常に白系(--color-band-highlight、profile-band用に
    全テーマ共通の白として定義済みのトークンを流用)を薄めて使う。--color-text-on-accentは
    テーマにより暗色(dracula/kuroxxx)になるため「半透明白」の指定には使えない */
-.team-ovl-dock-save {
+.dockSave {
   flex-shrink: 0;
   display: flex;
   align-items: center;
@@ -1324,22 +1317,18 @@
   box-shadow: var(--glass-shadow-sm);
 }
 
-.team-ovl-dock-save:hover:not(:disabled) {
+.dockSave:hover:not(:disabled) {
   filter: brightness(1.05);
 }
 
 /* 変更0件では押せない。保存中(isSaving)はhasChangesのままdisabledにしないため
    opacity 0.4は「変更なし」の1状態にだけ紐づく(:disabledと1:1対応、二重の判定を作らない) */
-.team-ovl-dock-save:disabled {
+.dockSave:disabled {
   opacity: 0.4;
   cursor: default;
 }
 
-.team-ovl-dock-save-icon {
-  font-size: 16px;
-}
-
-.team-ovl-dock-save-icon.is-spinning {
+.dockSaveIcon.isSpinning {
   animation: team-ovl-dock-spin 1s linear infinite;
 }
 
@@ -1349,7 +1338,7 @@
   }
 }
 
-.team-ovl-dock-save-badge {
+.dockSaveBadge {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -1365,12 +1354,12 @@
 }
 
 /* STEP D3: 編集中の座席カード・空セル・変更/登録ピル・ドックの2ボタンにキーボードフォーカスの
-   可視化を足す。.team-ovl-mini-toggle:focus-visibleと同じ方針(accentの2pxアウトライン) */
-.team-ovl-editcard:focus-visible,
-.team-ovl-emptycell:focus-visible,
-.team-ovl-seat-add-btn:focus-visible,
-.team-ovl-dock-cancel:focus-visible,
-.team-ovl-dock-save:focus-visible {
+   可視化を足す。.miniToggle:focus-visibleと同じ方針(accentの2pxアウトライン) */
+.editcard:focus-visible,
+.emptycell:focus-visible,
+.seatAddBtn:focus-visible,
+.dockCancel:focus-visible,
+.dockSave:focus-visible {
   outline: 2px solid var(--color-accent);
   outline-offset: 2px;
 }
