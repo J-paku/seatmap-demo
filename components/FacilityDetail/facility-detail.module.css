@@ -1,23 +1,23 @@
 /* 施設詳細 */
-.facility-detail {
+.facilityDetail {
   display: flex;
   flex-direction: column;
   gap: 12px;
 }
 
-/* 施設パネルのヘッダー(共通 .sheet-header の代わりに children 側で描く。
-   親 .facility-detail の gap:12px がそのまま次要素との間隔になる) */
-.fac-panel-header {
+/* 施設パネルのヘッダー(共通 .sheetHeader の代わりに children 側で描く。
+   親 .facilityDetail の gap:12px がそのまま次要素との間隔になる) */
+.facPanelHeader {
   display: flex;
   align-items: center;
   gap: 10px;
 }
-.fac-panel-icon {
+.facPanelIcon {
   font-size: 22px;
   color: var(--color-accent);
   flex-shrink: 0;
 }
-.fac-panel-name {
+.facPanelName {
   flex: 1;
   min-width: 0;
   font-size: 18px;
@@ -26,7 +26,7 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.fac-refresh-btn {
+.facRefreshBtn {
   flex-shrink: 0;
   width: 44px;
   height: 44px;
@@ -42,42 +42,42 @@
   gap: 1px;
   cursor: pointer;
 }
-.fac-refresh-btn:hover:not(:disabled) {
+.facRefreshBtn:hover:not(:disabled) {
   background: var(--color-surface-muted-hover);
 }
-.fac-refresh-btn:disabled {
+.facRefreshBtn:disabled {
   opacity: 0.55;
   cursor: default;
 }
-.fac-refresh-icon {
+.facRefreshIcon {
   font-size: 20px;
 }
-.fac-refresh-icon.is-refreshing {
+.facRefreshIcon.isRefreshing {
   animation: schedule-spin 0.8s linear infinite;
 }
-.fac-refresh-cooldown {
+.facRefreshCooldown {
   font-size: 9px;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
 }
-.fac-panel-right {
+.facPanelRight {
   flex-shrink: 0;
   display: flex;
   align-items: center;
   gap: 8px;
 }
-.fac-badge {
+.facBadge {
   font-size: 13px;
   font-weight: 700;
   padding: 4px 12px;
   border-radius: 9999px;
   border: 1px solid;
 }
-.fac-cap {
+.facCap {
   font-size: 12px;
   color: var(--color-text-secondary);
 }
-.fac-current {
+.facCurrent {
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -85,67 +85,67 @@
   border-radius: 12px;
   background: var(--color-surface-sunken);
 }
-.fac-current-summary {
+.facCurrentSummary {
   display: flex;
   flex-direction: column;
   gap: 4px;
 }
-.fac-current-title {
+.facCurrentTitle {
   font-size: 15px;
   font-weight: 700;
 }
-.fac-current-time {
+.facCurrentTime {
   display: flex;
   gap: 6px;
   font-size: 12px;
   color: var(--color-text-secondary);
   font-variant-numeric: tabular-nums;
 }
-.fac-current-remain {
+.facCurrentRemain {
   color: var(--color-accent);
   font-weight: 700;
 }
-.fac-current-group {
+.facCurrentGroup {
   display: flex;
   flex-direction: column;
   gap: 6px;
 }
-.fac-current-group-label {
+.facCurrentGroupLabel {
   font-size: 11px;
   font-weight: 700;
   color: var(--color-text-muted);
 }
-.fac-current-hairline {
+.facCurrentHairline {
   height: 1px;
   background: var(--color-border);
 }
-.fac-current-parts-header {
+.facCurrentPartsHeader {
   display: flex;
   align-items: center;
   justify-content: space-between;
 }
-.fac-current-parts-label {
+.facCurrentPartsLabel {
   font-size: 12px;
   font-weight: 700;
 }
-.fac-current-parts-count {
+.facCurrentPartsCount {
   display: flex;
   align-items: center;
   gap: 4px;
   font-size: 12px;
   color: var(--color-text-secondary);
 }
-.fac-current-parts-icon {
+.facCurrentPartsIcon {
   font-size: 16px;
 }
-.fac-current-parts-list {
+.facCurrentPartsList {
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
 
 /* 人物行(現在の会議の登録者・参加者で共用) */
-.fac-person-row {
+.facPersonRow {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -158,17 +158,17 @@
   color: inherit;
   font: inherit;
 }
-.fac-person-row-clickable {
+.facPersonRowClickable {
   cursor: pointer;
 }
-.fac-person-row-clickable:hover {
+.facPersonRowClickable:hover {
   background: var(--color-surface-muted);
 }
-.fac-person-row-clickable:focus-visible {
+.facPersonRowClickable:focus-visible {
   outline: 2px solid var(--color-accent);
   outline-offset: 2px;
 }
-.fac-person-avatar-frame {
+.facPersonAvatarFrame {
   flex-shrink: 0;
   width: 32px;
   height: 32px;
@@ -179,56 +179,46 @@
   align-items: center;
   justify-content: center;
 }
-.fac-person-info {
+.facPersonInfo {
   display: flex;
   flex-direction: column;
   min-width: 0;
 }
-.fac-person-name {
+.facPersonName {
   font-size: 14px;
   font-weight: 500;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.fac-person-role {
+.facPersonRole {
   font-size: 12px;
   color: var(--color-accent);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.fac-person-dept {
+.facPersonDept {
   font-size: 12px;
   color: var(--color-text-secondary);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-/* 04: 予定欄のスワイプ台。.schedule-swipe-wrap と同型のスコープ限定上書き
-   (.facility-detail は既に gap:12px を持つため margin-top は付けない) */
-.fac-swipe-wrap {
+/* 04: 予定欄のスワイプ台。.scheduleSwipeWrap と同型のスコープ限定上書き
+   (.facilityDetail は既に gap:12px を持つため margin-top は付けない) */
+.facSwipeWrap {
   min-height: 300px;
   display: flex;
   flex-direction: column;
 }
-.fac-swipe-wrap .swipe-stage {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-}
-.fac-swipe-wrap .swipe-front-card {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-}
-.fac-empty {
+.facEmpty {
   font-size: 13px;
   color: var(--color-text-muted);
   padding: 8px 0;
 }
 /* 05: 予約一覧の行。進行中/終了済み/次は本日を表示している時だけ付く */
-.fac-rows {
+.facRows {
   margin: 0;
   padding: 0;
   list-style: none;
@@ -236,7 +226,7 @@
   flex-direction: column;
   gap: 6px;
 }
-.fac-row {
+.facRow {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -244,39 +234,39 @@
   border: 1px solid var(--color-border);
   border-radius: 8px;
 }
-.fac-row.is-now {
+.facRow.isNow {
   background: var(--color-accent-soft);
   border-color: var(--color-accent);
 }
-.fac-row.is-done {
+.facRow.isDone {
   opacity: 0.5;
 }
-.fac-row-main {
+.facRowMain {
   flex: 1;
   min-width: 0;
   display: flex;
   flex-direction: column;
   gap: 2px;
 }
-.fac-row-time {
+.facRowTime {
   font-size: 12px;
   font-variant-numeric: tabular-nums;
   color: var(--color-text-secondary);
 }
-.fac-row-title {
+.facRowTitle {
   font-size: 14px;
   font-weight: 600;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.fac-row-organizer {
+.facRowOrganizer {
   display: flex;
   align-items: center;
   gap: 6px;
   min-width: 0;
 }
-.fac-row-organizer-badge {
+.facRowOrganizerBadge {
   flex-shrink: 0;
   font-size: 10px;
   font-weight: 700;
@@ -285,20 +275,20 @@
   border-radius: 999px;
   padding: 2px 6px;
 }
-.fac-row-organizer-name {
+.facRowOrganizerName {
   font-size: 12px;
   color: var(--color-text-secondary);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.fac-row-side {
+.facRowSide {
   flex-shrink: 0;
   display: flex;
   align-items: center;
   gap: 6px;
 }
-.fac-row-next-badge {
+.facRowNextBadge {
   font-size: 11px;
   font-weight: 700;
   color: var(--color-accent);
@@ -306,7 +296,7 @@
   border-radius: 999px;
   padding: 2px 8px;
 }
-.fac-attendee-btn {
+.facAttendeeBtn {
   width: 44px;
   height: 44px;
   flex-shrink: 0;
@@ -323,20 +313,20 @@
   font-size: 11px;
   cursor: pointer;
 }
-.fac-attendee-btn:hover {
+.facAttendeeBtn:hover {
   background: var(--color-surface-muted);
 }
-.fac-attendee-btn:focus-visible {
+.facAttendeeBtn:focus-visible {
   outline: 2px solid var(--color-accent);
   outline-offset: 2px;
 }
-.fac-attendee-icon {
+.facAttendeeIcon {
   font-size: 15px;
 }
 
 /* 06: 参加者ポップオーバー。シートの overflow に切られないよう fixed で描く
    位置は use-attendee-popover が実測して style で与える(常に右端そろえ) */
-.fac-attendee-pop {
+.facAttendeePop {
   position: fixed;
   z-index: calc(var(--z-index-modal) + 4);
   min-width: 180px;
@@ -351,25 +341,25 @@
   overflow-y: auto;
   overscroll-behavior: contain;
 }
-.fac-attendee-pop.is-flipped {
+.facAttendeePop.isFlipped {
   transform: translateY(-100%);
 }
-.fac-attendee-group {
+.facAttendeeGroup {
   display: flex;
   flex-direction: column;
   gap: 4px;
 }
-.fac-attendee-heading {
+.facAttendeeHeading {
   font-size: 11px;
   font-weight: 700;
   color: var(--color-text-muted);
 }
-.fac-attendee-list {
+.facAttendeeList {
   display: flex;
   flex-direction: column;
   gap: 4px;
 }
-.fac-attendee-person {
+.facAttendeePerson {
   display: flex;
   flex-direction: column;
   gap: 1px;
@@ -382,37 +372,37 @@
   font: inherit;
   text-align: left;
 }
-.fac-attendee-person-clickable {
+.facAttendeePersonClickable {
   cursor: pointer;
 }
-.fac-attendee-person-clickable:hover {
+.facAttendeePersonClickable:hover {
   background: var(--color-surface-muted);
 }
-.fac-attendee-person-clickable:focus-visible {
+.facAttendeePersonClickable:focus-visible {
   outline: 2px solid var(--color-accent);
   outline-offset: 2px;
 }
-.fac-attendee-name {
+.facAttendeeName {
   font-size: 14px;
   font-weight: 500;
 }
-.fac-attendee-role {
+.facAttendeeRole {
   font-size: 11px;
   color: var(--color-accent);
 }
-.fac-attendee-dept {
+.facAttendeeDept {
   font-size: 11px;
   color: var(--color-text-secondary);
 }
 
 /* 07: 施設の削除導線。復旧手段は設定の「レイアウトをリセット」 */
-.fac-delete-footer {
+.facDeleteFooter {
   display: flex;
   justify-content: center;
   padding-top: 12px;
   border-top: 1px solid var(--color-border);
 }
-.fac-delete-btn {
+.facDeleteBtn {
   min-height: 36px;
   padding: 0 8px;
   border: 0;
@@ -425,24 +415,24 @@
   text-underline-offset: 4px;
   cursor: pointer;
 }
-.fac-delete-btn:hover {
+.facDeleteBtn:hover {
   text-decoration-thickness: 2px;
 }
-.fac-delete-btn:focus-visible {
+.facDeleteBtn:focus-visible {
   outline: 2px solid var(--color-accent);
   outline-offset: 2px;
 }
-.fac-delete-desc {
+.facDeleteDesc {
   margin: 0 0 12px;
   font-size: 13px;
   color: var(--color-text-secondary);
   line-height: 1.6;
 }
-.fac-delete-word {
+.facDeleteWord {
   color: var(--color-danger);
   font-weight: 700;
 }
-.fac-delete-input {
+.facDeleteInput {
   width: 100%;
   min-height: 48px;
   margin-bottom: 12px;
@@ -455,7 +445,7 @@
   font-size: 14px;
   text-align: center;
 }
-.fac-delete-input:focus-visible {
+.facDeleteInput:focus-visible {
   outline: 2px solid var(--color-accent);
   outline-offset: 1px;
 }

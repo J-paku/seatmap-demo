@@ -1,4 +1,5 @@
 import { PickerSheet } from '@/components/PickerSheet'
+import styles from '../object-picker.module.css'
 
 // 何を置くかの大分類。チームは PHASE D で先頭に足す想定
 
@@ -27,20 +28,20 @@ type Props = {
 
 export const ObjectCategorySheet = ({ isOpen, categories, onSelect, onClose }: Props) => (
   <PickerSheet isOpen={isOpen} title='何を置きますか' onClose={onClose}>
-    <div className='obj-cat-list'>
+    <div className={styles.objCatList}>
       {CARDS.filter((card) => categories.includes(card.category)).map((card) => (
         <button
           key={card.category}
           type='button'
-          className='obj-cat-card'
+          className={styles.objCatCard}
           onClick={() => onSelect(card.category)}
         >
-          <span className='icon-msr-thin obj-cat-icon' aria-hidden='true'>
+          <span className={`icon-msr-thin ${styles.objCatIcon}`} aria-hidden='true'>
             {card.icon}
           </span>
-          <span className='obj-cat-text'>
-            <span className='obj-cat-title'>{card.title}</span>
-            <span className='obj-cat-desc'>{card.description}</span>
+          <span className={styles.objCatText}>
+            <span className={styles.objCatTitle}>{card.title}</span>
+            <span className={styles.objCatDesc}>{card.description}</span>
           </span>
         </button>
       ))}

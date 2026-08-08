@@ -1,5 +1,6 @@
 import { scheduleTimeLabel } from '@/utils/format'
 import type { ScheduleEvent } from '@/types'
+import styles from '../schedule-section.module.css'
 
 // 予定カードの中身。エラー・一覧・空・ローディングの出し分けだけを持つ
 
@@ -24,10 +25,10 @@ export const ScheduleCard = ({
   onRefresh,
   onOpenEvent,
 }: Props) => (
-  <div className='schedule-card'>
+  <div className={styles.scheduleCard}>
     <button
       type='button'
-      className='schedule-refresh-btn'
+      className={styles.scheduleRefreshBtn}
       aria-label='スケジュールを更新'
       disabled={isRefreshDisabled}
       onClick={onRefresh}
@@ -37,7 +38,7 @@ export const ScheduleCard = ({
           <span className='material-symbols-outlined' style={{ fontSize: 16 }}>
             refresh
           </span>
-          <span className='schedule-refresh-cooldown'>{cooldown}s</span>
+          <span className={styles.scheduleRefreshCooldown}>{cooldown}s</span>
         </>
       ) : (
         <span className='material-symbols-outlined' style={{ fontSize: 20 }}>
@@ -47,7 +48,7 @@ export const ScheduleCard = ({
     </button>
 
     {hasError ? (
-      <div className='schedule-error'>
+      <div className={styles.scheduleError}>
         <span className='material-symbols-outlined' style={{ fontSize: 20 }}>
           error
         </span>
@@ -56,23 +57,23 @@ export const ScheduleCard = ({
     ) : (
       <>
         {events.length > 0 && (
-          <ul className='schedule-list'>
+          <ul className={styles.scheduleList}>
             {events.map((ev) => (
               <li key={ev.id}>
-                <button type='button' className='schedule-row' onClick={() => onOpenEvent(ev.id)}>
-                  <span className={`schedule-time${ev.isAllDay ? ' is-allday' : ''}`}>{scheduleTimeLabel(ev)}</span>
-                  <span className='schedule-title'>{ev.title || '予定あり'}</span>
+                <button type='button' className={styles.scheduleRow} onClick={() => onOpenEvent(ev.id)}>
+                  <span className={`${styles.scheduleTime}${ev.isAllDay ? ` ${styles.isAllday}` : ''}`}>{scheduleTimeLabel(ev)}</span>
+                  <span className={styles.scheduleTitle}>{ev.title || '予定あり'}</span>
                 </button>
               </li>
             ))}
           </ul>
         )}
         {events.length === 0 && !isLoading && (
-          <p className='schedule-empty'>{isTodaySelected ? '今日の予定はありません' : '予定はありません'}</p>
+          <p className={styles.scheduleEmpty}>{isTodaySelected ? '今日の予定はありません' : '予定はありません'}</p>
         )}
         {isLoading && (
-          <div className={`schedule-loading${events.length > 0 ? ' schedule-loading-overlay' : ' schedule-loading-center'}`}>
-            <span className='schedule-spinner' />
+          <div className={`${styles.scheduleLoading} ${events.length > 0 ? styles.scheduleLoadingOverlay : styles.scheduleLoadingCenter}`}>
+            <span className={styles.scheduleSpinner} />
             <span>読み取り中です</span>
           </div>
         )}

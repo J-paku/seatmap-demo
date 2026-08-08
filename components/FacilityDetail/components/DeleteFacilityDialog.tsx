@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import styles from '../facility-detail.module.css'
 
 // 誤操作を防ぐため、この語を完全一致で入力させてから確定できるようにする
 const CONFIRM_WORD = '削除'
@@ -25,13 +26,13 @@ export const DeleteFacilityDialog = ({ facilityName, isDeleting, onConfirm, onCa
         onClick={(e) => e.stopPropagation()}
       >
         <p className='edit-dialog-message'>この施設を削除しますか？</p>
-        <p className='fac-delete-desc'>
+        <p className={styles.facDeleteDesc}>
           「{facilityName}」が削除されます。続行するには
-          <strong className='fac-delete-word'>{CONFIRM_WORD}</strong>と入力してください。
+          <strong className={styles.facDeleteWord}>{CONFIRM_WORD}</strong>と入力してください。
         </p>
         <input
           type='text'
-          className='fac-delete-input'
+          className={styles.facDeleteInput}
           value={typed}
           placeholder={CONFIRM_WORD}
           onChange={(e) => setTyped(e.target.value)}

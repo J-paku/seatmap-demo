@@ -1,4 +1,5 @@
 import { PickerSheet } from '@/components/PickerSheet'
+import styles from '../object-picker.module.css'
 
 // チームラベルをタップしたときの操作選択。座席追加とグリッド再配置の入口
 
@@ -14,23 +15,23 @@ type Props = {
 
 export const TeamActionSheet = ({ isOpen, teamName, seatCount, onSelect, onClose }: Props) => (
   <PickerSheet isOpen={isOpen} title={teamName} note={`${seatCount}席`} onClose={onClose}>
-    <div className='obj-cat-list'>
-      <button type='button' className='obj-cat-card' onClick={() => onSelect('add-seat')}>
-        <span className='icon-msr-thin obj-cat-icon' aria-hidden='true'>
+    <div className={styles.objCatList}>
+      <button type='button' className={styles.objCatCard} onClick={() => onSelect('add-seat')}>
+        <span className={`icon-msr-thin ${styles.objCatIcon}`} aria-hidden='true'>
           add_box
         </span>
-        <span className='obj-cat-text'>
-          <span className='obj-cat-title'>座席を追加</span>
-          <span className='obj-cat-desc'>最後の座席の右隣に空席を1つ足します</span>
+        <span className={styles.objCatText}>
+          <span className={styles.objCatTitle}>座席を追加</span>
+          <span className={styles.objCatDesc}>最後の座席の右隣に空席を1つ足します</span>
         </span>
       </button>
-      <button type='button' className='obj-cat-card' onClick={() => onSelect('relayout')}>
-        <span className='icon-msr-thin obj-cat-icon' aria-hidden='true'>
+      <button type='button' className={styles.objCatCard} onClick={() => onSelect('relayout')}>
+        <span className={`icon-msr-thin ${styles.objCatIcon}`} aria-hidden='true'>
           grid_view
         </span>
-        <span className='obj-cat-text'>
-          <span className='obj-cat-title'>行×列の再配置</span>
-          <span className='obj-cat-desc'>座席を格子状に並べ直します</span>
+        <span className={styles.objCatText}>
+          <span className={styles.objCatTitle}>行×列の再配置</span>
+          <span className={styles.objCatDesc}>座席を格子状に並べ直します</span>
         </span>
       </button>
     </div>

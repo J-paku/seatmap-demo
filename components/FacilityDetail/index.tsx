@@ -14,6 +14,7 @@ import { useFacilityScheduleForDate } from '@/hooks/use-facility-schedule-for-da
 import { useQuantizedClock } from '@/hooks/use-quantized-clock'
 import { useDetailPanel } from '@/contexts/detail-panel-context'
 import { isSameJstDate, jstDateKey } from '@/utils/jst-date'
+import styles from './facility-detail.module.css'
 
 type Props = {
   facilityId: string
@@ -66,7 +67,7 @@ export const FacilityDetail = ({ facilityId, onDeleted }: Props) => {
         isTodaySelected={isTodaySelected}
         onClose={closeTop}
       />
-      {facility.capacity != null && <span className='fac-cap'>定員{facility.capacity}名</span>}
+      {facility.capacity != null && <span className={styles.facCap}>定員{facility.capacity}名</span>}
 
       {isTodaySelected && state.current && (
         <FacilityCurrentEvent meeting={state.current} nowMin={nowMin} employees={employees ?? []} />
@@ -85,8 +86,8 @@ export const FacilityDetail = ({ facilityId, onDeleted }: Props) => {
         onSwipeNextDay={goToNextDay}
       />
 
-      <div className='fac-delete-footer'>
-        <button type='button' className='fac-delete-btn' onClick={remove.open}>
+      <div className={styles.facDeleteFooter}>
+        <button type='button' className={styles.facDeleteBtn} onClick={remove.open}>
           削除
         </button>
       </div>

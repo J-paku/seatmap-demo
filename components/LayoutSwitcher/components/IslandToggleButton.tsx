@@ -2,6 +2,7 @@ import type { LayoutSource } from '@/contexts/layout-source-context'
 import type { LayoutMeta } from '@/types'
 import { FLOOR_NAME } from '@/lib/mock-loader'
 import { triggerHaptic } from '@/lib/haptic'
+import styles from '../layout-switcher.module.css'
 
 type Props = {
   source: LayoutSource
@@ -22,7 +23,7 @@ export const IslandToggleButton = ({ source, layoutMetas, isOpen, panelId, onTog
   return (
     <button
       type='button'
-      className={`layout-switcher-toggle${isOpen ? ' is-open' : ''}`}
+      className={`${styles.toggle}${isOpen ? ` ${styles.isOpen}` : ''}`}
       aria-expanded={isOpen}
       aria-controls={panelId}
       onClick={() => {
@@ -31,13 +32,13 @@ export const IslandToggleButton = ({ source, layoutMetas, isOpen, panelId, onTog
       }}
     >
       <span
-        className={`icon-msr-filled layout-switcher-toggle-icon${isCustom ? ' is-custom' : ''}`}
+        className={`icon-msr-filled ${styles.toggleIcon}${isCustom ? ` ${styles.isCustom}` : ''}`}
         aria-hidden='true'
       >
         {isCustom ? 'grid_view' : 'apartment'}
       </span>
-      <span className='layout-switcher-toggle-name'>{currentName}</span>
-      <span className='icon-msr-filled layout-switcher-toggle-caret' aria-hidden='true'>
+      <span className={styles.toggleName}>{currentName}</span>
+      <span className={`icon-msr-filled ${styles.toggleCaret}`} aria-hidden='true'>
         expand_more
       </span>
     </button>

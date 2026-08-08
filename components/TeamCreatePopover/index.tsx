@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { PickerSheet } from '@/components/PickerSheet'
+import styles from '../object-picker.module.css'
 
 // 新しいチームの名前と色を決める。確定するとゴーストで配置へ進む
 
@@ -34,25 +35,25 @@ export const TeamCreatePopover = ({ isOpen, onSubmit, onClose }: Props) => {
 
   return (
     <PickerSheet isOpen={isOpen} title='チームを作る' note='名前と色を決めると配置に進みます' onClose={onClose}>
-      <label className='team-new-label' htmlFor='team-new-name'>
+      <label className={styles.teamNewLabel} htmlFor='team-new-name'>
         チーム名
       </label>
       <input
         id='team-new-name'
-        className='assign-search'
+        className={styles.assignSearch}
         placeholder='例: チーム E'
         value={name}
         onChange={(e) => setName(e.target.value)}
         autoFocus
       />
 
-      <span className='team-new-label'>色</span>
-      <div className='team-new-swatches'>
+      <span className={styles.teamNewLabel}>色</span>
+      <div className={styles.teamNewSwatches}>
         {PRESET_COLORS.map((preset) => (
           <button
             key={preset}
             type='button'
-            className={`team-new-swatch${preset === color ? ' is-selected' : ''}`}
+            className={`${styles.teamNewSwatch}${preset === color ? ` ${styles.isSelected}` : ''}`}
             style={{ background: preset }}
             aria-label={`色 ${preset}`}
             aria-pressed={preset === color}
@@ -60,16 +61,16 @@ export const TeamCreatePopover = ({ isOpen, onSubmit, onClose }: Props) => {
           />
         ))}
       </div>
-      <div className='team-new-custom'>
+      <div className={styles.teamNewCustom}>
         <input
           type='color'
-          className='team-new-color-input'
+          className={styles.teamNewColorInput}
           aria-label='色を選ぶ'
           value={color}
           onChange={(e) => applyColor(e.target.value)}
         />
         <input
-          className={`assign-search team-new-hex${HEX_PATTERN.test(hexText) ? '' : ' is-invalid'}`}
+          className={`${styles.assignSearch} ${styles.teamNewHex}${HEX_PATTERN.test(hexText) ? '' : ` ${styles.isInvalid}`}`}
           aria-label='色コード'
           value={hexText}
           onChange={(e) => onHexChange(e.target.value)}
@@ -79,7 +80,7 @@ export const TeamCreatePopover = ({ isOpen, onSubmit, onClose }: Props) => {
 
       <button
         type='button'
-        className='pixel-btn team-new-submit'
+        className={`pixel-btn ${styles.teamNewSubmit}`}
         disabled={!canSubmit}
         onClick={() => onSubmit(name.trim(), color)}
       >

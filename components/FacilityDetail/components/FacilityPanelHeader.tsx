@@ -1,6 +1,7 @@
 import { useScheduleRefresh } from '@/hooks/use-schedule-refresh'
 import { FACILITY_COLOR, FACILITY_STATUS_LABEL } from '@/utils/facility-status'
 import type { FacilityStatus } from '@/types'
+import styles from '../facility-detail.module.css'
 
 // 施設パネルのヘッダー: アイコン・施設名・更新ボタン(クールダウン付き)・状態バッジ・閉じるボタン
 // 状態バッジは isTodaySelected が true の時だけ描画する(本日以外は概念自体が無い)
@@ -17,26 +18,26 @@ export const FacilityPanelHeader = ({ facilityName, status, isTodaySelected, onC
   const color = FACILITY_COLOR[status]
 
   return (
-    <div className='fac-panel-header'>
-      <span className='icon-msr-filled fac-panel-icon' aria-hidden='true'>
+    <div className={styles.facPanelHeader}>
+      <span className={`icon-msr-filled ${styles.facPanelIcon}`} aria-hidden='true'>
         meeting_room
       </span>
-      <span className='fac-panel-name'>{facilityName}</span>
+      <span className={styles.facPanelName}>{facilityName}</span>
       <button
         type='button'
-        className='fac-refresh-btn'
+        className={styles.facRefreshBtn}
         aria-label='会議室情報を更新'
         disabled={isRefreshing || cooldown > 0}
         onClick={refresh}
       >
-        <span className={`icon-msr-filled fac-refresh-icon${isRefreshing ? ' is-refreshing' : ''}`} aria-hidden='true'>
+        <span className={`icon-msr-filled ${styles.facRefreshIcon}${isRefreshing ? ` ${styles.isRefreshing}` : ''}`} aria-hidden='true'>
           refresh
         </span>
-        {cooldown > 0 && <span className='fac-refresh-cooldown'>{cooldown}s</span>}
+        {cooldown > 0 && <span className={styles.facRefreshCooldown}>{cooldown}s</span>}
       </button>
-      <div className='fac-panel-right'>
+      <div className={styles.facPanelRight}>
         {isTodaySelected && (
-          <span className='fac-badge' style={{ background: color.bg, color: color.text, borderColor: color.border }}>
+          <span className={styles.facBadge} style={{ background: color.bg, color: color.text, borderColor: color.border }}>
             {FACILITY_STATUS_LABEL[status]}
           </span>
         )}

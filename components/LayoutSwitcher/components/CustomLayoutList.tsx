@@ -1,6 +1,7 @@
 import type { LayoutMeta } from '@/types'
 import type { LayoutSource } from '@/contexts/layout-source-context'
 import { CustomLayoutRow } from './CustomLayoutRow'
+import styles from '../layout-switcher.module.css'
 
 type Props = {
   layoutMetas: LayoutMeta[]
@@ -23,7 +24,7 @@ export const CustomLayoutList = ({
   if (layoutMetas.length === 0) return null
 
   return (
-    <div className='layout-switcher-custom-list'>
+    <div className={styles.customList}>
       {layoutMetas.map((meta) => (
         <CustomLayoutRow
           key={meta.layoutId}

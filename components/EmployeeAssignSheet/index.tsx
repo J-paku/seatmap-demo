@@ -3,6 +3,7 @@ import { PickerSheet } from '@/components/PickerSheet'
 import { PixelAvatar } from '@/components/PixelAvatar'
 import { useEmployeeAvatar } from '@/hooks/use-employee-avatar'
 import type { Employee, Seat } from '@/types'
+import styles from '../object-picker.module.css'
 
 // 空席・着席席へ座らせる社員を選ぶ。着席中の社員は座席IDつきで示し、
 // 選ぶと移動(または入れ替え)になることを事前に伝える
@@ -32,19 +33,19 @@ const CandidateRow = ({
 }) => {
   const avatar = useEmployeeAvatar(employee)
   return (
-    <button type='button' className='assign-row' onClick={onSelect}>
+    <button type='button' className={styles.assignRow} onClick={onSelect}>
       {avatar && <PixelAvatar config={avatar} size={32} ariaLabel='' />}
-      <span className='assign-row-text'>
-        <span className='assign-row-name'>{employee.name}</span>
-        <span className='assign-row-meta'>
+      <span className={styles.assignRowText}>
+        <span className={styles.assignRowName}>{employee.name}</span>
+        <span className={styles.assignRowMeta}>
           {employee.position ? `${employee.position} / ` : ''}
           {employee.team}
         </span>
       </span>
       {seatedAt && (
-        <span className='assign-row-seated'>
+        <span className={styles.assignRowSeated}>
           着席中
-          <span className='assign-row-seat-id'>{seatedAt}</span>
+          <span className={styles.assignRowSeatId}>{seatedAt}</span>
         </span>
       )}
     </button>
@@ -75,23 +76,23 @@ export const EmployeeAssignSheet = ({
       <input
         type='search'
         role='searchbox'
-        className='assign-search'
+        className={styles.assignSearch}
         placeholder='氏名・カナ・部署で絞り込む'
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         autoFocus
       />
       {onBulkAssign && canBulkAssign && (
-        <button type='button' className='pixel-btn assign-bulk' onClick={onBulkAssign}>
+        <button type='button' className={`pixel-btn ${styles.assignBulk}`} onClick={onBulkAssign}>
           この部署をまとめて配属
         </button>
       )}
       {occupant && (
-        <button type='button' className='pixel-btn assign-clear' onClick={onClear}>
+        <button type='button' className={`pixel-btn ${styles.assignClear}`} onClick={onClear}>
           この席を空席にする
         </button>
       )}
-      <div className='assign-list'>
+      <div className={styles.assignList}>
         {candidates.map((candidate) => (
           <CandidateRow
             key={candidate.employee.id}
@@ -100,7 +101,7 @@ export const EmployeeAssignSheet = ({
             onSelect={() => onSelect(candidate.employee.id)}
           />
         ))}
-        {candidates.length === 0 && <p className='assign-empty'>該当する社員がいません</p>}
+        {candidates.length === 0 && <p className={styles.assignEmpty}>該当する社員がいません</p>}
       </div>
     </PickerSheet>
   )

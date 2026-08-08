@@ -1,5 +1,6 @@
 import { FLOOR_NAME } from '@/lib/mock-loader'
 import { triggerHaptic } from '@/lib/haptic'
+import styles from '../layout-switcher.module.css'
 
 type Props = {
   isSelected: boolean
@@ -11,19 +12,19 @@ export const OfficialLayoutButton = ({ isSelected, onSelect }: Props) => {
   return (
     <button
       type='button'
-      className={`layout-switcher-official${isSelected ? ' is-selected' : ''}`}
+      className={`${styles.official}${isSelected ? ` ${styles.isSelected}` : ''}`}
       aria-pressed={isSelected}
       onClick={() => {
         triggerHaptic('light')
         onSelect()
       }}
     >
-      <span className='icon-msr-filled layout-switcher-row-icon' aria-hidden='true'>
+      <span className={`icon-msr-filled ${styles.rowIcon}`} aria-hidden='true'>
         apartment
       </span>
-      <span className='layout-switcher-row-name'>{FLOOR_NAME}</span>
+      <span className={styles.rowName}>{FLOOR_NAME}</span>
       {isSelected && (
-        <span className='icon-msr-filled layout-switcher-row-check' aria-hidden='true'>
+        <span className={`icon-msr-filled ${styles.rowCheck}`} aria-hidden='true'>
           check
         </span>
       )}

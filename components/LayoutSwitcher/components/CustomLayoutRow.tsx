@@ -1,5 +1,6 @@
 import type { LayoutMeta } from '@/types'
 import { triggerHaptic } from '@/lib/haptic'
+import styles from '../layout-switcher.module.css'
 
 type Props = {
   meta: LayoutMeta
@@ -21,31 +22,31 @@ export const CustomLayoutRow = ({
   onDelete,
 }: Props) => {
   return (
-    <div className={`layout-switcher-custom-row${isSelected ? ' is-selected' : ''}`}>
+    <div className={`${styles.customRow}${isSelected ? ` ${styles.isSelected}` : ''}`}>
       <button
         type='button'
-        className='layout-switcher-row-name-button'
+        className={styles.rowNameButton}
         aria-pressed={isSelected}
         onClick={() => {
           triggerHaptic('light')
           onSelect(meta.layoutId)
         }}
       >
-        <span className='layout-switcher-row-name'>{meta.layoutName}</span>
+        <span className={styles.rowName}>{meta.layoutName}</span>
         {isSelected && (
-          <span className='icon-msr-filled layout-switcher-row-check' aria-hidden='true'>
+          <span className={`icon-msr-filled ${styles.rowCheck}`} aria-hidden='true'>
             check
           </span>
         )}
       </button>
       <button
         type='button'
-        className='layout-switcher-star-button'
+        className={styles.starButton}
         aria-label={`${meta.layoutName}${isDefault ? 'のデフォルトを解除' : 'をデフォルトに設定'}`}
         onClick={() => onToggleDefault(meta.layoutId)}
       >
         <span
-          className={`icon-msr-filled layout-switcher-star-icon${isDefault ? ' is-default' : ''}`}
+          className={`icon-msr-filled ${styles.starIcon}${isDefault ? ` ${styles.isDefault}` : ''}`}
           aria-hidden='true'
         >
           star
@@ -53,11 +54,11 @@ export const CustomLayoutRow = ({
       </button>
       <button
         type='button'
-        className='layout-switcher-delete-button'
+        className={styles.deleteButton}
         aria-label={`${meta.layoutName}を削除`}
         onClick={() => onDelete(meta.layoutId)}
       >
-        <span className='icon-msr-filled layout-switcher-delete-icon' aria-hidden='true'>
+        <span className={`icon-msr-filled ${styles.deleteIcon}`} aria-hidden='true'>
           close
         </span>
       </button>

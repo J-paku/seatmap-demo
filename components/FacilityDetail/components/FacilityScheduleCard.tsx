@@ -1,6 +1,7 @@
 import { FacilityScheduleRow } from './FacilityScheduleRow'
 import type { Employee, FacilityMeeting } from '@/types'
 import type { AttendeeHandlers } from '../type'
+import styles from '../facility-detail.module.css'
 
 type Props = {
   meetings: FacilityMeeting[]
@@ -18,7 +19,7 @@ export const FacilityScheduleCard = ({ meetings, employees, nowMin, isTodaySelec
   const nextId = isTodaySelected ? sorted.find((m) => m.startMin > nowMin)?.id : undefined
 
   return (
-    <ul className='fac-rows'>
+    <ul className={styles.facRows}>
       {sorted.map((meeting) => (
         <FacilityScheduleRow
           key={meeting.id}

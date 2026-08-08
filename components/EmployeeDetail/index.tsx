@@ -11,6 +11,7 @@ import { useDetailPanel } from '@/contexts/detail-panel-context'
 import { useSelectedDate } from '@/contexts/selected-date-context'
 import { isSameJstDate, jstDateKey, jstKeyFromIso } from '@/utils/jst-date'
 import { useEmployeeAvatar } from '@/hooks/use-employee-avatar'
+import styles from './employee-detail.module.css'
 
 // 12-member-detail: 社員詳細(座席詳細兼用)。空席時は空席表記のみ
 
@@ -49,7 +50,7 @@ export const EmployeeDetail = ({ seatId, employeeId, onGoToSeat, showSeatUnsetNo
   if (isMissingSeat) return null
 
   return (
-    <div className='employee-detail'>
+    <div className={styles.employeeDetail}>
       {!employee ? (
         isVacantSeat && <p className='seat-vacant-notice'>この座席は現在空席です</p>
       ) : (

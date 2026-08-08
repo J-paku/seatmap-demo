@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { buildMonthGrid, isSameJstDate, jstWeekday } from '@/utils/jst-date'
 import type { JstDate } from '@/utils/jst-date'
+import styles from './date-navigator.module.css'
 
 type Props = {
   anchorRef: React.RefObject<HTMLElement | null>
@@ -95,30 +96,30 @@ export const CalendarPopover = ({ anchorRef, selected, today, onSelect, onClose 
   return (
     <div
       ref={popoverRef}
-      className='calendar-popover'
+      className={styles.calendarPopover}
       style={{ top: placement.top, left: placement.left }}
       role='dialog'
       aria-label='日付選択カレンダー'
     >
-      <div className='calendar-header'>
-        <button type='button' className='calendar-nav-btn' onClick={goPrevMonth} aria-label='前月' disabled={mode === 'year'}>
+      <div className={styles.calendarHeader}>
+        <button type='button' className={styles.calendarNavBtn} onClick={goPrevMonth} aria-label='前月' disabled={mode === 'year'}>
           ‹
         </button>
-        <button type='button' className='calendar-header-label' onClick={() => setMode(mode === 'day' ? 'year' : 'day')}>
+        <button type='button' className={styles.calendarHeaderLabel} onClick={() => setMode(mode === 'day' ? 'year' : 'day')}>
           {viewYear}年{viewMonth}月
         </button>
-        <button type='button' className='calendar-nav-btn' onClick={goNextMonth} aria-label='翌月' disabled={mode === 'year'}>
+        <button type='button' className={styles.calendarNavBtn} onClick={goNextMonth} aria-label='翌月' disabled={mode === 'year'}>
           ›
         </button>
       </div>
 
       {mode === 'year' ? (
-        <div className='calendar-year-grid'>
+        <div className={styles.calendarYearGrid}>
           {yearGrid.map((y) => (
             <button
               key={y}
               type='button'
-              className={`calendar-year-cell${y === viewYear ? ' calendar-year-cell-selected' : ''}`}
+              className={`${styles.calendarYearCell}${y === viewYear ? ` ${styles.calendarYearCellSelected}` : ''}`}
               disabled={!isInRange(y)}
               onClick={() => {
                 setViewYear(y)
@@ -131,17 +132,17 @@ export const CalendarPopover = ({ anchorRef, selected, today, onSelect, onClose 
         </div>
       ) : (
         <>
-          <div className='calendar-weekday-row'>
+          <div className={styles.calendarWeekdayRow}>
             {WEEKDAY_LABELS.map((label, i) => (
               <span
                 key={label}
-                className={`calendar-weekday${i === 0 ? ' calendar-weekday-sun' : i === 6 ? ' calendar-weekday-sat' : ''}`}
+                className={`${styles.calendarWeekday}${i === 0 ? ` ${styles.calendarWeekdaySun}` : i === 6 ? ` ${styles.calendarWeekdaySat}` : ''}`}
               >
                 {label}
               </span>
             ))}
           </div>
-          <div className='calendar-day-grid'>
+          <div className={styles.calendarDayGrid}>
             {grid.map((cell) => {
               const weekday = jstWeekday(cell)
               const inMonth = cell.m === viewMonth
@@ -149,12 +150,12 @@ export const CalendarPopover = ({ anchorRef, selected, today, onSelect, onClose 
               const isToday = isSameJstDate(cell, today)
               const disabled = cell.y < minYear || cell.y > maxYear
               const classes = [
-                'calendar-day-cell',
-                !inMonth ? 'calendar-day-outside' : '',
-                weekday === 0 ? 'calendar-day-sun' : '',
-                weekday === 6 ? 'calendar-day-sat' : '',
-                isSelected ? 'calendar-day-selected' : '',
-                isToday ? 'calendar-day-today' : '',
+                styles.calendarDayCell,
+                !inMonth ? styles.calendarDayOutside : '',
+                weekday === 0 ? styles.calendarDaySun : '',
+                weekday === 6 ? styles.calendarDaySat : '',
+                isSelected ? styles.calendarDaySelected : '',
+                isToday ? styles.calendarDayToday : '',
               ]
                 .filter(Boolean)
                 .join(' ')

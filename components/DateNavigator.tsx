@@ -3,6 +3,7 @@ import { CalendarPopover } from './CalendarPopover'
 import { useSelectedDate } from '@/contexts/selected-date-context'
 import { jstWeekday } from '@/utils/jst-date'
 import type { JstDate } from '@/utils/jst-date'
+import styles from './date-navigator.module.css'
 
 const WEEKDAY_KANJI = ['日', '月', '火', '水', '木', '金', '土']
 
@@ -19,7 +20,7 @@ export const DateNavigator = () => {
   const triggerRef = useRef<HTMLButtonElement>(null)
 
   const weekday = jstWeekday(date)
-  const labelColorClass = weekday === 0 ? 'date-label-sun' : weekday === 6 ? 'date-label-sat' : ''
+  const labelColorClass = weekday === 0 ? styles.dateLabelSun : weekday === 6 ? styles.dateLabelSat : ''
 
   const handlePrev = () => {
     lightHaptic()
@@ -40,35 +41,35 @@ export const DateNavigator = () => {
   }
 
   return (
-    <div className='date-navigator'>
-      <div className='date-navigator-row'>
-        <button type='button' className='date-nav-btn' aria-label='前日' onClick={handlePrev}>
+    <div className={styles.dateNavigator}>
+      <div className={styles.dateNavigatorRow}>
+        <button type='button' className={styles.dateNavBtn} aria-label='前日' onClick={handlePrev}>
           ‹
         </button>
         <button
           ref={triggerRef}
           type='button'
-          className='date-label-btn'
+          className={styles.dateLabelBtn}
           onClick={() => {
             lightHaptic()
             setCalendarOpen((v) => !v)
           }}
         >
-          {date.y !== today.y && <span className='date-year-chip'>{date.y}年</span>}
-          <span key={`${date.y}-${date.m}-${date.d}`} className={`date-label-text ${labelColorClass}`}>
+          {date.y !== today.y && <span className={styles.dateYearChip}>{date.y}年</span>}
+          <span key={`${date.y}-${date.m}-${date.d}`} className={`${styles.dateLabelText} ${labelColorClass}`}>
             {formatLabel(date)}
           </span>
-          <span className='date-calendar-icon' aria-hidden='true'>
+          <span className={styles.dateCalendarIcon} aria-hidden='true'>
             📅
           </span>
         </button>
-        <button type='button' className='date-nav-btn' aria-label='翌日' onClick={handleNext}>
+        <button type='button' className={styles.dateNavBtn} aria-label='翌日' onClick={handleNext}>
           ›
         </button>
       </div>
       {!isToday && (
-        <div className='date-today-return-row'>
-          <button type='button' className='date-today-return-btn' onClick={handleToday}>
+        <div className={styles.dateTodayReturnRow}>
+          <button type='button' className={styles.dateTodayReturnBtn} onClick={handleToday}>
             今日に戻る
           </button>
         </div>

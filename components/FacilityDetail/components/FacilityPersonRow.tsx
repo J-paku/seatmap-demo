@@ -2,6 +2,7 @@ import { PixelAvatar } from '@/components/PixelAvatar'
 import { useEmployeeAvatar } from '@/hooks/use-employee-avatar'
 import { useDetailPanel } from '@/contexts/detail-panel-context'
 import type { Employee } from '@/types'
+import styles from '../facility-detail.module.css'
 
 type Props = {
   employee: Employee
@@ -16,16 +17,16 @@ export const FacilityPersonRow = ({ employee }: Props) => {
   return (
     <button
       type='button'
-      className='fac-person-row fac-person-row-clickable'
+      className={`${styles.facPersonRow} ${styles.facPersonRowClickable}`}
       onClick={() => openPersonDetail(employee.id)}
     >
-      <span className='fac-person-avatar-frame'>
+      <span className={styles.facPersonAvatarFrame}>
         <PixelAvatar config={avatarConfig} size={28} />
       </span>
-      <span className='fac-person-info'>
-        <span className='fac-person-name'>{employee.name}</span>
-        {employee.position && <span className='fac-person-role'>{employee.position}</span>}
-        <span className='fac-person-dept'>{employee.team}</span>
+      <span className={styles.facPersonInfo}>
+        <span className={styles.facPersonName}>{employee.name}</span>
+        {employee.position && <span className={styles.facPersonRole}>{employee.position}</span>}
+        <span className={styles.facPersonDept}>{employee.team}</span>
       </span>
     </button>
   )

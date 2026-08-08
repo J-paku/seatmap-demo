@@ -1,6 +1,7 @@
 import { FacilityPersonRow } from './FacilityPersonRow'
 import { minToHHMM } from '@/utils/facility-status'
 import type { Employee, FacilityMeeting } from '@/types'
+import styles from '../facility-detail.module.css'
 
 type Props = {
   meeting: FacilityMeeting
@@ -17,35 +18,35 @@ export const FacilityCurrentEvent = ({ meeting, nowMin, employees }: Props) => {
     .filter((employee): employee is Employee => employee != null)
 
   return (
-    <div className='fac-current'>
-      <div className='fac-current-summary'>
-        <div className='fac-current-title'>{meeting.title || '予定あり'}</div>
-        <div className='fac-current-time'>
+    <div className={styles.facCurrent}>
+      <div className={styles.facCurrentSummary}>
+        <div className={styles.facCurrentTitle}>{meeting.title || '予定あり'}</div>
+        <div className={styles.facCurrentTime}>
           <span>
             {minToHHMM(meeting.startMin)} - {minToHHMM(meeting.endMin)}
           </span>
-          <span className='fac-current-remain'>残り{meeting.endMin - nowMin}分</span>
+          <span className={styles.facCurrentRemain}>残り{meeting.endMin - nowMin}分</span>
         </div>
       </div>
 
-      <div className='fac-current-group'>
-        <div className='fac-current-group-label'>登録者</div>
+      <div className={styles.facCurrentGroup}>
+        <div className={styles.facCurrentGroupLabel}>登録者</div>
         {organizer && <FacilityPersonRow employee={organizer} />}
       </div>
 
-      <div className='fac-current-hairline' />
+      <div className={styles.facCurrentHairline} />
 
-      <div className='fac-current-group'>
-        <div className='fac-current-parts-header'>
-          <span className='fac-current-parts-label'>参加者</span>
-          <span className='fac-current-parts-count'>
-            <span className='icon-msr-filled fac-current-parts-icon' aria-hidden='true'>
+      <div className={styles.facCurrentGroup}>
+        <div className={styles.facCurrentPartsHeader}>
+          <span className={styles.facCurrentPartsLabel}>参加者</span>
+          <span className={styles.facCurrentPartsCount}>
+            <span className={`icon-msr-filled ${styles.facCurrentPartsIcon}`} aria-hidden='true'>
               people
             </span>
             {participants.length}名
           </span>
         </div>
-        <div className='fac-current-parts-list'>
+        <div className={styles.facCurrentPartsList}>
           {participants.map((employee) => (
             <FacilityPersonRow key={employee.id} employee={employee} />
           ))}

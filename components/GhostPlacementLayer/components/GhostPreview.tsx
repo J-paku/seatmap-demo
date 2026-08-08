@@ -1,6 +1,19 @@
 import type { PointerEvent as ReactPointerEvent } from 'react'
 import { RESIZE_HANDLES } from '@/utils/resize-anchor'
 import type { ResizeHandle } from '@/utils/resize-anchor'
+import styles from '../ghost-placement.module.css'
+
+const HANDLE_CLASS: Record<ResizeHandle, string> = {
+  nw: styles.isNw,
+  n: styles.isN,
+  ne: styles.isNe,
+  e: styles.isE,
+  se: styles.isSe,
+  s: styles.isS,
+  sw: styles.isSw,
+  w: styles.isW,
+}
+
 
 // ゴーストの枠とリサイズハンドル。掴める要素なのでここだけ pointer-events を戻す
 
@@ -24,17 +37,17 @@ export const GhostPreview = ({
   onHandlePointerDown,
 }: Props) => (
   <div
-    className={`ghost-preview is-${outline}${blocked ? ' is-blocked' : ''}`}
+    className={`${styles.preview}${outline === 'dashed' ? ` ${styles.isDashed}` : ''}${blocked ? ` ${styles.isBlocked}` : ''}`}
     style={rect}
     onPointerDown={onPointerDown}
     role='presentation'
   >
-    <span className='ghost-preview-label'>{label}</span>
+    <span className={styles.previewLabel}>{label}</span>
     {resizable &&
       RESIZE_HANDLES.map((handle) => (
         <span
           key={handle}
-          className={`ghost-handle is-${handle}`}
+          className={`${styles.handle} ${HANDLE_CLASS[handle]}`}
           onPointerDown={(e) => onHandlePointerDown(handle, e)}
           role='presentation'
         />

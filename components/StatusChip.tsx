@@ -1,5 +1,6 @@
 import type { PresenceStatus } from '@/types'
 import { PRESENCE_COLOR, PRESENCE_LABEL } from '@/utils/format'
+import styles from './EmployeeDetail/employee-detail.module.css'
 
 type PresenceBadgeProps = {
   // 表示可否(仮想座席・非当日は呼び出し側で false を渡す=優先度1)
@@ -24,7 +25,7 @@ const StatusChip = ({ status }: { status: PresenceStatus }) => (
 export const PresenceBadge = ({ visible, isLoading, isOccupied, status }: PresenceBadgeProps) => {
   if (!visible) return null
   return (
-    <div className='profile-status-badge'>
+    <div className={styles.profileStatusBadge}>
       {isOccupied && isLoading ? (
         <span className='status-chip status-chip-loading'>
           <span className='material-symbols-outlined' style={{ fontSize: 14 }}>

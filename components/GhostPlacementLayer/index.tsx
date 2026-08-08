@@ -4,6 +4,7 @@ import { GhostAlignmentGuides } from './components/GhostAlignmentGuides'
 import { GhostHint } from './components/GhostHint'
 import { GhostPreview } from './components/GhostPreview'
 import type { GhostRequest } from './type'
+import styles from './ghost-placement.module.css'
 import type { GhostPlacement } from '@/hooks/use-ghost-placement'
 
 // ビューファインダー式ゴーストの表示層。
@@ -40,8 +41,8 @@ export const GhostPlacementLayer = ({ request, placement, onConfirm, onCancel }:
   if (!screenRect) return null
 
   return (
-    <div className='ghost-layer'>
-      <div className='ghost-scrim' />
+    <div className={styles.layer}>
+      <div className={styles.scrim} />
       <GhostAlignmentGuides guides={screenGuides} />
       <GhostPreview
         rect={screenRect}

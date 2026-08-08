@@ -2,6 +2,7 @@ import { ScheduleCard } from './ScheduleCard'
 import { DateNavigator } from '@/components/DateNavigator'
 import { SwipeDateStage } from '@/components/SwipeDateStage'
 import type { ScheduleEvent } from '@/types'
+import styles from '../schedule-section.module.css'
 
 // 見出し + 日付ナビ + 左右スワイプ台。日付操作と予定表示の組み立てだけを持つ
 
@@ -32,17 +33,17 @@ export const ScheduleSection = ({
   onSwipePrevDay,
   onSwipeNextDay,
 }: Props) => (
-  <section className='schedule-section'>
-    <div className='schedule-section-label'>
-      <span className='material-symbols-outlined schedule-section-icon'>calendar_today</span>
-      <span className='schedule-section-title'>スケジュール</span>
-      <span className='schedule-section-hairline' />
+  <section className={styles.scheduleSection}>
+    <div className={styles.scheduleSectionLabel}>
+      <span className={`material-symbols-outlined ${styles.scheduleSectionIcon}`}>calendar_today</span>
+      <span className={styles.scheduleSectionTitle}>スケジュール</span>
+      <span className={styles.scheduleSectionHairline} />
     </div>
 
     <DateNavigator />
 
-    <div className='schedule-swipe-wrap'>
-      <SwipeDateStage cardKey={dateKey} onSwipePrevDay={onSwipePrevDay} onSwipeNextDay={onSwipeNextDay}>
+    <div className={styles.scheduleSwipeWrap}>
+      <SwipeDateStage cardKey={dateKey} onSwipePrevDay={onSwipePrevDay} onSwipeNextDay={onSwipeNextDay} fill>
         <ScheduleCard
           events={events}
           hasError={hasError}

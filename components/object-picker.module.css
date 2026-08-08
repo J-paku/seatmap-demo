@@ -1,9 +1,9 @@
 /* 追加導線(FAB → カテゴリ選択 → 家具ピッカー)。
-   シートの共通シェルは .picker-*、中身は機能ごとの接頭辞で分ける */
+   シートの共通シェルは .picker*、中身は機能ごとの接頭辞で分ける */
 
 /* --- シートの共通シェル --- */
 
-.picker-wrap {
+.pickerWrap {
   position: fixed;
   inset: 0;
   z-index: var(--z-index-modal);
@@ -12,13 +12,13 @@
   justify-content: center;
 }
 
-.picker-backdrop {
+.pickerBackdrop {
   position: absolute;
   inset: 0;
   background: var(--color-scrim);
 }
 
-.picker-panel {
+.pickerPanel {
   position: relative;
   width: 340px;
   max-width: calc(100vw - 32px);
@@ -30,7 +30,7 @@
   box-shadow: var(--shadow-modal);
 }
 
-.picker-panel.is-compact {
+.pickerPanel.isCompact {
   position: absolute;
   bottom: 0;
   left: 0;
@@ -41,13 +41,13 @@
   padding-bottom: env(safe-area-inset-bottom);
 }
 
-.picker-inner {
+.pickerInner {
   display: flex;
   max-height: inherit;
   flex-direction: column;
 }
 
-.picker-grip {
+.pickerGrip {
   display: block;
   width: 40px;
   height: 4px;
@@ -56,21 +56,21 @@
   background: var(--color-border-strong);
 }
 
-.picker-head {
+.pickerHead {
   display: flex;
   align-items: center;
   gap: 8px;
   padding: 14px 14px 6px;
 }
 
-.picker-title {
+.pickerTitle {
   margin: 0;
   font-size: 14px;
   font-weight: 700;
   color: var(--color-text-primary);
 }
 
-.picker-close {
+.pickerClose {
   display: flex;
   width: 44px;
   height: 44px;
@@ -84,32 +84,32 @@
   cursor: pointer;
 }
 
-.picker-close:focus-visible {
+.pickerClose:focus-visible {
   outline: 2px solid var(--color-accent);
   outline-offset: -2px;
 }
 
-.picker-note {
+.pickerNote {
   margin: 0;
   padding: 0 14px 8px;
   color: var(--color-text-muted);
   font-size: 11px;
 }
 
-.picker-body {
+.pickerBody {
   overflow-y: auto;
   padding: 4px 14px 16px;
 }
 
 /* --- カテゴリ選択 --- */
 
-.obj-cat-list {
+.objCatList {
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
 
-.obj-cat-card {
+.objCatCard {
   display: flex;
   min-height: 72px;
   align-items: center;
@@ -122,58 +122,58 @@
   text-align: left;
 }
 
-.obj-cat-card:hover {
+.objCatCard:hover {
   border-color: var(--color-accent);
 }
 
-.obj-cat-card:focus-visible {
+.objCatCard:focus-visible {
   outline: 2px solid var(--color-accent);
   outline-offset: 2px;
 }
 
-.obj-cat-icon {
+.objCatIcon {
   font-size: 32px;
   color: var(--color-accent);
 }
 
-.obj-cat-text {
+.objCatText {
   display: flex;
   min-width: 0;
   flex-direction: column;
   gap: 2px;
 }
 
-.obj-cat-title {
+.objCatTitle {
   color: var(--color-text-primary);
   font-size: 13px;
   font-weight: 700;
 }
 
-.obj-cat-desc {
+.objCatDesc {
   color: var(--color-text-muted);
   font-size: 11px;
 }
 
 /* --- 家具ピッカー --- */
 
-.furn-pick-group + .furn-pick-group {
+.furnPickGroup + .furnPickGroup {
   margin-top: 14px;
 }
 
-.furn-pick-group-title {
+.furnPickGroupTitle {
   margin: 0 0 6px;
   color: var(--color-text-secondary);
   font-size: 11px;
   font-weight: 700;
 }
 
-.furn-pick-grid {
+.furnPickGrid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 8px;
 }
 
-.furn-pick-cell {
+.furnPickCell {
   display: flex;
   min-height: 44px;
   flex-direction: column;
@@ -188,17 +188,17 @@
   cursor: pointer;
 }
 
-.furn-pick-cell:hover {
+.furnPickCell:hover {
   border-color: var(--color-accent);
   color: var(--color-accent);
 }
 
-.furn-pick-cell:focus-visible {
+.furnPickCell:focus-visible {
   outline: 2px solid var(--color-accent);
   outline-offset: 2px;
 }
 
-.furn-pick-label {
+.furnPickLabel {
   color: var(--color-text-primary);
   font-size: 11px;
   font-weight: 600;
@@ -206,7 +206,7 @@
 
 /* --- 社員配属シート --- */
 
-.assign-search {
+.assignSearch {
   width: 100%;
   min-height: 44px;
   padding: 0 12px;
@@ -217,32 +217,32 @@
   font-size: 13px;
 }
 
-.assign-search:focus-visible {
+.assignSearch:focus-visible {
   outline: 2px solid var(--color-accent);
   outline-offset: 1px;
 }
 
 /* STEP C3: 部署一括配置。個別配属の pixel-btn と揃えつつ、accent 色で強調する */
-.assign-bulk {
+.assignBulk {
   width: 100%;
   margin-top: 8px;
   border-color: var(--color-accent);
   color: var(--color-accent);
 }
 
-.assign-clear {
+.assignClear {
   width: 100%;
   margin-top: 8px;
 }
 
-.assign-list {
+.assignList {
   display: flex;
   flex-direction: column;
   gap: 4px;
   margin-top: 8px;
 }
 
-.assign-row {
+.assignRow {
   display: flex;
   min-height: 44px;
   align-items: center;
@@ -255,30 +255,30 @@
   text-align: left;
 }
 
-.assign-row:hover {
+.assignRow:hover {
   border-color: var(--color-accent);
   background: var(--color-surface-elevated);
 }
 
-.assign-row:focus-visible {
+.assignRow:focus-visible {
   outline: 2px solid var(--color-accent);
   outline-offset: 1px;
 }
 
-.assign-row-text {
+.assignRowText {
   display: flex;
   min-width: 0;
   flex: 1;
   flex-direction: column;
 }
 
-.assign-row-name {
+.assignRowName {
   color: var(--color-text-primary);
   font-size: 13px;
   font-weight: 600;
 }
 
-.assign-row-meta {
+.assignRowMeta {
   overflow: hidden;
   color: var(--color-text-muted);
   font-size: 11px;
@@ -286,7 +286,7 @@
   text-overflow: ellipsis;
 }
 
-.assign-row-seated {
+.assignRowSeated {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
@@ -300,12 +300,12 @@
   white-space: nowrap;
 }
 
-.assign-row-seat-id {
+.assignRowSeatId {
   font-variant-numeric: tabular-nums;
   font-weight: 600;
 }
 
-.assign-empty {
+.assignEmpty {
   margin: 12px 0;
   color: var(--color-text-muted);
   font-size: 12px;
@@ -314,7 +314,7 @@
 
 /* --- チーム作成 --- */
 
-.team-new-label {
+.teamNewLabel {
   display: block;
   margin: 10px 0 4px;
   color: var(--color-text-secondary);
@@ -322,13 +322,13 @@
   font-weight: 700;
 }
 
-.team-new-swatches {
+.teamNewSwatches {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
 }
 
-.team-new-swatch {
+.teamNewSwatch {
   width: 32px;
   height: 32px;
   border: 2px solid transparent;
@@ -337,23 +337,23 @@
   cursor: pointer;
 }
 
-.team-new-swatch.is-selected {
+.teamNewSwatch.isSelected {
   border-color: var(--color-text-primary);
 }
 
-.team-new-swatch:focus-visible {
+.teamNewSwatch:focus-visible {
   outline: 2px solid var(--color-accent);
   outline-offset: 2px;
 }
 
-.team-new-custom {
+.teamNewCustom {
   display: flex;
   align-items: center;
   gap: 8px;
   margin-top: 8px;
 }
 
-.team-new-color-input {
+.teamNewColorInput {
   width: 44px;
   height: 44px;
   padding: 0;
@@ -363,29 +363,29 @@
   cursor: pointer;
 }
 
-.team-new-hex {
+.teamNewHex {
   flex: 1;
   font-family: ui-monospace, monospace;
 }
 
-.team-new-hex.is-invalid {
+.teamNewHex.isInvalid {
   border-color: var(--color-danger);
   color: var(--color-danger);
 }
 
-.team-new-submit {
+.teamNewSubmit {
   width: 100%;
   margin-top: 14px;
 }
 
-.team-new-submit:disabled {
+.teamNewSubmit:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
 
 /* --- 管理パネル FAB (スピードダイヤル) --- */
 
-.admin-fab-wrap {
+.adminFabWrap {
   position: fixed;
   bottom: calc(env(safe-area-inset-bottom) + 24px);
   left: 24px;
@@ -393,14 +393,14 @@
 }
 
 /* 透明な背後レイヤー。FAB・メニューより下に敷いてクリック/ホイール/タッチで閉じる */
-.admin-fab-backdrop {
+.adminFabBackdrop {
   position: fixed;
   inset: 0;
   z-index: var(--z-index-dropdown);
   background: transparent;
 }
 
-.admin-fab-btn {
+.adminFabBtn {
   position: relative;
   z-index: var(--z-index-sticky);
   display: flex;
@@ -414,37 +414,37 @@
 }
 
 @media (min-width: 640px) {
-  .admin-fab-btn {
+  .adminFabBtn {
     width: 56px;
     height: 56px;
   }
 }
 
-.admin-fab-btn:focus-visible {
+.adminFabBtn:focus-visible {
   outline: 2px solid var(--color-accent);
   outline-offset: 3px;
 }
 
-.admin-fab-icon {
+.adminFabIcon {
   font-size: 26px;
   transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-.admin-fab-btn.is-open .admin-fab-icon {
+.adminFabBtn.isOpen .adminFabIcon {
   transform: rotate(45deg);
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .admin-fab-icon {
+  .adminFabIcon {
     transition: none;
   }
 
-  .admin-fab-btn.is-open .admin-fab-icon {
+  .adminFabBtn.isOpen .adminFabIcon {
     transform: none;
   }
 }
 
-.admin-fab-menu {
+.adminFabMenu {
   position: absolute;
   bottom: 100%;
   left: 0;
@@ -457,7 +457,7 @@
   border-radius: 16px;
 }
 
-.admin-fab-row {
+.adminFabRow {
   display: flex;
   min-height: 44px;
   align-items: center;
@@ -468,11 +468,11 @@
   cursor: pointer;
 }
 
-.admin-fab-row-icon {
+.adminFabRowIcon {
   font-size: 20px;
 }
 
-.admin-fab-row-label {
+.adminFabRowLabel {
   font-size: 12px;
   font-weight: 500;
 }

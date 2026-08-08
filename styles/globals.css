@@ -9,17 +9,10 @@
 @import './team-overlay-modal.css';
 /* 詳細パネル群。カスケード順が意味を持つのでこの並びを崩さない */
 @import './sheet.css';
-@import './employee-detail.css';
-@import './schedule-section.css';
 @import './schedule-detail.css';
-@import './facility-detail.css';
-@import './date-navigator.css';
 @import './admin-edit.css';
 @import './liquid-glass.css';
-@import './object-picker.css';
-@import './ghost-placement.css';
 @import './icon.css';
-@import './layout-switcher.css';
 
 html,
 body {
