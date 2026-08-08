@@ -1,5 +1,6 @@
 import { isStructuralKind } from '@/utils/furniture-catalog'
 import type { Furniture } from '@/types'
+import styles from './seatmap.module.css'
 
 // キャンバス上の家具。会議室と違い状態も予定も持たないので、形と名前だけを描く。
 // data-facility は付けない — 検証スクリプトが会議室だけを数えているため
@@ -26,7 +27,7 @@ export const FurnitureBlock = ({ furniture, counterScale }: Props) => {
       }}
     >
       {!structural && furniture.name && (
-        <span className='furniture-name' style={{ fontSize: 11 * counterScale }}>
+        <span className={styles.furnitureName} style={{ fontSize: 11 * counterScale }}>
           {furniture.name}
         </span>
       )}

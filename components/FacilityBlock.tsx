@@ -2,6 +2,7 @@ import type { Facility } from '@/types'
 import { FACILITY_COLOR, FACILITY_STATUS_LABEL } from '@/utils/facility-status'
 import type { FacilityState } from '@/utils/facility-status'
 import type { FacilityHoverPayload } from './FacilityHoverCard'
+import styles from './seatmap.module.css'
 
 type Props = {
   facility: Facility
@@ -18,12 +19,12 @@ export const FacilityBlock = ({ facility, counterScale, onSelect, state, lod = '
     const isVertical = facility.height > facility.width
     return (
       <div
-        className='aisle-block'
+        className={styles.aisleBlock}
         data-kind='aisle'
         data-furniture-id={facility.id}
         style={{ left: facility.x, top: facility.y, width: facility.width, height: facility.height }}
       >
-        <span className='aisle-label' style={{ transform: isVertical ? 'rotate(90deg)' : undefined }}>
+        <span className={styles.aisleLabel} style={{ transform: isVertical ? 'rotate(90deg)' : undefined }}>
           ── 通路 ──
         </span>
       </div>
@@ -35,7 +36,7 @@ export const FacilityBlock = ({ facility, counterScale, onSelect, state, lod = '
 
   return (
     <div
-      className='facility-block'
+      className={styles.facilityBlock}
       data-kind={facility.kind}
       data-furniture-id={facility.id}
       data-facility={isMeeting ? 'true' : undefined}
@@ -55,20 +56,20 @@ export const FacilityBlock = ({ facility, counterScale, onSelect, state, lod = '
         ...(color ? { background: color.bg, borderColor: color.border, color: color.text } : {}),
       }}
     >
-      <span className='facility-name' style={{ fontSize: 15 * counterScale }}>
+      <span className={styles.facilityName} style={{ fontSize: 15 * counterScale }}>
         {facility.name}
       </span>
       {isMeeting && state && (
-        <span className='facility-status' style={{ fontSize: 10 * counterScale }}>
+        <span className={styles.facilityStatus} style={{ fontSize: 10 * counterScale }}>
           {FACILITY_STATUS_LABEL[state.status]}
         </span>
       )}
       {isMeeting && lod === 'detail' && state?.current && (
         <>
-          <span className='facility-meeting-title' style={{ fontSize: 9 * counterScale }}>
+          <span className={styles.facilityMeetingTitle} style={{ fontSize: 9 * counterScale }}>
             {state.current.title}
           </span>
-          <span className='facility-meeting-parts' style={{ fontSize: 8 * counterScale }}>
+          <span className={styles.facilityMeetingParts} style={{ fontSize: 8 * counterScale }}>
             参加者{state.current.participantIds.length}名
           </span>
         </>

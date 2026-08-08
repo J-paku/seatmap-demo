@@ -1,0 +1,244 @@
+/* 07-admin-edit: 編集モードUI(バッジ・上端コントロール・下端リモートバー・
+   フローティングアクションバー・チーム変更シート・レイアウトエディタ・削除確認・スナップガイド・
+   元に戻すチップ・エラートースト・ピクセルUI基礎) */
+
+/* ── ピクセルUI基礎(管理インスペクター用) ───────────────── */
+
+/* ── 編集中バッジ(キャンバス左上)+外郭パルス ───────────────── */
+
+.editModeBadge {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  z-index: var(--z-index-sticky);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 9999px;
+  background: var(--color-edit-mode-bg);
+  border: 1.5px solid var(--color-edit-mode-border);
+  color: var(--color-text-primary);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.editModeBadgeDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 9999px;
+  background: var(--color-accent);
+  animation: editDotBlink 1.1s ease-in-out infinite;
+}
+
+@keyframes editDotBlink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.25;
+  }
+}
+
+
+.editDialogBackdrop {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-index-top);
+  background: var(--color-scrim);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.editDialog {
+  width: 100%;
+  max-width: 340px;
+  margin: 0 16px;
+  padding: 20px;
+  border-radius: var(--pixel-corner);
+  border: 1.5px solid var(--color-pixel-edge);
+  box-shadow: var(--pixel-shadow);
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+}
+
+.editDialogMessage {
+  margin: 0 0 16px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.editDialogActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.editDialogCancel,
+.editDialogConfirm {
+  height: 40px;
+  padding: 0 16px;
+  font-size: 13px;
+}
+
+.editDialogConfirm {
+  background: var(--color-danger);
+  border-color: var(--color-danger);
+  color: var(--color-text-on-accent);
+}
+
+.editSheet {
+  width: 100%;
+  max-width: 360px;
+  margin: 0 16px;
+  padding: 20px;
+  border-radius: var(--pixel-corner);
+  border: 1.5px solid var(--color-pixel-edge);
+  box-shadow: var(--pixel-shadow);
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+}
+
+.editSheetTitle {
+  margin: 0 0 12px;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.editSheetClose {
+  width: 100%;
+  height: 40px;
+  margin-top: 12px;
+  font-size: 13px;
+}
+
+/* ── チーム変更リスト ───────────────── */
+
+.editTeamList {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 40vh;
+  overflow-y: auto;
+}
+
+.editTeamRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--color-text-primary);
+  font-size: 14px;
+  cursor: pointer;
+  text-align: left;
+}
+
+.editTeamRow:hover {
+  background: var(--color-surface-muted);
+}
+
+.editTeamRow.isCurrent {
+  font-weight: 700;
+  color: var(--color-text-muted);
+  cursor: not-allowed;
+}
+
+.editTeamDot {
+  flex-shrink: 0;
+  width: 12px;
+  height: 12px;
+  border-radius: 9999px;
+}
+
+/* ── チームレイアウトエディタ(行×列ステッパー) ───────────────── */
+
+.editRelayoutCount {
+  margin: 0 0 12px;
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+
+.editStepperRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.editStepperLabel {
+  width: 24px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-text-secondary);
+}
+
+.editStepperBtn {
+  width: 32px;
+  height: 32px;
+  font-size: 16px;
+}
+
+.editStepperValue {
+  min-width: 28px;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.editRelayoutError {
+  margin: 4px 0 12px;
+  font-size: 12px;
+  color: var(--color-danger);
+}
+
+/* ── 座席カード/チームラベルの編集モード視覚状態 ───────────────── */
+
+/* ── 整列スナップガイド ───────────────── */
+
+.editSnapGuide {
+  position: absolute;
+  background: var(--color-accent);
+  pointer-events: none;
+  z-index: var(--z-index-dropdown);
+}
+
+.editSnapGuideVertical {
+  width: 1px;
+}
+
+.editSnapGuideHorizontal {
+  height: 1px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .editModeBadgeDot,
+  .editErrorToast {
+    animation: none;
+  }
+}
+
+/* 編集モードで会議室・家具の上に重ねる操作面。実体側(共有部品)には手を入れない */
+.editObjectHit {
+  position: absolute;
+  box-sizing: border-box;
+  border: 2px solid transparent;
+  border-radius: 6px;
+  cursor: grab;
+  touch-action: none;
+}
+
+.editObjectHit.isSelected {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-accent) 24%, transparent);
+}
+
+/* ゴーストで掴み直している間は実体を淡くして二重に見せない */
+.editObjectHit.isRepositioning {
+  background: color-mix(in srgb, var(--color-surface) 62%, transparent);
+}

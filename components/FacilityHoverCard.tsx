@@ -1,6 +1,7 @@
 import type { Employee, Facility } from '@/types'
 import { FACILITY_COLOR, FACILITY_STATUS_LABEL, minToHHMM } from '@/utils/facility-status'
 import type { FacilityState } from '@/utils/facility-status'
+import styles from './seatmap.module.css'
 
 export type FacilityHoverPayload = { facilityId: string; rect: DOMRect }
 
@@ -45,30 +46,30 @@ export const FacilityHoverCard = ({ facility, state, empById, rect }: Props) => 
     : Math.min(window.innerHeight - GAP_PX, rect.bottom + GAP_PX)
 
   return (
-    <div className='fac-hover' style={{ left, top, transform: above ? 'translateY(-100%)' : 'none' }}>
-      <div className='fac-hover-head'>
-        <span className='material-symbols-outlined fac-hover-icon'>meeting_room</span>
-        <span className='fac-hover-name'>{facility.name}</span>
-        <span className='fac-hover-badge' style={{ background: color.bg, color: color.text }}>
+    <div className={styles.facHover} style={{ left, top, transform: above ? 'translateY(-100%)' : 'none' }}>
+      <div className={styles.facHoverHead}>
+        <span className={`material-symbols-outlined ${styles.facHoverIcon}`}>meeting_room</span>
+        <span className={styles.facHoverName}>{facility.name}</span>
+        <span className={styles.facHoverBadge} style={{ background: color.bg, color: color.text }}>
           {FACILITY_STATUS_LABEL[state.status]}
         </span>
       </div>
 
       {/* 現在の会議は会議中のときだけ出す(空室に現在会議が付くのは誤り) */}
       {state.status === 'in_meeting' && state.current && (
-        <div className='fac-hover-body'>
-          <div className='fac-hover-title'>{state.current.title || '予定あり'}</div>
-          <div className='fac-hover-line'>
+        <div className={styles.facHoverBody}>
+          <div className={styles.facHoverTitle}>{state.current.title || '予定あり'}</div>
+          <div className={styles.facHoverLine}>
             {minToHHMM(state.current.startMin)}-{minToHHMM(state.current.endMin)}
           </div>
-          <div className='fac-hover-line'>
-            <span className='material-symbols-outlined fac-hover-meta-icon' aria-hidden='true'>
+          <div className={styles.facHoverLine}>
+            <span className={`material-symbols-outlined ${styles.facHoverMetaIcon}`} aria-hidden='true'>
               person
             </span>
             主催: {nameOf(state.current.organizerId)}
           </div>
-          <div className='fac-hover-line'>
-            <span className='material-symbols-outlined fac-hover-meta-icon' aria-hidden='true'>
+          <div className={styles.facHoverLine}>
+            <span className={`material-symbols-outlined ${styles.facHoverMetaIcon}`} aria-hidden='true'>
               groups
             </span>
             {state.current.participantIds.length}名
@@ -76,7 +77,7 @@ export const FacilityHoverCard = ({ facility, state, empById, rect }: Props) => 
         </div>
       )}
 
-      <div className='fac-hover-next'>{footerText(facility, state)}</div>
+      <div className={styles.facHoverNext}>{footerText(facility, state)}</div>
     </div>
   )
 }

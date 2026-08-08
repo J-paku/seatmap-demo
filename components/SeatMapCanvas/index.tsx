@@ -18,6 +18,7 @@ import { AlignmentGuides } from '@/components/edit/AlignmentGuides'
 import { ObjectActionBar } from '@/components/edit/ObjectActionBar'
 import { SeatActionBar } from '@/components/edit/SeatActionBar'
 import { UndoChip } from '@/components/edit/UndoChip'
+import styles from '@/components/seatmap.module.css'
 
 // ドラッグ中の対象だけ live 座標へ差し替える。実体を動かすことで座席と同じ手触りにする
 const livePosOf = <T extends { id: string; x: number; y: number }>(item: T, live: LivePosition | null): T =>
@@ -114,7 +115,7 @@ export const SeatMapCanvas = forwardRef<SeatMapCanvasHandle, Props>(function Sea
     <div
       ref={viewport.containerRef}
       id={SEATMAP_BG_ID}
-      className={`seat-map-canvas${isPanningRef.current ? ' is-panning' : ''}`}
+      className={`${styles.seatMapCanvas}${isPanningRef.current ? ` ${styles.isPanning}` : ''}`}
       onPointerDown={handlers.onPointerDown}
       onPointerMove={handlers.onPointerMove}
       onPointerUp={handlers.onPointerUp}
@@ -123,7 +124,7 @@ export const SeatMapCanvas = forwardRef<SeatMapCanvasHandle, Props>(function Sea
       onClick={handleBackgroundClick}
       onContextMenu={(e) => e.preventDefault()}
     >
-      <div ref={viewport.layerRef} className='seat-map-transform' data-canvas-transform-layer='true'>
+      <div ref={viewport.layerRef} className={styles.seatMapTransform} data-canvas-transform-layer='true'>
         {/* z順: チームエリア → 施設/通路 → (編集モードのみ)座席。DOM順で座席をチーム箱より手前に置き、
             クリック/ドラッグを座席側へ優先させる */}
         <TeamAreaLayer

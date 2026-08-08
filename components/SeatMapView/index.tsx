@@ -39,6 +39,7 @@ import { useLayoutEditor } from '@/hooks/use-layout-editor'
 import { rectOfRef } from '@/utils/layout-objects'
 import type { Rect } from '@/utils/rect'
 import type { Employee, LayoutObjectRef } from '@/types'
+import styles from '@/components/seatmap.module.css'
 
 // 座席マップ画面の組み立て。データ合成・保存・ダイアログ状態はそれぞれのフックが持つ
 
@@ -172,7 +173,7 @@ export const SeatMapView = () => {
   }, [effectiveLayout, focus, showNotice])
 
   return (
-    <div className='seat-map-page'>
+    <div className={styles.seatMapPage}>
       {!editor.isEditMode && (
         <AppHeader
           onOpenDirectory={() => setIsDirectoryOpen(true)}
@@ -221,11 +222,11 @@ export const SeatMapView = () => {
         isGaroonConnected
         onGaroonLogout={() => {}}
       />
-      {unassignedNotice && <div className='emp-dir-unassigned-toast'>{unassignedNotice}</div>}
+      {unassignedNotice && <div className={styles.empDirUnassignedToast}>{unassignedNotice}</div>}
       {/* 画面を見ていない人にも同じ文言を渡す。トーストと同一の文字列を使う */}
       <LiveRegion message={unassignedNotice ?? ''} />
       {save.saveToast && (
-        <div className='emp-dir-unassigned-toast' role='status'>
+        <div className={styles.empDirUnassignedToast} role='status'>
           {save.saveToast}
         </div>
       )}
