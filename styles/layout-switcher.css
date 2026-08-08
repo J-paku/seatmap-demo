@@ -9,7 +9,7 @@
   z-index: var(--z-index-dropdown);
   width: min(50vw, 176px);
   overflow: hidden;
-  border-radius: 22px;
+  border-radius: 14px;
   border: 1px solid var(--color-border);
   background: var(--color-surface-elevated);
   box-shadow: var(--shadow-card);
@@ -26,13 +26,16 @@
   border-radius: 18px;
 }
 
+/* 幅は開閉状態で固定値を取るため、名前をflex:1で伸ばすと短い名前のとき名前とcaretの間だけが
+   大きく空いて左右非対称に見える。アイコン+名前+caretを1つの塊として中央に置く */
 .layout-switcher-toggle {
   display: flex;
   align-items: center;
-  gap: 8px;
+  justify-content: center;
+  gap: 6px;
   width: 100%;
-  min-height: 36px;
-  padding: 6px 16px;
+  min-height: 28px;
+  padding: 2px 12px;
   border: none;
   background: none;
   cursor: pointer;
@@ -45,7 +48,7 @@
 
 .layout-switcher-toggle-icon {
   flex-shrink: 0;
-  font-size: 18px;
+  font-size: 16px;
   color: var(--color-text-secondary);
 }
 .layout-switcher-toggle-icon.is-custom {
@@ -53,19 +56,19 @@
 }
 
 .layout-switcher-toggle-name {
-  flex: 1;
+  flex: 0 1 auto;
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  text-align: left;
+  text-align: center;
   font-size: 12px;
   font-weight: 600;
 }
 
 .layout-switcher-toggle-caret {
   flex-shrink: 0;
-  font-size: 18px;
+  font-size: 16px;
   color: var(--color-text-muted);
   transform: rotate(0deg);
   transition: transform var(--lsw-duration) var(--lsw-easing);
@@ -89,12 +92,18 @@
   opacity: 1;
 }
 
+/* 0frで潰れるのは行の高さだけで、この要素自身のpaddingは残る。閉じている間は上下paddingを
+   0にしないと、アイランドの下に12pxの死んだ余白が残り中身が上寄りに見える */
 .layout-switcher-panel-inner {
   display: flex;
   flex-direction: column;
   min-height: 0;
   overflow: hidden;
-  padding: 6px 8px;
+  padding: 0 8px;
+  transition: padding-block var(--lsw-duration) var(--lsw-easing);
+}
+.layout-switcher.is-open .layout-switcher-panel-inner {
+  padding-block: 6px;
 }
 
 /* 公式ボタン・カスタム行が共有する見出しテキスト。truncateのためflex:1/min-width:0/
@@ -284,7 +293,8 @@
 @media (prefers-reduced-motion: reduce) {
   .layout-switcher,
   .layout-switcher-toggle-caret,
-  .layout-switcher-panel {
+  .layout-switcher-panel,
+  .layout-switcher-panel-inner {
     transition: none;
   }
 }
