@@ -1,5 +1,6 @@
 import { useId } from 'react'
 import { useAlertDialog } from './hooks/use-alert-dialog'
+import styles from './alert-dialog.module.css'
 
 // 選択を迫らない告知用の中央ダイアログ。ボタンは確認1つだけでキャンセルを置かない
 // 背景スクロールの固定は呼び出し元のシートが済ませているためここでは触らない
@@ -23,10 +24,10 @@ export const AlertDialog = ({ isOpen, icon, title, body, confirmLabel, onClose }
   const bodyId = `${baseId}-body`
 
   return (
-    <div className='alert-dialog-backdrop' onClick={onClose}>
+    <div className={styles.backdrop} onClick={onClose}>
       <div
         ref={panelRef}
-        className='alert-dialog'
+        className={styles.dialog}
         role='alertdialog'
         aria-modal='true'
         aria-labelledby={titleId}
@@ -39,16 +40,16 @@ export const AlertDialog = ({ isOpen, icon, title, body, confirmLabel, onClose }
           onClose()
         }}
       >
-        <span className='alert-dialog-icon material-symbols-outlined' aria-hidden='true'>
+        <span className={`${styles.icon} material-symbols-outlined`} aria-hidden='true'>
           {icon}
         </span>
-        <h2 className='alert-dialog-title' id={titleId}>
+        <h2 className={styles.title} id={titleId}>
           {title}
         </h2>
-        <p className='alert-dialog-body' id={bodyId}>
+        <p className={styles.body} id={bodyId}>
           {body}
         </p>
-        <button type='button' ref={confirmRef} className='alert-dialog-confirm' onClick={onClose}>
+        <button type='button' ref={confirmRef} className={styles.confirm} onClick={onClose}>
           {confirmLabel}
         </button>
       </div>

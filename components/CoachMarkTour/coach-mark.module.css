@@ -1,6 +1,6 @@
 /* スポットライト式コーチマーク。対象の矩形をくり抜いて周囲を暗くする */
 
-.coach-layer {
+.layer {
   position: fixed;
   inset: 0;
   z-index: var(--z-index-top);
@@ -8,14 +8,14 @@
 }
 
 /* 分岐カードのときだけ全面を覆う */
-.coach-scrim {
+.scrim {
   position: absolute;
   inset: 0;
   background: var(--color-scrim);
 }
 
 /* box-shadow を画面より大きく広げて、この矩形の外側だけを暗くする */
-.coach-spotlight {
+.spotlight {
   position: absolute;
   border-radius: 12px;
   box-shadow: 0 0 0 9999px var(--color-scrim);
@@ -25,12 +25,12 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .coach-spotlight {
+  .spotlight {
     transition: none;
   }
 }
 
-.coach-card {
+.card {
   position: absolute;
   width: min(320px, calc(100vw - 32px));
   padding: 14px 16px;
@@ -41,33 +41,33 @@
   pointer-events: auto;
 }
 
-.coach-card.is-centered {
+.card.isCentered {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
 }
 
-.coach-question {
+.question {
   margin: 0 0 10px;
   color: var(--color-text-primary);
   font-size: 14px;
   font-weight: 700;
 }
 
-.coach-text {
+.text {
   margin: 0 0 12px;
   color: var(--color-text-primary);
   font-size: 13px;
   line-height: 1.6;
 }
 
-.coach-choices {
+.choices {
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
 
-.coach-choice {
+.choice {
   display: flex;
   min-height: 56px;
   flex-direction: column;
@@ -81,43 +81,43 @@
   text-align: left;
 }
 
-.coach-choice:hover {
+.choice:hover {
   border-color: var(--color-accent);
 }
 
-.coach-choice:focus-visible {
+.choice:focus-visible {
   outline: 2px solid var(--color-accent);
   outline-offset: 2px;
 }
 
-.coach-choice-label {
+.choiceLabel {
   color: var(--color-text-primary);
   font-size: 13px;
   font-weight: 700;
 }
 
-.coach-choice-desc {
+.choiceDesc {
   color: var(--color-text-muted);
   font-size: 11px;
 }
 
-.coach-actions {
+.actions {
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
-.coach-progress {
+.progress {
   margin-right: auto;
   color: var(--color-text-muted);
   font-size: 11px;
   font-variant-numeric: tabular-nums;
 }
 
-.coach-skip {
+.skip {
   margin-top: 10px;
 }
 
-.coach-actions .coach-skip {
+.actions .skip {
   margin-top: 0;
 }

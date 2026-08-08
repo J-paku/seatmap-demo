@@ -7,7 +7,6 @@
 @import './tokens.css';
 @import './seatmap.css';
 @import './team-overlay-modal.css';
-@import './sheet-handle.css';
 /* 詳細パネル群。カスケード順が意味を持つのでこの並びを崩さない */
 @import './sheet.css';
 @import './employee-detail.css';
@@ -19,8 +18,6 @@
 @import './liquid-glass.css';
 @import './object-picker.css';
 @import './ghost-placement.css';
-@import './coach-mark.css';
-@import './alert-dialog.css';
 @import './icon.css';
 @import './layout-switcher.css';
 
