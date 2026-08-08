@@ -14,9 +14,6 @@ const nextConfig = {
   trailingSlash: true,
   // 親フォルダの lockfile によるワークスペースルート誤検出を防ぐ(このフォルダを明示)
   turbopack: { root: import.meta.dirname },
-  // WSL2 から /mnt/c(Windows NTFS)を見ると inotify が発火しないため、監視がファイル変更を
-  // 一切受け取れない。ポーリングで代替する(dev のみ。build には影響しない)
-  watchOptions: { pollIntervalMs: 1000 },
   ...(isPages ? { basePath: repoBase, assetPrefix: repoBase } : {}),
 }
 
