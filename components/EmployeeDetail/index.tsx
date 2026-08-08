@@ -12,6 +12,7 @@ import { useSelectedDate } from '@/contexts/selected-date-context'
 import { isSameJstDate, jstDateKey, jstKeyFromIso } from '@/utils/jst-date'
 import { useEmployeeAvatar } from '@/hooks/use-employee-avatar'
 import styles from './employee-detail.module.css'
+import sdStyles from '@/components/schedule-detail.module.css'
 
 // 12-member-detail: 社員詳細(座席詳細兼用)。空席時は空席表記のみ
 
@@ -52,7 +53,7 @@ export const EmployeeDetail = ({ seatId, employeeId, onGoToSeat, showSeatUnsetNo
   return (
     <div className={styles.employeeDetail}>
       {!employee ? (
-        isVacantSeat && <p className='seat-vacant-notice'>この座席は現在空席です</p>
+        isVacantSeat && <p className={sdStyles.seatVacantNotice}>この座席は現在空席です</p>
       ) : (
         <>
           <ProfileCard

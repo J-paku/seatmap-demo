@@ -2,6 +2,7 @@ import { useScheduleRefresh } from '@/hooks/use-schedule-refresh'
 import { FACILITY_COLOR, FACILITY_STATUS_LABEL } from '@/utils/facility-status'
 import type { FacilityStatus } from '@/types'
 import styles from '../facility-detail.module.css'
+import sheetStyles from '@/components/sheet.module.css'
 
 // 施設パネルのヘッダー: アイコン・施設名・更新ボタン(クールダウン付き)・状態バッジ・閉じるボタン
 // 状態バッジは isTodaySelected が true の時だけ描画する(本日以外は概念自体が無い)
@@ -43,7 +44,7 @@ export const FacilityPanelHeader = ({ facilityName, status, isTodaySelected, onC
         )}
         <button
           type='button'
-          className='sheet-close'
+          className={sheetStyles.close}
           aria-label='パネルを閉じる'
           data-sheet-initial-focus
           onClick={onClose}

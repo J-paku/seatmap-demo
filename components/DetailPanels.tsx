@@ -5,6 +5,7 @@ import { FacilityDetail } from './FacilityDetail'
 import { ScheduleDetail } from './ScheduleDetail'
 import { useDetailPanel } from '@/contexts/detail-panel-context'
 import { useFacilities, useSchedules } from '@/lib/mock-loader'
+import styles from './sheet.module.css'
 
 type Props = {
   // 施設削除の完了通知。トースト状態は SeatMapView が持つ
@@ -58,7 +59,7 @@ export const DetailPanels = ({ onFacilityDeleted, onGoToSeat, showSeatUnsetNotic
         </SheetShell>
       )}
       {scheduleDetailId && scheduleEv && (
-        <div className='sheet-stack-top'>
+        <div className={styles.stackTop}>
           <SheetShell title={scheduleEv.title} variant='schedule' active onClose={closeTop}>
             <ScheduleDetail eventId={scheduleDetailId} />
           </SheetShell>

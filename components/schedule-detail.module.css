@@ -1,28 +1,28 @@
-.seat-vacant-notice {
+.seatVacantNotice {
   font-size: 14px;
   color: var(--color-text-muted);
   padding: 8px 0;
 }
 
-.detail-row {
+.detailRow {
   display: flex;
   gap: 12px;
   padding: 10px 0;
   border-bottom: 1px solid var(--color-border);
   align-items: center;
 }
-.detail-label {
+.detailLabel {
   width: 72px;
   font-size: 13px;
   color: var(--color-text-muted);
 }
-.detail-value {
+.detailValue {
   font-size: 14px;
   font-weight: 600;
 }
 
 /* 社員行(予定詳細内) */
-.employee-row {
+.employeeRow {
   width: 100%;
   display: flex;
   align-items: center;
@@ -36,7 +36,7 @@
   text-align: left;
   min-height: 44px;
 }
-.employee-row-avatar {
+.employeeRowAvatar {
   width: 40px;
   height: 40px;
   border-radius: 8px;
@@ -46,21 +46,21 @@
   align-items: center;
   justify-content: center;
 }
-.employee-row-info {
+.employeeRowInfo {
   display: flex;
   flex-direction: column;
 }
-.employee-row-name {
+.employeeRowName {
   font-size: 14px;
   font-weight: 700;
 }
-.employee-row-sub {
+.employeeRowSub {
   font-size: 12px;
   color: var(--color-text-secondary);
 }
 
 /* ステータスチップ・カテゴリチップ */
-.status-chip {
+.statusChip {
   display: inline-flex;
   align-items: center;
   gap: 5px;
@@ -72,7 +72,7 @@
   background: var(--color-surface-elevated);
   border: 1px solid var(--color-border);
 }
-.status-chip-dot {
+.statusChipDot {
   width: 8px;
   height: 8px;
   border-radius: 9999px;
@@ -80,26 +80,26 @@
 }
 
 /* 12: 状態バッジ優先度2(読み込み中)・優先度4(使用中/空席フォールバック) */
-.status-chip-loading {
+.statusChipLoading {
   color: var(--color-text-muted);
   background: var(--color-surface-muted);
   border-color: transparent;
-  animation: status-chip-pulse 1.6s ease-in-out infinite;
+  animation: statusChipPulse 1.6s ease-in-out infinite;
 }
-.status-chip-loading .material-symbols-outlined {
-  animation: status-chip-spin 1s linear infinite;
+.statusChipLoading :global(.material-symbols-outlined) {
+  animation: statusChipSpin 1s linear infinite;
 }
-.status-chip-inuse {
+.statusChipInuse {
   color: var(--color-meeting-room-busy-text);
   background: var(--color-meeting-room-busy-bg);
   border-color: transparent;
 }
-.status-chip-vacant {
+.statusChipVacant {
   color: var(--color-text-secondary);
   background: var(--color-surface-muted);
   border-color: transparent;
 }
-@keyframes status-chip-pulse {
+@keyframes statusChipPulse {
   0%,
   100% {
     opacity: 1;
@@ -108,13 +108,13 @@
     opacity: 0.55;
   }
 }
-@keyframes status-chip-spin {
+@keyframes statusChipSpin {
   to {
     transform: rotate(360deg);
   }
 }
 
-.category-chip {
+.categoryChip {
   display: inline-flex;
   align-items: center;
   padding: 2px 8px;
@@ -123,40 +123,15 @@
   font-weight: 700;
   white-space: nowrap;
 }
-.cat-meeting {
+.catMeeting {
   color: var(--color-status-meeting);
   background: var(--color-accent-soft);
 }
-.cat-out {
+.catOut {
   color: var(--color-status-out);
   background: var(--color-warning-soft);
 }
-.cat-vacation {
+.catVacation {
   color: var(--color-status-vacation);
   background: var(--color-surface-muted);
 }
-
-@keyframes sheet-fade-in {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-@keyframes sheet-slide-up {
-  from {
-    transform: translateY(100%);
-  }
-  to {
-    transform: translateY(0);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .sheet,
-  .sheet-backdrop {
-    animation: none;
-  }
-}
-

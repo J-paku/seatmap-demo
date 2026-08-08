@@ -4,6 +4,14 @@ import { useBodyScrollLock } from '@/hooks/use-body-scroll-lock'
 import { useBackgroundInert } from '@/hooks/use-background-inert'
 import { useFocusTrap } from '@/hooks/use-focus-trap'
 import { useSwipeDismiss } from '@/hooks/use-swipe-dismiss'
+import styles from './sheet.module.css'
+
+const VARIANT_CLASS = {
+  employee: styles.employee,
+  facility: styles.facility,
+  schedule: styles.schedule,
+} as const
+
 
 export const SEATMAP_BG_ID = 'seatmap-bg-root'
 
@@ -68,10 +76,10 @@ export const SheetShell = ({ title, variant, active, onClose, children, headerle
 
   return (
     <>
-      <div ref={backdropRef} className='sheet-backdrop' onClick={onClose} />
+      <div ref={backdropRef} className={styles.backdrop} onClick={onClose} />
       <div
         ref={sheetRef}
-        className={`sheet sheet-${variant}`}
+        className={`${styles.sheet} ${VARIANT_CLASS[variant]}`}
         role='dialog'
         aria-modal='true'
         aria-labelledby={titleId}
@@ -79,18 +87,18 @@ export const SheetShell = ({ title, variant, active, onClose, children, headerle
         tabIndex={headerless ? -1 : undefined}
         {...bind}
       >
-        <div ref={scrollRef} className='sheet-scroll'>
+        <div ref={scrollRef} className={styles.scroll}>
           {headerless ? (
             // 見出しは children 側で表示済みなので、ここでは aria-labelledby の参照先だけ残す
             <h2 id={titleId} className='sr-only'>
               {title}
             </h2>
           ) : (
-            <div className='sheet-header'>
-              <h2 id={titleId} className='sheet-title'>
+            <div className={styles.header}>
+              <h2 id={titleId} className={styles.title}>
                 {title}
               </h2>
-              <button ref={closeBtnRef} type='button' className='sheet-close' aria-label='パネルを閉じる' onClick={onClose}>
+              <button ref={closeBtnRef} type='button' className={styles.close} aria-label='パネルを閉じる' onClick={onClose}>
                 ✕
               </button>
             </div>

@@ -7,9 +7,6 @@
 @import './tokens.css';
 @import './seatmap.css';
 @import './team-overlay-modal.css';
-/* 詳細パネル群。カスケード順が意味を持つのでこの並びを崩さない */
-@import './sheet.css';
-@import './schedule-detail.css';
 @import './admin-edit.css';
 @import './liquid-glass.css';
 @import './icon.css';
