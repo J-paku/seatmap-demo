@@ -41,11 +41,22 @@ jobs:
           ref: gh-pages
           path: .gh-pages
 
+      # .git 以外を消してから丸ごと置き直す。rsync は使わない —
+      # サイズ+mtime のクイックチェックで、名前が固定でサイズも変わらない HTML の転送を
+      # 飛ばすことがある(chunk 名は content-hash で13文字固定なので index.html のバイト数が
+      # 毎ビルド同じになる)。実際に 2026-08-08 の配信で HTML だけ前世代のまま残り、
+      # 参照先の css/js が消えて配信が丸ごと 404 になった。
       # .nojekyll が無いと _next/ 配下(先頭アンダースコア)が Jekyll に無視されて 404 になる
       - name: Sync artifacts
         run: |
-          rsync -a --delete --exclude .git out/ .gh-pages/
+          find .gh-pages -mindepth 1 -maxdepth 1 -not -name .git -exec rm -rf {} +
+          cp -a out/. .gh-pages/
           touch .gh-pages/.nojekyll
+
+      # push する前に、HTML の参照先が同じツリーに実在するかを確認する。
+      # 上の壊れ方はワークフローが全て緑のまま起きたので、配信物そのものを見る検査を挟む
+      - name: Verify artifacts
+        run: bash scripts/verify-deploy-artifacts.sh .gh-pages /seatmap-demo
 
       - name: Commit and push
         working-directory: .gh-pages
