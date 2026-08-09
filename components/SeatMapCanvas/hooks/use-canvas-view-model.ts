@@ -3,7 +3,8 @@ import { useTeamColorMap } from '@/hooks/use-team-color-map'
 import { buildTeamOverlayPayload } from '@/utils/team-overlay-payload'
 import { clamp } from '@/utils/geometry'
 import { rectOfRef } from '@/utils/layout-objects'
-import type { LayoutObjectRef, SeatLayout } from '@/types'
+import { countOccupiedSeatsByTeam } from '@/utils/seat-occupancy'
+import type { Employee, LayoutObjectRef, SeatLayout } from '@/types'
 import type { TeamOverlayPayload } from '@/components/TeamOverlay'
 import { lodOf } from '../utils/canvas-metrics'
 import type { Lod, Viewport } from '../type'
@@ -12,6 +13,7 @@ import type { Lod, Viewport } from '../type'
 
 type Options = {
   layout: SeatLayout
+  employeeById: Map<string, Employee>
   viewport: Viewport
   isEditMode: boolean
   editSelectedSeatId: string | null
@@ -32,6 +34,7 @@ type CanvasViewModel = {
 
 export const useCanvasViewModel = ({
   layout,
+  employeeById,
   viewport,
   isEditMode,
   editSelectedSeatId,
@@ -42,19 +45,13 @@ export const useCanvasViewModel = ({
   const teamColorMap = useTeamColorMap()
   const { scaleSnap, transformSnap } = viewport
 
-  // 11: チームラベルの N名 は「seat.teamId が一致し employeeId が非null」の件数
-  const assignedCountByTeam = useMemo(() => {
-    const map = new Map<string, number>()
-    for (const team of layout.teams) {
-      map.set(team.id, 0)
-    }
-    for (const seat of layout.seats) {
-      if (seat.employeeId === null) continue
-      if (!map.has(seat.teamId)) continue
-      map.set(seat.teamId, (map.get(seat.teamId) ?? 0) + 1)
-    }
-    return map
-  }, [layout.teams, layout.seats])
+  // 11: チームラベルの N名 は「seat.teamId が一致し、employeeId が実在社員を指す」座席の件数。
+  // 判定基準は utils/seat-occupancy.ts に一本化(存在しない社員IDを参照する座席まで
+  // 数えてしまい、空席なのに N名と出る不整合を防ぐ)
+  const assignedCountByTeam = useMemo(
+    () => countOccupiedSeatsByTeam(layout.seats, employeeById, layout.teams),
+    [layout.seats, employeeById, layout.teams]
+  )
 
   // 07: 選択中座席のフローティングアクションバー画面座標(座席右下近傍)
   const seatActionBarPos = useMemo(() => {

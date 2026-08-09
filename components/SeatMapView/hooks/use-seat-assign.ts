@@ -116,18 +116,26 @@ export const useSeatAssign = ({ editor, employeeById, onDone }: Options): SeatAs
     [assignSeatId, buildPlan, apply]
   )
 
-  return {
-    assignSeatId,
-    assignTargetSeat,
-    pendingPlan,
-    openAssign: useCallback((seatId: string) => setAssignSeatId(seatId), []),
-    closeAssign: useCallback(() => setAssignSeatId(null), []),
-    requestAssign,
-    confirmAssign: useCallback(() => {
-      if (!pendingPlan) return
-      apply(pendingPlan)
-      setPendingPlan(null)
-    }, [pendingPlan, apply]),
-    cancelAssign: useCallback(() => setPendingPlan(null), []),
-  }
+  const openAssign = useCallback((seatId: string) => setAssignSeatId(seatId), [])
+  const closeAssign = useCallback(() => setAssignSeatId(null), [])
+  const confirmAssign = useCallback(() => {
+    if (!pendingPlan) return
+    apply(pendingPlan)
+    setPendingPlan(null)
+  }, [pendingPlan, apply])
+  const cancelAssign = useCallback(() => setPendingPlan(null), [])
+
+  return useMemo(
+    () => ({
+      assignSeatId,
+      assignTargetSeat,
+      pendingPlan,
+      openAssign,
+      closeAssign,
+      requestAssign,
+      confirmAssign,
+      cancelAssign,
+    }),
+    [assignSeatId, assignTargetSeat, pendingPlan, openAssign, closeAssign, requestAssign, confirmAssign, cancelAssign]
+  )
 }

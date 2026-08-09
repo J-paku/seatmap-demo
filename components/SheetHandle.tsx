@@ -1,5 +1,5 @@
 // 全モーダル共通のシートハンドル。タップで閉じ、下スワイプの起点にもなる。
-// data-handle は useSwipeDismiss が「スクロールゲートを無視してよい起点か」の判定に使う。
+// data-drag-handle は useSwipeToDismiss がスクロールゲート免除の起点判定に使う。
 // 見た目(高さ・余白・表示ブレークポイント)は各シートのクラスが持ち、ここは挙動だけを揃える
 
 import styles from './sheet-handle.module.css'
@@ -15,11 +15,11 @@ export const SheetHandle = ({ stripClassName, barClassName, heightPx, onClose }:
   <button
     type='button'
     className={`${styles.hit} ${stripClassName}`}
-    data-handle='true'
+    data-drag-handle='true'
     style={heightPx === undefined ? undefined : { height: heightPx }}
     aria-label='閉じる'
     onClick={onClose}
   >
-    <span className={barClassName} data-handle='true' />
+    <span className={barClassName} data-drag-handle='true' />
   </button>
 )

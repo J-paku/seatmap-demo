@@ -1,0 +1,42 @@
+[
+  {
+    "id": "dept-somu-annex-001",
+    "teamId": "team-06",
+    "x": 50,
+    "y": 50,
+    "width": 105,
+    "height": 75,
+    "rotation": 0,
+    "employeeId": "emp-048"
+  },
+  {
+    "id": "dept-somu-annex-002",
+    "teamId": "team-06",
+    "x": 173,
+    "y": 50,
+    "width": 105,
+    "height": 75,
+    "rotation": 0,
+    "employeeId": "emp-047"
+  },
+  {
+    "id": "dept-somu-annex-003",
+    "teamId": "team-06",
+    "x": 50,
+    "y": 145,
+    "width": 105,
+    "height": 75,
+    "rotation": 0,
+    "employeeId": "emp-045"
+  },
+  {
+    "id": "dept-somu-annex-004",
+    "teamId": "team-06",
+    "x": 173,
+    "y": 145,
+    "width": 105,
+    "height": 75,
+    "rotation": 0,
+    "employeeId": "emp-046"
+  }
+]

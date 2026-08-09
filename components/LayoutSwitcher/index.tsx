@@ -6,6 +6,7 @@ import { CustomLayoutList } from './components/CustomLayoutList'
 import { CreateLayoutForm } from './components/CreateLayoutForm'
 import { LayoutDeleteConfirmDialog } from './components/LayoutDeleteConfirmDialog'
 import { useLayoutSource } from '@/contexts/layout-source-context'
+import { FLOORS } from '@/utils/floors'
 import styles from './layout-switcher.module.css'
 
 type LayoutSwitcherProps = {
@@ -59,7 +60,16 @@ export const LayoutSwitcher = ({ onExpandedChange }: LayoutSwitcherProps = {}) =
             display:noneにしないのはmorphのトランジションを効かせ続けるため */}
         <div className={styles.panel} id={panelId} inert={!isOpen}>
           <div className={styles.panelInner}>
-            <OfficialLayoutButton isSelected={source.type === 'official'} onSelect={selectOfficial} />
+            <div className={styles.officialList}>
+              {FLOORS.map((floor) => (
+                <OfficialLayoutButton
+                  key={floor.floorId}
+                  floor={floor}
+                  isSelected={source.type === 'official' && source.floorId === floor.floorId}
+                  onSelect={selectOfficial}
+                />
+              ))}
+            </div>
             <CustomLayoutList
               layoutMetas={layoutMetas}
               source={source}

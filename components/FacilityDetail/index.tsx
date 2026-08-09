@@ -10,7 +10,7 @@ import { useEmployees, useFacilities, useFacilityMeetings } from '@/lib/mock-loa
 import { deriveFacilityState } from '@/utils/facility-status'
 import type { FacilityState } from '@/utils/facility-status'
 import { useSelectedDate } from '@/contexts/selected-date-context'
-import { useFacilityScheduleForDate } from '@/hooks/use-facility-schedule-for-date'
+import { useFacilityScheduleForDate } from './hooks/use-facility-schedule-for-date'
 import { useQuantizedClock } from '@/hooks/use-quantized-clock'
 import { useDetailPanel } from '@/contexts/detail-panel-context'
 import { isSameJstDate, jstDateKey } from '@/utils/jst-date'
@@ -27,8 +27,12 @@ export const FacilityDetail = ({ facilityId, onDeleted }: Props) => {
   const { data: meetings } = useFacilityMeetings()
   const { data: employees } = useEmployees()
   const { date, debouncedDate, isTodaySelected, goToPrevDay, goToNextDay, goToToday } = useSelectedDate()
-  const { closeTop } = useDetailPanel()
-  const nowMs = useQuantizedClock(isTodaySelected)
+  const { seatDetailId, personDetailId, closeTop } = useDetailPanel()
+  // 社員カードがスタックされ本パネルが隠れている間は非アクティブ。DetailPanels が
+  // SheetShell へ渡す active 相当の判定(seatDetailId===null && personDetailId===null)を
+  // ここでも直接導出し、非表示中は下のタイマー・時計購読を止める
+  const isActive = seatDetailId === null && personDetailId === null
+  const nowMs = useQuantizedClock(isTodaySelected && isActive)
   const popover = useAttendeePopover()
   const remove = useFacilityDelete({
     facilityId,
@@ -43,6 +47,7 @@ export const FacilityDetail = ({ facilityId, onDeleted }: Props) => {
     facilityId: facility?.facilityId ?? '',
     dateKey: jstDateKey(debouncedDate),
     isTodaySelected,
+    paused: !isActive,
   })
   // 表示日と確定取得日がずれている間はローディング扱い(社員詳細と同じくちらつき防止)
   const isScheduleLoading = isFetchLoading || !isSameJstDate(date, debouncedDate)

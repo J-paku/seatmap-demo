@@ -1,19 +1,14 @@
 import { useEffect, useRef, useState } from 'react'
-import type { KeyboardEvent as ReactKeyboardEvent, PointerEvent as ReactPointerEvent, RefObject } from 'react'
+import type { KeyboardEvent as ReactKeyboardEvent, RefObject } from 'react'
 import { useBodyScrollLock } from '@/hooks/use-body-scroll-lock'
 import { triggerHaptic } from '@/lib/haptic'
 
-// 長押しでの編集モード突入までの猶予(ms)
-const LONG_PRESS_MS = 500
-// この移動量を超えたら長押し判定を打ち切る(px)
-const MOVE_THRESHOLD = 10
 // メニュー項目の実体。ロービングタブの移動対象をこれで数える
 const MENU_ITEM_SELECTOR = '[role=menuitem]'
 
 export type UseAdminAddFabParams = {
   onSelectTeam: () => void
   onSelectFacility: () => void
-  onEnterEdit: () => void
 }
 
 type UseAdminAddFabResult = {
@@ -22,44 +17,25 @@ type UseAdminAddFabResult = {
   fabRef: RefObject<HTMLButtonElement | null>
   menuRef: RefObject<HTMLDivElement | null>
   fabHandlers: {
-    onPointerDown: (e: ReactPointerEvent) => void
-    onPointerMove: (e: ReactPointerEvent) => void
-    onPointerUp: (e: ReactPointerEvent) => void
-    onPointerLeave: (e: ReactPointerEvent) => void
+    onPointerDown: () => void
     onClick: () => void
   }
   onMenuKeyDown: (e: ReactKeyboardEvent) => void
   handleSelectTeam: () => void
   handleSelectFacility: () => void
-  handleEnterEdit: () => void
+  handleEditLayout: () => void
 }
 
-// スピードダイヤルの開閉と長押しだけを持つ。何を配置するかは呼び出し側が知る
+// スピードダイヤルの開閉だけを持つ。何を配置するかは呼び出し側が知る
 export const useAdminAddFab = ({
   onSelectTeam,
   onSelectFacility,
-  onEnterEdit,
 }: UseAdminAddFabParams): UseAdminAddFabResult => {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const pressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const startPosRef = useRef({ x: 0, y: 0 })
-  const longPressFiredRef = useRef(false)
   const fabRef = useRef<HTMLButtonElement>(null)
   const menuRef = useRef<HTMLDivElement>(null)
   // 一度も開いていない初回描画で FAB へ焦点を移さないための目印
   const wasMenuOpenRef = useRef(false)
-
-  const clearPressTimer = () => {
-    if (pressTimerRef.current === null) return
-    clearTimeout(pressTimerRef.current)
-    pressTimerRef.current = null
-  }
-
-  // アンマウント時に必ず破棄する。長押し中に画面遷移すると
-  // 消えたコンポーネントが編集モードを起動してしまう
-  useEffect(() => {
-    return () => clearPressTimer()
-  }, [])
 
   const closeMenu = () => setIsMenuOpen(false)
 
@@ -102,36 +78,9 @@ export const useAdminAddFab = ({
     items[(current + delta + items.length) % items.length]?.focus()
   }
 
-  const onPointerDown = (e: ReactPointerEvent) => {
-    triggerHaptic('light')
-    startPosRef.current = { x: e.clientX, y: e.clientY }
-    longPressFiredRef.current = false
-    clearPressTimer()
-    pressTimerRef.current = setTimeout(() => {
-      pressTimerRef.current = null
-      longPressFiredRef.current = true
-      onEnterEdit()
-    }, LONG_PRESS_MS)
-  }
+  const onPointerDown = () => triggerHaptic('light')
 
-  const onPointerMove = (e: ReactPointerEvent) => {
-    const dx = e.clientX - startPosRef.current.x
-    const dy = e.clientY - startPosRef.current.y
-    if (Math.abs(dx) > MOVE_THRESHOLD || Math.abs(dy) > MOVE_THRESHOLD) clearPressTimer()
-  }
-
-  const onPointerUp = () => clearPressTimer()
-  const onPointerLeave = () => clearPressTimer()
-
-  // 長押しが成立していた直後の click は1回だけ握りつぶす。でないと
-  // 編集モード突入の直後にメニューが開いてしまう
-  const onClick = () => {
-    if (longPressFiredRef.current) {
-      longPressFiredRef.current = false
-      return
-    }
-    setIsMenuOpen((open) => !open)
-  }
+  const onClick = () => setIsMenuOpen((open) => !open)
 
   // 各項目は必ず先にメニューを閉じてから本処理を呼ぶ。逆順だと
   // 消えかけのメニューの上に本処理の結果が重なって見える
@@ -147,10 +96,10 @@ export const useAdminAddFab = ({
     onSelectFacility()
   }
 
-  const handleEnterEdit = () => {
-    triggerHaptic('light')
-    closeMenu()
-    onEnterEdit()
+  // レイアウト編集の行。以前のフロア編集モードは廃止したので今は何も起動しない。
+  // 後から別ロジックを差し込む枠として行だけ残す
+  const handleEditLayout = () => {
+    // 非活性行のためno-op
   }
 
   return {
@@ -158,10 +107,10 @@ export const useAdminAddFab = ({
     closeMenu,
     fabRef,
     menuRef,
-    fabHandlers: { onPointerDown, onPointerMove, onPointerUp, onPointerLeave, onClick },
+    fabHandlers: { onPointerDown, onClick },
     onMenuKeyDown,
     handleSelectTeam,
     handleSelectFacility,
-    handleEnterEdit,
+    handleEditLayout,
   }
 }

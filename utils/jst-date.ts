@@ -10,6 +10,16 @@ const JST_PARTS_FORMATTER = new Intl.DateTimeFormat('en-CA', {
   day: '2-digit',
 })
 
+const JST_CLOCK_FORMATTER = new Intl.DateTimeFormat('ja-JP', {
+  timeZone: 'Asia/Tokyo',
+  hour: '2-digit',
+  minute: '2-digit',
+  hour12: false,
+})
+
+// 取得時刻の表示(JST の HH:MM)。epoch ms から出すので TZ 指定が要る
+export const jstClockLabel = (ms: number): string => JST_CLOCK_FORMATTER.format(new Date(ms))
+
 // epoch ms → JST暦日
 export const jstDateFromMs = (ms: number): JstDate => {
   const parts = JST_PARTS_FORMATTER.formatToParts(new Date(ms))

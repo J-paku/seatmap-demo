@@ -1,4 +1,5 @@
 import { useDetailPanel } from '@/contexts/detail-panel-context'
+import { useEmployeeMap } from '@/hooks/use-employee-map'
 import type { Employee, FacilityMeeting } from '@/types'
 import type { AttendeePopoverState } from '../type'
 import styles from '../facility-detail.module.css'
@@ -17,7 +18,7 @@ type Props = {
 export const AttendeePopover = ({ state, meeting, employees, onMouseEnter, onMouseLeave, onClose }: Props) => {
   const { openPersonDetail } = useDetailPanel()
 
-  const empById = new Map(employees.map((employee) => [employee.id, employee]))
+  const empById = useEmployeeMap(employees)
   const organizer = empById.get(meeting.organizerId)
   const participants = meeting.participantIds
     .map((id) => empById.get(id))

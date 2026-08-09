@@ -8,18 +8,24 @@ import {
 } from 'react'
 import type { ReactNode } from 'react'
 import { loadDefaultLayoutId, loadLayoutMetas } from '@/lib/layout-persistence'
+import { DEFAULT_FLOOR_ID, isFloorId } from '@/utils/floors'
+import type { FloorId } from '@/types'
 
-// STEP2: 複数レイアウト対応 — 現在表示中のレイアウトが公式か、カスタムのどれかを表す。
+// STEP2: 複数レイアウト対応 — 現在表示中のレイアウトが公式(どのフロアか)か、カスタムのどれかを表す。
 // 実物の updatedTime はサーバキャッシュ鮮度用でここでは不要なので持たない
-export type LayoutSource = { type: 'official' } | { type: 'custom'; layoutId: string }
+export type LayoutSource =
+  | { type: 'official'; floorId: FloorId }
+  | { type: 'custom'; layoutId: string }
 
 type LayoutSourceApi = {
   source: LayoutSource
-  setOfficial: () => void
-  setCustom: (layoutId: string) => void
+  // 引数を省略した呼び出し(カスタム削除後の公式復帰など)は既定フロアへ戻す。
+  // 戻り値は実際に切り替えたか(false=同じ値の再選択で何もしていない)。呼び出し側の再選択判定はこれに一本化する(#17)
+  setOfficial: (floorId?: string) => boolean
+  setCustom: (layoutId: string) => boolean
 }
 
-const OFFICIAL_SOURCE: LayoutSource = { type: 'official' }
+const OFFICIAL_SOURCE: LayoutSource = { type: 'official', floorId: DEFAULT_FLOOR_ID }
 
 // 起動直後に開くレイアウトを決める。デフォルトIDがメタ一覧に実在する時だけカスタムを採用する。
 // 実在チェックを飛ばすと、削除済みIDが残ったままのブラウザで起動直後に真っ白になる
@@ -60,11 +66,31 @@ export const LayoutSourceProvider = ({ children }: { children: ReactNode }) => {
   const [selectedSource, setSelectedSource] = useState<LayoutSource | null>(null)
   const source = selectedSource ?? storedSource
 
-  const setOfficial = useCallback(() => setSelectedSource(OFFICIAL_SOURCE), [])
+  // 選んだフロアはlocalStorageへ保存しない。保存すると初回クライアント描画が静的HTML(必ず既定フロア)
+  // と食い違い、React #418 が再発する。
+  // floorIdは未検証の文字列として受け(LayoutSourceのfloorIdはFloorId型で保証するため、境界の
+  // ここでisFloorId検証してから使う)、既に同じフロアが選択中なら何もしない(#17: 再選択防御をここへ一本化)
+  const setOfficial = useCallback(
+    (floorId: string = DEFAULT_FLOOR_ID): boolean => {
+      const validFloorId = isFloorId(floorId) ? floorId : DEFAULT_FLOOR_ID
+      if (source.type === 'official' && source.floorId === validFloorId) return false
+      setSelectedSource(
+        validFloorId === DEFAULT_FLOOR_ID ? OFFICIAL_SOURCE : { type: 'official', floorId: validFloorId }
+      )
+      return true
+    },
+    [source]
+  )
 
-  const setCustom = useCallback((layoutId: string) => {
-    setSelectedSource({ type: 'custom', layoutId })
-  }, [])
+  // 既に同じカスタムレイアウトが選択中なら何もしない(#17: setOfficialと同じ理由)
+  const setCustom = useCallback(
+    (layoutId: string): boolean => {
+      if (source.type === 'custom' && source.layoutId === layoutId) return false
+      setSelectedSource({ type: 'custom', layoutId })
+      return true
+    },
+    [source]
+  )
 
   const api = useMemo<LayoutSourceApi>(
     () => ({ source, setOfficial, setCustom }),

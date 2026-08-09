@@ -1,7 +1,7 @@
 // 07-admin-edit: チームレイアウトエディタ(チームラベルタップ時のモーダル) — 行・列ステッパー+適用/閉じる
 import { useState } from 'react'
 import type { Team } from '@/types'
-import { useSwipeDismiss } from '@/hooks/use-swipe-dismiss'
+import { useSwipeToDismiss } from '@/hooks/use-swipe-to-dismiss'
 import e from './admin-edit.module.css'
 
 type Props = {
@@ -19,7 +19,7 @@ export const TeamRelayoutModal = ({ team, seatCount, onApply, onClose }: Props) 
   const [rows, setRows] = useState(() => Math.max(1, Math.ceil(seatCount / initialCols(seatCount))))
   const [error, setError] = useState<string | null>(null)
   // 下スワイプで閉じる(スクロール領域なし)
-  const { sheetRef, bind } = useSwipeDismiss({ onClose })
+  const { sheetHandlers, dragStyle } = useSwipeToDismiss({ onDismiss: onClose })
 
   const clampStep = (v: number) => Math.max(1, Math.min(20, v))
 
@@ -35,13 +35,17 @@ export const TeamRelayoutModal = ({ team, seatCount, onApply, onClose }: Props) 
   return (
     <div className={e.editDialogBackdrop} onClick={onClose}>
       <div
-        ref={sheetRef}
         className={`${e.editSheet} ${e.editRelayoutModal}`}
         role='dialog'
         aria-modal='true'
         aria-label='チームレイアウト編集'
         onClick={(e) => e.stopPropagation()}
-        {...bind}
+        {...sheetHandlers}
+        style={{
+          transform: dragStyle.transform,
+          transition: dragStyle.transition,
+          willChange: dragStyle.willChange,
+        }}
       >
         <h3 className={e.editSheetTitle}>{team.name}のレイアウト</h3>
         <p className={e.editRelayoutCount}>現在の座席数: {seatCount}席</p>

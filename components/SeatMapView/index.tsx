@@ -35,7 +35,7 @@ import { useDetailPanel } from '@/contexts/detail-panel-context'
 import { useSeatLayout } from '@/lib/mock-loader'
 import { useTheme } from '@/hooks/use-theme'
 import { SELF_EMPLOYEE_ID } from '@/utils/demo-identity'
-import { useLayoutEditor } from '@/hooks/use-layout-editor'
+import { useLayoutEditor } from '@/hooks/use-layout-editor/use-layout-editor'
 import { rectOfRef } from '@/utils/layout-objects'
 import type { Rect } from '@/utils/rect'
 import type { Employee, LayoutObjectRef } from '@/types'
@@ -109,13 +109,6 @@ export const SeatMapView = () => {
     noticeTimerRef.current = window.setTimeout(() => setUnassignedNotice(null), NOTICE_MS)
   }, [])
 
-  // 編集モードへは FAB のメニューか長押しから入る。サイドバーを開いたまま入ると
-  // サイドバーの暗幕がキャンバスと編集用の操作子を覆ったままになるので先に畳む
-  const handleEnterEdit = useCallback(() => {
-    setIsDirectoryOpen(false)
-    editor.enterEditMode()
-  }, [editor, setIsDirectoryOpen])
-
   const handleFocusFailure = useCallback(
     (reason: FocusFailure) => {
       showNotice(reason === 'no-seat' ? '座席未設定' : '座席の所属チームが不明です')
@@ -160,7 +153,7 @@ export const SeatMapView = () => {
     closeAll()
     setIsDirectoryOpen(false)
     focus.focusSeat(personSeat)
-  }, [personSeat, closeAll, focus, setIsDirectoryOpen])
+  }, [personSeat, closeAll, focus.focusSeat, setIsDirectoryOpen])
 
   // 「自分の席」ボタン。検索と同じ focusSeat を通し、分岐はここ(席の引き当て)だけに持つ
   const handleGoToMySeat = useCallback(() => {
@@ -170,7 +163,7 @@ export const SeatMapView = () => {
       return
     }
     focus.focusSeat(seat)
-  }, [effectiveLayout, focus, showNotice])
+  }, [effectiveLayout, focus.focusSeat, showNotice])
 
   return (
     <div className={styles.seatMapPage}>
@@ -288,7 +281,6 @@ export const SeatMapView = () => {
         <AdminAddFab
           onSelectTeam={() => placement.selectCategory('team')}
           onSelectFacility={placement.openCategory}
-          onEnterEdit={handleEnterEdit}
         />
       )}
       <ObjectCategorySheet

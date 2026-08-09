@@ -1,14 +1,16 @@
-import { FLOOR_NAME } from '@/lib/mock-loader'
+import type { Floor } from '@/types'
 import { triggerHaptic } from '@/lib/haptic'
 import styles from '../layout-switcher.module.css'
 
 type Props = {
+  floor: Floor
   isSelected: boolean
-  onSelect: () => void
+  onSelect: (floorId: string) => void
 }
 
-// 展開パネル最上段: 公式レイアウトへ切り替えるボタン。選択中はaccent配色+右端checkで現在地を示す
-export const OfficialLayoutButton = ({ isSelected, onSelect }: Props) => {
+// 展開パネル最上段: 公式レイアウト(フロア)1件へ切り替えるボタン。フロアの数だけ並ぶ。
+// 選択中はaccent配色+右端checkで現在地を示す
+export const OfficialLayoutButton = ({ floor, isSelected, onSelect }: Props) => {
   return (
     <button
       type='button'
@@ -16,13 +18,13 @@ export const OfficialLayoutButton = ({ isSelected, onSelect }: Props) => {
       aria-pressed={isSelected}
       onClick={() => {
         triggerHaptic('light')
-        onSelect()
+        onSelect(floor.floorId)
       }}
     >
       <span className={`icon-msr-filled ${styles.rowIcon}`} aria-hidden='true'>
         apartment
       </span>
-      <span className={styles.rowName}>{FLOOR_NAME}</span>
+      <span className={styles.rowName}>{floor.floorName}</span>
       {isSelected && (
         <span className={`icon-msr-filled ${styles.rowCheck}`} aria-hidden='true'>
           check

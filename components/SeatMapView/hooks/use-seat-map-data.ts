@@ -55,10 +55,16 @@ export const useSeatMapData = (editor: LayoutEditor): SeatMapData => {
     setWasEditMode(editor.isEditMode)
     if (editor.isEditMode) setFrozenPresenceMap(presenceMap)
   }
-  const effectivePresenceMap = editor.isEditMode ? frozenPresenceMap : presenceMap
+  const effectivePresenceMap = useMemo(
+    () => (editor.isEditMode ? frozenPresenceMap : presenceMap),
+    [editor.isEditMode, frozenPresenceMap, presenceMap]
+  )
 
   // 07: 表示ソース切り替え(編集中はeditingLayout・それ以外は通常ロード分)
-  const effectiveLayout = editor.isEditMode ? editor.editingLayout ?? layout : layout
+  const effectiveLayout = useMemo(
+    () => (editor.isEditMode ? editor.editingLayout ?? layout : layout),
+    [editor.isEditMode, editor.editingLayout, layout]
+  )
 
   // 会議室状態(今日表示中のみ現在時刻で導出。他日は連携有無だけ)
   const nowMin = useMemo(() => {

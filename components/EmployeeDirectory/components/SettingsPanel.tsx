@@ -5,7 +5,7 @@ import { GaroonLogoutBar } from './GaroonLogoutBar'
 import type { ThemeMode } from '@/types'
 import { triggerHaptic } from '@/lib/haptic'
 import { useLayoutSource } from '@/contexts/layout-source-context'
-import { FLOOR_NAME } from '@/lib/mock-loader'
+import { floorNameOf, DEFAULT_FLOOR_ID } from '@/utils/floors'
 
 interface SettingsPanelProps {
   onBack: () => void
@@ -34,6 +34,9 @@ export function SettingsPanel({
   const [isRefreshing, setIsRefreshing] = useState(false)
   const { source } = useLayoutSource()
   const isViewingCustomLayout = source.type === 'custom'
+  // リセット行のラベルに出す対象フロア名。公式表示中は表示中フロア、カスタム表示中は
+  // (リセット自体が無効化されるため)既定フロア名を出す
+  const resetFloorName = source.type === 'official' ? floorNameOf(source.floorId) : floorNameOf(DEFAULT_FLOOR_ID)
 
   const handleRefresh = useCallback(() => {
     triggerHaptic('medium')
@@ -105,8 +108,8 @@ export function SettingsPanel({
           <span className='text-sm'>アバター編集</span>
         </button>
 
-        {/* デモ固有の行: 本社1Fの初期化(確認ダイアログは呼び出し側が持つ)。
-            カスタムレイアウト表示中は本社1Fを触っていないため無効化する */}
+        {/* デモ固有の行: 表示中の公式フロアの初期化(確認ダイアログは呼び出し側が持つ)。
+            カスタムレイアウト表示中は表示中フロアを触っていないため無効化する */}
         {onResetLayout && (
           <button
             type='button'
@@ -130,7 +133,7 @@ export function SettingsPanel({
             >
               restart_alt
             </span>
-            <span className='text-sm'>{`${FLOOR_NAME}を初期化`}</span>
+            <span className='text-sm'>{`${resetFloorName}を初期化`}</span>
           </button>
         )}
 

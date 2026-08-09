@@ -468,6 +468,11 @@
   cursor: pointer;
 }
 
+.adminFabRow[aria-disabled='true'] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .adminFabRowIcon {
   font-size: 20px;
 }
@@ -475,4 +480,11 @@
 .adminFabRowLabel {
   font-size: 12px;
   font-weight: 500;
+}
+
+.adminFabRowHint {
+  margin-left: auto;
+  font-size: 11px;
+  color: var(--color-text-muted);
+  font-weight: 400;
 }

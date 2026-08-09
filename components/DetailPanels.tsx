@@ -1,8 +1,10 @@
 import { useEffect } from 'react'
+import type { ReactNode } from 'react'
 import { SheetShell } from './SheetShell'
 import { EmployeeDetail } from './EmployeeDetail'
 import { FacilityDetail } from './FacilityDetail'
 import { ScheduleDetail } from './ScheduleDetail'
+import { scheduleTitleLabel } from '@/utils/format'
 import { useDetailPanel } from '@/contexts/detail-panel-context'
 import { useFacilities, useSchedules } from '@/lib/mock-loader'
 import styles from './sheet.module.css'
@@ -15,7 +17,11 @@ type Props = {
   showSeatUnsetNotice?: boolean
 }
 
-// 03: 詳細パネル群のオーケストレーター(排他=社員/施設・スタック=予定)
+// 施設の上に社員カードを載せる時だけ z を1段上げる包み。単独表示の時は余計な div を挟まない
+const ConditionalStackTop = ({ stacked, children }: { stacked: boolean; children: ReactNode }) =>
+  stacked ? <div className={styles.stackTop}>{children}</div> : <>{children}</>
+
+// 03: 詳細パネル群のオーケストレーター(社員は施設の上へスタック・スタック=予定)
 export const DetailPanels = ({ onFacilityDeleted, onGoToSeat, showSeatUnsetNotice }: Props) => {
   const { seatDetailId, personDetailId, facilityDetailId, scheduleDetailId, closeTop } = useDetailPanel()
   const { data: facilities } = useFacilities()
@@ -41,26 +47,40 @@ export const DetailPanels = ({ onFacilityDeleted, onGoToSeat, showSeatUnsetNotic
   const facility = facilityDetailId ? facilities?.find((f) => f.id === facilityDetailId) : null
   const scheduleEv = scheduleDetailId ? schedules?.find((s) => s.id === scheduleDetailId) : null
 
+  // 描画順(下→上)は detail-panel-context.tsx の DETAIL_PANEL_LAYER_ORDER
+  // (facility → employee → schedule)が正。closeTop もそこから同じ順を辿って畳むため、
+  // 重なりを変える時は両方を見直すこと(#15)
   return (
     <>
-      {(seatDetailId || personDetailId) && (
-        <SheetShell title='社員詳細' variant='employee' active={scheduleDetailId === null} onClose={closeTop}>
-          <EmployeeDetail
-            seatId={seatDetailId}
-            employeeId={personDetailId}
-            onGoToSeat={onGoToSeat}
-            showSeatUnsetNotice={showSeatUnsetNotice}
-          />
-        </SheetShell>
-      )}
       {facilityDetailId && facility && (
-        <SheetShell title={facility.name} variant='facility' active onClose={closeTop} headerless>
+        <SheetShell
+          title={facility.name}
+          variant='facility'
+          active={seatDetailId === null && personDetailId === null}
+          onClose={closeTop}
+          headerless
+        >
           <FacilityDetail facilityId={facilityDetailId} onDeleted={onFacilityDeleted} />
         </SheetShell>
       )}
+      {(seatDetailId || personDetailId) && (
+        // 施設詳細(参加者ポップオーバー)から開いた時は施設の上へ重ねる(stackTop 段)
+        <ConditionalStackTop stacked={facilityDetailId !== null}>
+          <SheetShell title='社員詳細' variant='employee' active={scheduleDetailId === null} onClose={closeTop}>
+            <EmployeeDetail
+              seatId={seatDetailId}
+              employeeId={personDetailId}
+              onGoToSeat={onGoToSeat}
+              showSeatUnsetNotice={showSeatUnsetNotice}
+            />
+          </SheetShell>
+        </ConditionalStackTop>
+      )}
       {scheduleDetailId && scheduleEv && (
-        <div className={styles.stackTop}>
-          <SheetShell title={scheduleEv.title} variant='schedule' active onClose={closeTop}>
+        // stackTop(施設→社員の段)とは別の stackSchedule 段を使う。社員が施設の上に
+        // スタック中でも予定を確実に最前面へ出すため(sheet.module.css 参照)
+        <div className={styles.stackSchedule}>
+          <SheetShell title={scheduleTitleLabel(scheduleEv)} variant='schedule' active onClose={closeTop}>
             <ScheduleDetail eventId={scheduleDetailId} />
           </SheetShell>
         </div>

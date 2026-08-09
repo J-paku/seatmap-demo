@@ -89,6 +89,12 @@
   flex-direction: column;
   gap: 2px;
 }
+.scheduleAllDayList {
+  padding-bottom: 6px;
+  margin-bottom: 6px;
+  border-bottom: 1px solid var(--color-border);
+}
+
 .scheduleRow {
   width: 100%;
   display: flex;
@@ -126,6 +132,44 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+.scheduleTitle.isMasked {
+  color: var(--color-text-secondary);
+}
+
+/* 非公開の鍵。グローバル .material-symbols-outlined と同詳細度なので font-size は書かず
+   呼び出し側の inline style に任せる(docs/styling.md) */
+.scheduleLock {
+  color: var(--color-text-secondary);
+  flex-shrink: 0;
+}
+
+/* 押さえた会議室。件名より先に削れるよう幅上限を持たせる */
+.scheduleFacility {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  max-width: 96px;
+  min-width: 0;
+  font-size: 11px;
+  color: var(--color-text-secondary);
+}
+/* ellipsis はテキストを直接持つブロックにしか効かない(flex コンテナの .scheduleFacility 自体には無効) */
+.scheduleFacilityName {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+.scheduleUpdatedAt {
+  margin: auto 0 0;
+  padding-top: 8px;
+  padding-right: 4px;
+  text-align: right;
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-secondary);
 }
 
 .scheduleLoading {

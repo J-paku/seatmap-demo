@@ -131,7 +131,13 @@
   color: currentColor;
 }
 
-/* 展開パネル最上段: 公式レイアウトボタン */
+/* 展開パネル最上段: 公式レイアウト(フロア)行の並び。フロア数ぶんの.officialが積まれる */
+.officialList {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
 .official {
   display: flex;
   align-items: center;

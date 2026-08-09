@@ -54,11 +54,20 @@
 }
 
 .stackTop .backdrop {
-  /* 12: 予定詳細(社員詳細より上にスタック) */
+  /* 12: 施設の上に社員詳細をスタックする段 */
   z-index: calc(var(--z-index-modal) + 2);
 }
 .stackTop .sheet {
   z-index: calc(var(--z-index-modal) + 3);
+}
+
+.stackSchedule .backdrop {
+  /* 12: 予定詳細(社員詳細より上にスタック)。stackTop とは別の段にすることで、
+     社員が施設の上にスタック中(stackTop 使用中)でも予定が確実に最前面へ出る */
+  z-index: calc(var(--z-index-modal) + 4);
+}
+.stackSchedule .sheet {
+  z-index: calc(var(--z-index-modal) + 5);
 }
 
 .scroll {

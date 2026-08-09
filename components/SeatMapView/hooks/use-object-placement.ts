@@ -4,7 +4,7 @@ import type { ObjectCategory } from '@/components/ObjectCategorySheet'
 import { siblingRectsForObject } from '@/components/SeatMapCanvas/utils/sibling-rects'
 import { useGhostPlacement } from '@/hooks/use-ghost-placement'
 import type { GhostPlacement } from '@/hooks/use-ghost-placement'
-import type { UseLayoutEditorApi } from '@/hooks/use-layout-editor'
+import type { UseLayoutEditorApi } from '@/hooks/use-layout-editor/use-layout-editor'
 import { FURNITURE_DEFAULT_SIZE, FURNITURE_KIND_LABEL } from '@/utils/furniture-catalog'
 import { rectOfRef } from '@/utils/layout-objects'
 import { placementBlocked } from '@/utils/layout-rules'
@@ -218,20 +218,34 @@ export const useObjectPlacement = (
     onPlaced?.(rect)
   }, [request, placement, editor, onPlaced])
 
-  return {
-    isActive: flow.step !== 'idle',
-    isCategoryOpen: flow.step === 'category',
-    isFurniturePickerOpen: flow.step === 'furniture-picker',
-    isTeamFormOpen: flow.step === 'team-form',
-    request,
-    repositioningRef: request?.target.type === 'reposition' ? request.target.ref : null,
-    placement,
-    openCategory,
-    selectCategory,
-    selectFurniture,
-    submitTeam,
-    startReposition,
-    confirm,
-    cancel,
-  }
+  return useMemo(
+    () => ({
+      isActive: flow.step !== 'idle',
+      isCategoryOpen: flow.step === 'category',
+      isFurniturePickerOpen: flow.step === 'furniture-picker',
+      isTeamFormOpen: flow.step === 'team-form',
+      request,
+      repositioningRef: request?.target.type === 'reposition' ? request.target.ref : null,
+      placement,
+      openCategory,
+      selectCategory,
+      selectFurniture,
+      submitTeam,
+      startReposition,
+      confirm,
+      cancel,
+    }),
+    [
+      flow.step,
+      request,
+      placement,
+      openCategory,
+      selectCategory,
+      selectFurniture,
+      submitTeam,
+      startReposition,
+      confirm,
+      cancel,
+    ]
+  )
 }

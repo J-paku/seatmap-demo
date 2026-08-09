@@ -1,4 +1,4 @@
-import { forwardRef, useCallback, useImperativeHandle } from 'react'
+import { forwardRef, memo, useCallback, useImperativeHandle } from 'react'
 import { EditObjectLayer } from './components/EditObjectLayer'
 import { EditSeatLayer } from './components/EditSeatLayer'
 import { TeamAreaLayer } from './components/TeamAreaLayer'
@@ -32,7 +32,7 @@ export type { SeatMapCanvasHandle } from './type'
 
 type Props = SeatMapCanvasProps
 
-export const SeatMapCanvas = forwardRef<SeatMapCanvasHandle, Props>(function SeatMapCanvas(
+export const SeatMapCanvas = memo(forwardRef<SeatMapCanvasHandle, Props>(function SeatMapCanvas(
   {
     layout,
     employeeById,
@@ -66,6 +66,7 @@ export const SeatMapCanvas = forwardRef<SeatMapCanvasHandle, Props>(function Sea
   const edit = useEditDrag({ viewport, layout, isEditMode, onSeatMove, onTeamMove, onSeatEditSelect, onObjectMove, onEmptySeatTap: onSeatAssignRequest })
   const view = useCanvasViewModel({
     layout,
+    employeeById,
     viewport,
     isEditMode,
     editSelectedSeatId: edit.editSelectedSeatId,
@@ -233,4 +234,4 @@ export const SeatMapCanvas = forwardRef<SeatMapCanvasHandle, Props>(function Sea
       )}
     </div>
   )
-})
+}))

@@ -485,5 +485,51 @@
     "furiganaSei": "ｷｶｸﾌﾞ7",
     "email": "ki0044@example.co.jp",
     "phone": "0903865xxxx"
+  },
+  {
+    "id": "emp-045",
+    "name": "総務部分室1",
+    "nameKana": "ソウムブブンシツ1",
+    "teamId": "team-06",
+    "team": "総務部分室",
+    "ownerCode": "0045",
+    "furiganaSei": "ｿｳﾑﾌﾞﾌﾞﾝｼﾂ1",
+    "position": "部長",
+    "email": "so0045@example.co.jp",
+    "phone": "0706505xxxx"
+  },
+  {
+    "id": "emp-046",
+    "name": "総務部分室2",
+    "nameKana": "ソウムブブンシツ2",
+    "teamId": "team-06",
+    "team": "総務部分室",
+    "ownerCode": "0046",
+    "furiganaSei": "ｿｳﾑﾌﾞﾌﾞﾝｼﾂ2",
+    "email": "so0046@example.co.jp",
+    "phone": "0908139xxxx"
+  },
+  {
+    "id": "emp-047",
+    "name": "総務部分室3",
+    "nameKana": "ソウムブブンシツ3",
+    "teamId": "team-06",
+    "team": "総務部分室",
+    "ownerCode": "0047",
+    "furiganaSei": "ｿｳﾑﾌﾞﾌﾞﾝｼﾂ3",
+    "email": "so0047@example.co.jp",
+    "phone": "0704115xxxx"
+  },
+  {
+    "id": "emp-048",
+    "name": "総務部分室4",
+    "nameKana": "ソウムブブンシツ4",
+    "teamId": "team-06",
+    "team": "総務部分室",
+    "ownerCode": "0048",
+    "furiganaSei": "ｿｳﾑﾌﾞﾌﾞﾝｼﾂ4",
+    "position": "課長",
+    "email": "so0048@example.co.jp",
+    "phone": "0705422xxxx"
   }
 ]

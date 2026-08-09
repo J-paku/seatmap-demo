@@ -1,4 +1,5 @@
 import { FacilityPersonRow } from './FacilityPersonRow'
+import { useEmployeeMap } from '@/hooks/use-employee-map'
 import { minToHHMM } from '@/utils/facility-status'
 import type { Employee, FacilityMeeting } from '@/types'
 import styles from '../facility-detail.module.css'
@@ -11,7 +12,7 @@ type Props = {
 
 // 現在進行中の会議: 件名・時刻・残り分数と、登録者/参加者をアバター付き人物行で表示する
 export const FacilityCurrentEvent = ({ meeting, nowMin, employees }: Props) => {
-  const empById = new Map(employees.map((employee) => [employee.id, employee]))
+  const empById = useEmployeeMap(employees)
   const organizer = empById.get(meeting.organizerId)
   const participants = meeting.participantIds
     .map((id) => empById.get(id))

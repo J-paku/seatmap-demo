@@ -1,0 +1,34 @@
+[
+  {
+    "id": "fac2-01",
+    "name": "会議室E",
+    "kind": "meeting",
+    "capacity": 4,
+    "width": 250,
+    "height": 130,
+    "x": 450,
+    "y": 30,
+    "facilityId": "F-06"
+  },
+  {
+    "id": "fac2-02",
+    "name": "会議室F",
+    "kind": "meeting",
+    "capacity": 6,
+    "width": 250,
+    "height": 150,
+    "x": 450,
+    "y": 200,
+    "facilityId": "F-07"
+  },
+  {
+    "id": "aisle2-01",
+    "name": "通路",
+    "kind": "aisle",
+    "capacity": 0,
+    "x": 350,
+    "y": 6,
+    "width": 60,
+    "height": 350
+  }
+]

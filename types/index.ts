@@ -273,6 +273,13 @@ export type FacilityMeeting = {
   participantIds: string[]
 }
 
+// フロア(階)1件。一覧表示や切り替えUIはこの形だけを見る
+export type Floor = { floorId: string; floorName: string }
+
+// フロア識別子。値(FLOORS一覧・DEFAULT_FLOOR_ID・isFloorId・floorNameOf)は
+// utils/floors.ts に集約する(types/ は型定義のみを持つ)。型だけここで再エクスポートする
+export type { FloorId } from '@/utils/floors'
+
 // フロアレイアウト(ローダーが teams+seats+facilities+furniture を合成)。
 // furniture は必須にして、保存済みレイアウトの読み込み口(lib/layout-persistence.ts)で
 // 既定 [] を埋める。任意にすると各利用側が undefined を意識する必要が出る
@@ -304,4 +311,9 @@ export type ScheduleEvent = {
   start: string
   end: string
   isAllDay: boolean
+  // 押さえた会議室の施設ID(Facility.facilityId と同じ空間)。施設を押さえない予定
+  // (外出・休暇・オンライン会議)は持たない。同じ会議に出る全員の予定へ同じ値が入る
+  facilityId?: string
+  // 非公開予定。本人以外には件名を出さず時間帯だけ見せる。区分は残るので在席状態は変わらない
+  isPrivate?: boolean
 }

@@ -1,6 +1,6 @@
 // 座席を1つ指定して「その座席が属するチームのオーバーレイを開き、その座席をヒット表示する」経路。
 // ディレクトリ検索と「自分の席」ボタンの唯一の入口であり、分岐は呼び出し側だけに置く(引数は Seat 1つ)
-import { useCallback, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import type { RefObject } from 'react'
 import type { SeatMapCanvasHandle } from '@/components/SeatMapCanvas'
 import type { TeamOverlayPayload } from '@/components/TeamOverlay'
@@ -69,5 +69,8 @@ export const useTeamSeatFocus = ({ layout, canvasRef, onFailure }: Options): Tea
     setHighlightSeatId(null)
   }, [])
 
-  return { payload, highlightSeatId, focusSeat, close, clearHighlight, openByBoundary }
+  return useMemo(
+    () => ({ payload, highlightSeatId, focusSeat, close, clearHighlight, openByBoundary }),
+    [payload, highlightSeatId, focusSeat, close, clearHighlight, openByBoundary]
+  )
 }

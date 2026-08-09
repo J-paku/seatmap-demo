@@ -2,7 +2,7 @@
 import { useEffect, useRef } from 'react'
 import type { TeamColorEntry } from '@/utils/team-colors'
 import type { Team } from '@/types'
-import { useSwipeDismiss } from '@/hooks/use-swipe-dismiss'
+import { useSwipeToDismiss } from '@/hooks/use-swipe-to-dismiss'
 import e from './admin-edit.module.css'
 
 type Props = {
@@ -16,7 +16,7 @@ type Props = {
 export const TeamChangeSheet = ({ teams, currentTeamId, colorOf, onSelect, onClose }: Props) => {
   const listRef = useRef<HTMLDivElement>(null)
   // 下スワイプで閉じる(リスト内スクロール中は開始しない)
-  const { sheetRef, bind } = useSwipeDismiss({ onClose, scrollGateRef: listRef })
+  const { sheetHandlers, dragStyle } = useSwipeToDismiss({ onDismiss: onClose })
 
   // マウント時に必ずスクロール位置を先頭へ戻す
   useEffect(() => {
@@ -26,13 +26,17 @@ export const TeamChangeSheet = ({ teams, currentTeamId, colorOf, onSelect, onClo
   return (
     <div className={e.editDialogBackdrop} onClick={onClose}>
       <div
-        ref={sheetRef}
         className={e.editSheet}
         role='dialog'
         aria-modal='true'
         aria-label='チーム変更'
         onClick={(e) => e.stopPropagation()}
-        {...bind}
+        {...sheetHandlers}
+        style={{
+          transform: dragStyle.transform,
+          transition: dragStyle.transition,
+          willChange: dragStyle.willChange,
+        }}
       >
         <h3 className={e.editSheetTitle}>チーム変更</h3>
         <div ref={listRef} className={e.editTeamList}>

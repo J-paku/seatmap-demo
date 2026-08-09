@@ -1,4 +1,4 @@
-import { useMemo, useRef } from 'react'
+import { useCallback, useMemo, useRef } from 'react'
 import { EditDock } from './components/EditDock'
 import { Minimap } from './components/Minimap'
 import { SeatDragGhost } from './components/SeatDragGhost'
@@ -24,8 +24,9 @@ import { ConfirmDialog } from '@/components/edit/ConfirmDialog'
 import { EmployeeAssignSheet } from '@/components/EmployeeAssignSheet'
 import { SeatMapPortal } from '@/components/SeatMapPortal'
 import { SheetHandle } from '@/components/SheetHandle'
-import { useSwipeDismiss } from '@/hooks/use-swipe-dismiss'
+import { useSwipeToDismiss } from '@/hooks/use-swipe-to-dismiss'
 import type { Rect } from '@/utils/rect'
+import { countOccupiedSeats } from '@/utils/seat-occupancy'
 
 // 10: チームバウンダリクリックで開く大型オーバーレイ(座席グリッド全体)
 // クリックしたバウンダリ中心から膨らむように開く。中央固定拡大ではない
@@ -68,7 +69,9 @@ export const TeamOverlay = ({
     grid: editMode.grid,
     draft: editMode.draft,
   })
-  const occupiedCount = useMemo(() => teamSeats.filter((s) => s.employeeId).length, [teamSeats])
+  // 判定基準は utils/seat-occupancy.ts に一本化(存在しない社員IDを参照する座席まで
+  // 数えてしまい、空席なのに N名と出る不整合を防ぐ)
+  const occupiedCount = useMemo(() => countOccupiedSeats(teamSeats, employeeById), [teamSeats, employeeById])
 
   // STEP B1: 編集中セルの選択(席か空セルのどちらか1件だけ)。編集モードを抜けると自動で消える
   const seatSelection = useSeatSelection(editMode.isEditMode)
@@ -96,6 +99,10 @@ export const TeamOverlay = ({
     seatCommit,
     handleSaveEdit,
     handleCancelEdit,
+    hasEditChanges,
+    isDiscardConfirmOpen,
+    confirmDiscardClose,
+    cancelDiscardClose,
     guardedClose,
   } = useOverlayEditWiring({
     payload,
@@ -110,12 +117,22 @@ export const TeamOverlay = ({
     onClose,
   })
 
-  // 下スワイプで閉じるのは Compact だけの挙動
-  const { sheetRef, bind } = useSwipeDismiss({
-    onClose: guardedClose,
+  // 下スワイプで閉じるのは Compact だけの挙動。内部スクロールが上端かどうかの判定は
+  // フック側(computeScrollGate)がイベント経路から遡って行うため bodyRef は渡さない
+  const sheetRef = useRef<HTMLDivElement>(null)
+  const { sheetHandlers, dragStyle } = useSwipeToDismiss({
+    onDismiss: guardedClose,
     enabled: payload !== null && isCompactMobile,
-    scrollGateRef: bodyRef,
   })
+  // useModalShell(フォーカストラップ)へ渡す実ノード参照と、フックのシート root 登録を1つの ref に束ねる。
+  // 毎レンダー新しい関数を渡すと背景スクロール連鎖ガードが着脱を繰り返すため参照を固定する
+  const setSheetNode = useCallback(
+    (node: HTMLDivElement | null) => {
+      sheetRef.current = node
+      sheetHandlers.ref(node)
+    },
+    [sheetHandlers.ref]
+  )
   useModalShell(payload !== null, sheetRef, guardedClose)
 
   if (!payload) return null
@@ -123,11 +140,6 @@ export const TeamOverlay = ({
   const { teamColor, teamName, rect } = payload
   const sidePadding = isCompactMobile ? COMPACT_SIDE_PADDING_PX : 0
   const teamRect: Rect = minimapTeamArea ?? { x: 0, y: 0, w: 0, h: 0 }
-  // STEP D3: 編集ドックの保存可否。changeCountだけ見ると、行・列の増減や席の移動(gridにしか
-  // 現れずchangeCountでは1件も数えない)をした時に保存できない不具合が起きるため、
-  // seatCommit.commitの内部ゲートと同じ2値(draft.changeCount / editMode.isGridChanged)を見る
-  const hasEditChanges = editMode.draft.changeCount > 0 || editMode.isGridChanged
-
   return (
     <div
       className={`${styles.wrap}${isCompactMobile ? ` ${styles.isCompact}` : ''}`}
@@ -138,7 +150,6 @@ export const TeamOverlay = ({
     >
       <div className={styles.backdrop} onClick={guardedClose} />
       <div
-        ref={sheetRef}
         className={`${styles.panel}${isCompactMobile ? ` ${styles.isCompact}` : ''}`}
         role='dialog'
         aria-modal='true'
@@ -146,6 +157,11 @@ export const TeamOverlay = ({
         style={{
           transformOrigin: anchorTransformOrigin(rect),
           pointerEvents: clickLocked ? 'none' : 'auto',
+          // ドラッグ中は指へ追従(transform はフックが直接書き込む)、離指後はここの
+          // transition が復帰してスナップバックする
+          transform: dragStyle.transform,
+          transition: dragStyle.transition,
+          willChange: dragStyle.willChange,
         }}
         onClick={(e) => {
           e.stopPropagation()
@@ -162,7 +178,8 @@ export const TeamOverlay = ({
             seatSelection.clearSelection()
           }
         }}
-        {...bind}
+        {...sheetHandlers}
+        ref={setSheetNode}
       >
         {loading && <div className={styles.loadbar} style={{ background: teamColor }} />}
         {/* ハンドルは Compact のみ描画する */}
@@ -285,6 +302,16 @@ export const TeamOverlay = ({
             confirmLabel='実行する'
             onConfirm={bulkAssign.confirmBulkAssign}
             onCancel={bulkAssign.cancelBulkAssign}
+          />
+        )}
+        {/* 編集中に閉じようとした時の破棄確認。保存せずに閉じる経路はここだけを通る */}
+        {isDiscardConfirmOpen && (
+          <ConfirmDialog
+            ariaLabel='編集内容の破棄確認'
+            message='編集内容を破棄して閉じますか?'
+            confirmLabel='破棄して閉じる'
+            onConfirm={confirmDiscardClose}
+            onCancel={cancelDiscardClose}
           />
         )}
       </SeatMapPortal>

@@ -21,6 +21,8 @@ type UseFacilityScheduleForDateArgs = {
   facilityId: string
   dateKey: string
   isTodaySelected: boolean
+  // パネルが非表示(社員カードにスタックされ隠れている等)の間は取得タイマーを止める。既定 false で後方互換
+  paused?: boolean
 }
 
 type UseFacilityScheduleForDateResult = {
@@ -35,6 +37,7 @@ export const useFacilityScheduleForDate = ({
   facilityId,
   dateKey,
   isTodaySelected,
+  paused = false,
 }: UseFacilityScheduleForDateArgs): UseFacilityScheduleForDateResult => {
   const { data: seedMeetings } = useFacilityMeetings()
   const { data: employees } = useEmployees()
@@ -52,6 +55,10 @@ export const useFacilityScheduleForDate = ({
       window.clearTimeout(timeoutRef.current)
       timeoutRef.current = null
     }
+
+    // 非表示の間はタイマーを作らない(上でクリア済み)。可視化時は paused が依存配列に
+    // 含まれるためこのeffectが再実行され、そのタイミングの値で通常どおり確定する
+    if (paused) return
 
     // isTodaySelectedは遅延・ローディング表示のみを制御する。種データ/生成の分岐は
     // meetingsForDate内のdateKey===todayKey比較が単独で決める(真のtodayKeyを両分岐に渡す)
@@ -78,7 +85,7 @@ export const useFacilityScheduleForDate = ({
         timeoutRef.current = null
       }
     }
-  }, [facilityId, dateKey, isTodaySelected, todayKey, seed, employeeIds])
+  }, [facilityId, dateKey, isTodaySelected, todayKey, seed, employeeIds, paused])
 
   return { meetings, isLoading }
 }

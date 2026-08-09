@@ -11,7 +11,7 @@ import {
 import { createEmptyLayout, createLayoutId } from '@/utils/layout-id'
 import { useLayoutSource } from '@/contexts/layout-source-context'
 import { useGlobalAnnouncement } from '@/components/a11y'
-import { FLOOR_NAME } from '@/lib/mock-loader'
+import { floorNameOf } from '@/utils/floors'
 import type { LayoutMeta } from '@/types'
 
 export type UseLayoutSwitcherResult = {
@@ -22,7 +22,7 @@ export type UseLayoutSwitcherResult = {
   rootRef: RefObject<HTMLDivElement | null>
   toggle: () => void
   close: () => void
-  selectOfficial: () => void
+  selectOfficial: (floorId: string) => void
   selectCustom: (layoutId: string) => void
   createLayout: (rawName: string) => void
   toggleDefault: (layoutId: string) => void
@@ -110,22 +110,28 @@ export const useLayoutSwitcher = (): UseLayoutSwitcherResult => {
     return () => document.removeEventListener('pointerdown', onPointerDown)
   }, [isOpen, deleteTarget, close])
 
-  // 公式レイアウトへ切り替えてアイランドを閉じる。開いたままだと切り替わったキャンバスが隠れるため
-  const selectOfficial = useCallback(() => {
-    setOfficial()
-    announce(`[info]${FLOOR_NAME}に切り替えました`)
-    close()
-  }, [setOfficial, announce, close])
-
-  // カスタムレイアウトへ切り替えてアイランドを閉じる
-  const selectCustom = useCallback(
-    (layoutId: string) => {
-      const meta = layoutMetas.find((m) => m.layoutId === layoutId)
-      setCustom(layoutId)
-      announce(`[info]${meta?.layoutName ?? ''}に切り替えました`)
+  // 公式レイアウトへ切り替えてアイランドを閉じる。開いたままだと切り替わったキャンバスが隠れるため。
+  // 既に同じフロアが選択中かどうかの判定は context 側の setOfficial へ一本化した(#17)。
+  // 戻り値が false(実際には切り替わっていない)の時は通知しない
+  const selectOfficial = useCallback(
+    (floorId: string) => {
+      if (setOfficial(floorId)) announce(`[info]${floorNameOf(floorId)}に切り替えました`)
       close()
     },
-    [layoutMetas, setCustom, announce, close]
+    [setOfficial, announce, close]
+  )
+
+  // カスタムレイアウトへ切り替えてアイランドを閉じる。
+  // 既に同じレイアウトが選択中かどうかの判定は context 側の setCustom へ一本化した(#17)
+  const selectCustom = useCallback(
+    (layoutId: string) => {
+      if (setCustom(layoutId)) {
+        const meta = layoutMetas.find((m) => m.layoutId === layoutId)
+        announce(`[info]${meta?.layoutName ?? ''}に切り替えました`)
+      }
+      close()
+    },
+    [setCustom, layoutMetas, announce, close]
   )
 
   // 新規カスタムレイアウトを作成し、作成したレイアウトへ即座に切り替えてアイランドを閉じる。

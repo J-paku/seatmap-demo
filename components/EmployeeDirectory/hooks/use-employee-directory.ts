@@ -2,7 +2,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import type { Employee } from '@/types'
 import { matchesEmployeeQuery, normalizeSearchText } from '@/utils/employee-search'
-import { useFavorites } from '@/hooks/use-favorites'
+import { useFavorites } from './use-favorites'
 import type { FavoritesContent } from '../components/DepartmentTree/types'
 
 interface DepartmentGroup {

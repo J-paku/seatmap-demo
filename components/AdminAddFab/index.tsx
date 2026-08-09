@@ -1,4 +1,4 @@
-// 左下管理パネルの本体。タップでスピードダイヤルを開閉し、長押しで編集モードへ入る
+// 左下管理パネルの本体。タップでスピードダイヤルを開閉する
 import type { CSSProperties } from 'react'
 import { useAdminAddFab } from './hooks/use-admin-add-fab'
 import type { UseAdminAddFabParams } from './hooks/use-admin-add-fab'
@@ -11,9 +11,11 @@ type MenuItem = {
   label: string
   icon: string
   onClick: () => void
+  disabled?: boolean
+  hint?: string
 }
 
-export const AdminAddFab = ({ onSelectTeam, onSelectFacility, onEnterEdit }: Props) => {
+export const AdminAddFab = ({ onSelectTeam, onSelectFacility }: Props) => {
   const {
     isMenuOpen,
     closeMenu,
@@ -23,13 +25,13 @@ export const AdminAddFab = ({ onSelectTeam, onSelectFacility, onEnterEdit }: Pro
     onMenuKeyDown,
     handleSelectTeam,
     handleSelectFacility,
-    handleEnterEdit,
-  } = useAdminAddFab({ onSelectTeam, onSelectFacility, onEnterEdit })
+    handleEditLayout,
+  } = useAdminAddFab({ onSelectTeam, onSelectFacility })
 
   const items: MenuItem[] = [
     { key: 'team', label: 'チーム', icon: 'groups', onClick: handleSelectTeam },
     { key: 'facility', label: '設備', icon: 'event_note', onClick: handleSelectFacility },
-    { key: 'edit', label: 'レイアウトを編集', icon: 'edit', onClick: handleEnterEdit },
+    { key: 'edit', label: 'レイアウトを編集', icon: 'edit', onClick: handleEditLayout, disabled: true, hint: '準備中' },
   ]
 
   return (
@@ -47,12 +49,14 @@ export const AdminAddFab = ({ onSelectTeam, onSelectFacility, onEnterEdit }: Pro
               role='menuitem'
               className={`${styles.adminFabRow} glass-dial-row glass-stagger-item`}
               style={{ '--glass-stagger-i': items.length - 1 - index } as CSSProperties}
-              onClick={item.onClick}
+              onClick={item.disabled ? undefined : item.onClick}
+              aria-disabled={item.disabled}
             >
               <span className={`icon-msr-thin ${styles.adminFabRowIcon}`} aria-hidden='true'>
                 {item.icon}
               </span>
               <span className={styles.adminFabRowLabel}>{item.label}</span>
+              {item.hint && <span className={styles.adminFabRowHint}>{item.hint}</span>}
             </button>
           ))}
         </div>
@@ -66,9 +70,6 @@ export const AdminAddFab = ({ onSelectTeam, onSelectFacility, onEnterEdit }: Pro
         aria-expanded={isMenuOpen}
         aria-label={isMenuOpen ? '追加メニューを閉じる' : '追加メニューを開く'}
         onPointerDown={fabHandlers.onPointerDown}
-        onPointerMove={fabHandlers.onPointerMove}
-        onPointerUp={fabHandlers.onPointerUp}
-        onPointerLeave={fabHandlers.onPointerLeave}
         onClick={fabHandlers.onClick}
       >
         <span className={`icon-msr-thin ${styles.adminFabIcon}`} aria-hidden='true'>

@@ -26,10 +26,10 @@ export const AppHeader = ({ onOpenDirectory, isDirectoryOpen }: Props) => {
           paddingRight: 'calc(env(safe-area-inset-right) + 1rem)',
         }}
       >
-        {/* ロゴ — 実物はホームへ遷移するが、デモは単一ページなので外形だけ残して no-op(§2.1) */}
-        <button
-          type='button'
-          aria-label='ホームへ移動'
+        {/* ロゴ — ポートフォリオハブ(J-Paku)へ遷移する */}
+        <a
+          href='https://j-paku.github.io/'
+          aria-label='J-Paku ポートフォリオへ移動'
           onClick={() => {
             triggerHaptic('light')
           }}
@@ -55,7 +55,7 @@ export const AppHeader = ({ onOpenDirectory, isDirectoryOpen }: Props) => {
             priority
             className='hidden w-[86px] h-auto dark:block'
           />
-        </button>
+        </a>
 
         <div className='flex-1 min-w-0' />
 

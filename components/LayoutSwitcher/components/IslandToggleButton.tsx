@@ -1,6 +1,6 @@
 import type { LayoutSource } from '@/contexts/layout-source-context'
 import type { LayoutMeta } from '@/types'
-import { FLOOR_NAME } from '@/lib/mock-loader'
+import { DEFAULT_FLOOR_ID, floorNameOf } from '@/utils/floors'
 import { triggerHaptic } from '@/lib/haptic'
 import styles from '../layout-switcher.module.css'
 
@@ -17,8 +17,9 @@ type Props = {
 export const IslandToggleButton = ({ source, layoutMetas, isOpen, panelId, onToggle }: Props) => {
   const isCustom = source.type === 'custom'
   const currentName = isCustom
-    ? (layoutMetas.find((meta) => meta.layoutId === source.layoutId)?.layoutName ?? FLOOR_NAME)
-    : FLOOR_NAME
+    ? (layoutMetas.find((meta) => meta.layoutId === source.layoutId)?.layoutName ??
+      floorNameOf(DEFAULT_FLOOR_ID))
+    : floorNameOf(source.floorId)
 
   return (
     <button

@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import type { LayoutEditor } from '../type'
 import type { Employee, Facility, LayoutObjectRef, Seat, Team } from '@/types'
 
@@ -85,34 +85,65 @@ export const useEditDialogs = (
 
   const deleteTargetSeat = editor.editingLayout?.seats.find((s) => s.id === deleteConfirmSeatId) ?? null
 
-  return {
-    deleteConfirmSeatId,
-    deleteTargetEmployeeName: deleteTargetSeat?.employeeId
-      ? employeeById.get(deleteTargetSeat.employeeId)?.name ?? null
-      : null,
-    teamChangeSeatId,
-    teamChangeTargetSeat: editor.editingLayout?.seats.find((s) => s.id === teamChangeSeatId) ?? null,
-    teamActionTeamId,
-    teamActionTeam: editor.editingLayout?.teams.find((t) => t.id === teamActionTeamId) ?? null,
-    teamActionSeatCount: teamActionTeamId
-      ? editor.editingLayout?.seats.filter((s) => s.teamId === teamActionTeamId).length ?? 0
-      : 0,
-    relayoutTeamId,
-    relayoutTargetTeam: editor.editingLayout?.teams.find((t) => t.id === relayoutTeamId) ?? null,
-    relayoutTargetSeatCount: relayoutTeamId
-      ? editor.editingLayout?.seats.filter((s) => s.teamId === relayoutTeamId).length ?? 0
-      : 0,
-    deleteObjectTarget: editor.editingLayout?.facilities.find((f) => f.id === deleteObjectId) ?? null,
-    requestSeatDelete,
-    requestObjectDelete,
-    confirmObjectDelete,
-    closeObjectDelete: useCallback(() => setDeleteObjectId(null), []),
-    requestTeamChange: useCallback((seatId: string) => setTeamChangeSeatId(seatId), []),
-    requestTeamAction: useCallback((teamId: string) => setTeamActionTeamId(teamId), []),
-    chooseTeamAction,
-    closeTeamAction: useCallback(() => setTeamActionTeamId(null), []),
-    closeDeleteConfirm: useCallback(() => setDeleteConfirmSeatId(null), []),
-    closeTeamChange: useCallback(() => setTeamChangeSeatId(null), []),
-    closeRelayout: useCallback(() => setRelayoutTeamId(null), []),
-  }
+  const closeObjectDelete = useCallback(() => setDeleteObjectId(null), [])
+  const requestTeamChange = useCallback((seatId: string) => setTeamChangeSeatId(seatId), [])
+  const requestTeamAction = useCallback((teamId: string) => setTeamActionTeamId(teamId), [])
+  const closeTeamAction = useCallback(() => setTeamActionTeamId(null), [])
+  const closeDeleteConfirm = useCallback(() => setDeleteConfirmSeatId(null), [])
+  const closeTeamChange = useCallback(() => setTeamChangeSeatId(null), [])
+  const closeRelayout = useCallback(() => setRelayoutTeamId(null), [])
+
+  return useMemo(
+    () => ({
+      deleteConfirmSeatId,
+      deleteTargetEmployeeName: deleteTargetSeat?.employeeId
+        ? employeeById.get(deleteTargetSeat.employeeId)?.name ?? null
+        : null,
+      teamChangeSeatId,
+      teamChangeTargetSeat: editor.editingLayout?.seats.find((s) => s.id === teamChangeSeatId) ?? null,
+      teamActionTeamId,
+      teamActionTeam: editor.editingLayout?.teams.find((t) => t.id === teamActionTeamId) ?? null,
+      teamActionSeatCount: teamActionTeamId
+        ? editor.editingLayout?.seats.filter((s) => s.teamId === teamActionTeamId).length ?? 0
+        : 0,
+      relayoutTeamId,
+      relayoutTargetTeam: editor.editingLayout?.teams.find((t) => t.id === relayoutTeamId) ?? null,
+      relayoutTargetSeatCount: relayoutTeamId
+        ? editor.editingLayout?.seats.filter((s) => s.teamId === relayoutTeamId).length ?? 0
+        : 0,
+      deleteObjectTarget: editor.editingLayout?.facilities.find((f) => f.id === deleteObjectId) ?? null,
+      requestSeatDelete,
+      requestObjectDelete,
+      confirmObjectDelete,
+      closeObjectDelete,
+      requestTeamChange,
+      requestTeamAction,
+      chooseTeamAction,
+      closeTeamAction,
+      closeDeleteConfirm,
+      closeTeamChange,
+      closeRelayout,
+    }),
+    [
+      deleteConfirmSeatId,
+      deleteTargetSeat,
+      employeeById,
+      teamChangeSeatId,
+      teamActionTeamId,
+      relayoutTeamId,
+      deleteObjectId,
+      editor.editingLayout,
+      requestSeatDelete,
+      requestObjectDelete,
+      confirmObjectDelete,
+      closeObjectDelete,
+      requestTeamChange,
+      requestTeamAction,
+      chooseTeamAction,
+      closeTeamAction,
+      closeDeleteConfirm,
+      closeTeamChange,
+      closeRelayout,
+    ]
+  )
 }

@@ -1,5 +1,5 @@
 // 07-admin-edit: 削除確認ダイアログ(着席中は着席者名を表示して警告)
-import { useSwipeDismiss } from '@/hooks/use-swipe-dismiss'
+import { useSwipeToDismiss } from '@/hooks/use-swipe-to-dismiss'
 import e from './admin-edit.module.css'
 
 type Props = {
@@ -10,18 +10,22 @@ type Props = {
 
 export const DeleteConfirmDialog = ({ employeeName, onConfirm, onCancel }: Props) => {
   // 下スワイプはキャンセルと同じ扱い(削除確定にはしない)
-  const { sheetRef, bind } = useSwipeDismiss({ onClose: onCancel })
+  const { sheetHandlers, dragStyle } = useSwipeToDismiss({ onDismiss: onCancel })
 
   return (
     <div className={e.editDialogBackdrop} onClick={onCancel}>
       <div
-        ref={sheetRef}
         className={e.editDialog}
         role='dialog'
         aria-modal='true'
         aria-label='座席削除の確認'
         onClick={(e) => e.stopPropagation()}
-        {...bind}
+        {...sheetHandlers}
+        style={{
+          transform: dragStyle.transform,
+          transition: dragStyle.transition,
+          willChange: dragStyle.willChange,
+        }}
       >
         <p className={e.editDialogMessage}>
           {employeeName ? (

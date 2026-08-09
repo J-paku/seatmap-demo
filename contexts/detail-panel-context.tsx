@@ -10,6 +10,11 @@ export type DetailPanelState = {
   scheduleDetailId: string | null
 }
 
+// 03: パネルの重なり順(下→上)。DetailPanels の描画順・スタック CSS(stackTop/stackSchedule)は
+// この順で上へ重ねる。closeTop はこの配列を逆順に辿り、最初に開いている層だけを畳む(#15 単一ソース化)
+const DETAIL_PANEL_LAYER_ORDER = ['facility', 'employee', 'schedule'] as const
+type DetailPanelLayer = (typeof DETAIL_PANEL_LAYER_ORDER)[number]
+
 type DetailPanelApi = DetailPanelState & {
   openSeatDetail: (seatId: string) => void
   openPersonDetail: (employeeId: string) => void
@@ -27,6 +32,27 @@ const EMPTY: DetailPanelState = {
   scheduleDetailId: null,
 }
 
+// 層ごとの開閉判定と、畳む時に空にするフィールド。DETAIL_PANEL_LAYER_ORDER の要素ごとに1つ
+type LayerRule = {
+  isOpen: (s: DetailPanelState) => boolean
+  close: (s: DetailPanelState) => DetailPanelState
+}
+
+const LAYER_RULES: Record<DetailPanelLayer, LayerRule> = {
+  facility: {
+    isOpen: (s) => s.facilityDetailId !== null,
+    close: () => EMPTY,
+  },
+  employee: {
+    isOpen: (s) => s.seatDetailId !== null || s.personDetailId !== null,
+    close: (s) => ({ ...s, seatDetailId: null, personDetailId: null }),
+  },
+  schedule: {
+    isOpen: (s) => s.scheduleDetailId !== null,
+    close: (s) => ({ ...s, scheduleDetailId: null }),
+  },
+}
+
 const Ctx = createContext<DetailPanelApi | null>(null)
 
 export const DetailPanelProvider = ({ children }: { children: ReactNode }) => {
@@ -37,8 +63,10 @@ export const DetailPanelProvider = ({ children }: { children: ReactNode }) => {
     setState({ ...EMPTY, seatDetailId: seatId })
   }, [])
 
+  // 施設詳細を開いたまま参加者カードを重ねる。施設を閉じてしまうと参加者を1人見るたびに
+  // 会議室へ戻り直すことになるため、戻り先として施設だけは残す(他は従来どおり畳む)
   const openPersonDetail = useCallback((employeeId: string) => {
-    setState({ ...EMPTY, personDetailId: employeeId })
+    setState((s) => ({ ...EMPTY, facilityDetailId: s.facilityDetailId, personDetailId: employeeId }))
   }, [])
 
   const openFacilityDetail = useCallback((facilityId: string) => {
@@ -53,8 +81,15 @@ export const DetailPanelProvider = ({ children }: { children: ReactNode }) => {
   // 席の有無に関わらず開けるようになったため、座席を引く分岐は持たない
   const switchToEmployee = openPersonDetail
 
+  // DETAIL_PANEL_LAYER_ORDER を逆順(上から)に辿り、最初に開いている層だけを畳む。
+  // 社員が施設の上に載っている時は社員だけを外し(施設は残る)、施設単独・社員単独は全部閉じる
   const closeTop = useCallback(() => {
-    setState((s) => (s.scheduleDetailId ? { ...s, scheduleDetailId: null } : EMPTY))
+    setState((s) => {
+      for (const layer of [...DETAIL_PANEL_LAYER_ORDER].reverse()) {
+        if (LAYER_RULES[layer].isOpen(s)) return LAYER_RULES[layer].close(s)
+      }
+      return s
+    })
   }, [])
 
   const closeAll = useCallback(() => setState(EMPTY), [])

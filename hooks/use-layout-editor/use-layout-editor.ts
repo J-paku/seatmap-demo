@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, useMemo } from 'react'
 import { useEditSession } from './use-edit-session'
 import { applyLayoutAction } from '@/utils/layout-actions'
 import { useErrorToast } from './use-error-toast'
@@ -50,9 +50,20 @@ const MSG_OVERLAP = 'ここには配置できません'
 const MSG_AREA_FULL = 'エリアが広がって他と重なるため追加できません'
 
 export const useLayoutEditor = (sourceLayout: SeatLayout | undefined): UseLayoutEditorApi => {
-  const session = useEditSession(sourceLayout)
+  // セッションは毎レンダー新しい入れ物を返すので、ここで中身へ分解して以降は個々の値だけを見る
+  // (入れ物のまま持つと、後段の useMemo が毎レンダー作り直しになる)
+  const {
+    isEditMode,
+    editingLayout,
+    changedCount,
+    canUndo,
+    enterEditMode,
+    finishEdit,
+    cancelEdit,
+    undo,
+    dispatch,
+  } = useEditSession(sourceLayout)
   const { errorToast, showError, dismissError } = useErrorToast()
-  const { editingLayout, dispatch } = session
 
   // 座席ドラッグ移動(スワップ/エリア内assign連鎖含む)
   const moveSeat = useCallback(
@@ -86,6 +97,13 @@ export const useLayoutEditor = (sourceLayout: SeatLayout | undefined): UseLayout
     },
     [editingLayout, dispatch, showError]
   )
+
+  const assignSeat = useCallback(
+    (seatId: string, teamId: string) => dispatch({ type: 'seat-assign', seatId, teamId }, [seatId]),
+    [dispatch]
+  )
+
+  const deleteSeat = useCallback((seatId: string) => dispatch({ type: 'seat-delete', seatId }, [seatId]), [dispatch])
 
   // チームラベルドラッグ: area+所属全座席を同一delta平行移動(単一アクション=team-move)
   const moveTeam = useCallback(
@@ -263,32 +281,60 @@ export const useLayoutEditor = (sourceLayout: SeatLayout | undefined): UseLayout
     [dispatch]
   )
 
-  return {
-    isEditMode: session.isEditMode,
-    editingLayout,
-    changedCount: session.changedCount,
-    canUndo: session.canUndo,
-    errorToast,
-    enterEditMode: session.enterEditMode,
-    finishEdit: session.finishEdit,
-    cancelEdit: session.cancelEdit,
-    undo: session.undo,
-    dismissError,
-    moveSeat,
-    assignSeat: useCallback(
-      (seatId: string, teamId: string) => dispatch({ type: 'seat-assign', seatId, teamId }, [seatId]),
-      [dispatch]
-    ),
-    deleteSeat: useCallback((seatId: string) => dispatch({ type: 'seat-delete', seatId }, [seatId]), [dispatch]),
-    moveTeam,
-    relayoutTeam,
-    addFurniture,
-    addFacility,
-    moveObject,
-    resizeObject,
-    deleteObject,
-    addTeam,
-    addSeat,
-    assignEmployee,
-  }
+  // 返り値そのものを参照安定にする。呼び出し側はこの入れ物を丸ごと依存配列へ入れるため、
+  // 毎レンダー作り直すと下流の useCallback/memo が全て無効になる。
+  // editingLayout は useEditSession の state で、編集操作(dispatch/undo/進入/終了)でしか
+  // 差し替わらない — 閲覧モード中は null のまま動かないので、この入れ物も動かない
+  return useMemo(
+    () => ({
+      isEditMode,
+      editingLayout,
+      changedCount,
+      canUndo,
+      errorToast,
+      enterEditMode,
+      finishEdit,
+      cancelEdit,
+      undo,
+      dismissError,
+      moveSeat,
+      assignSeat,
+      deleteSeat,
+      moveTeam,
+      relayoutTeam,
+      addFurniture,
+      addFacility,
+      moveObject,
+      resizeObject,
+      deleteObject,
+      addTeam,
+      addSeat,
+      assignEmployee,
+    }),
+    [
+      isEditMode,
+      editingLayout,
+      changedCount,
+      canUndo,
+      errorToast,
+      enterEditMode,
+      finishEdit,
+      cancelEdit,
+      undo,
+      dismissError,
+      moveSeat,
+      assignSeat,
+      deleteSeat,
+      moveTeam,
+      relayoutTeam,
+      addFurniture,
+      addFacility,
+      moveObject,
+      resizeObject,
+      deleteObject,
+      addTeam,
+      addSeat,
+      assignEmployee,
+    ]
+  )
 }

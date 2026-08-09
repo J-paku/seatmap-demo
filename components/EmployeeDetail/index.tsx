@@ -4,8 +4,9 @@ import { ScheduleSection } from './components/ScheduleSection'
 import { useEmployeeDetailTarget } from './hooks/use-employee-detail-target'
 import { useScheduleRefresh } from '@/hooks/use-schedule-refresh'
 import type { EmployeeDetailProps } from './type'
-import { useSchedules } from '@/lib/mock-loader'
+import { useFacilities, useSchedules } from '@/lib/mock-loader'
 import { computePresenceMap } from '@/utils/presence'
+import { facilityNameByFacilityId } from '@/utils/facility-name'
 import { useQuantizedClock } from '@/hooks/use-quantized-clock'
 import { useDetailPanel } from '@/contexts/detail-panel-context'
 import { useSelectedDate } from '@/contexts/selected-date-context'
@@ -20,10 +21,11 @@ type Props = EmployeeDetailProps
 
 export const EmployeeDetail = ({ seatId, employeeId, onGoToSeat, showSeatUnsetNotice }: Props) => {
   const { data: schedules, error: scheduleError } = useSchedules()
+  const { data: facilities } = useFacilities()
   const { date, debouncedDate, isTodaySelected, goToPrevDay, goToNextDay, goToToday } = useSelectedDate()
   const nowMs = useQuantizedClock(isTodaySelected)
   const { openScheduleDetail } = useDetailPanel()
-  const { isRefreshing, cooldown, refresh } = useScheduleRefresh()
+  const { isRefreshing, cooldown, lastUpdatedLabel, refresh } = useScheduleRefresh()
 
   const { employee, team, isVacantSeat, isMissingSeat } = useEmployeeDetailTarget({ seatId, employeeId })
   const avatarConfig = useEmployeeAvatar(employee)
@@ -35,6 +37,9 @@ export const EmployeeDetail = ({ seatId, employeeId, onGoToSeat, showSeatUnsetNo
       .filter((s) => employee && s.employeeId === employee.id && jstKeyFromIso(s.start) === key)
       .sort((a, b) => a.start.localeCompare(b.start))
   }, [schedules, employee, debouncedDate])
+
+  // 予定が押さえた会議室の名前を引くための対応表(フロアを跨いで引ける)
+  const facilityNames = useMemo(() => facilityNameByFacilityId(facilities ?? []), [facilities])
 
   // 未定義のままにする(イベントなし=優先度4のフォールバックへ回す。'present' で埋めない)
   const status = useMemo(() => {
@@ -71,6 +76,8 @@ export const EmployeeDetail = ({ seatId, employeeId, onGoToSeat, showSeatUnsetNo
           <ScheduleSection
             dateKey={jstDateKey(debouncedDate)}
             events={mySchedules}
+            facilityNames={facilityNames}
+            lastUpdatedLabel={lastUpdatedLabel}
             hasError={!!scheduleError}
             isLoading={isScheduleLoading}
             isTodaySelected={isTodaySelected}

@@ -51,7 +51,13 @@ export type UseOverlayEditWiringResult = {
   seatCommit: UseSeatCommitResult
   handleSaveEdit: () => void
   handleCancelEdit: () => void
-  // 編集中は閉じないガード付きの閉じる口。✕・背景・Esc・下スワイプの全経路がこれを通る
+  // 未保存の変更があるか。編集ドックの保存可否と閉じる確認が同じこの1本を見る
+  hasEditChanges: boolean
+  // 編集中に閉じようとした時の破棄確認。開いている間だけ確認ダイアログを描く
+  isDiscardConfirmOpen: boolean
+  confirmDiscardClose: () => void
+  cancelDiscardClose: () => void
+  // 閉じる口。✕・背景・Esc・下スワイプの全経路がこれを通る
   guardedClose: () => void
 }
 
@@ -234,13 +240,43 @@ export const useOverlayEditWiring = ({
     announce('[info]編集をキャンセルしました')
   }, [editMode, announce])
 
-  // 編集中は✕・背景・Escで閉じられないようにする(未保存の変更を無言で捨てない)。
-  // 編集モードを抜けられるのは SeatLayoutHeader の「終了」と EditDock のキャンセル・保存
-  // (いずれも editMode.cancel を最終的に通す)だけにする。STEP D3
+  // 指摘#14: 保存可否と破棄確認の要否は同じ判定を使う。判定式自体はuseSeatCommit.hasChangesに
+  // 一本化した(use-seat-commit.tsのcommit早期returnと同じ式をここで再定義しない)。
+  // ここはそれを消費するだけ
+  const hasEditChanges = seatCommit.hasChanges
+
+  // 編集中に閉じる操作が来た時の破棄確認。開いている間だけ確認ダイアログを出す
+  const [isDiscardConfirmOpen, setIsDiscardConfirmOpen] = useState(false)
+
+  // ✕・背景・Esc・下スワイプの唯一の閉じる口。編集中でも閉じられるが、未保存の変更が
+  // あるときだけ破棄確認を挟む(無言で捨てない)。変更が無ければそのまま編集モードを畳んで閉じる。
+  // 指摘#11: depsをeditMode全体ではなくeditMode.isEditMode/editMode.cancelに絞る。editMode
+  // (use-overlay-edit-mode.tsの戻り値)はdraftが毎レンダー新規オブジェクトのためオブジェクト
+  // 全体としては完全には安定しない。ここで実際に使うのはisEditMode(値比較)とcancel
+  // (use-overlay-edit-mode.ts側でdraft.clearDraftに絞られ恒常的に安定)の2つだけなので、
+  // 個別フィールドに絞ってguardedClose自体の参照を安定させ、useModalShellのwindow keydown
+  // リスナーが毎レンダー再登録されるのを防ぐ
   const guardedClose = useCallback(() => {
-    if (editMode.isEditMode) return
+    if (!editMode.isEditMode) {
+      onClose()
+      return
+    }
+    if (hasEditChanges) {
+      setIsDiscardConfirmOpen(true)
+      return
+    }
+    editMode.cancel()
     onClose()
-  }, [editMode.isEditMode, onClose])
+  }, [editMode.isEditMode, editMode.cancel, hasEditChanges, onClose])
+
+  const confirmDiscardClose = useCallback(() => {
+    setIsDiscardConfirmOpen(false)
+    editMode.cancel()
+    announce('[info]編集を破棄して閉じました')
+    onClose()
+  }, [editMode, announce, onClose])
+
+  const cancelDiscardClose = useCallback(() => setIsDiscardConfirmOpen(false), [])
 
   return {
     handleSelectSeat,
@@ -259,6 +295,10 @@ export const useOverlayEditWiring = ({
     seatCommit,
     handleSaveEdit,
     handleCancelEdit,
+    hasEditChanges,
+    isDiscardConfirmOpen,
+    confirmDiscardClose,
+    cancelDiscardClose,
     guardedClose,
   }
 }

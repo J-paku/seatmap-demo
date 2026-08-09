@@ -1,6 +1,7 @@
 // 07-admin-edit: 編集レイアウトのlocalStorage永続化(原本のサーバ保存をデモ用に代替)
 // 「保存処理」自体はこのファイルに閉じ、mock-loaderのSWRキャッシュ連携から呼び出す
-import type { LayoutMeta, SeatLayout } from '@/types'
+import { DEFAULT_FLOOR_ID } from '@/utils/floors'
+import type { FloorId, LayoutMeta, SeatLayout } from '@/types'
 
 // 仕様書07明記のキー(公式・本社1Fの編集保存分。既存利用者の保存分を生かすためキー名は変えない)
 const LAYOUT_STORAGE_KEY = 'seatmap-demo/layout'
@@ -12,35 +13,42 @@ const DEFAULT_LAYOUT_ID_KEY = 'seatmap-demo/default-layout'
 // カスタムレイアウト1件のペイロードキー。公式キーの名前空間をそのまま延長する
 const customLayoutKey = (layoutId: string): string => `${LAYOUT_STORAGE_KEY}:${layoutId}`
 
+// STEP2: 公式レイアウトの保存キーをフロアごとに分ける。既定フロア(floor-1)だけは
+// 既に編集分を持つブラウザから読めなくなるため従来キーのまま、追加フロアだけ末尾にidを足す。
+// 区切りは '/' にしてカスタム側(':')と名前空間が混ざらないようにする
+const officialLayoutKey = (floorId: FloorId): string =>
+  floorId === DEFAULT_FLOOR_ID ? LAYOUT_STORAGE_KEY : `${LAYOUT_STORAGE_KEY}/${floorId}`
+
 // 保存済みレイアウトを読み込む。パース失敗時は保存分を破棄してnullを返す(呼び出し側は種データにフォールバック)。
 //
 // 配列フィールドを増やしたとき、既に保存済みの古いレイアウトにはそのキーが無い。
 // ここは localStorage を読む唯一の口なので、既定値の穴埋めもここだけで行う。
 // 利用側へ散らすと、書き足し忘れた1箇所が「古い保存分を持つ利用者だけクラッシュする」
 // 再現困難な不具合になる(新しいブラウザでは決して再現しない)
-export const loadStoredLayout = (): SeatLayout | null => {
+export const loadStoredLayout = (floorId: FloorId): SeatLayout | null => {
   if (typeof window === 'undefined') return null
-  const raw = window.localStorage.getItem(LAYOUT_STORAGE_KEY)
+  const key = officialLayoutKey(floorId)
+  const raw = window.localStorage.getItem(key)
   if (!raw) return null
   try {
     const parsed = JSON.parse(raw) as SeatLayout
     return { ...parsed, furniture: parsed.furniture ?? [] }
   } catch {
-    window.localStorage.removeItem(LAYOUT_STORAGE_KEY)
+    window.localStorage.removeItem(key)
     return null
   }
 }
 
 // 編集結果のSeatLayout全体をJSONで保存する
-export const saveStoredLayout = (layout: SeatLayout): void => {
+export const saveStoredLayout = (floorId: FloorId, layout: SeatLayout): void => {
   if (typeof window === 'undefined') return
-  window.localStorage.setItem(LAYOUT_STORAGE_KEY, JSON.stringify(layout))
+  window.localStorage.setItem(officialLayoutKey(floorId), JSON.stringify(layout))
 }
 
 // 保存分を削除する(設定操作「レイアウトをリセット」から呼び出し、種データへ復帰させる)
-export const clearStoredLayout = (): void => {
+export const clearStoredLayout = (floorId: FloorId): void => {
   if (typeof window === 'undefined') return
-  window.localStorage.removeItem(LAYOUT_STORAGE_KEY)
+  window.localStorage.removeItem(officialLayoutKey(floorId))
 }
 
 // STEP1: カスタムレイアウトのメタ一覧を読み込む。壊れていれば空配列を返しキーごと削除する

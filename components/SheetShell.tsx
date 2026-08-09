@@ -1,9 +1,9 @@
-import { useEffect, useId, useRef } from 'react'
+import { useCallback, useEffect, useId, useRef } from 'react'
 import type { ReactNode } from 'react'
 import { useBodyScrollLock } from '@/hooks/use-body-scroll-lock'
 import { useBackgroundInert } from '@/hooks/use-background-inert'
 import { useFocusTrap } from '@/hooks/use-focus-trap'
-import { useSwipeDismiss } from '@/hooks/use-swipe-dismiss'
+import { useSwipeToDismiss } from '@/hooks/use-swipe-to-dismiss'
 import styles from './sheet.module.css'
 
 const VARIANT_CLASS = {
@@ -31,10 +31,22 @@ export const SheetShell = ({ title, variant, active, onClose, children, headerle
   const closeBtnRef = useRef<HTMLButtonElement>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
   const backdropRef = useRef<HTMLDivElement>(null)
+  const sheetRef = useRef<HTMLDivElement>(null)
   const titleId = useId()
   const bodyId = useId()
 
-  const { sheetRef, bind } = useSwipeDismiss({ onClose, scrollGateRef: scrollRef })
+  // 内部スクロールが上端かどうかの判定はフック側(computeScrollGate)がイベント経路から遡って行う
+  const { sheetHandlers, dragStyle } = useSwipeToDismiss({ onDismiss: onClose })
+
+  // 初期フォーカス・フォーカストラップ用の実ノード参照と、フックのシート root 登録を1つの ref に束ねる。
+  // 毎レンダー新しい関数を渡すと背景スクロール連鎖ガードが着脱を繰り返すため参照を固定する
+  const setSheetNode = useCallback(
+    (node: HTMLDivElement | null) => {
+      sheetRef.current = node
+      sheetHandlers.ref(node)
+    },
+    [sheetHandlers.ref]
+  )
 
   useBodyScrollLock(true)
   useBackgroundInert(true, SEATMAP_BG_ID)
@@ -78,14 +90,21 @@ export const SheetShell = ({ title, variant, active, onClose, children, headerle
     <>
       <div ref={backdropRef} className={styles.backdrop} onClick={onClose} />
       <div
-        ref={sheetRef}
         className={`${styles.sheet} ${VARIANT_CLASS[variant]}`}
         role='dialog'
         aria-modal='true'
         aria-labelledby={titleId}
         aria-describedby={bodyId}
         tabIndex={headerless ? -1 : undefined}
-        {...bind}
+        {...sheetHandlers}
+        ref={setSheetNode}
+        style={{
+          // ドラッグ中は指へ追従(transform はフックが直接書き込む)、離指後はここの
+          // transition が復帰してスナップバックする
+          transform: dragStyle.transform,
+          transition: dragStyle.transition,
+          willChange: dragStyle.willChange,
+        }}
       >
         <div ref={scrollRef} className={styles.scroll}>
           {headerless ? (

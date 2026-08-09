@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 import type { ReactNode } from 'react'
 import { FocusTrap } from '@/components/a11y/components/FocusTrap'
 import { useMediaQuery } from '@/hooks/use-media-query'
-import { useSwipeDismiss } from '@/hooks/use-swipe-dismiss'
+import { useSwipeToDismiss } from '@/hooks/use-swipe-to-dismiss'
 import styles from '../object-picker.module.css'
 
 // 選択シートの共通シェル。640px 未満はボトムシート(下スワイプで閉じる)、
@@ -22,7 +22,10 @@ type Props = {
 
 export const PickerSheet = ({ isOpen, title, note, onClose, children }: Props) => {
   const isCompact = useMediaQuery(COMPACT_QUERY)
-  const { sheetRef, bind } = useSwipeDismiss({ onClose, enabled: isOpen && isCompact })
+  const { sheetHandlers, dragStyle } = useSwipeToDismiss({
+    onDismiss: onClose,
+    enabled: isOpen && isCompact,
+  })
 
   useEffect(() => {
     if (!isOpen) return
@@ -39,7 +42,20 @@ export const PickerSheet = ({ isOpen, title, note, onClose, children }: Props) =
     <div className={styles.pickerWrap} role='presentation'>
       <div className={styles.pickerBackdrop} onClick={onClose} />
       <FocusTrap isActive className={`${styles.pickerPanel}${isCompact ? ` ${styles.isCompact}` : ''}`}>
-        <div ref={sheetRef} className={styles.pickerInner} role='dialog' aria-modal='true' aria-label={title} {...bind}>
+        <div
+          className={styles.pickerInner}
+          role='dialog'
+          aria-modal='true'
+          aria-label={title}
+          {...sheetHandlers}
+          style={{
+            // ドラッグ中は指へ追従(transform はフックが直接書き込む)、離指後はここの
+            // transition が復帰してスナップバックする
+            transform: dragStyle.transform,
+            transition: dragStyle.transition,
+            willChange: dragStyle.willChange,
+          }}
+        >
           {isCompact && <span className={styles.pickerGrip} aria-hidden='true' />}
           <div className={styles.pickerHead}>
             <h2 className={styles.pickerTitle}>{title}</h2>

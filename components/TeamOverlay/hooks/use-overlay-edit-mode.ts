@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { useSeatDraftState } from './use-seat-draft-state'
 import type { SeatDraftState } from './use-seat-draft-state'
 import {
@@ -77,12 +77,16 @@ export const useOverlayEditMode = (): UseOverlayEditModeResult => {
     setIsEditMode(true)
   }, [])
 
+  // draft(useSeatDraftStateの戻り値)は呼ばれるたびに新しいオブジェクトを返すため、depsを
+  // [draft]のままにするとcancel自体も毎レンダー再生成されてしまう。ここで実際に使うのは
+  // draft.clearDraftだけ(useSeatDraftState側でuseCallback([])により恒常的に安定)なので、
+  // そこへ絞ってcancelの参照をレンダーをまたいで安定させる(指摘#11)
   const cancel = useCallback(() => {
     draft.clearDraft()
     setGrid(null)
     setBaselineGrid(null)
     setIsEditMode(false)
-  }, [draft])
+  }, [draft.clearDraft])
 
   // grid が無い(未編集)間は何もしない共通ガード。呼び出し側に null 分岐を作らせない
   const updateGrid = useCallback((update: (current: SeatGridDraft) => SeatGridDraft) => {
@@ -99,33 +103,58 @@ export const useOverlayEditMode = (): UseOverlayEditModeResult => {
   )
   // 削除対象の席id(下書き追加席なら仮id)をgridから先に読んでからセルを空にし、draftへも
   // 削除を記録する。下書き追加席の取り消しはuseSeatDraftState.removeSeat側で判定済みのため
-  // ここでは分岐しない
+  // ここでは分岐しない。depsをdraft全体ではなくdraft.removeSeatに絞る理由はcancelと同じ
+  // (draftは毎レンダー新規オブジェクトだが、removeSeat自身の参照はaddedSeatsが実際に
+  // 変わった時だけ動く。指摘#11)
   const removeSeatAtCell = useCallback(
     (cell: GridCell) => {
       const seatId = grid?.cells[cell.row]?.[cell.col] ?? null
       updateGrid((g) => clearSeat(g, cell))
       if (seatId) draft.removeSeat(seatId)
     },
-    [grid, updateGrid, draft]
+    [grid, updateGrid, draft.removeSeat]
   )
   const handleMoveSeat = useCallback(
     (from: GridCell, to: GridCell) => updateGrid((g) => moveSeat(g, from, to)),
     [updateGrid]
   )
 
-  return {
-    isEditMode,
-    grid,
-    isGridChanged: grid !== null && baselineGrid !== null && !isSameSeatGridDraft(grid, baselineGrid),
-    enterEditMode,
-    cancel,
-    addRow: handleAddRow,
-    addCol: handleAddCol,
-    removeRow: handleRemoveRow,
-    removeCol: handleRemoveCol,
-    placeSeat: handlePlaceSeat,
-    removeSeatAtCell,
-    moveSeat: handleMoveSeat,
-    draft,
-  }
+  // 指摘#11: 戻り値をuseMemoで安定化する。isEditMode/grid/baselineGridと各コールバックが
+  // 変わらない限り同一オブジェクト参照を返し続けるため、これをdepsに置く呼び出し側の
+  // identityも連鎖して安定する。ただしdraft自体はuseSeatDraftState側(このフックの担当外)が
+  // 毎レンダー新規オブジェクトを返すため、draftを含むこのオブジェクトの参照は完全には
+  // 安定しない。isEditMode/cancelなど個別フィールド単位では安定するため、参照の同一性が
+  // 要る呼び出し側(use-overlay-edit-wiring.tsのguardedCloseなど)はフィールド単位でdepsに置く
+  return useMemo<UseOverlayEditModeResult>(
+    () => ({
+      isEditMode,
+      grid,
+      isGridChanged: grid !== null && baselineGrid !== null && !isSameSeatGridDraft(grid, baselineGrid),
+      enterEditMode,
+      cancel,
+      addRow: handleAddRow,
+      addCol: handleAddCol,
+      removeRow: handleRemoveRow,
+      removeCol: handleRemoveCol,
+      placeSeat: handlePlaceSeat,
+      removeSeatAtCell,
+      moveSeat: handleMoveSeat,
+      draft,
+    }),
+    [
+      isEditMode,
+      grid,
+      baselineGrid,
+      enterEditMode,
+      cancel,
+      handleAddRow,
+      handleAddCol,
+      handleRemoveRow,
+      handleRemoveCol,
+      handlePlaceSeat,
+      removeSeatAtCell,
+      handleMoveSeat,
+      draft,
+    ]
+  )
 }

@@ -9,6 +9,8 @@ import styles from '../schedule-section.module.css'
 type Props = {
   dateKey: string
   events: ScheduleEvent[]
+  facilityNames: Map<string, string>
+  lastUpdatedLabel: string | null
   hasError: boolean
   isLoading: boolean
   isTodaySelected: boolean
@@ -23,6 +25,8 @@ type Props = {
 export const ScheduleSection = ({
   dateKey,
   events,
+  facilityNames,
+  lastUpdatedLabel,
   hasError,
   isLoading,
   isTodaySelected,
@@ -46,6 +50,8 @@ export const ScheduleSection = ({
       <SwipeDateStage cardKey={dateKey} onSwipePrevDay={onSwipePrevDay} onSwipeNextDay={onSwipeNextDay} fill>
         <ScheduleCard
           events={events}
+          facilityNames={facilityNames}
+          lastUpdatedLabel={lastUpdatedLabel}
           hasError={hasError}
           isLoading={isLoading}
           isTodaySelected={isTodaySelected}

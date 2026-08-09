@@ -3,7 +3,7 @@
 // - 下方向優勢の移動量が閾値(シート高×thresholdRatio)超、またはフリック速度超で閉じる
 // - タップ・上方向・水平優勢は disarm(タップ/横スワイプに干渉しない)
 // 責務分離: ゲート判定=scrollGate / 速度=swipeVelocity / 背景連鎖遮断=sheetBackgroundGuard。本フックは状態機械のみ。
-import { useCallback, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { triggerHaptic, type HapticType } from '@/lib/haptic'
 import { safeSetPointerCapture } from '@/lib/gesture/pointer-capture'
 import { suppressGhostClick } from '@/lib/gesture/suppress-ghost-click'
@@ -23,6 +23,9 @@ interface UseSwipeToDismissOptions {
   flickVelocityPxMs?: number
   // 閉じ確定時の触覚強度(既定 medium。開閉で強度を揃えたいシートは light を渡す)
   dismissHapticType?: HapticType
+  // false の間はジェスチャーを受け付けない(PC 幅・閉じているシート等)。
+  // 進行中のドラッグは打ち切り、追従した transform も残さない
+  enabled?: boolean
 }
 
 interface SheetHandlers {
@@ -70,6 +73,7 @@ export function useSwipeToDismiss({
   thresholdRatio = 0.28,
   flickVelocityPxMs = 0.7,
   dismissHapticType = 'medium',
+  enabled = true,
 }: UseSwipeToDismissOptions): UseSwipeToDismissResult {
   // 追従は毎フレーム再レンダーを避け ref+命令的 transform で駆動(重いシート内容のカクつき防止)。
   // isDragging state はコミット/終了の2回のみ更新。
@@ -100,27 +104,33 @@ export function useSwipeToDismiss({
     setIsDragging(false)
   }, [])
 
-  const onPointerDown = useCallback((e: React.PointerEvent) => {
-    e.stopPropagation()
-    // タッチ・ペン専用(マウスドラッグ・テキスト選択の誤動作を防ぐ)
-    if (e.pointerType !== 'touch' && e.pointerType !== 'pen') return
+  const onPointerDown = useCallback(
+    (e: React.PointerEvent) => {
+      // 無効時は stopPropagation もせず完全に素通しする
+      if (!enabled) return
+      e.stopPropagation()
+      // タッチ・ペン専用(マウスドラッグ・テキスト選択の誤動作を防ぐ)
+      if (e.pointerType !== 'touch' && e.pointerType !== 'pen') return
 
-    // data-drag-handle 起点はゲート免除(ハンドルバーは常に閉じ操作優先)。ここでは capture も触覚も出さない
-    const fromHandle =
-      e.target instanceof Element && e.target.closest('[data-drag-handle]') !== null
-    armedRef.current = {
-      pointerId: e.pointerId,
-      startX: e.clientX,
-      startY: e.clientY,
-      gateBlocked: fromHandle ? false : computeScrollGate(e.target, e.currentTarget),
-    }
-    isDraggingRef.current = false
-    samplesRef.current = []
-    releasedPointerIdRef.current = null
-  }, [])
+      // data-drag-handle 起点はゲート免除(ハンドルバーは常に閉じ操作優先)。ここでは capture も触覚も出さない
+      const fromHandle =
+        e.target instanceof Element && e.target.closest('[data-drag-handle]') !== null
+      armedRef.current = {
+        pointerId: e.pointerId,
+        startX: e.clientX,
+        startY: e.clientY,
+        gateBlocked: fromHandle ? false : computeScrollGate(e.target, e.currentTarget),
+      }
+      isDraggingRef.current = false
+      samplesRef.current = []
+      releasedPointerIdRef.current = null
+    },
+    [enabled]
+  )
 
   const onPointerMove = useCallback(
     (e: React.PointerEvent) => {
+      if (!enabled) return
       // 横優勢で放棄済みのポインターは素通し(stopPropagation すると window リスナー型の
       // 横ジェスチャー(framer-motion drag='x' 等)へイベントが届かず握り潰してしまう)
       if (releasedPointerIdRef.current === e.pointerId) return
@@ -173,11 +183,12 @@ export function useSwipeToDismiss({
         return
       }
     },
-    [disarm]
+    [disarm, enabled]
   )
 
   const onPointerUp = useCallback(
     (e: React.PointerEvent) => {
+      if (!enabled) return
       // 横優勢で放棄済み: 委譲先ジェスチャーの終了処理が window で受けられるよう素通し。
       // 合成 click の貫通抑止のみ実施して終了
       if (releasedPointerIdRef.current === e.pointerId) {
@@ -224,11 +235,12 @@ export function useSwipeToDismiss({
       dragOffsetRef.current = 0
       disarm()
     },
-    [thresholdRatio, flickVelocityPxMs, onDismiss, disarm, dismissHapticType]
+    [thresholdRatio, flickVelocityPxMs, onDismiss, disarm, dismissHapticType, enabled]
   )
 
   const onPointerCancel = useCallback(
     (e: React.PointerEvent) => {
+      if (!enabled) return
       // 横優勢で放棄済み: 委譲先ジェスチャーへキャンセルを届けるため素通し
       if (releasedPointerIdRef.current === e.pointerId) {
         releasedPointerIdRef.current = null
@@ -245,7 +257,7 @@ export function useSwipeToDismiss({
       dragOffsetRef.current = 0
       disarm()
     },
-    [disarm]
+    [disarm, enabled]
   )
 
   const resetDrag = useCallback(() => {
@@ -254,6 +266,16 @@ export function useSwipeToDismiss({
     // 再オープン時に前回位置が残らないよう即クリア(アニメーションなし)
     driveTransform(sheetNodeRef.current, '', true)
   }, [disarm])
+
+  // enabled が false へ落ちた時の後始末。ハンドラーが no-op になるため pointerup を
+  // 受け取れず、進行中のドラッグ状態と追従 transform が取り残されるのを防ぐ
+  useEffect(() => {
+    if (enabled) return
+    const hasPendingGesture =
+      armedRef.current !== null || isDraggingRef.current || dragOffsetRef.current !== 0
+    if (!hasPendingGesture) return
+    resetDrag()
+  }, [enabled, resetDrag])
 
   // ドラッグ量は指に追従させるため再レンダーを挟まず driveTransform で DOM を直接動かしており、
   // ここで返すのはその取りこぼし用フォールバック。react-hooks/refs が禁じるレンダー中の ref 読み取りに
