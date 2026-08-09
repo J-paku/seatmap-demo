@@ -1,18 +1,18 @@
 import { useCallback, useMemo } from 'react'
 import { useEditSession } from './use-edit-session'
-import { applyLayoutAction } from '@/utils/layout-actions'
+import { applyLayoutAction } from '@/utils/layout/layout-actions'
 import { useErrorToast } from './use-error-toast'
 import type { ErrorToastState } from './use-error-toast'
-import { clampRectToViewBox } from '@/utils/rect'
-import type { Rect } from '@/utils/rect'
-import { findOverlappingSeat, findTeamContaining, placementBlocked, seatOverlapsFixture, teamAreaOverlaps } from '@/utils/layout-rules'
-import { fitAreaToSeats, relayoutSeatsInGrid } from '@/utils/seat-relayout'
-import { rectOfRef } from '@/utils/layout-objects'
-import type { EditableObjectKind } from '@/utils/layout-actions'
+import { clampRectToViewBox } from '@/utils/layout/rect'
+import type { Rect } from '@/utils/layout/rect'
+import { findOverlappingSeat, findTeamContaining, placementBlocked, seatOverlapsFixture, teamAreaOverlaps } from '@/utils/layout/layout-rules'
+import { fitAreaToSeats, relayoutSeatsInGrid } from '@/utils/layout/seat-relayout'
+import { rectOfRef } from '@/utils/layout/layout-objects'
+import type { EditableObjectKind } from '@/utils/layout/layout-actions'
 import type { FurnitureKind, LayoutObjectRef, Seat, SeatLayout } from '@/types'
 
 // 07-admin-edit: 編集アクションの発行口。セッション管理は useEditSession、
-// 判定規則は utils/layout-rules が持ち、ここは「発行してよいか」を決めるだけ。
+// 判定規則は utils/layout/layout-rules が持ち、ここは「発行してよいか」を決めるだけ。
 // 永続化(localStorage保存)は範囲外で、呼び出し側が finishEdit 直前に保存する
 
 export type UseLayoutEditorApi = {

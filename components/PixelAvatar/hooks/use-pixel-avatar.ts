@@ -1,16 +1,16 @@
 // PixelAvatar — config + seed から最終的に描画する parts を解決するフック
-import { resolveAvatarConfig } from '@/lib/avatar/pixel-avatar-presets'
+import { resolveAvatarConfig } from '@/utils/avatar/pixel-avatar-presets'
 import {
   composeAvatarMatrix,
   resolvePixelColor,
   upscaleMatrix8to16,
   composePixelsAvatarMatrix,
   resolvePixelColorForFree,
-} from '@/lib/avatar/matrices/compose'
+} from '@/utils/avatar/matrices/compose'
 import {
   buildKuroxxxRects,
   KUROXXX_GRID_SIZE,
-} from '@/lib/avatar/kuroxxx-easter-egg'
+} from '@/utils/avatar/kuroxxx-easter-egg'
 import type {
   PartsAvatarConfig,
   PixelAvatarConfig,

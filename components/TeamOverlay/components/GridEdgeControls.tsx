@@ -1,5 +1,5 @@
-import { isColEmpty, isRowEmpty } from '@/utils/seat-grid-draft'
-import type { SeatGridDraft } from '@/utils/seat-grid-draft'
+import { isColEmpty, isRowEmpty } from '@/utils/layout/seat-grid-draft'
+import type { SeatGridDraft } from '@/utils/layout/seat-grid-draft'
 import styles from '../team-overlay-modal.module.css'
 
 // STEP B4: グリッド編集の行・列増減UI。編集中のみ呼び出し側(Compact/DesktopSeatGrid)が描画する

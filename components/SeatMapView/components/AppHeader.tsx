@@ -2,7 +2,7 @@
 // リセット・編集トグルは §5.4 に従いサイドバーの設定パネルへ移設済み
 import Image from 'next/image'
 import { useRouter } from 'next/router'
-import { triggerHaptic } from '@/lib/haptic'
+import { triggerHaptic } from '@/utils/haptic'
 
 type Props = {
   onOpenDirectory: () => void

@@ -25,7 +25,7 @@ import { EmployeeAssignSheet } from '@/components/EmployeeAssignSheet'
 import { SeatMapPortal } from '@/components/SeatMapPortal'
 import { SheetHandle } from '@/components/SheetHandle'
 import { useSwipeToDismiss } from '@/hooks/use-swipe-to-dismiss'
-import type { Rect } from '@/utils/rect'
+import type { Rect } from '@/utils/layout/rect'
 import { countOccupiedSeats } from '@/utils/seat-occupancy'
 
 // 10: チームバウンダリクリックで開く大型オーバーレイ(座席グリッド全体)

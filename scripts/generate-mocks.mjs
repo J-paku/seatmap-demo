@@ -420,7 +420,7 @@ const facilitiesByFloor = new Map([
 const allFacilities = FLOOR_DEFS.flatMap((f) => facilitiesByFloor.get(f.floorId))
 
 // viewBox からはみ出す施設が無いかを検査(はみ出す場合は黙って切り詰めず報告する)。
-// viewBox は全フロア共通(utils/geometry.ts)なので、判定も全フロアぶん通す
+// viewBox は全フロア共通(utils/layout/geometry.ts)なので、判定も全フロアぶん通す
 const facilityOverflow = allFacilities.filter((f) => f.x < 0 || f.y < 0 || f.x + f.width > VIEWBOX_W || f.y + f.height > VIEWBOX_H)
 if (facilityOverflow.length > 0) {
   console.error(`viewBox(${VIEWBOX_W}x${VIEWBOX_H})に収まらない施設: ${facilityOverflow.map((f) => f.id).join(',')}`)

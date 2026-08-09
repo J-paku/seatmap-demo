@@ -1,7 +1,7 @@
 // 単一部署グループ（ヘッダー + 展開時の社員リスト）を描画
 import type { DepartmentGroupRowProps } from '../types'
 import { EmployeeCard } from './EmployeeCard'
-import { triggerHaptic } from '@/lib/haptic'
+import { triggerHaptic } from '@/utils/haptic'
 
 function DepartmentGroupRow({
   group,

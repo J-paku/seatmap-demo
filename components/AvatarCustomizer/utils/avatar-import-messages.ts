@@ -1,5 +1,5 @@
 // AI取り込み失敗の理由ごとのフィードバック文言 — React非依存の純粋モジュール
-import type { AvatarImportError } from '@/lib/avatar/avatar-import-parser'
+import type { AvatarImportError } from '@/utils/avatar/avatar-import-parser'
 
 // 取り込み失敗の理由ごとに、何がなぜ駄目で次にどうすればよいかを伝えるフィードバック文言
 const AVATAR_IMPORT_ERROR_MESSAGES: Record<AvatarImportError, string> = {

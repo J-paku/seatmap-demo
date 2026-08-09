@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { PixelAvatar } from './PixelAvatar'
-import { useEmployees, useFacilities, useSchedules, useTeams } from '@/lib/mock-loader'
+import { useEmployees, useFacilities, useSchedules, useTeams } from '@/hooks/use-mock-data'
 import { CATEGORY_LABEL, isScheduleMasked, scheduleTimeLabel } from '@/utils/format'
 import { facilityNameByFacilityId, visibleFacilityName } from '@/utils/facility-name'
 import { useDetailPanel } from '@/contexts/detail-panel-context'

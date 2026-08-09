@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type { FacilityMeeting } from '@/types'
-import { useEmployees, useFacilityMeetings } from '@/lib/mock-loader'
+import { useEmployees, useFacilityMeetings } from '@/hooks/use-mock-data'
 import { meetingsForDate } from '@/utils/facility-meetings-for-date'
 import { useSelectedDate } from '@/contexts/selected-date-context'
 import { jstDateKey } from '@/utils/jst-date'

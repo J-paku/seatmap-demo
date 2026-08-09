@@ -1,6 +1,6 @@
 import type { PointerEvent as ReactPointerEvent } from 'react'
-import { RESIZE_HANDLES } from '@/utils/resize-anchor'
-import type { ResizeHandle } from '@/utils/resize-anchor'
+import { RESIZE_HANDLES } from '@/utils/layout/resize-anchor'
+import type { ResizeHandle } from '@/utils/layout/resize-anchor'
 import styles from '../ghost-placement.module.css'
 
 const HANDLE_CLASS: Record<ResizeHandle, string> = {

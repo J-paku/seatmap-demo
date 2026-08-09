@@ -1,4 +1,4 @@
-import type { SnapGuide } from '@/utils/snap-guides'
+import type { SnapGuide } from '@/utils/layout/snap-guides'
 import styles from '../ghost-placement.module.css'
 
 // 整列ガイド線。ゴーストの下に敷くので枠に隠れない

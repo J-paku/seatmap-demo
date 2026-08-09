@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { PointerEvent as ReactPointerEvent } from 'react'
 import { SEATMAP_BG_ID } from '@/components/SheetShell'
-import { clamp } from '@/utils/geometry'
-import type { Rect } from '@/utils/rect'
-import { resizeRect } from '@/utils/resize-anchor'
-import type { ResizeHandle } from '@/utils/resize-anchor'
-import { SNAP_THRESHOLD_SCREEN_PX, computeSnap } from '@/utils/snap-guides'
-import type { SnapGuide } from '@/utils/snap-guides'
+import { clamp } from '@/utils/layout/geometry'
+import type { Rect } from '@/utils/layout/rect'
+import { resizeRect } from '@/utils/layout/resize-anchor'
+import type { ResizeHandle } from '@/utils/layout/resize-anchor'
+import { SNAP_THRESHOLD_SCREEN_PX, computeSnap } from '@/utils/layout/snap-guides'
+import type { SnapGuide } from '@/utils/layout/snap-guides'
 
 // ビューファインダー式ゴーストの配置モデル。
 //
@@ -36,7 +36,7 @@ type Options = {
   minSize?: { width: number; height: number }
   // 吸着相手(viewBox 系)
   siblings: Rect[]
-  // 置けるかどうかの判定。ポリシーは utils/layout-rules 側に置き、ここは呼ぶだけ
+  // 置けるかどうかの判定。ポリシーは utils/layout/layout-rules 側に置き、ここは呼ぶだけ
   isBlocked?: (rect: Rect) => boolean
 }
 

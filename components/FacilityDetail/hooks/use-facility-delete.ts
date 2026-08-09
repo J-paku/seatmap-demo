@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react'
-import { useSeatLayout } from '@/lib/mock-loader'
-import { applyLayoutAction } from '@/utils/layout-actions'
+import { useSeatLayout } from '@/hooks/use-mock-data'
+import { applyLayoutAction } from '@/utils/layout/layout-actions'
 
 type Args = {
   // レイアウト上の Facility.id(予定システム側の facilityId ではない)

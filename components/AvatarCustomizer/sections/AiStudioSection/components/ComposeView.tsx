@@ -1,6 +1,6 @@
 // compose ビュー: ChatGPT のメイン入力画面のような要望入力
 import type { ChangeEvent } from 'react'
-import { triggerHaptic } from '@/lib/haptic'
+import { triggerHaptic } from '@/utils/haptic'
 import { useScrollIntoViewOnMount } from '../hooks/use-scroll-into-view-on-mount'
 import { StepCard } from './StepCard'
 import {

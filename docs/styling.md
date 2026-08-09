@@ -70,7 +70,7 @@ CSS に色リテラル(`#rrggbb` / `rgba()`)を書かない。**`styles/tokens.c
   (`--color-scrim`)。「テーマに依らないから直書き」は認めない
 - 色を薄める/濃める計算の相手側もトークンにする(`--color-band-highlight`)
 
-**例外**: `lib/avatar/**` `utils/team-colors.ts` のようにアバターパレット・チーム色を
+**例外**: `utils/avatar/**` `utils/team-colors.ts` のようにアバターパレット・チーム色を
 **データとして**持つ TS ファイルは対象外。これは配色定義ではなくコンテンツである。
 
 ## 3. 使われなくなったクラスは消す

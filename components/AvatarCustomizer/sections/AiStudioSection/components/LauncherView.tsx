@@ -1,5 +1,5 @@
 // home ビュー: 主要 CTA (作る) + 控えめなインポート導線
-import { triggerHaptic } from '@/lib/haptic'
+import { triggerHaptic } from '@/utils/haptic'
 import {
   AI_BADGE_STYLE,
   AI_BADGE_TEXT_STYLE,

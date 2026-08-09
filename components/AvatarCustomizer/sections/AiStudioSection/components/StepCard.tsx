@@ -1,6 +1,6 @@
 // AIスタジオ各ステップ共通シェル — 戻るボタン + タイトル + 説明 + 本文 (compose/prompt/import で共有)
 import type { ReactNode } from 'react'
-import { triggerHaptic } from '@/lib/haptic'
+import { triggerHaptic } from '@/utils/haptic'
 import {
   BACK_BUTTON_STYLE,
   STEP_CARD_STYLE,

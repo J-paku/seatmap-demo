@@ -1,8 +1,9 @@
 // テーマ選択 — 各テーマの背景色とアクセント色を対角に二分した円形スウォッチを1行に並べて選ぶ
 import { useId } from 'react'
 import { useThemeSelector } from './hooks/use-theme-selector'
-import type { ThemeMode, ThemeOption } from '@/types'
-import { triggerHaptic } from '@/lib/haptic'
+import type { ThemeOption } from '@/utils/theme'
+import type { ThemeMode } from '@/types'
+import { triggerHaptic } from '@/utils/haptic'
 
 interface ThemeSelectorProps {
   themeMode: ThemeMode

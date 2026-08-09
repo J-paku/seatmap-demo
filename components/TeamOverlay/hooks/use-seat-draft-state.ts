@@ -181,7 +181,7 @@ export const useSeatDraftState = (): SeatDraftState => {
 
   // 下書き追加した席は差分 Map を経由せず、追加した Seat 自身を書き換える
   // (同じ概念の判定基準を保存済み座席と下書き座席の二重に持たないため)。
-  // 元席の空け方は保存時のリデューサー(utils/layout-actions.ts の seat-assign-employee)と同じ規則に
+  // 元席の空け方は保存時のリデューサー(utils/layout/layout-actions.ts の seat-assign-employee)と同じ規則に
   // 揃える — 規則が2種類あると、編集中に見えている絵と保存結果が食い違う
   const assignEmployee = useCallback(
     (seatId: string, employeeId: string | null) => {

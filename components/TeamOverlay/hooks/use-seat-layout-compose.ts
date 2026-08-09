@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 import { buildSeatGrid, gridCellKey } from '../utils/seat-grid'
 import type { SeatDraftState } from './use-seat-draft-state'
 import type { SeatGrid } from '../type'
-import type { GridCell, SeatGridDraft } from '@/utils/seat-grid-draft'
+import type { GridCell, SeatGridDraft } from '@/utils/layout/seat-grid-draft'
 import type { Seat } from '@/types'
 
 // STEP A4: 表示用グリッドの組み立て。非編集時は座標クラスタリング(buildSeatGrid)、

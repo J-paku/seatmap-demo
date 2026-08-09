@@ -1,10 +1,10 @@
 import { useCallback, useState } from 'react'
 import type { SeatDraftState } from './use-seat-draft-state'
-import { serializeSeatGrid } from '@/utils/seat-grid-draft'
-import type { SeatGridDraft } from '@/utils/seat-grid-draft'
-import { applyLayoutAction } from '@/utils/layout-actions'
+import { serializeSeatGrid } from '@/utils/layout/seat-grid-draft'
+import type { SeatGridDraft } from '@/utils/layout/seat-grid-draft'
+import { applyLayoutAction } from '@/utils/layout/layout-actions'
 import { fetchMock } from '@/lib/fetch-mock'
-import { useSeatLayout } from '@/lib/mock-loader'
+import { useSeatLayout } from '@/hooks/use-mock-data'
 import type { Seat, SeatLayout } from '@/types'
 
 // STEP A5: 座席編集(draft + grid)の確定(commit)。use-layout-editorが使うreducer

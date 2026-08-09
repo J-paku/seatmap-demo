@@ -1,5 +1,5 @@
 // 07-admin-edit: レイアウト編集のアクション定義と純粋リデューサー(副作用なし)
-import { defaultFurnitureName } from './furniture-catalog'
+import { defaultFurnitureName } from '../furniture-catalog'
 import { RELAYOUT_COL_GAP, RELAYOUT_PADDING, DEFAULT_SEAT_HEIGHT, DEFAULT_SEAT_WIDTH, fitAreaToSeats, relayoutSeatsInGrid, sortSeatsForRelayout } from './seat-relayout'
 import type { Facility, Furniture, FurnitureKind, Seat, SeatLayout, Team } from '@/types'
 

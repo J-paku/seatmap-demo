@@ -1,7 +1,7 @@
 // サイドバーフッター: 自分のアバター表示 + 設定画面への導線
 import { PixelAvatar } from '@/components/PixelAvatar'
 import { useMyAvatarConfig } from '@/hooks/use-my-avatar-config'
-import { triggerHaptic } from '@/lib/haptic'
+import { triggerHaptic } from '@/utils/haptic'
 
 interface GaroonFooterProps {
   onSettingsClick: () => void

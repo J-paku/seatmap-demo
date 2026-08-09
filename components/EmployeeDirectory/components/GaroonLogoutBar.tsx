@@ -2,7 +2,7 @@
 import { useState, useCallback } from 'react'
 import { SeatMapPortal } from '@/components/SeatMapPortal'
 import { FocusTrap } from '@/components/a11y/components/FocusTrap'
-import { triggerHaptic } from '@/lib/haptic'
+import { triggerHaptic } from '@/utils/haptic'
 
 interface GaroonLogoutBarProps {
   isGaroonConnected?: boolean

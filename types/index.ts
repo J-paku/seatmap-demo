@@ -11,36 +11,7 @@ export type PresenceStatus = 'present' | 'meeting' | 'out' | 'vacation'
 
 export type ThemeMode = 'light' | 'dracula' | 'kuroxxx'
 
-// メインのダークテーマ — OS ダーク追従・旧 'dark' 移行の落とし先
-const DEFAULT_DARK_THEME: ThemeMode = 'dracula'
-
-// localStorage 復元時の検証に使う全テーマ値
-const THEME_MODES: readonly ThemeMode[] = ['light', 'dracula', 'kuroxxx']
-
-// 暗い系テーマ判定 — Tailwind dark バリアント付与・暗色トーン適用の基準
-export const isDarkTheme = (mode: ThemeMode): boolean => mode !== 'light'
-
-// 旧 'dark' テーマの保存値を dracula へ移行する — 廃止テーマの後方互換
-export const migrateLegacyTheme = (value: string | null): string | null =>
-  value === 'dark' ? DEFAULT_DARK_THEME : value
-
-// localStorage に保存された文字列が有効な ThemeMode か検証する型ガード
-export const isThemeMode = (value: string | null): value is ThemeMode =>
-  value !== null && (THEME_MODES as readonly string[]).includes(value)
-
-// テーマ選択 UI 用メタ — ラベルと2色スウォッチ(背景 + アクセント)
-export interface ThemeOption {
-  mode: ThemeMode
-  label: string
-  swatchBg: string
-  swatchAccent: string
-}
-
-export const THEME_OPTIONS: readonly ThemeOption[] = [
-  { mode: 'light', label: 'ライト', swatchBg: '#F5EFE9', swatchAccent: '#C76A4A' },
-  { mode: 'dracula', label: 'ドラキュラ', swatchBg: '#282A36', swatchAccent: '#BD93F9' },
-  { mode: 'kuroxxx', label: 'クロミ', swatchBg: '#1A1320', swatchAccent: '#F58FB8' },
-]
+// テーマの既定値・検証・UI メタ(ランタイム値)は utils/theme.ts に集約する(types/ は型定義のみを持つ)
 
 // --- 実物 PiPiT-web 由来のピクセルアバター型 ---
 
@@ -254,7 +225,7 @@ export type Furniture = {
 }
 
 // 編集対象になりうるオブジェクトの種別。当たり判定・吸着・選択の対象を
-// 1つの列挙で束ね、種別追加時の取りこぼしを型で塞ぐ(utils/layout-objects.ts)
+// 1つの列挙で束ね、種別追加時の取りこぼしを型で塞ぐ(utils/layout/layout-objects.ts)
 export type LayoutObjectKind = 'seat' | 'team' | 'facility' | 'furniture'
 
 export type LayoutObjectRef = { kind: LayoutObjectKind; id: string }

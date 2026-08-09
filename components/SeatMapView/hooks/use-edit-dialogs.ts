@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useState } from 'react'
 import type { LayoutEditor } from '../type'
 import type { Employee, Facility, LayoutObjectRef, Seat, Team } from '@/types'
+import { isOccupiedSeat } from '@/utils/seat-occupancy'
 
 // 07: 座席削除確認・チーム変更シート・チームレイアウトエディタの開閉と対象解決
 
@@ -50,10 +51,10 @@ export const useEditDialogs = (
   const requestSeatDelete = useCallback(
     (seatId: string) => {
       const seat = editor.editingLayout?.seats.find((s) => s.id === seatId)
-      if (seat?.employeeId) setDeleteConfirmSeatId(seatId)
+      if (seat && isOccupiedSeat(seat, employeeById)) setDeleteConfirmSeatId(seatId)
       else editor.deleteSeat(seatId)
     },
-    [editor]
+    [editor, employeeById]
   )
 
   // 家具は名前も持たず誤操作の被害が小さいので即時削除。会議室は名前つきで確認する

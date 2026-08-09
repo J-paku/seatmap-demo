@@ -6,15 +6,15 @@ import { useGhostPlacement } from '@/hooks/use-ghost-placement'
 import type { GhostPlacement } from '@/hooks/use-ghost-placement'
 import type { UseLayoutEditorApi } from '@/hooks/use-layout-editor/use-layout-editor'
 import { FURNITURE_DEFAULT_SIZE, FURNITURE_KIND_LABEL } from '@/utils/furniture-catalog'
-import { rectOfRef } from '@/utils/layout-objects'
-import { placementBlocked } from '@/utils/layout-rules'
-import type { Rect } from '@/utils/rect'
-import { DEFAULT_SEAT_HEIGHT, DEFAULT_SEAT_WIDTH } from '@/utils/seat-relayout'
+import { rectOfRef } from '@/utils/layout/layout-objects'
+import { placementBlocked } from '@/utils/layout/layout-rules'
+import type { Rect } from '@/utils/layout/rect'
+import { DEFAULT_SEAT_HEIGHT, DEFAULT_SEAT_WIDTH } from '@/utils/layout/seat-relayout'
 import { GHOST_MIN_SIZE } from '@/hooks/use-ghost-placement'
 import type { FurnitureKind, LayoutObjectRef } from '@/types'
 
 // 追加導線の状態機械。カテゴリ → (家具なら)ピッカー → ゴースト → 確定。
-// ゴーストの幾何は use-ghost-placement、置けるかどうかの規則は utils/layout-rules が持ち、
+// ゴーストの幾何は use-ghost-placement、置けるかどうかの規則は utils/layout/layout-rules が持ち、
 // ここは「今どの段にいるか」と「確定したら何を発行するか」だけを持つ。
 // メニューの開閉は FAB 側(useAdminAddFab)の持ち物なのでここには無い
 

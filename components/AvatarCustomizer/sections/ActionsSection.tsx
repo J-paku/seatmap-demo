@@ -1,6 +1,6 @@
 // キャンセル/リセット/保存ボタン
 import type { CSSProperties } from 'react'
-import { triggerHaptic } from '@/lib/haptic'
+import { triggerHaptic } from '@/utils/haptic'
 
 interface ActionsSectionProps {
   onClose: () => void

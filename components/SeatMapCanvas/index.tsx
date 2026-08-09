@@ -26,7 +26,7 @@ const livePosOf = <T extends { id: string; x: number; y: number }>(item: T, live
 
 // 02/11: 座席マップのキャンバス。パンズーム・チームアイランド・施設・編集ドラッグを束ねる。
 // 11: チーム箱は team.area(サーバ座標)をそのまま描画する。座席からの逆算(旧 deriveTeamArea)は
-// 箱同士の重なりを生む原因だったため廃止(編集モードの自動整列は utils/layout-actions 側で完結)
+// 箱同士の重なりを生む原因だったため廃止(編集モードの自動整列は utils/layout/layout-actions 側で完結)
 
 export type { SeatMapCanvasHandle } from './type'
 
@@ -63,7 +63,7 @@ export const SeatMapCanvas = memo(forwardRef<SeatMapCanvasHandle, Props>(functio
   const viewport = useViewport()
   const zoom = useZoomControls(viewport)
   const { isPanningRef, handlers } = useCanvasPointer(viewport)
-  const edit = useEditDrag({ viewport, layout, isEditMode, onSeatMove, onTeamMove, onSeatEditSelect, onObjectMove, onEmptySeatTap: onSeatAssignRequest })
+  const edit = useEditDrag({ viewport, layout, employeeById, isEditMode, onSeatMove, onTeamMove, onSeatEditSelect, onObjectMove, onEmptySeatTap: onSeatAssignRequest })
   const view = useCanvasViewModel({
     layout,
     employeeById,

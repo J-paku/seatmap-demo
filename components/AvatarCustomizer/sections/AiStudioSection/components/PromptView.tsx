@@ -1,6 +1,6 @@
 // prompt ビュー: 完成した指示文をそのままコピーさせる (クリックでコピー → インポートへ自動遷移)
 import type { KeyboardEvent } from 'react'
-import { triggerHaptic } from '@/lib/haptic'
+import { triggerHaptic } from '@/utils/haptic'
 import { StepCard } from './StepCard'
 import {
   ACTION_ROW_STYLE,

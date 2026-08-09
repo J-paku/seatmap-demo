@@ -4,7 +4,7 @@ import { rectsOfKinds } from './layout-objects'
 import type { LayoutObjectRef, Seat, SeatLayout, Team } from '@/types'
 
 // 07-admin-edit: アクション発行前の検証規則。違反はリデューサーに到達させない。
-// 「どこに何があるか」は utils/layout-objects が答える。ここが持つのは
+// 「どこに何があるか」は utils/layout/layout-objects が答える。ここが持つのは
 // 「ぶつかったら何が起きるか」というポリシーだけ(座席同士は入れ替え・会議室とは拒否など)
 
 const areaRect = (area: Team['area']): Rect => ({ x: area.x, y: area.y, w: area.w, h: area.h })

@@ -6,7 +6,7 @@ import { FacilityDetail } from './FacilityDetail'
 import { ScheduleDetail } from './ScheduleDetail'
 import { scheduleTitleLabel } from '@/utils/format'
 import { useDetailPanel } from '@/contexts/detail-panel-context'
-import { useFacilities, useSchedules } from '@/lib/mock-loader'
+import { useFacilities, useSchedules } from '@/hooks/use-mock-data'
 import styles from './sheet.module.css'
 
 type Props = {

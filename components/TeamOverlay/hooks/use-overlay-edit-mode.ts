@@ -11,10 +11,10 @@ import {
   placeSeat,
   removeCol,
   removeRow,
-} from '@/utils/seat-grid-draft'
-import type { GridCell, SeatGridDraft } from '@/utils/seat-grid-draft'
-import { RELAYOUT_PADDING } from '@/utils/seat-relayout'
-import type { Rect } from '@/utils/rect'
+} from '@/utils/layout/seat-grid-draft'
+import type { GridCell, SeatGridDraft } from '@/utils/layout/seat-grid-draft'
+import { RELAYOUT_PADDING } from '@/utils/layout/seat-relayout'
+import type { Rect } from '@/utils/layout/rect'
 import type { Seat } from '@/types'
 
 // STEP A3: 座席編集モードの出入口。入口(enterEditMode)と出口(cancel)をこのフック1本に集約する

@@ -1,4 +1,4 @@
-import type { Rect } from '@/utils/rect'
+import type { Rect } from '@/utils/layout/rect'
 import type { FurnitureKind, LayoutObjectRef } from '@/types'
 
 // 何を置こうとしているか。配置の入口(FAB・再配置ボタン)がこれを組み立て、

@@ -1,7 +1,7 @@
 // テーマ状態のデモ側実装 — 実物はアプリ全体のプロバイダが持つが、デモは
 // .seat-map-root の data-theme を切り替えるだけで styles/tokens.css が配色を差し替える
 import { useCallback, useEffect, useState } from 'react'
-import { isDarkTheme, isThemeMode, migrateLegacyTheme } from '@/types'
+import { isDarkTheme, isThemeMode, migrateLegacyTheme } from '@/utils/theme'
 import type { ThemeMode } from '@/types'
 
 const THEME_STORAGE_KEY = 'seatmap-demo:theme'

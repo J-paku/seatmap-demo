@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import type { MinimapArea, MinimapFurniture, MinimapRect } from '../type'
-import { boundingBoxOf, clampRectToViewBox } from '@/utils/rect'
+import { boundingBoxOf, clampRectToViewBox } from '@/utils/layout/rect'
 
 // ミニマップの「どこを切り取って見せるか」と「現在地が窓のどこか」を決める計算。
 // 純粋計算のみで副作用を持たない

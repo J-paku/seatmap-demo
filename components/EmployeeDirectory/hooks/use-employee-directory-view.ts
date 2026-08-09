@@ -1,6 +1,6 @@
 // 社員ディレクトリビューの UI状態・アニメーション・ジェスチャー・キーボード入力を統合管理するフック
 import { useEffect, useState } from 'react'
-import { lockBodyScroll, unlockBodyScroll } from '@/lib/body-scroll-lock'
+import { lockBodyScroll, unlockBodyScroll } from '@/utils/body-scroll-lock'
 import { useSwipeToDismiss } from '@/hooks/use-swipe-to-dismiss'
 
 interface UseEmployeeDirectoryViewResult {

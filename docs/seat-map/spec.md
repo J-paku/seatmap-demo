@@ -49,8 +49,8 @@
 | ズームボタン(＋/－/リセット) | クリック | ＋/－はコンテナ中央基点で±1レベル。リセットは初期コンパクト変換へアニメーション復帰 | `use-zoom-controls.ts`, `components/ZoomControls.tsx` |
 
 初期倍率は「コンテナに余白15%を残して収める倍率×0.85」を、下限0.25・上限0.65にクランプして決める
-(`utils/geometry.ts:17-29` `computeCompact`)。最小倍率はその70%(`computeCompact結果×0.4`、下限0.25)
-(`utils/geometry.ts:31-35` `computeMinScale`)。最大倍率は`MAX_SCALE=5`固定(`utils/geometry.ts:8`)。
+(`utils/layout/geometry.ts:17-29` `computeCompact`)。最小倍率はその70%(`computeCompact結果×0.4`、下限0.25)
+(`utils/layout/geometry.ts:31-35` `computeMinScale`)。最大倍率は`MAX_SCALE=5`固定(`utils/layout/geometry.ts:8`)。
 
 モーダル(`[role="dialog"][aria-modal="true"]`)が開いている間はポインタ・ホイール・キーボードの
 いずれもキャンバス操作を無視する(`utils/canvas-metrics.ts:6-7` `isModalOpen`、
@@ -117,7 +117,7 @@
 (`components/SeatMapCanvas/components/EditObjectLayer.tsx:6-9`)。
 
 家具の種データは現時点で空(`mocks/furniture.json`)。編集モードで置いた分だけが保存レイアウト
-(`localStorage`)側に載る(`lib/mock-loader.ts:47`)。
+(`localStorage`)側に載る(`lib/mock-loader.ts:50`)。
 
 ## 5. 座席がキャンバスに描かれない理由(sr-only ミラー)
 

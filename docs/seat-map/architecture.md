@@ -40,7 +40,7 @@ components/SeatMapView/index.tsx          画面ルート。組み立てのみ
 
 ```
 mocks/*.json (teams / seats / facilities / furniture / employees / schedules / facility-meetings)
-  → lib/mock-loader.ts   (JSON→確定型への整形。SWR キャッシュ+疑似遅延。この1ファイルが唯一の import 点)
+  → lib/mock-loader.ts   (JSON→確定型への整形。キャッシュ入出力+疑似遅延(SWR フック本体は hooks/use-mock-data.ts)。この1ファイルが唯一の import 点)
     → useSeatLayout()    (teams+seats+facilities+furniture を SeatLayout に合成。localStorage 保存分があれば上書き)
       → SeatMapView/hooks/use-seat-map-data.ts
         effectiveLayout  = 編集モード中は editor.editingLayout、それ以外は layout
@@ -52,8 +52,8 @@ mocks/*.json (teams / seats / facilities / furniture / employees / schedules / f
 
 - 座標は全て `mocks/teams.json`(`area`)・`mocks/facilities.json`・`mocks/furniture.json`(空)・
   `mocks/seats.json` から来る。コード側は一切座標値を持たない(`CLAUDE.md` 不変ルール3)
-- `SeatLayout.viewBox` は `utils/geometry.ts` の `VIEWBOX_W=1600` / `VIEWBOX_H=1154` から
-  `lib/mock-loader.ts:61` が組み立てる。座標系の基準値はここ1箇所にしかない
+- `SeatLayout.viewBox` は `utils/layout/geometry.ts` の `VIEWBOX_W=1600` / `VIEWBOX_H=1154` から
+  `lib/mock-loader.ts:98` が組み立てる。座標系の基準値はここ1箇所にしかない
 - 保存済みレイアウト(`localStorage['seatmap-demo/layout']`)は `lib/layout-persistence.ts` が
   唯一の読み書き口。読み込み時に `furniture` フィールドの既定値埋め(`?? []`)もここで行う
   ——散らすと「旧保存分を持つ利用者だけクラッシュする」再現困難なバグになるためとコメントに明記
@@ -62,7 +62,7 @@ mocks/*.json (teams / seats / facilities / furniture / employees / schedules / f
 ## 3. 座標系とパン・ズームのパイプライン
 
 論理座標(`mocks/*.json` の `x`/`y`、`viewBox` は 1600×1154)と画面座標(`clientX`/`clientY`)の
-変換は `utils/geometry.ts` に集約される。
+変換は `utils/layout/geometry.ts` に集約される。
 
 | 関数 | 役割 |
 |---|---|
@@ -130,11 +130,11 @@ DOM 適用と次状態の保持だけを行う(関数は純粋・DOM に触れ�
 ——`FurnitureKind` を追加すると `Record` の網羅性チェックでコンパイルが落ちる設計
 (`utils/furniture-catalog.ts:5-7` のコメント)。
 
-当たり判定・吸着(スナップ)の対象矩形の取得は `utils/layout-objects.ts` の `entriesOfKind` が
+当たり判定・吸着(スナップ)の対象矩形の取得は `utils/layout/layout-objects.ts` の `entriesOfKind` が
 種別横断の唯一の入口。以前は同じ「何が対象か」の判断が5箇所(`layout-rules` に3・
 `sibling-rects` に2)へ手書きで散っており、種別追加時に取りこぼしても型エラーにならなかった
 ——`switch` の `default` 節で `never` 型チェックにして塞いだ、とコメントに経緯がある
-(`utils/layout-objects.ts:3-9`)。
+(`utils/layout/layout-objects.ts:3-9`)。
 
 ## 7. チームオーバーレイへのハンドオフ
 
@@ -167,6 +167,6 @@ DOM 適用と次状態の保持だけを行う(関数は純粋・DOM に触れ�
 
 ## 未検証・要確認
 
-- 家具の当たり判定範囲(`utils/layout-objects.ts` の `furniture` ケース)は編集モードのドラッグ・
+- 家具の当たり判定範囲(`utils/layout/layout-objects.ts` の `furniture` ケース)は編集モードのドラッグ・
   スナップでのみ使われ、閲覧モードでの参照箇所はコード上確認できなかった(FurnitureBlock は
   `pointerEvents:'none'` のため)

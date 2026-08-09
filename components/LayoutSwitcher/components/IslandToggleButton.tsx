@@ -1,7 +1,7 @@
 import type { LayoutSource } from '@/contexts/layout-source-context'
 import type { LayoutMeta } from '@/types'
 import { DEFAULT_FLOOR_ID, floorNameOf } from '@/utils/floors'
-import { triggerHaptic } from '@/lib/haptic'
+import { triggerHaptic } from '@/utils/haptic'
 import styles from '../layout-switcher.module.css'
 
 type Props = {

@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import type { FormEvent } from 'react'
 import { MAX_CUSTOM_LAYOUTS } from '../utils/custom-layout-limit'
-import { triggerHaptic } from '@/lib/haptic'
+import { triggerHaptic } from '@/utils/haptic'
 import styles from '../layout-switcher.module.css'
 
 type Props = {

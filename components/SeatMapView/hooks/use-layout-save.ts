@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { LayoutEditor } from '../type'
 import { fetchMock } from '@/lib/fetch-mock'
-import { useSeatLayout } from '@/lib/mock-loader'
+import { useSeatLayout } from '@/hooks/use-mock-data'
 
 // 07: 「完了」「キャンセル」「レイアウトをリセット」の保存まわり
 

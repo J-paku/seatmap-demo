@@ -2,7 +2,7 @@
 // 共有アバターキャッシュ(ownerCode) → 未登録なら employee.id をシードにした既定プリセット
 import type { Employee, PixelAvatarConfig } from '@/types'
 import { useSharedAvatars } from '@/contexts/avatars-context'
-import { resolveDefaultPresetId } from '@/lib/avatar/default-preset'
+import { resolveDefaultPresetId } from '@/utils/avatar/default-preset'
 
 export function useEmployeeAvatar(employee: Employee | null | undefined): PixelAvatarConfig | null {
   const { avatarConfigByOwnerCode } = useSharedAvatars()

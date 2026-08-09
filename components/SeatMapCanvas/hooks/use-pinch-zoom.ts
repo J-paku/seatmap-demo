@@ -2,7 +2,7 @@ import { useRef } from 'react'
 import { pinchGeometry } from '../utils/gesture-math'
 import type { Point } from '../utils/gesture-math'
 import type { Viewport } from '../type'
-import { MAX_SCALE, clamp, scaleToLevel, toLogical } from '@/utils/geometry'
+import { MAX_SCALE, clamp, scaleToLevel, toLogical } from '@/utils/layout/geometry'
 
 // 2本指のピンチズーム。バウンス範囲まで許容し、離した時に上下限へスプリング復元する
 

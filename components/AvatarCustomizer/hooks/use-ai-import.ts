@@ -6,7 +6,7 @@ import { TOAST_MESSAGES } from '@/constants/toast'
 import {
   parseAiImportedConfig,
   type AvatarImportError,
-} from '@/lib/avatar/avatar-import-parser'
+} from '@/utils/avatar/avatar-import-parser'
 import type { PartsAvatarConfig, PixelsAvatarConfig } from '@/types'
 import { resolveAvatarImportErrorMessage } from '../utils/avatar-import-messages'
 

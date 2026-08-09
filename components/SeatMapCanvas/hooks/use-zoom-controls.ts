@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from 'react'
 import type { Viewport } from '../type'
-import { computeCompact } from '@/utils/geometry'
+import { computeCompact } from '@/utils/layout/geometry'
 
 // ズームボタン用のコマンド。変換の基点はコンテナ中央で固定する
 

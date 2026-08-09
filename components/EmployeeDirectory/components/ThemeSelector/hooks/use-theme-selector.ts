@@ -1,7 +1,8 @@
 // テーマ選択ポップオーバーのロジック — 開閉状態と選択ハンドラ・現在テーマを提供する
 import { useState, useCallback } from 'react'
-import { THEME_OPTIONS } from '@/types'
-import type { ThemeMode, ThemeOption } from '@/types'
+import { THEME_OPTIONS } from '@/utils/theme'
+import type { ThemeOption } from '@/utils/theme'
+import type { ThemeMode } from '@/types'
 
 interface UseThemeSelectorParams {
   themeMode: ThemeMode

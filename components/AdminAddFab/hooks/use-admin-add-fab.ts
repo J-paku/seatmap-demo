@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import type { KeyboardEvent as ReactKeyboardEvent, RefObject } from 'react'
 import { useBodyScrollLock } from '@/hooks/use-body-scroll-lock'
-import { triggerHaptic } from '@/lib/haptic'
+import { triggerHaptic } from '@/utils/haptic'
 
 // メニュー項目の実体。ロービングタブの移動対象をこれで数える
 const MENU_ITEM_SELECTOR = '[role=menuitem]'

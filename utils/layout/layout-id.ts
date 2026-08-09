@@ -1,6 +1,6 @@
 // STEP1: 複数レイアウト対応 — 新規レイアウトのid採番と空レイアウトの雛形生成
 import type { LayoutMeta, SeatLayout } from '@/types'
-import { VIEWBOX_H, VIEWBOX_W } from '@/utils/geometry'
+import { VIEWBOX_H, VIEWBOX_W } from '@/utils/layout/geometry'
 
 // crypto.randomUUID が使えない環境向けの連番フォールバック形式('layout-<連番>')
 const FALLBACK_ID_PREFIX = 'layout-'

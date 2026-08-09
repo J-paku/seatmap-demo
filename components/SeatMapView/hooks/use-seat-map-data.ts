@@ -2,7 +2,12 @@ import { useMemo, useState } from 'react'
 import type { LayoutEditor } from '../type'
 import { deriveFacilityState } from '@/utils/facility-status'
 import type { FacilityState } from '@/utils/facility-status'
-import { useEmployees, useFacilityMeetings, useSchedules, useSeatLayout } from '@/lib/mock-loader'
+import {
+  useEmployees,
+  useFacilityMeetings,
+  useSchedules,
+  useSeatLayout,
+} from '@/hooks/use-mock-data'
 import { computePresenceMap } from '@/utils/presence'
 import { useSelectedDate } from '@/contexts/selected-date-context'
 import { jstDateKey, jstKeyFromIso } from '@/utils/jst-date'

@@ -1,4 +1,4 @@
-import { triggerHaptic } from '@/lib/haptic'
+import { triggerHaptic } from '@/utils/haptic'
 import styles from '../employee-detail.module.css'
 
 // カード最下段のアクション行。電話帳に登録(常時) ‖ 座席へ移動(移動できる時だけ)

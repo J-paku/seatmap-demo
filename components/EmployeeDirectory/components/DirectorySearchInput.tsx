@@ -1,5 +1,5 @@
 // 社員ディレクトリの検索入力UIを描画するコンポーネント
-import { triggerHaptic } from '@/lib/haptic'
+import { triggerHaptic } from '@/utils/haptic'
 
 interface DirectorySearchInputProps {
   query: string

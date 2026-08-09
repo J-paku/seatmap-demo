@@ -1,6 +1,6 @@
 // クイック開始オプション行
 import { useMemo } from 'react'
-import { PIXEL_AVATAR_PRESETS } from '@/lib/avatar/pixel-avatar-presets'
+import { PIXEL_AVATAR_PRESETS } from '@/utils/avatar/pixel-avatar-presets'
 import { OptionRow } from '../components/OptionRow'
 import { MiniPreview } from '../components/MiniPreview'
 import { useAvatarCustomizer, type QuickStartKind } from '../hooks/use-avatar-customizer'

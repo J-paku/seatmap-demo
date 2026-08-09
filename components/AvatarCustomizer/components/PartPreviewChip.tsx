@@ -1,6 +1,6 @@
 // アバターパーツの選択チップ — 48x48 角丸、選択時にコーラル枠で強調
 import type { CSSProperties, ReactNode } from 'react'
-import { triggerHaptic } from '@/lib/haptic'
+import { triggerHaptic } from '@/utils/haptic'
 
 interface PartPreviewChipProps {
   isSelected: boolean

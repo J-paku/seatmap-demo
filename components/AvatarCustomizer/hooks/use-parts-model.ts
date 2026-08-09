@@ -1,8 +1,8 @@
 // アバターのパーツ構成 (hair/face/accessory/outfit/palette/色上書き) の状態管理
 // パーツが変化したら onPartsMutate を呼び、呼び出し側 (AI自由ピクセルの破棄など) に通知する
 import { useCallback, useMemo, useState } from 'react'
-import { PIXEL_AVATAR_PRESETS } from '@/lib/avatar/pixel-avatar-presets'
-import { deriveOutfitColors } from '@/lib/avatar/avatar-color-utils'
+import { PIXEL_AVATAR_PRESETS } from '@/utils/avatar/pixel-avatar-presets'
+import { deriveOutfitColors } from '@/utils/avatar/avatar-color-utils'
 import {
   ACCESSORY_OPTIONS,
   FACE_OPTIONS,
@@ -14,12 +14,12 @@ import {
   QUICK_START_PRESETS,
   getExclusiveHairQuickStart,
   type QuickStartKind,
-} from '@/lib/avatar/avatar-customizer-options'
+} from '@/utils/avatar/avatar-customizer-options'
 import {
   deriveInitialParts,
   deriveInitialQuickStartKind,
   type DerivedInitialState,
-} from '@/lib/avatar/avatar-initial-state'
+} from '@/utils/avatar/avatar-initial-state'
 import type {
   AccessoryId,
   AvatarPalette,

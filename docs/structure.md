@@ -51,7 +51,7 @@ seatmap-demo/
 | 置き場 | ファイル | 理由 |
 |--------|----------|------|
 | `lib/` | `fetch-mock.ts` | 擬似APIレイヤー(遅延付きの取得) |
-| `lib/` | `mock-loader.ts` | SWR によるデータ取得層(`docs/authoring.md` 1. の例外フックもここに同居) |
+| `lib/` | `mock-loader.ts` | シード・キャッシュ入出力(SWR フック本体は `hooks/use-mock-data.ts`) |
 | `lib/` | `layout-persistence.ts` | localStorage への読み書き |
 | `lib/` | `avatar-persistence.ts` | localStorage への読み書き |
 | `utils/` | `geometry.ts` | 座標変換の計算だけ |

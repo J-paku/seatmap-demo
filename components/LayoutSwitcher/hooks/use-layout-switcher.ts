@@ -8,7 +8,7 @@ import {
   saveDefaultLayoutId,
   saveLayoutMetas,
 } from '@/lib/layout-persistence'
-import { createEmptyLayout, createLayoutId } from '@/utils/layout-id'
+import { createEmptyLayout, createLayoutId } from '@/utils/layout/layout-id'
 import { useLayoutSource } from '@/contexts/layout-source-context'
 import { useGlobalAnnouncement } from '@/components/a11y'
 import { floorNameOf } from '@/utils/floors'

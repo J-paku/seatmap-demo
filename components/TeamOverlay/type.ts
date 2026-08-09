@@ -1,6 +1,6 @@
 import type { UseSeatDragResult } from './hooks/use-seat-drag'
-import type { Rect } from '@/utils/rect'
-import type { GridCell, SeatGridDraft } from '@/utils/seat-grid-draft'
+import type { Rect } from '@/utils/layout/rect'
+import type { GridCell, SeatGridDraft } from '@/utils/layout/seat-grid-draft'
 import type { Employee, PresenceStatus, Seat } from '@/types'
 
 // チームバウンダリのクリックで渡ってくる情報。rect が拡大の原点になる
@@ -39,7 +39,7 @@ export type MinimapFurniture = {
   height: number
 }
 
-// 矩形は utils/rect.ts の定義をそのまま使う(同じ形を再宣言すると同概念の型が二重化する)
+// 矩形は utils/layout/rect.ts の定義をそのまま使う(同じ形を再宣言すると同概念の型が二重化する)
 export type MinimapRect = Rect
 
 export type TeamOverlayProps = {

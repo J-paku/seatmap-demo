@@ -1,5 +1,5 @@
 import type { LayoutMeta } from '@/types'
-import { triggerHaptic } from '@/lib/haptic'
+import { triggerHaptic } from '@/utils/haptic'
 import styles from '../layout-switcher.module.css'
 
 type Props = {

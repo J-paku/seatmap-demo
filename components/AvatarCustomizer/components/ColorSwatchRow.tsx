@@ -1,6 +1,6 @@
 // ヘアカラー専用の小型スウォッチ行 — 色チップを小さく敷き詰め、選択中だけ accent リングで強調
 import type { CSSProperties } from 'react'
-import { triggerHaptic } from '@/lib/haptic'
+import { triggerHaptic } from '@/utils/haptic'
 
 interface ColorSwatchRowProps {
   ariaLabel: string

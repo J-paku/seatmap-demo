@@ -1,11 +1,11 @@
 // ヘア/フェイス/アクセ/コスチューム/カラーのパーツオプション群 (カラー+スタイルはグループ枠で1まとめ)
 import type { CSSProperties } from 'react'
-import { PIXEL_AVATAR_PRESETS } from '@/lib/avatar/pixel-avatar-presets'
+import { PIXEL_AVATAR_PRESETS } from '@/utils/avatar/pixel-avatar-presets'
 import {
   ACCESSORY_LABELS,
   FACE_LABELS,
   HAIR_LABELS,
-} from '@/lib/avatar/part-registry'
+} from '@/utils/avatar/part-registry'
 import { OptionRow } from '../components/OptionRow'
 import { ColorSwatchRow } from '../components/ColorSwatchRow'
 import { MiniPreview } from '../components/MiniPreview'

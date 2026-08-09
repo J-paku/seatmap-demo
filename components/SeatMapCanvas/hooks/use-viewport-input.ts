@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import type { RefObject } from 'react'
 import { isModalOpen } from '../utils/canvas-metrics'
-import { clamp } from '@/utils/geometry'
+import { clamp } from '@/utils/layout/geometry'
 
 // キャンバスへの入力(リサイズ再計測・キーボード ±・ホイール/トラックパッド)を変換モデルへ繋ぐ。
 // 変換そのものは useViewport が持ち、ここは「いつ呼ぶか」だけを担う

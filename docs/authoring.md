@@ -16,9 +16,8 @@
 - コンポーネント専用フックは `components/<Name>/hooks/` へ。2箇所以上で使われたら
   ルート直下の `hooks/` へ昇格する
 - 1本のフックを複数責務で分割する時は下記 3.3。**フォルダ化しても `index.ts` は作らない**
-- **例外**: `lib/mock-loader.ts` はデータ取得フック(`useEmployees` 等)を取得層と一体で同居させる。
-  取得層が1ファイルに閉じているため `hooks/` へ分離しない(`~/.claude/rules/01-authoring.md` の
-  「フックは常に `hooks/`」原則に対する明示的な例外)
+- データ取得フック(`useEmployees` 等)は `hooks/use-mock-data.ts` に置く。取得層(`lib/mock-loader.ts`)
+  とは分離しており、例外なく「フックは常に `hooks/`」原則に従う
 
 ## 2. コンポーネント規則
 

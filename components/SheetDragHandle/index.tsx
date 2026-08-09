@@ -1,5 +1,5 @@
 // ボトムシート上端のハンドルバー（バータップで閉じる・ドラッグはシートルートへ spread した sheetHandlers が担当）
-import { triggerHaptic } from '@/lib/haptic'
+import { triggerHaptic } from '@/utils/haptic'
 
 interface SheetDragHandleProps {
   heightPx?: number

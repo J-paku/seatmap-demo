@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { DragEvent as ReactDragEvent, PointerEvent as ReactPointerEvent } from 'react'
 import { SEAT_GRID_CELL_ATTR, TRASH_DROP_ZONE_ATTR } from '../utils/seat-drag-attrs'
-import { safeSetPointerCapture } from '@/lib/gesture/pointer-capture'
-import { suppressGhostClick } from '@/lib/gesture/suppress-ghost-click'
-import type { GridCell } from '@/utils/seat-grid-draft'
+import { safeSetPointerCapture } from '@/utils/gesture/pointer-capture'
+import { suppressGhostClick } from '@/utils/gesture/suppress-ghost-click'
+import type { GridCell } from '@/utils/layout/seat-grid-draft'
 
 // STEP B2: チームオーバーレイの座席編集 — ドラッグ移動/入替
 //

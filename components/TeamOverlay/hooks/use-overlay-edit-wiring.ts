@@ -8,8 +8,8 @@ import { useSeatCommit } from './use-seat-commit'
 import type { UseSeatCommitResult } from './use-seat-commit'
 import type { UseSeatSelectionResult } from './use-seat-selection'
 import type { SeatGrid, TeamOverlayPayload } from '../type'
-import type { GridCell } from '@/utils/seat-grid-draft'
-import { DEFAULT_SEAT_HEIGHT, DEFAULT_SEAT_WIDTH } from '@/utils/seat-relayout'
+import type { GridCell } from '@/utils/layout/seat-grid-draft'
+import { DEFAULT_SEAT_HEIGHT, DEFAULT_SEAT_WIDTH } from '@/utils/layout/seat-relayout'
 import type { Employee, Seat } from '@/types'
 
 // TeamOverlayの編集配線をまとめて持つ。選択のトグル・席追加とその直後のハイライト・

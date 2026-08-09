@@ -1,4 +1,4 @@
-import { useEmployees, useSeatLayout, useTeams } from '@/lib/mock-loader'
+import { useEmployees, useSeatLayout, useTeams } from '@/hooks/use-mock-data'
 import type { Employee, Team } from '@/types'
 
 type Params = {

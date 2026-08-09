@@ -3,7 +3,7 @@ import type { Employee, PixelAvatarConfig } from '@/types'
 import { useMyAvatarConfig } from '@/hooks/use-my-avatar-config'
 import { formatPositionLabel } from '@/utils/position-label'
 import { PixelAvatar } from '@/components/PixelAvatar'
-import { triggerHaptic } from '@/lib/haptic'
+import { triggerHaptic } from '@/utils/haptic'
 
 interface EmployeeCardProps {
   employee: Employee

@@ -1,6 +1,6 @@
 // import ビュー: 生成AIの返答を貼り付けて取り込む。失敗時は理由をインライン表示する
 import type { ChangeEvent } from 'react'
-import { triggerHaptic } from '@/lib/haptic'
+import { triggerHaptic } from '@/utils/haptic'
 import { useScrollIntoViewOnMount } from '../hooks/use-scroll-into-view-on-mount'
 import { StepCard } from './StepCard'
 import {

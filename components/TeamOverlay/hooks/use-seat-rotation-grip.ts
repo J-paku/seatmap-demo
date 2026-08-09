@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef } from 'react'
 import type { PointerEvent as ReactPointerEvent } from 'react'
-import { safeSetPointerCapture } from '@/lib/gesture/pointer-capture'
-import { triggerHaptic } from '@/lib/haptic'
+import { safeSetPointerCapture } from '@/utils/gesture/pointer-capture'
+import { triggerHaptic } from '@/utils/haptic'
 import type { Seat } from '@/types'
 
 // STEP D1: 座席の回転グリップ。タップとドラッグを1つのポインタ経路で兼ねる

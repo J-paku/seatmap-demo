@@ -1,5 +1,5 @@
 // 画面固定のリモコン(変換レイヤー外)。拡大・縮小・自席・リセットを右下の1本にまとめる
-import { triggerHaptic } from '@/lib/haptic'
+import { triggerHaptic } from '@/utils/haptic'
 import styles from './seatmap.module.css'
 
 type Props = {

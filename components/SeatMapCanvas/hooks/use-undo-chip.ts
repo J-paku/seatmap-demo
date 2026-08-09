@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { RefObject } from 'react'
-import type { Transform } from '@/utils/geometry'
+import type { Transform } from '@/utils/layout/geometry'
 
 // 07: 直前アクション対象の直下に出す「元に戻す」チップ。次操作または5秒経過で消える
 

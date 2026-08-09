@@ -1,11 +1,11 @@
 // アバターカスタマイザモーダルの状態と保存ハンドラを管理するフック
 import { useCallback, useEffect, useState } from 'react'
 import { useGlobalAnnouncement } from '@/components/a11y'
-import { useEmployees } from '@/lib/mock-loader'
+import { useEmployees } from '@/hooks/use-mock-data'
 import { SELF_EMPLOYEE_ID } from '@/utils/demo-identity'
 import { useSharedAvatars } from '@/contexts/avatars-context'
 import { useCurrentUserCode } from '@/hooks/use-current-user-code'
-import { lockBodyScroll, unlockBodyScroll } from '@/lib/body-scroll-lock'
+import { lockBodyScroll, unlockBodyScroll } from '@/utils/body-scroll-lock'
 import { TOAST_MESSAGES } from '@/constants/toast'
 import type { PixelAvatarConfig, StoredAvatarRecord } from '@/types'
 

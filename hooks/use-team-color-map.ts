@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { useTeams } from '@/lib/mock-loader'
+import { useTeams } from '@/hooks/use-mock-data'
 import { buildTeamColorRegistry } from '@/utils/team-colors'
 import type { TeamColorEntry } from '@/utils/team-colors'
 

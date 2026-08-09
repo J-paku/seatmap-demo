@@ -2,9 +2,9 @@ import { useCallback, useState } from 'react'
 import type { SeatDraftState } from './use-seat-draft-state'
 import type { UseOverlayEditModeResult } from './use-overlay-edit-mode'
 import { buildSeatByEmployee } from '@/components/EmployeeAssignSheet/hooks/use-employee-assign'
-import { addRow as addGridRow, findFirstEmptyCell, placeSeat as placeSeatInGrid } from '@/utils/seat-grid-draft'
-import type { SeatGridDraft } from '@/utils/seat-grid-draft'
-import { DEFAULT_SEAT_HEIGHT, DEFAULT_SEAT_WIDTH } from '@/utils/seat-relayout'
+import { addRow as addGridRow, findFirstEmptyCell, placeSeat as placeSeatInGrid } from '@/utils/layout/seat-grid-draft'
+import type { SeatGridDraft } from '@/utils/layout/seat-grid-draft'
+import { DEFAULT_SEAT_HEIGHT, DEFAULT_SEAT_WIDTH } from '@/utils/layout/seat-relayout'
 import type { Employee, Seat } from '@/types'
 
 // STEP C3: 部署ごとの一括配置。EmployeeAssignSheetの「この部署をまとめて配属」から呼ばれ、

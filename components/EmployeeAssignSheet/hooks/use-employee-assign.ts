@@ -5,7 +5,7 @@ import type { Employee, Seat } from '@/types'
 // 配属候補の絞り込みと、各社員が今どこに座っているかの解決
 
 // 「今どこに座っているか」の唯一の判定口。座席配列を先頭から走査し、最初に見つかった席を
-// その社員の現在席とする(utils/layout-actions.ts の seat-assign-employee が使う find と同じ先勝ち)。
+// その社員の現在席とする(utils/layout/layout-actions.ts の seat-assign-employee が使う find と同じ先勝ち)。
 // 検索シートだけでなく、部署一括配置(use-bulk-assign)と下書きの配属(use-seat-draft-state)も
 // この1本を通す — 走査を各所で書くと先勝ち/後勝ちが食い違い、同じ人が2席に見える原因になる
 export const buildSeatByEmployee = (seats: Seat[]): Map<string, Seat> => {

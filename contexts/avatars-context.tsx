@@ -14,16 +14,7 @@ interface AvatarsProviderProps {
   children: ReactNode
 }
 
-const EMPTY_AVATAR_CONFIG_MAP = new Map<string, PixelAvatarConfig>()
-
-const DEFAULT_VALUE: AvatarsContextValue = {
-  avatarConfigByOwnerCode: EMPTY_AVATAR_CONFIG_MAP,
-  isInitialLoading: false,
-  refreshAvatarFor: async () => {},
-  upsertLocalAvatar: async () => {},
-}
-
-const AvatarsContext = createContext<AvatarsContextValue>(DEFAULT_VALUE)
+const AvatarsContext = createContext<AvatarsContextValue | null>(null)
 
 export function AvatarsProvider({ children }: AvatarsProviderProps) {
   const { avatars, isInitialLoading, refreshAvatarFor, upsertLocalAvatar } = useAvatars()
@@ -51,4 +42,8 @@ export function AvatarsProvider({ children }: AvatarsProviderProps) {
   return <AvatarsContext.Provider value={value}>{children}</AvatarsContext.Provider>
 }
 
-export const useSharedAvatars = (): AvatarsContextValue => useContext(AvatarsContext)
+export const useSharedAvatars = (): AvatarsContextValue => {
+  const v = useContext(AvatarsContext)
+  if (!v) throw new Error('useSharedAvatars は AvatarsProvider 内で使用すること')
+  return v
+}

@@ -1,5 +1,5 @@
 // 家具のカタログ(表示名・既定サイズ・ピッカーのグループ分け)。副作用のない定数だけを持つ。
-// 型は types/index.ts、当たり判定は utils/layout-objects.ts が担当する
+// 型は types/index.ts、当たり判定は utils/layout/layout-objects.ts が担当する
 import type { FurnitureKind } from '@/types'
 
 // 種別の分類。Record なので種別を1つ足すとここが不足してコンパイルが落ちる。

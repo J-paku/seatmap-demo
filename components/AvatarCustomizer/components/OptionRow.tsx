@@ -1,6 +1,6 @@
 // アバターパーツ選択行 — ラベル + 横スクロール可能なチップ群 + 必要時のみ表示される左右スクロールヒント
 import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react'
-import { triggerHaptic } from '@/lib/haptic'
+import { triggerHaptic } from '@/utils/haptic'
 import { PartPreviewChip } from './PartPreviewChip'
 
 interface OptionRowOption {

@@ -1,6 +1,6 @@
 // アバターカスタマイザのボトムシートモーダル — 設定パネルから起動
 import { useEffect, useRef } from 'react'
-import { triggerHaptic } from '@/lib/haptic'
+import { triggerHaptic } from '@/utils/haptic'
 import { AvatarCustomizer } from '@/components/AvatarCustomizer'
 import type { AvatarCustomizerHandle } from '@/components/AvatarCustomizer'
 import { useKuroCode } from '@/components/AvatarCustomizer/hooks/use-kuro-code'

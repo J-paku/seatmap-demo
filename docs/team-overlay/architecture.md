@@ -72,7 +72,7 @@ components/TeamOverlay/
 |---|---|
 | `seat-grid.ts` | グリッド寸法定数(列幅・gap・パディング)と、絶対座標→行列インデックスへの変換 |
 | `anchor-origin.ts` | クリックしたバウンダリ中心からの拡大原点(`transform-origin`)計算 |
-| `compact-name.ts` | Compact 氏名ラベル切り出し(`lib/seat/display-utils` へ委譲)とフォントサイズ計算 |
+| `compact-name.ts` | Compact 氏名ラベル切り出し(`utils/display-utils` へ委譲)とフォントサイズ計算 |
 | `minimap-label.ts` | ミニマップラベルの文字数・フォントサイズ・省略記号処理 |
 
 ## 5. props の流れ

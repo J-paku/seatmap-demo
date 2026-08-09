@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react'
 import { hexToRgba } from '@/utils/color'
-import { clamp } from '@/utils/geometry'
+import { clamp } from '@/utils/layout/geometry'
 import type { TeamColorEntry } from '@/utils/team-colors'
 import type { Lod, Team } from '@/types'
 

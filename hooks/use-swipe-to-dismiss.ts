@@ -4,16 +4,16 @@
 // - タップ・上方向・水平優勢は disarm(タップ/横スワイプに干渉しない)
 // 責務分離: ゲート判定=scrollGate / 速度=swipeVelocity / 背景連鎖遮断=sheetBackgroundGuard。本フックは状態機械のみ。
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { triggerHaptic, type HapticType } from '@/lib/haptic'
-import { safeSetPointerCapture } from '@/lib/gesture/pointer-capture'
-import { suppressGhostClick } from '@/lib/gesture/suppress-ghost-click'
-import { computeScrollGate } from '@/lib/gesture/scroll-gate'
-import { attachSheetBackgroundGuard } from '@/lib/gesture/sheet-background-guard'
+import { triggerHaptic, type HapticType } from '@/utils/haptic'
+import { safeSetPointerCapture } from '@/utils/gesture/pointer-capture'
+import { suppressGhostClick } from '@/utils/gesture/suppress-ghost-click'
+import { computeScrollGate } from '@/utils/gesture/scroll-gate'
+import { attachSheetBackgroundGuard } from '@/utils/gesture/sheet-background-guard'
 import {
   pushVelocitySample,
   computeFlickVelocity,
   type VelocitySample,
-} from '@/lib/gesture/swipe-velocity'
+} from '@/utils/gesture/swipe-velocity'
 
 interface UseSwipeToDismissOptions {
   onDismiss: () => void

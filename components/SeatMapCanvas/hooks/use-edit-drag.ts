@@ -3,10 +3,11 @@ import type { PointerEvent as ReactPointerEvent } from 'react'
 import { useUndoChip } from './use-undo-chip'
 import { siblingRectsForObject, siblingRectsForSeat, siblingRectsForTeam } from '../utils/sibling-rects'
 import type { EditDrag, LivePosition, Rect, Viewport } from '../type'
-import { SNAP_THRESHOLD_SCREEN_PX, computeSnap } from '@/utils/snap-guides'
-import type { SnapGuide } from '@/utils/snap-guides'
-import { rectOfRef } from '@/utils/layout-objects'
-import type { LayoutObjectRef, SeatLayout } from '@/types'
+import { SNAP_THRESHOLD_SCREEN_PX, computeSnap } from '@/utils/layout/snap-guides'
+import type { SnapGuide } from '@/utils/layout/snap-guides'
+import { rectOfRef } from '@/utils/layout/layout-objects'
+import { isOccupiedSeat } from '@/utils/seat-occupancy'
+import type { Employee, LayoutObjectRef, SeatLayout } from '@/types'
 
 // 07: 編集モードの座席/チームラベルのドラッグ移動。閲覧モードではこのロジックへ一切到達しない
 
@@ -16,6 +17,7 @@ const DRAG_THRESHOLD_PX = 3
 type Options = {
   viewport: Viewport
   layout: SeatLayout
+  employeeById: Map<string, Employee>
   isEditMode: boolean
   onSeatMove?: (seatId: string, x: number, y: number) => void
   onTeamMove?: (teamId: string, x: number, y: number) => void
@@ -44,6 +46,7 @@ type EditDragState = {
 export const useEditDrag = ({
   viewport,
   layout,
+  employeeById,
   isEditMode,
   onSeatMove,
   onTeamMove,
@@ -199,9 +202,11 @@ export const useEditDrag = ({
         if (drag.moved) {
           onSeatMove?.(drag.seatId, drag.liveX, drag.liveY)
           undoChip.showAt(drag.liveX, drag.liveY)
-        } else if (!layout.seats.find((s) => s.id === drag.seatId)?.employeeId) {
-          // 空席は1タップで配属シートへ。着席済みはアクションバー経由にする
-          onEmptySeatTap?.(drag.seatId)
+        } else {
+          const seat = layout.seats.find((s) => s.id === drag.seatId)
+          // 空席(実在しない社員IDを参照する「宙ぶらりん」座席も含む)は1タップで配属シートへ。
+          // 着席済みはアクションバー経由にする
+          if (!seat || !isOccupiedSeat(seat, employeeById)) onEmptySeatTap?.(drag.seatId)
         }
       } else if (drag.kind === 'object') {
         setLiveObjectPos(null)
@@ -226,7 +231,7 @@ export const useEditDrag = ({
       window.removeEventListener('pointerup', onUp)
       window.removeEventListener('pointercancel', onUp)
     }
-  }, [isEditMode, layout, transformRef, onSeatMove, onTeamMove, onObjectMove, onEmptySeatTap, undoChip])
+  }, [isEditMode, layout, employeeById, transformRef, onSeatMove, onTeamMove, onObjectMove, onEmptySeatTap, undoChip])
 
   // Esc で選択解除。キャンバス余白のクリックと同じ扱い
   useEffect(() => {

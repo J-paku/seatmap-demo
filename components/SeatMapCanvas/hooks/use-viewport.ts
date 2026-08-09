@@ -12,8 +12,8 @@ import {
   scaleToLevel,
   toLogical,
   zoomAtPoint,
-} from '@/utils/geometry'
-import type { Transform } from '@/utils/geometry'
+} from '@/utils/layout/geometry'
+import type { Transform } from '@/utils/layout/geometry'
 
 // パン・ズームの変換そのものを持つ。DOM へ直接 transform を当て、再レンダーは
 // ジェスチャー終了時の scaleSnap 更新だけに絞る

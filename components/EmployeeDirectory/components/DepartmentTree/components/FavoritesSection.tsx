@@ -4,7 +4,7 @@ import type { FavoritesContent } from '../types'
 import type { Employee, PixelAvatarConfig } from '@/types'
 import { EmployeeCard } from './EmployeeCard'
 import { DepartmentGroupRow } from './DepartmentGroupRow'
-import { triggerHaptic } from '@/lib/haptic'
+import { triggerHaptic } from '@/utils/haptic'
 
 interface FavoritesSectionProps {
   favoritesContent: FavoritesContent | null

@@ -2,7 +2,7 @@
 // iOS WKWebView は overscroll-behavior:contain を完全サポートしないため、
 // touchmove を passive:false で監視し端到達時に preventDefault する
 import { useCallback, useRef } from 'react'
-import { collectScrollableAncestors } from '@/lib/gesture/scrollable-ancestors'
+import { collectScrollableAncestors } from '@/utils/gesture/scrollable-ancestors'
 
 interface ScrollChainGuardReturn {
   // スクロール可能領域に spread する props（callback ref を内包）

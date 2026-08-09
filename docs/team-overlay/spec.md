@@ -68,7 +68,7 @@ PC も完全にモバイル表示になる(`use-compact-mobile.ts:3-4` のコメ
   (`CompactSeatGrid.tsx:22-40`)
 - `positionedSeats` を row×col の全走査ではなくそのまま `map`(`CompactSeatGrid.tsx:76`)
 - セルは縦積み(アバター上・テキスト下)・姓のみ・椅子なし・回転非表示(`ViewSeatCell.tsx:9-10`)
-- 姓の切り出しは `lib/seat/display-utils` の `getCompactNameLabel` を再 export するだけで、Compact
+- 姓の切り出しは `utils/display-utils` の `getCompactNameLabel` を再 export するだけで、Compact
   専用の別実装は持たない。元は同名関数がここにも別実装として存在し、あちらだけが Garoon 名の「;所属」
   接尾辞を落とし損ねていた事故があったため一本化した(`utils/compact-name.ts:3-6`)。コード
   コメントは「同じ概念の判定基準を2つ持たない(docs/pitfalls.md 4番)」と根拠を残しているが、

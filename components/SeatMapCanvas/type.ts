@@ -1,5 +1,5 @@
 import type { RefObject } from 'react'
-import type { Transform } from '@/utils/geometry'
+import type { Transform } from '@/utils/layout/geometry'
 import type { Employee, LayoutObjectRef, Lod, PresenceStatus, SeatLayout } from '@/types'
 
 export type { Lod }

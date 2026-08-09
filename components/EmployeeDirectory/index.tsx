@@ -1,7 +1,7 @@
 // 社員ディレクトリのスライドインパネルを提供するメインコンポーネント
 import { useMemo, useState, useCallback } from 'react'
 import type { ThemeMode, Employee } from '@/types'
-import { triggerHaptic } from '@/lib/haptic'
+import { triggerHaptic } from '@/utils/haptic'
 import { useScrollChainGuard } from '@/hooks/use-scroll-chain-guard'
 import { FocusTrap } from '@/components/a11y/components/FocusTrap'
 import { SheetDragHandle } from '@/components/SheetDragHandle'

@@ -5,8 +5,9 @@
 // employeeById への実在確認をここへ1本化し、判定基準の二重化を無くす
 import type { Employee, Seat, Team } from '@/types'
 
-// employeeId が非null かつ employeeById に実在する座席だけを「着席」とみなす
-const isOccupiedSeat = (seat: Seat, employeeById: Map<string, Employee>): boolean =>
+// employeeId が非null かつ employeeById に実在する座席だけを「着席」とみなす。
+// 表示・集計だけでなく編集系の着席判定(削除確認・空席タップ)からも呼ばれる公開関数
+export const isOccupiedSeat = (seat: Seat, employeeById: Map<string, Employee>): boolean =>
   seat.employeeId !== null && employeeById.has(seat.employeeId)
 
 // 単一チーム分の実在着席数。呼び出し側で対象チームの座席へ絞り込んだ配列を渡す

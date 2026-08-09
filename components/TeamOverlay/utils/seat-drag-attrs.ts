@@ -1,4 +1,4 @@
-import type { GridCell } from '@/utils/seat-grid-draft'
+import type { GridCell } from '@/utils/layout/seat-grid-draft'
 
 // STEP B2/B3: 座席ドラッグ/ドロップの経路がDOMから直接読み取るdata属性名。
 // フック(use-seat-drag)とコンポーネント(TrashDropZone/DesktopSeatGrid/CompactSeatGrid)の

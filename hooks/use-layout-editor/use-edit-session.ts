@@ -1,6 +1,6 @@
 import { useCallback, useRef, useState } from 'react'
-import { applyLayoutAction } from '@/utils/layout-actions'
-import type { LayoutAction } from '@/utils/layout-actions'
+import { applyLayoutAction } from '@/utils/layout/layout-actions'
+import type { LayoutAction } from '@/utils/layout/layout-actions'
 import type { SeatLayout } from '@/types'
 
 // 07-admin-edit: 編集セッション(ワーキングコピー・undoスタック・変更数)。

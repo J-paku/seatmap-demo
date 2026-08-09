@@ -3,7 +3,7 @@ import { useState, useCallback } from 'react'
 import { ThemeSelector } from './ThemeSelector'
 import { GaroonLogoutBar } from './GaroonLogoutBar'
 import type { ThemeMode } from '@/types'
-import { triggerHaptic } from '@/lib/haptic'
+import { triggerHaptic } from '@/utils/haptic'
 import { useLayoutSource } from '@/contexts/layout-source-context'
 import { floorNameOf, DEFAULT_FLOOR_ID } from '@/utils/floors'
 
