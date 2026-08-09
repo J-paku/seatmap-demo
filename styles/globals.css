@@ -30,6 +30,17 @@ body {
   margin: 0;
 }
 
+/* スワイプ・ドラッグのたびにUI文字が選択され、青い矩形が読み込み中の画面に残るのを防ぐ。
+   入力欄は選択できないと編集できないため戻す */
+body {
+  user-select: none;
+}
+
+input,
+textarea {
+  user-select: text;
+}
+
 * {
   box-sizing: border-box;
 }

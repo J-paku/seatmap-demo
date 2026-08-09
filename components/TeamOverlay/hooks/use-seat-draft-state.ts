@@ -12,7 +12,7 @@ const DRAFT_SEAT_ID_PREFIX = 'seat-draft-'
 
 // 判定の土台になる座席2種。どちらも算出元は use-draft-applied-seats の1本で、
 // この容れ物は自前で座席配列を組み立て直さない(同じ概念の判定基準を二重に作らないため)
-export type SeatDraftSeatSources = {
+type SeatDraftSeatSources = {
   // 保存済みの全座席。差し引きゼロ(保存値と同じ値へ戻した)の判定に使う
   saved: Seat[]
   // 下書きを反映した全座席。社員が今どこに座っているかの解決に使う

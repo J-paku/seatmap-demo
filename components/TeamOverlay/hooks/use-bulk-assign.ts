@@ -13,13 +13,13 @@ import type { Employee, Seat } from '@/types'
 // 「まだどこにも座っていない(newcomers)」か「他の座席に座っている(movers)」の社員だけに絞る。
 // moversが1人でもいれば確認を挟み、確定後は元座席を空席化してmoveOriginsへ記録する
 
-export type BulkAssignTarget = {
+type BulkAssignTarget = {
   employee: Employee
   // 他所の座席から移動してくる場合はその座席id。どこにも座っていなければnull(newcomer)
   originSeatId: string | null
 }
 
-export type BulkAssignPlan = {
+type BulkAssignPlan = {
   teamId: string
   targets: BulkAssignTarget[]
   moverCount: number

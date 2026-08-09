@@ -183,15 +183,6 @@ export const moveSeat = (draft: SeatGridDraft, from: GridCell, to: GridCell): Se
   return { ...draft, cells }
 }
 
-// `seatId`が今どのセルにあるかを探す。無ければnull
-export const findSeatCell = (draft: SeatGridDraft, seatId: string): GridCell | null => {
-  for (let r = 0; r < draft.cells.length; r += 1) {
-    const c = draft.cells[r].indexOf(seatId)
-    if (c !== -1) return { row: r, col: c }
-  }
-  return null
-}
-
 // 行優先(上→下・左→右)で最初に見つかった空セル。無ければnull
 export const findFirstEmptyCell = (draft: SeatGridDraft): GridCell | null => {
   for (let r = 0; r < draft.cells.length; r += 1) {

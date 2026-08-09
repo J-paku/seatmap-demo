@@ -4,7 +4,7 @@ import type { GridCell } from '@/utils/seat-grid-draft'
 // STEP B1: 編集中セルの選択状態。席1件・空セル1件のどちらか一方だけを持つ単一選択で、
 // 種別をまたいでも常に1件までしか保持しない(席を選ぶと空セルの選択は自動的に外れる)
 
-export type SeatSelection = { kind: 'seat'; seatId: string } | { kind: 'empty'; row: number; col: number } | null
+type SeatSelection = { kind: 'seat'; seatId: string } | { kind: 'empty'; row: number; col: number } | null
 
 export type UseSeatSelectionResult = {
   selection: SeatSelection

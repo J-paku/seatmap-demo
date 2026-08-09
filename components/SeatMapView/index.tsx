@@ -139,10 +139,9 @@ export const SeatMapView = () => {
   // サイドバーで押された社員はまずカードで見せる。座席へ飛ぶかどうかはカードのCTAが決める
   const handleDirectoryEmployeeSelect = useCallback(
     (employee: Employee) => {
-      setIsDirectoryOpen(false)
       openPersonDetail(employee.id)
     },
-    [openPersonDetail, setIsDirectoryOpen]
+    [openPersonDetail]
   )
 
   // 人物詳細を開いている社員の席。引けない社員にはCTAを出さず「座席未設定」を見せる
