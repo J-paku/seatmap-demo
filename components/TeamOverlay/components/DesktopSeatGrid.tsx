@@ -10,6 +10,7 @@ import { formatSeatGridCellAttr } from '../utils/seat-drag-attrs'
 import type { SeatGridProps } from '../type'
 import { useScrollHints } from '../hooks/use-scroll-hints'
 import { useSeatHighlightAnimation } from '../hooks/use-seat-highlight-animation'
+import styles from '../team-overlay-modal.module.css'
 import type { PresenceStatus } from '@/types'
 
 // 列幅は固定 180px。ブラウザ幅次第でオーバーフロー量が変わるため、ヒントは実測で出す
@@ -166,10 +167,10 @@ export const DesktopSeatGrid = ({
   }
 
   return (
-    <div className='team-ovl-gridwrap'>
-      <div ref={scrollRef} className={`team-ovl-grid is-desktop${loading ? ' is-loading' : ''}`} aria-busy={loading}>
+    <div className={styles.gridwrap}>
+      <div ref={scrollRef} className={`${styles.grid} ${styles.isDesktop}${loading ? ` ${styles.isLoading}` : ''}`} aria-busy={loading}>
         <div
-          className='team-ovl-grid-inner'
+          className={styles.gridInner}
           style={{
             gridTemplateColumns: hasGridEdgeControls
               ? `${GRID_HEADER_TRACK_PX}px repeat(${grid.cols}, ${DESKTOP_SEAT_CARD_WIDTH_PX}px)`
@@ -183,7 +184,7 @@ export const DesktopSeatGrid = ({
           {cells}
         </div>
       </div>
-      {/* onNudge を渡す = ボタン化。端に達した側は is-faded でフェード(アンマウントはしない) */}
+      {/* onNudge を渡す = ボタン化。端に達した側は isFaded でフェード(アンマウントはしない) */}
       {hasOverflow && <ScrollHint side='left' onNudge={() => nudge(-1)} faded={atStart} />}
       {hasOverflow && <ScrollHint side='right' onNudge={() => nudge(1)} faded={atEnd} />}
       {/* STEP B4: グリッド4辺の＋ボタン。編集中のみ */}

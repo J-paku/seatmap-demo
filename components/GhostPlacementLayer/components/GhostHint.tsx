@@ -1,3 +1,4 @@
+import styles from '../ghost-placement.module.css'
 // ヒント文言。ゴーストの直下に出し、画面下端に近いときは上へ反転する
 
 // 反転に切り替える下端からの距離
@@ -14,7 +15,7 @@ export const GhostHint = ({ rect, blocked }: Props) => {
   const flipped = below > window.innerHeight - FLIP_MARGIN_PX
   return (
     <p
-      className={`ghost-hint${blocked ? ' is-blocked' : ''}`}
+      className={`${styles.hint}${blocked ? ` ${styles.isBlocked}` : ''}`}
       style={{
         left: rect.left + rect.width / 2,
         top: flipped ? rect.top - GAP_PX : below,

@@ -2,6 +2,7 @@ import { useState } from 'react'
 import type { FormEvent } from 'react'
 import { MAX_CUSTOM_LAYOUTS } from '../utils/custom-layout-limit'
 import { triggerHaptic } from '@/lib/haptic'
+import styles from '../layout-switcher.module.css'
 
 type Props = {
   layoutCount: number
@@ -22,15 +23,15 @@ export const CreateLayoutForm = ({ layoutCount, onCreate }: Props) => {
   }
 
   return (
-    <div className='layout-switcher-create-form'>
-      <div className={`layout-switcher-create-counter${isFull ? ' is-full' : ''}`}>
+    <div className={styles.createForm}>
+      <div className={`${styles.createCounter}${isFull ? ` ${styles.isFull}` : ''}`}>
         {layoutCount}/{MAX_CUSTOM_LAYOUTS}
       </div>
       {!isFull && (
-        <form className='layout-switcher-create-row' onSubmit={handleSubmit}>
+        <form className={styles.createRow} onSubmit={handleSubmit}>
           <input
             type='text'
-            className='layout-switcher-create-input'
+            className={styles.createInput}
             value={name}
             onChange={(e) => setName(e.target.value)}
             maxLength={50}
@@ -38,7 +39,7 @@ export const CreateLayoutForm = ({ layoutCount, onCreate }: Props) => {
           />
           <button
             type='submit'
-            className='layout-switcher-create-submit'
+            className={styles.createSubmit}
             aria-label='新しいレイアウトを作成'
           >
             <span className='icon-msr-filled' aria-hidden='true'>

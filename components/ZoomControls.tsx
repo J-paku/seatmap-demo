@@ -1,5 +1,6 @@
 // 画面固定のリモコン(変換レイヤー外)。拡大・縮小・自席・リセットを右下の1本にまとめる
 import { triggerHaptic } from '@/lib/haptic'
+import styles from './seatmap.module.css'
 
 type Props = {
   onZoomIn: () => void
@@ -10,7 +11,7 @@ type Props = {
 }
 
 export const ZoomControls = ({ onZoomIn, onZoomOut, onReset, onGoToMySeat }: Props) => (
-  <div className='zoom-controls' role='group' aria-label='ズームコントロール'>
+  <div className={styles.zoomControls} role='group' aria-label='ズームコントロール'>
     <button
       type='button'
       aria-label='拡大'
@@ -32,7 +33,7 @@ export const ZoomControls = ({ onZoomIn, onZoomOut, onReset, onGoToMySeat }: Pro
       －
     </button>
     {/* 下段だけ横2連にする。4段の縦積みは親指の届く高さを超え、モバイルで縦幅を食う */}
-    <div className='zoom-controls-row'>
+    <div className={styles.zoomControlsRow}>
       {onGoToMySeat && (
         <button
           type='button'

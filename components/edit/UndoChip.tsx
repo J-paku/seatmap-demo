@@ -1,4 +1,5 @@
 // 07-admin-edit: 「元に戻す」チップ(対象オブジェクト直下・タップで直前1アクションをロールバック)
+import e from './admin-edit.module.css'
 // 次の操作または5秒経過で消去(消去タイミングは呼び出し側=SeatMapCanvasが管理)
 type Props = {
   x: number
@@ -9,7 +10,7 @@ type Props = {
 export const UndoChip = ({ x, y, onUndo }: Props) => (
   <button
     type='button'
-    className='edit-undo-chip'
+    className={e.editUndoChip}
     style={{ left: x, top: y }}
     onClick={(e) => {
       e.stopPropagation()

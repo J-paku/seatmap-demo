@@ -3,6 +3,7 @@ import { useEffect, useRef } from 'react'
 import type { TeamColorEntry } from '@/utils/team-colors'
 import type { Team } from '@/types'
 import { useSwipeDismiss } from '@/hooks/use-swipe-dismiss'
+import e from './admin-edit.module.css'
 
 type Props = {
   teams: Team[]
@@ -23,35 +24,35 @@ export const TeamChangeSheet = ({ teams, currentTeamId, colorOf, onSelect, onClo
   }, [])
 
   return (
-    <div className='edit-dialog-backdrop' onClick={onClose}>
+    <div className={e.editDialogBackdrop} onClick={onClose}>
       <div
         ref={sheetRef}
-        className='edit-sheet'
+        className={e.editSheet}
         role='dialog'
         aria-modal='true'
         aria-label='チーム変更'
         onClick={(e) => e.stopPropagation()}
         {...bind}
       >
-        <h3 className='edit-sheet-title'>チーム変更</h3>
-        <div ref={listRef} className='edit-team-list'>
+        <h3 className={e.editSheetTitle}>チーム変更</h3>
+        <div ref={listRef} className={e.editTeamList}>
           {teams.map((team) => {
             const entry = colorOf(team.id, team.name)
             return (
               <button
                 key={team.id}
                 type='button'
-                className={`edit-team-row${team.id === currentTeamId ? ' is-current' : ''}`}
+                className={`${e.editTeamRow}${team.id === currentTeamId ? ` ${e.isCurrent}` : ''}`}
                 onClick={() => onSelect(team.id)}
                 disabled={team.id === currentTeamId}
               >
-                <span className='edit-team-dot' style={{ background: entry.background }} />
+                <span className={e.editTeamDot} style={{ background: entry.background }} />
                 <span className='edit-team-name'>{team.name}</span>
               </button>
             )
           })}
         </div>
-        <button type='button' className='pixel-btn edit-sheet-close' onClick={onClose}>
+        <button type='button' className={`pixel-btn ${e.editSheetClose}`} onClick={onClose}>
           閉じる
         </button>
       </div>

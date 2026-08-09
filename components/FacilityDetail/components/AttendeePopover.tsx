@@ -1,6 +1,7 @@
 import { useDetailPanel } from '@/contexts/detail-panel-context'
 import type { Employee, FacilityMeeting } from '@/types'
 import type { AttendeePopoverState } from '../type'
+import styles from '../facility-detail.module.css'
 
 type Props = {
   state: AttendeePopoverState
@@ -29,21 +30,21 @@ export const AttendeePopover = ({ state, meeting, employees, onMouseEnter, onMou
     <button
       key={employee.id}
       type='button'
-      className='fac-attendee-person fac-attendee-person-clickable'
+      className={`${styles.facAttendeePerson} ${styles.facAttendeePersonClickable}`}
       onClick={() => {
         onClose()
         openPersonDetail(employee.id)
       }}
     >
-      <span className='fac-attendee-name'>{employee.name}</span>
-      {employee.position && <span className='fac-attendee-role'>{employee.position}</span>}
-      <span className='fac-attendee-dept'>{employee.team}</span>
+      <span className={styles.facAttendeeName}>{employee.name}</span>
+      {employee.position && <span className={styles.facAttendeeRole}>{employee.position}</span>}
+      <span className={styles.facAttendeeDept}>{employee.team}</span>
     </button>
   )
 
   return (
     <div
-      className={`fac-attendee-pop${state.flipped ? ' is-flipped' : ''}`}
+      className={`${styles.facAttendeePop}${state.flipped ? ` ${styles.isFlipped}` : ''}`}
       data-attendee-popover=''
       style={{
         top: state.top,
@@ -55,15 +56,15 @@ export const AttendeePopover = ({ state, meeting, employees, onMouseEnter, onMou
       onMouseLeave={onMouseLeave}
     >
       {organizer && (
-        <div className='fac-attendee-group'>
-          <div className='fac-attendee-heading'>登録者</div>
+        <div className={styles.facAttendeeGroup}>
+          <div className={styles.facAttendeeHeading}>登録者</div>
           {renderPerson(organizer)}
         </div>
       )}
       {participants.length > 0 && (
-        <div className='fac-attendee-group'>
-          <div className='fac-attendee-heading'>参加者</div>
-          <div className='fac-attendee-list'>{participants.map(renderPerson)}</div>
+        <div className={styles.facAttendeeGroup}>
+          <div className={styles.facAttendeeHeading}>参加者</div>
+          <div className={styles.facAttendeeList}>{participants.map(renderPerson)}</div>
         </div>
       )}
     </div>

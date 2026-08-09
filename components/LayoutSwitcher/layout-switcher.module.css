@@ -1,7 +1,7 @@
 /* LayoutSwitcher: Dynamic Island風のレイアウト切り替えアイランド。外殻とmorphに加え、
    展開パネルの中身(公式ボタン・一覧行・作成フォーム)のスタイルを持つ */
 
-.layout-switcher {
+.root {
   position: fixed;
   left: 50%;
   top: calc(env(safe-area-inset-top) + 72px);
@@ -21,14 +21,14 @@
     border-radius var(--lsw-duration) var(--lsw-easing);
 }
 
-.layout-switcher.is-open {
+.root.isOpen {
   width: min(80vw, 236px);
   border-radius: 18px;
 }
 
 /* 幅は開閉状態で固定値を取るため、名前をflex:1で伸ばすと短い名前のとき名前とcaretの間だけが
    大きく空いて左右非対称に見える。アイコン+名前+caretを1つの塊として中央に置く */
-.layout-switcher-toggle {
+.toggle {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -41,21 +41,21 @@
   cursor: pointer;
   color: var(--color-text-primary);
 }
-.layout-switcher-toggle:focus-visible {
+.toggle:focus-visible {
   outline: 2px solid var(--color-accent);
   outline-offset: -2px;
 }
 
-.layout-switcher-toggle-icon {
+.toggleIcon {
   flex-shrink: 0;
   font-size: 16px;
   color: var(--color-text-secondary);
 }
-.layout-switcher-toggle-icon.is-custom {
+.toggleIcon.isCustom {
   color: var(--color-accent);
 }
 
-.layout-switcher-toggle-name {
+.toggleName {
   flex: 0 1 auto;
   min-width: 0;
   overflow: hidden;
@@ -66,20 +66,20 @@
   font-weight: 600;
 }
 
-.layout-switcher-toggle-caret {
+.toggleCaret {
   flex-shrink: 0;
   font-size: 16px;
   color: var(--color-text-muted);
   transform: rotate(0deg);
   transition: transform var(--lsw-duration) var(--lsw-easing);
 }
-.layout-switcher-toggle.is-open .layout-switcher-toggle-caret {
+.toggle.isOpen .toggleCaret {
   transform: rotate(180deg);
 }
 
 /* height:autoはトランジションが効かないためgrid-template-rowsで開閉する。
    0frでも子要素を実際に潰すにはmin-height:0とoverflow:hiddenが必須 */
-.layout-switcher-panel {
+.panel {
   display: grid;
   grid-template-rows: 0fr;
   opacity: 0;
@@ -87,14 +87,14 @@
     grid-template-rows var(--lsw-duration) var(--lsw-easing),
     opacity var(--lsw-duration) var(--lsw-easing);
 }
-.layout-switcher.is-open .layout-switcher-panel {
+.root.isOpen .panel {
   grid-template-rows: 1fr;
   opacity: 1;
 }
 
 /* 0frで潰れるのは行の高さだけで、この要素自身のpaddingは残る。閉じている間は上下paddingを
    0にしないと、アイランドの下に12pxの死んだ余白が残り中身が上寄りに見える */
-.layout-switcher-panel-inner {
+.panelInner {
   display: flex;
   flex-direction: column;
   min-height: 0;
@@ -102,13 +102,13 @@
   padding: 0 8px;
   transition: padding-block var(--lsw-duration) var(--lsw-easing);
 }
-.layout-switcher.is-open .layout-switcher-panel-inner {
+.root.isOpen .panelInner {
   padding-block: 6px;
 }
 
 /* 公式ボタン・カスタム行が共有する見出しテキスト。truncateのためflex:1/min-width:0/
    overflow:hiddenを揃え、右端のcheckアイコンとの間はこのspanのflex:1が押し広げる */
-.layout-switcher-row-name {
+.rowName {
   flex: 1;
   min-width: 0;
   overflow: hidden;
@@ -119,20 +119,20 @@
   font-weight: 500;
 }
 
-.layout-switcher-row-icon {
+.rowIcon {
   flex-shrink: 0;
   font-size: 18px;
   color: currentColor;
 }
 
-.layout-switcher-row-check {
+.rowCheck {
   flex-shrink: 0;
   font-size: 16px;
   color: currentColor;
 }
 
 /* 展開パネル最上段: 公式レイアウトボタン */
-.layout-switcher-official {
+.official {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -145,18 +145,18 @@
   color: var(--color-text-secondary);
   cursor: pointer;
 }
-.layout-switcher-official.is-selected {
+.official.isSelected {
   background: var(--color-accent-soft);
   color: var(--color-accent);
 }
-.layout-switcher-official:focus-visible {
+.official:focus-visible {
   outline: 2px solid var(--color-accent);
   outline-offset: -2px;
 }
 
 /* カスタム一覧: 0件の時はコンポーネント側がnullを返すため描かれない。
    1件以上ある時だけ区切り線+上余白を足す */
-.layout-switcher-custom-list {
+.customList {
   display: flex;
   flex-direction: column;
   gap: 2px;
@@ -165,18 +165,18 @@
   border-top: 1px solid var(--color-border);
 }
 
-.layout-switcher-custom-row {
+.customRow {
   display: flex;
   align-items: center;
   gap: 2px;
   min-height: 44px;
   border-radius: 8px;
 }
-.layout-switcher-custom-row.is-selected {
+.customRow.isSelected {
   background: var(--color-accent-soft);
 }
 
-.layout-switcher-row-name-button {
+.rowNameButton {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -190,16 +190,16 @@
   color: var(--color-text-secondary);
   cursor: pointer;
 }
-.layout-switcher-custom-row.is-selected .layout-switcher-row-name-button {
+.customRow.isSelected .rowNameButton {
   color: var(--color-accent);
 }
-.layout-switcher-row-name-button:focus-visible {
+.rowNameButton:focus-visible {
   outline: 2px solid var(--color-accent);
   outline-offset: -2px;
 }
 
-.layout-switcher-star-button,
-.layout-switcher-delete-button {
+.starButton,
+.deleteButton {
   flex-shrink: 0;
   display: flex;
   align-items: center;
@@ -211,52 +211,52 @@
   background: none;
   cursor: pointer;
 }
-.layout-switcher-star-button:focus-visible,
-.layout-switcher-delete-button:focus-visible {
+.starButton:focus-visible,
+.deleteButton:focus-visible {
   outline: 2px solid var(--color-accent);
   outline-offset: -2px;
 }
 
-.layout-switcher-star-icon {
+.starIcon {
   font-size: 16px;
   color: var(--color-text-secondary);
   opacity: 0.25;
 }
-.layout-switcher-star-icon.is-default {
+.starIcon.isDefault {
   opacity: 1;
 }
 
-.layout-switcher-delete-icon {
+.deleteIcon {
   font-size: 16px;
   color: var(--color-danger);
 }
 
 /* 展開パネル最下段: 作成フォーム。上限時は入力欄自体を出さずカウンターだけ残す */
-.layout-switcher-create-form {
+.createForm {
   margin-top: 6px;
   padding-top: 6px;
   border-top: 1px solid var(--color-border);
 }
 
-.layout-switcher-create-counter {
+.createCounter {
   padding-inline: 10px;
   text-align: right;
   font-size: 10px;
   color: var(--color-text-muted);
 }
-.layout-switcher-create-counter.is-full {
+.createCounter.isFull {
   color: var(--color-accent);
   font-weight: 700;
 }
 
-.layout-switcher-create-row {
+.createRow {
   display: flex;
   align-items: center;
   gap: 6px;
   padding-inline: 10px;
 }
 
-.layout-switcher-create-input {
+.createInput {
   flex: 1;
   min-width: 0;
   min-height: 36px;
@@ -267,12 +267,12 @@
   color: var(--color-text-primary);
   font-size: 12px;
 }
-.layout-switcher-create-input:focus-visible {
+.createInput:focus-visible {
   outline: 2px solid var(--color-accent);
   outline-offset: -2px;
 }
 
-.layout-switcher-create-submit {
+.createSubmit {
   flex-shrink: 0;
   display: flex;
   align-items: center;
@@ -285,16 +285,16 @@
   color: var(--color-text-on-accent);
   cursor: pointer;
 }
-.layout-switcher-create-submit:focus-visible {
+.createSubmit:focus-visible {
   outline: 2px solid var(--color-accent);
   outline-offset: 2px;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .layout-switcher,
-  .layout-switcher-toggle-caret,
-  .layout-switcher-panel,
-  .layout-switcher-panel-inner {
+  .root,
+  .toggleCaret,
+  .panel,
+  .panelInner {
     transition: none;
   }
 }

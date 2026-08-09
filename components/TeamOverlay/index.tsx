@@ -18,6 +18,7 @@ import { anchorTransformOrigin } from './utils/anchor-origin'
 import { SEAT_GRID_CELL_ATTR } from './utils/seat-drag-attrs'
 import { COMPACT_SIDE_PADDING_PX } from './utils/seat-grid'
 import type { TeamOverlayProps } from './type'
+import styles from './team-overlay-modal.module.css'
 import { useGlobalAnnouncement } from '@/components/a11y'
 import { ConfirmDialog } from '@/components/edit/ConfirmDialog'
 import { EmployeeAssignSheet } from '@/components/EmployeeAssignSheet'
@@ -129,16 +130,16 @@ export const TeamOverlay = ({
 
   return (
     <div
-      className={`team-ovl-wrap${isCompactMobile ? ' is-compact' : ''}`}
+      className={`${styles.wrap}${isCompactMobile ? ` ${styles.isCompact}` : ''}`}
       onClick={(e) => {
         // ラッパー余白クリックで閉じる(パネル自身のクリックは stopPropagation)
         if (e.target === e.currentTarget) guardedClose()
       }}
     >
-      <div className='team-ovl-backdrop' onClick={guardedClose} />
+      <div className={styles.backdrop} onClick={guardedClose} />
       <div
         ref={sheetRef}
-        className={`team-ovl-panel${isCompactMobile ? ' is-compact' : ''}`}
+        className={`${styles.panel}${isCompactMobile ? ` ${styles.isCompact}` : ''}`}
         role='dialog'
         aria-modal='true'
         aria-label={`${teamName} 座席配置`}
@@ -163,12 +164,12 @@ export const TeamOverlay = ({
         }}
         {...bind}
       >
-        {loading && <div className='team-ovl-loadbar' style={{ background: teamColor }} />}
+        {loading && <div className={styles.loadbar} style={{ background: teamColor }} />}
         {/* ハンドルは Compact のみ描画する */}
         {isCompactMobile && (
           <SheetHandle
-            stripClassName='team-ovl-handle'
-            barClassName='team-ovl-handle-bar'
+            stripClassName={styles.handle}
+            barClassName={styles.handleBar}
             heightPx={48}
             onClose={guardedClose}
           />
@@ -182,8 +183,8 @@ export const TeamOverlay = ({
         />
 
         {/* 本文 — 座席配置セクション */}
-        <div ref={bodyRef} className='team-ovl-body'>
-          <section className='team-ovl-section'>
+        <div ref={bodyRef} className={styles.body}>
+          <section className={styles.section}>
             <SeatLayoutHeader
               seatCount={teamSeats.length}
               loading={loading}
@@ -249,7 +250,7 @@ export const TeamOverlay = ({
             />
           )}
         </div>
-        {/* STEP D3: 保存/キャンセルの編集ドック。.team-ovl-panel(position: relative)基準の
+        {/* STEP D3: 保存/キャンセルの編集ドック。styles.panel(position: relative)基準の
             絶対配置で下部に浮かせるだけなので、TrashDropZoneと違いSeatMapPortalへは逃がさない
             (viewport基準のfixed位置決めが要らないため) */}
         {editMode.isEditMode && (
@@ -262,7 +263,7 @@ export const TeamOverlay = ({
           />
         )}
       </div>
-      {/* STEP C2: .team-ovl-panel は backdrop-filter + overflow:hidden で fixed 子を閉じ込めるため、
+      {/* STEP C2: styles.panel は backdrop-filter + overflow:hidden で fixed 子を閉じ込めるため、
           TrashDropZone と同じ理由で SeatMapPortal 経由で body 直下へ描く */}
       <SeatMapPortal>
         <EmployeeAssignSheet

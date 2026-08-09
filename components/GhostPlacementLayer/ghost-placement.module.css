@@ -2,21 +2,21 @@
    レイヤーと暗幕はポインタを受けない。受けると下のキャンバスの pointerdown が
    一切発火せず、配置中のパン・ズームが完全に止まる */
 
-.ghost-layer {
+.layer {
   position: fixed;
   inset: 0;
   z-index: var(--z-index-overlay);
   pointer-events: none;
 }
 
-.ghost-scrim {
+.scrim {
   position: absolute;
   inset: 0;
   background: var(--color-scrim);
-  animation: ghost-scrim-in 160ms ease-out;
+  animation: scrimIn 160ms ease-out;
 }
 
-@keyframes ghost-scrim-in {
+@keyframes scrimIn {
   from {
     opacity: 0;
   }
@@ -26,30 +26,30 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .ghost-scrim {
+  .scrim {
     animation: none;
   }
 }
 
 /* 整列ガイドはゴーストより先に描いて下に敷く */
-.ghost-guide {
+.guide {
   position: absolute;
   background: var(--color-accent);
 }
 
-.ghost-guide.is-vertical {
+.guide.isVertical {
   top: 0;
   bottom: 0;
   width: 1px;
 }
 
-.ghost-guide.is-horizontal {
+.guide.isHorizontal {
   left: 0;
   right: 0;
   height: 1px;
 }
 
-.ghost-preview {
+.preview {
   position: absolute;
   display: flex;
   align-items: center;
@@ -62,16 +62,16 @@
   touch-action: none;
 }
 
-.ghost-preview.is-dashed {
+.preview.isDashed {
   border-style: dashed;
 }
 
-.ghost-preview.is-blocked {
+.preview.isBlocked {
   border-color: var(--color-danger);
   background: color-mix(in srgb, var(--color-danger) 16%, transparent);
 }
 
-.ghost-preview-label {
+.previewLabel {
   padding: 1px 8px;
   border-radius: 999px;
   background: var(--color-surface);
@@ -83,7 +83,7 @@
 }
 
 /* 見た目のハンドルは小さく、タップ領域は24px確保する */
-.ghost-handle {
+.handle {
   position: absolute;
   width: 24px;
   height: 24px;
@@ -91,7 +91,7 @@
   touch-action: none;
 }
 
-.ghost-handle::after {
+.handle::after {
   content: '';
   position: absolute;
   inset: 8px;
@@ -100,59 +100,59 @@
   background: var(--color-surface);
 }
 
-.ghost-handle.is-nw {
+.handle.isNw {
   top: -12px;
   left: -12px;
   cursor: nwse-resize;
 }
 
-.ghost-handle.is-n {
+.handle.isN {
   top: -12px;
   left: 50%;
   margin-left: -12px;
   cursor: ns-resize;
 }
 
-.ghost-handle.is-ne {
+.handle.isNe {
   top: -12px;
   right: -12px;
   cursor: nesw-resize;
 }
 
-.ghost-handle.is-e {
+.handle.isE {
   top: 50%;
   right: -12px;
   margin-top: -12px;
   cursor: ew-resize;
 }
 
-.ghost-handle.is-se {
+.handle.isSe {
   right: -12px;
   bottom: -12px;
   cursor: nwse-resize;
 }
 
-.ghost-handle.is-s {
+.handle.isS {
   bottom: -12px;
   left: 50%;
   margin-left: -12px;
   cursor: ns-resize;
 }
 
-.ghost-handle.is-sw {
+.handle.isSw {
   bottom: -12px;
   left: -12px;
   cursor: nesw-resize;
 }
 
-.ghost-handle.is-w {
+.handle.isW {
   top: 50%;
   left: -12px;
   margin-top: -12px;
   cursor: ew-resize;
 }
 
-.ghost-hint {
+.hint {
   position: absolute;
   margin: 0;
   padding: 6px 12px;
@@ -166,12 +166,12 @@
   pointer-events: none;
 }
 
-.ghost-hint.is-blocked {
+.hint.isBlocked {
   border-color: var(--color-danger);
   color: var(--color-danger);
 }
 
-.ghost-actionbar {
+.actionbar {
   position: absolute;
   bottom: calc(env(safe-area-inset-bottom) + 20px);
   left: 50%;
@@ -187,7 +187,7 @@
   pointer-events: auto;
 }
 
-.ghost-actionbar-label {
+.actionbarLabel {
   max-width: 40vw;
   overflow: hidden;
   color: var(--color-text-secondary);
@@ -197,7 +197,7 @@
   text-overflow: ellipsis;
 }
 
-.ghost-actionbar-confirm:disabled {
+.actionbarConfirm:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }

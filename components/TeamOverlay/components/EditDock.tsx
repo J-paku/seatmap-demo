@@ -1,3 +1,5 @@
+import styles from '../team-overlay-modal.module.css'
+
 // STEP D3: 編集モード下部のフローティングドック。保存とキャンセルの2つだけを持つ
 // (席追加はグリッド側の空セル・エッジ＋ボタンへ移管済みのため、ここには置かない)
 
@@ -14,27 +16,27 @@ type Props = {
 }
 
 export const EditDock = ({ changeCount, hasChanges, isSaving, onSave, onCancel }: Props) => (
-  <div className='team-ovl-dock' role='group' aria-label='編集ツールバー'>
-    <button type='button' className='team-ovl-dock-cancel' aria-label='編集をキャンセル' onClick={onCancel}>
+  <div className={styles.dock} role='group' aria-label='編集ツールバー'>
+    <button type='button' className={styles.dockCancel} aria-label='編集をキャンセル' onClick={onCancel}>
       <span className='material-symbols-outlined' aria-hidden='true'>
         close
       </span>
     </button>
     <button
       type='button'
-      className='team-ovl-dock-save'
+      className={styles.dockSave}
       disabled={!hasChanges}
       aria-label={isSaving ? '保存中' : changeCount > 0 ? `保存(未保存の変更${changeCount}件)` : '保存'}
       onClick={onSave}
     >
       {isSaving && (
-        <span className='material-symbols-outlined team-ovl-dock-save-icon is-spinning' aria-hidden='true'>
+        <span className={`material-symbols-outlined ${styles.dockSaveIcon} ${styles.isSpinning}`} aria-hidden='true'>
           sync
         </span>
       )}
       <span className='team-ovl-dock-save-label'>{isSaving ? '保存中' : '保存'}</span>
       {!isSaving && changeCount > 0 && (
-        <span className='team-ovl-dock-save-badge' aria-hidden='true'>
+        <span className={styles.dockSaveBadge} aria-hidden='true'>
           {changeCount}
         </span>
       )}

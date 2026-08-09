@@ -1,5 +1,7 @@
 import type { PresenceStatus } from '@/types'
 import { PRESENCE_COLOR, PRESENCE_LABEL } from '@/utils/format'
+import styles from './EmployeeDetail/employee-detail.module.css'
+import sdStyles from './schedule-detail.module.css'
 
 type PresenceBadgeProps = {
   // 表示可否(仮想座席・非当日は呼び出し側で false を渡す=優先度1)
@@ -13,8 +15,8 @@ type PresenceBadgeProps = {
 
 // 在席ステータスのチップ(優先度3: 状態確定時)
 const StatusChip = ({ status }: { status: PresenceStatus }) => (
-  <span className='status-chip' style={{ ['--status-color' as string]: PRESENCE_COLOR[status] }}>
-    <span className='status-chip-dot' />
+  <span className={sdStyles.statusChip} style={{ ['--status-color' as string]: PRESENCE_COLOR[status] }}>
+    <span className={sdStyles.statusChipDot} />
     {PRESENCE_LABEL[status]}
   </span>
 )
@@ -24,9 +26,9 @@ const StatusChip = ({ status }: { status: PresenceStatus }) => (
 export const PresenceBadge = ({ visible, isLoading, isOccupied, status }: PresenceBadgeProps) => {
   if (!visible) return null
   return (
-    <div className='profile-status-badge'>
+    <div className={styles.profileStatusBadge}>
       {isOccupied && isLoading ? (
-        <span className='status-chip status-chip-loading'>
+        <span className={`${sdStyles.statusChip} ${sdStyles.statusChipLoading}`}>
           <span className='material-symbols-outlined' style={{ fontSize: 14 }}>
             progress_activity
           </span>
@@ -35,7 +37,7 @@ export const PresenceBadge = ({ visible, isLoading, isOccupied, status }: Presen
       ) : status ? (
         <StatusChip status={status} />
       ) : (
-        <span className={`status-chip ${isOccupied ? 'status-chip-inuse' : 'status-chip-vacant'}`}>
+        <span className={`${sdStyles.statusChip} ${isOccupied ? sdStyles.statusChipInuse : sdStyles.statusChipVacant}`}>
           {isOccupied ? '使用中' : '空席'}
         </span>
       )}

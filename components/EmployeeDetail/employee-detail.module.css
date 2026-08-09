@@ -1,11 +1,11 @@
 /* 社員詳細 */
-.employee-detail {
+.employeeDetail {
   display: flex;
   flex-direction: column;
   min-height: 100%;
 }
 
-.profile-card {
+.profileCard {
   position: relative;
   border-radius: 18px;
   border: 1px solid var(--color-border);
@@ -14,19 +14,19 @@
 }
 
 /* ① カラーヘッダー帯 */
-.profile-band {
+.profileBand {
   position: relative;
   height: 64px;
   background: linear-gradient(135deg, var(--color-accent), color-mix(in srgb, var(--color-accent) 42%, var(--color-band-highlight)));
 }
-.profile-status-badge {
+.profileStatusBadge {
   position: absolute;
   top: 12px;
   right: 12px;
 }
 
 /* ② アバター(帯に22px被る) */
-.profile-avatar-frame {
+.profileAvatarFrame {
   position: absolute;
   left: 16px;
   bottom: -22px;
@@ -42,25 +42,25 @@
 }
 
 /* ③ 本文(アバターの被り分だけ上余白を大きく) */
-.profile-body {
+.profileBody {
   padding: 30px 16px 12px;
   display: flex;
   flex-direction: column;
 }
 
-.profile-text-stack {
+.profileTextStack {
   display: flex;
   flex-direction: column;
   gap: 4px;
   min-width: 0;
 }
-.profile-name-kana {
+.profileNameKana {
   display: flex;
   flex-direction: column;
   gap: 0;
   min-width: 0;
 }
-.profile-name {
+.profileName {
   font-size: 20px;
   font-weight: 700;
   letter-spacing: 0.015em;
@@ -69,7 +69,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.profile-kana {
+.profileKana {
   font-size: 12px;
   font-weight: 500;
   letter-spacing: -0.04em;
@@ -78,7 +78,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.profile-role {
+.profileRole {
   font-size: 14px;
   font-weight: 600;
   letter-spacing: -0.04em;
@@ -87,7 +87,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.profile-dept {
+.profileDept {
   font-size: 14px;
   letter-spacing: -0.04em;
   color: var(--color-text-secondary);
@@ -97,24 +97,24 @@
 }
 
 /* ④ 連絡先(メール・電話のいずれかがある時だけ表示) */
-.profile-contacts {
+.profileContacts {
   margin-top: 12px;
   display: flex;
   flex-direction: column;
   gap: 2px;
 }
-.contact-row {
+.contactRow {
   position: relative;
   display: flex;
   align-items: center;
   gap: 8px;
 }
-.contact-icon {
+.contactIcon {
   font-size: 18px;
   color: var(--color-text-muted);
   flex-shrink: 0;
 }
-.contact-value {
+.contactValue {
   font-size: 14px;
   color: var(--color-text-primary);
   flex: 1;
@@ -124,7 +124,7 @@
   white-space: nowrap;
 }
 /* 視覚は16pxアイコンだが margin -8 でヒット領域を44×44へ拡張 */
-.contact-copy-btn {
+.contactCopyBtn {
   flex-shrink: 0;
   width: 44px;
   height: 44px;
@@ -138,13 +138,13 @@
   color: var(--color-text-muted);
   cursor: pointer;
 }
-.contact-copy-btn:hover {
+.contactCopyBtn:hover {
   background: var(--color-surface-muted);
 }
-.contact-copy-btn.is-copied {
+.contactCopyBtn.isCopied {
   color: var(--color-success);
 }
-.contact-copy-bubble {
+.contactCopyBubble {
   position: absolute;
   top: -28px;
   right: 0;
@@ -171,11 +171,11 @@
 
 
 /* ④ 下部アクション行(カードの角丸に切り取られるので自前の角丸は持たない) */
-.profile-action-bar {
+.profileActionBar {
   display: flex;
   border-top: 1px solid color-mix(in srgb, var(--color-accent) 45%, var(--color-border));
 }
-.profile-action-btn {
+.profileActionBtn {
   flex: 1;
   display: flex;
   align-items: center;
@@ -187,18 +187,18 @@
   font-weight: 700;
   cursor: pointer;
 }
-.profile-action-btn:active {
+.profileActionBtn:active {
   opacity: 0.8;
 }
 /* バーが端に接しているため輪郭は内側へ出す */
-.profile-action-btn:focus-visible {
+.profileActionBtn:focus-visible {
   outline: 2px solid var(--color-accent);
   outline-offset: -2px;
 }
-.profile-action-icon {
+.profileActionIcon {
   font-size: 18px;
 }
-.profile-action-secondary {
+.profileActionSecondary {
   gap: 6px;
   color: var(--color-accent);
   background: linear-gradient(
@@ -207,7 +207,7 @@
     color-mix(in srgb, var(--color-accent) 9%, var(--color-surface-elevated))
   );
 }
-.profile-action-primary {
+.profileActionPrimary {
   gap: 4px;
   color: var(--color-text-on-accent);
   background: linear-gradient(
@@ -217,7 +217,7 @@
   );
 }
 /* 座席を引けない社員。押せる見た目にしない */
-.profile-action-unset {
+.profileActionUnset {
   flex: 1;
   display: flex;
   align-items: center;

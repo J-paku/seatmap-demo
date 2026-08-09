@@ -2,6 +2,7 @@
 import { useState } from 'react'
 import type { Team } from '@/types'
 import { useSwipeDismiss } from '@/hooks/use-swipe-dismiss'
+import e from './admin-edit.module.css'
 
 type Props = {
   team: Team
@@ -32,48 +33,48 @@ export const TeamRelayoutModal = ({ team, seatCount, onApply, onClose }: Props) 
   }
 
   return (
-    <div className='edit-dialog-backdrop' onClick={onClose}>
+    <div className={e.editDialogBackdrop} onClick={onClose}>
       <div
         ref={sheetRef}
-        className='edit-sheet edit-relayout-modal'
+        className={`${e.editSheet} ${e.editRelayoutModal}`}
         role='dialog'
         aria-modal='true'
         aria-label='チームレイアウト編集'
         onClick={(e) => e.stopPropagation()}
         {...bind}
       >
-        <h3 className='edit-sheet-title'>{team.name}のレイアウト</h3>
-        <p className='edit-relayout-count'>現在の座席数: {seatCount}席</p>
+        <h3 className={e.editSheetTitle}>{team.name}のレイアウト</h3>
+        <p className={e.editRelayoutCount}>現在の座席数: {seatCount}席</p>
 
-        <div className='edit-stepper-row'>
-          <span className='edit-stepper-label'>行</span>
-          <button type='button' className='pixel-btn edit-stepper-btn' onClick={() => setRows((v) => clampStep(v - 1))}>
+        <div className={e.editStepperRow}>
+          <span className={e.editStepperLabel}>行</span>
+          <button type='button' className={`pixel-btn ${e.editStepperBtn}`} onClick={() => setRows((v) => clampStep(v - 1))}>
             −
           </button>
-          <span className='edit-stepper-value'>{rows}</span>
-          <button type='button' className='pixel-btn edit-stepper-btn' onClick={() => setRows((v) => clampStep(v + 1))}>
+          <span className={e.editStepperValue}>{rows}</span>
+          <button type='button' className={`pixel-btn ${e.editStepperBtn}`} onClick={() => setRows((v) => clampStep(v + 1))}>
             ＋
           </button>
         </div>
 
-        <div className='edit-stepper-row'>
-          <span className='edit-stepper-label'>列</span>
-          <button type='button' className='pixel-btn edit-stepper-btn' onClick={() => setCols((v) => clampStep(v - 1))}>
+        <div className={e.editStepperRow}>
+          <span className={e.editStepperLabel}>列</span>
+          <button type='button' className={`pixel-btn ${e.editStepperBtn}`} onClick={() => setCols((v) => clampStep(v - 1))}>
             −
           </button>
-          <span className='edit-stepper-value'>{cols}</span>
-          <button type='button' className='pixel-btn edit-stepper-btn' onClick={() => setCols((v) => clampStep(v + 1))}>
+          <span className={e.editStepperValue}>{cols}</span>
+          <button type='button' className={`pixel-btn ${e.editStepperBtn}`} onClick={() => setCols((v) => clampStep(v + 1))}>
             ＋
           </button>
         </div>
 
-        {error && <p className='edit-relayout-error'>{error}</p>}
+        {error && <p className={e.editRelayoutError}>{error}</p>}
 
-        <div className='edit-dialog-actions'>
-          <button type='button' className='pixel-btn edit-dialog-cancel' onClick={onClose}>
+        <div className={e.editDialogActions}>
+          <button type='button' className={`pixel-btn ${e.editDialogCancel}`} onClick={onClose}>
             閉じる
           </button>
-          <button type='button' className='pixel-btn edit-dialog-confirm' onClick={handleApply}>
+          <button type='button' className={`pixel-btn ${e.editDialogConfirm}`} onClick={handleApply}>
             適用
           </button>
         </div>

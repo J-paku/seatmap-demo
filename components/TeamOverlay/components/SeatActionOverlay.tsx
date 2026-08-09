@@ -1,7 +1,9 @@
+import styles from '../team-overlay-modal.module.css'
+
 // STEP B5: 選択中のセル中央に出す操作ピル。コンテナは pointer-events: none にして
 // ボタン以外の領域を素通しし、背後の EmptyGridCell/EditSeatCell(セル全体を覆うボタン)へ
 // タップを届かせる。素通しにしないと、選択中セルの再タップで背後の onClick が発火せず選択解除
-// できなくなる。サイズ(通常/コンパクト)は呼び出し側の .team-ovl-grid の種別クラス
+// できなくなる。サイズ(通常/コンパクト)は呼び出し側の styles.grid の種別クラス
 // (is-desktop/is-compact)側で決まるため、このコンポーネント自身は種別を知らない
 // (EmptyGridCell/EditSeatCell と同じ方針)
 
@@ -21,9 +23,9 @@ export const SeatActionOverlay = (props: Props) => {
   const { label, icon } = resolveContent(props)
   const onClick = props.variant === 'emptyCell' ? props.onAddSeat : props.onAssign
   return (
-    <div className='team-ovl-seat-add'>
-      <button type='button' className='team-ovl-seat-add-btn' aria-label={label} onClick={onClick}>
-        <span className='material-symbols-outlined team-ovl-seat-add-icon' aria-hidden='true'>
+    <div className={styles.seatAdd}>
+      <button type='button' className={styles.seatAddBtn} aria-label={label} onClick={onClick}>
+        <span className='material-symbols-outlined' aria-hidden='true'>
           {icon}
         </span>
         {label}

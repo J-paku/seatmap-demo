@@ -7,6 +7,7 @@ import { formatPhone } from '../utils/format-phone'
 import { useCopyField } from '../hooks/use-copy-field'
 import { useIosOnlyNotice } from '../hooks/use-ios-only-notice'
 import type { PixelAvatarConfig, Employee, PresenceStatus, Team } from '@/types'
+import styles from '../employee-detail.module.css'
 
 // 12-member-detail: グラデーション帯 + はみ出しアバター + 4段テキスト + 連絡先
 
@@ -35,25 +36,25 @@ export const ProfileCard = ({
   const iosNotice = useIosOnlyNotice()
 
   return (
-    <div className='profile-card'>
-      <div className='profile-band'>
+    <div className={styles.profileCard}>
+      <div className={styles.profileBand}>
         <PresenceBadge visible={isBadgeVisible} isLoading={isScheduleLoading} isOccupied status={status} />
-        <div className='profile-avatar-frame'>
+        <div className={styles.profileAvatarFrame}>
           <PixelAvatar config={avatar} size={52} />
         </div>
       </div>
-      <div className='profile-body'>
-        <div className='profile-text-stack'>
-          <div className='profile-name-kana'>
-            <span className='profile-name'>{employee.name}</span>
-            {employee.nameKana && <span className='profile-kana'>{employee.nameKana}</span>}
+      <div className={styles.profileBody}>
+        <div className={styles.profileTextStack}>
+          <div className={styles.profileNameKana}>
+            <span className={styles.profileName}>{employee.name}</span>
+            {employee.nameKana && <span className={styles.profileKana}>{employee.nameKana}</span>}
           </div>
-          {employee.position && <span className='profile-role'>{employee.position}</span>}
-          {team && <span className='profile-dept'>{team.name}</span>}
+          {employee.position && <span className={styles.profileRole}>{employee.position}</span>}
+          {team && <span className={styles.profileDept}>{team.name}</span>}
         </div>
 
         {(employee.email || employee.phone) && (
-          <div className='profile-contacts'>
+          <div className={styles.profileContacts}>
             {employee.email && (
               <ContactRow
                 field='email'

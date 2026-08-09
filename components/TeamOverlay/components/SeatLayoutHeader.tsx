@@ -1,3 +1,5 @@
+import styles from '../team-overlay-modal.module.css'
+
 // 座席配置セクションの見出しと同期状態。モバイル時だけグリッドの左右パディングに合わせて
 // 縦線を揃える。編集モードの出入口(鉛筆⇔編集中バッジ+終了)もここが同じ位置で持つ
 //
@@ -30,14 +32,14 @@ export const SeatLayoutHeader = ({
   onExitEdit,
 }: Props) => (
   <>
-    <div className='team-ovl-section-head' style={{ paddingLeft: sidePadding, paddingRight: sidePadding }}>
-      <span className='material-symbols-outlined team-ovl-section-icon'>grid_view</span>
-      <span className='team-ovl-section-title'>座席配置</span>
-      <span className='team-ovl-section-count'>{seatCount}席</span>
+    <div className={styles.sectionHead} style={{ paddingLeft: sidePadding, paddingRight: sidePadding }}>
+      <span className={`material-symbols-outlined ${styles.sectionIcon}`}>grid_view</span>
+      <span className={styles.sectionTitle}>座席配置</span>
+      <span className={styles.sectionCount}>{seatCount}席</span>
       {isEditMode && onExitEdit ? (
-        <span className='team-ovl-edit-status'>
-          <span className='team-ovl-edit-badge'>編集中</span>
-          <button type='button' className='team-ovl-edit-finish' onClick={onExitEdit} disabled={isSaving}>
+        <span className={styles.editStatus}>
+          <span className={styles.editBadge}>編集中</span>
+          <button type='button' className={styles.editFinish} onClick={onExitEdit} disabled={isSaving}>
             終了
           </button>
         </span>
@@ -45,7 +47,7 @@ export const SeatLayoutHeader = ({
         onEnterEdit && (
           <button
             type='button'
-            className='team-ovl-edit-toggle'
+            className={styles.editToggle}
             data-coach='overlay-edit'
             aria-label='所属人員を編集'
             onClick={onEnterEdit}
@@ -57,7 +59,7 @@ export const SeatLayoutHeader = ({
         )
       )}
     </div>
-    <div className='team-ovl-sync' style={{ paddingLeft: sidePadding, paddingRight: sidePadding }}>
+    <div className={styles.sync} style={{ paddingLeft: sidePadding, paddingRight: sidePadding }}>
       {loading ? '最新スケジュールを取得中…' : `最終取得 ${syncedAt}`}
     </div>
   </>

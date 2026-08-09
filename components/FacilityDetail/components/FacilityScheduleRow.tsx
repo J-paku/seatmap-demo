@@ -1,6 +1,7 @@
 import { minToHHMM } from '@/utils/facility-status'
 import type { FacilityMeeting } from '@/types'
 import type { AttendeeHandlers } from '../type'
+import styles from '../facility-detail.module.css'
 
 type Props = {
   meeting: FacilityMeeting
@@ -17,30 +18,30 @@ export const FacilityScheduleRow = ({ meeting, organizerName, isNow, isDone, isN
   const attendeeCount = meeting.participantIds.length
 
   return (
-    <li className={`fac-row${isNow ? ' is-now' : ''}${isDone ? ' is-done' : ''}`}>
-      <div className='fac-row-main'>
-        <span className='fac-row-time'>
+    <li className={`${styles.facRow}${isNow ? ` ${styles.isNow}` : ''}${isDone ? ` ${styles.isDone}` : ''}`}>
+      <div className={styles.facRowMain}>
+        <span className={styles.facRowTime}>
           {minToHHMM(meeting.startMin)}-{minToHHMM(meeting.endMin)}
         </span>
-        <span className='fac-row-title'>{meeting.title || '予定あり'}</span>
-        <span className='fac-row-organizer'>
-          <span className='fac-row-organizer-badge'>登録者</span>
-          <span className='fac-row-organizer-name'>{organizerName}</span>
+        <span className={styles.facRowTitle}>{meeting.title || '予定あり'}</span>
+        <span className={styles.facRowOrganizer}>
+          <span className={styles.facRowOrganizerBadge}>登録者</span>
+          <span className={styles.facRowOrganizerName}>{organizerName}</span>
         </span>
       </div>
 
-      <div className='fac-row-side'>
-        {isNext && <span className='fac-row-next-badge'>次</span>}
+      <div className={styles.facRowSide}>
+        {isNext && <span className={styles.facRowNextBadge}>次</span>}
         <button
           type='button'
-          className='fac-attendee-btn'
+          className={styles.facAttendeeBtn}
           data-attendee-popover=''
           aria-label={`参加者 ${attendeeCount}名を表示`}
           onMouseEnter={(e) => attendee.onEnter(meeting.id, e.currentTarget)}
           onMouseLeave={attendee.onLeave}
           onClick={(e) => attendee.onToggle(meeting.id, e.currentTarget)}
         >
-          <span className='icon-msr-filled fac-attendee-icon' aria-hidden='true'>
+          <span className={`icon-msr-filled ${styles.facAttendeeIcon}`} aria-hidden='true'>
             people
           </span>
           {attendeeCount}

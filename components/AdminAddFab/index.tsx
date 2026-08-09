@@ -2,6 +2,7 @@
 import type { CSSProperties } from 'react'
 import { useAdminAddFab } from './hooks/use-admin-add-fab'
 import type { UseAdminAddFabParams } from './hooks/use-admin-add-fab'
+import styles from '../object-picker.module.css'
 
 type Props = UseAdminAddFabParams
 
@@ -32,26 +33,26 @@ export const AdminAddFab = ({ onSelectTeam, onSelectFacility, onEnterEdit }: Pro
   ]
 
   return (
-    <div className='admin-fab-wrap'>
+    <div className={styles.adminFabWrap}>
       {isMenuOpen && (
-        <div className='admin-fab-backdrop' onClick={closeMenu} onWheel={closeMenu} onTouchMove={closeMenu} />
+        <div className={styles.adminFabBackdrop} onClick={closeMenu} onWheel={closeMenu} onTouchMove={closeMenu} />
       )}
 
       {isMenuOpen && (
-        <div ref={menuRef} className='admin-fab-menu liquid-glass' role='menu' onKeyDown={onMenuKeyDown}>
+        <div ref={menuRef} className={`${styles.adminFabMenu} liquid-glass`} role='menu' onKeyDown={onMenuKeyDown}>
           {items.map((item, index) => (
             <button
               key={item.key}
               type='button'
               role='menuitem'
-              className='admin-fab-row glass-dial-row glass-stagger-item'
+              className={`${styles.adminFabRow} glass-dial-row glass-stagger-item`}
               style={{ '--glass-stagger-i': items.length - 1 - index } as CSSProperties}
               onClick={item.onClick}
             >
-              <span className='icon-msr-thin admin-fab-row-icon' aria-hidden='true'>
+              <span className={`icon-msr-thin ${styles.adminFabRowIcon}`} aria-hidden='true'>
                 {item.icon}
               </span>
-              <span className='admin-fab-row-label'>{item.label}</span>
+              <span className={styles.adminFabRowLabel}>{item.label}</span>
             </button>
           ))}
         </div>
@@ -60,7 +61,7 @@ export const AdminAddFab = ({ onSelectTeam, onSelectFacility, onEnterEdit }: Pro
       <button
         ref={fabRef}
         type='button'
-        className={`admin-fab-btn glass-fab-accent${isMenuOpen ? ' is-open' : ''}`}
+        className={`${styles.adminFabBtn} glass-fab-accent${isMenuOpen ? ` ${styles.isOpen}` : ''}`}
         data-coach='admin-fab'
         aria-expanded={isMenuOpen}
         aria-label={isMenuOpen ? '追加メニューを閉じる' : '追加メニューを開く'}
@@ -70,7 +71,7 @@ export const AdminAddFab = ({ onSelectTeam, onSelectFacility, onEnterEdit }: Pro
         onPointerLeave={fabHandlers.onPointerLeave}
         onClick={fabHandlers.onClick}
       >
-        <span className='icon-msr-thin admin-fab-icon' aria-hidden='true'>
+        <span className={`icon-msr-thin ${styles.adminFabIcon}`} aria-hidden='true'>
           add
         </span>
       </button>

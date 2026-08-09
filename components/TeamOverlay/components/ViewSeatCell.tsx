@@ -3,6 +3,7 @@ import type { MouseEvent as ReactMouseEvent, PointerEvent as ReactPointerEvent, 
 import { useEmployeeAvatar } from '@/hooks/use-employee-avatar'
 import { PixelAvatar } from '@/components/PixelAvatar'
 import { compactNameFontSize, getCompactNameLabel } from '../utils/compact-name'
+import styles from '../team-overlay-modal.module.css'
 import { PRESENCE_COLOR, PRESENCE_LABEL } from '@/utils/format'
 import type { Employee, PresenceStatus, Seat } from '@/types'
 
@@ -80,8 +81,8 @@ export const ViewSeatCell = ({
     // 空席はボタン化しない。スポットライト中は空席も落とす
     // (ここを外すと空席だけが最前面の明るさで残り、ヒット席より目立ってしまう。Desktop 側は同じ要素なので既に落ちている)
     return (
-      <div data-seat-id={seat.id} className={`team-ovl-cell is-empty${dimmed ? ' is-dimmed' : ''}`}>
-        <span className='team-ovl-cell-name'>空席</span>
+      <div data-seat-id={seat.id} className={`${styles.cell} ${styles.isEmpty}${dimmed ? ` ${styles.isDimmed}` : ''}`}>
+        <span className={styles.cellName}>空席</span>
       </div>
     )
   }
@@ -92,26 +93,26 @@ export const ViewSeatCell = ({
     <button
       type='button'
       data-seat-id={seat.id}
-      className={`team-ovl-cell${isHit ? ' is-hit' : ''}${glowing ? ' is-glowing' : ''}${dimmed ? ' is-dimmed' : ''}`}
+      className={`${styles.cell}${isHit ? ` ${styles.isHit}` : ''}${glowing ? ` ${styles.isGlowing}` : ''}${dimmed ? ` ${styles.isDimmed}` : ''}`}
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
       onPointerCancel={handlePointerCancel}
       onClick={handleClick}
     >
       {/* 役職は文字では出さず上端 3px のバーだけで示す */}
-      {employee.position && <span className='team-ovl-cell-accent' />}
-      <span className='team-ovl-cell-avatar'>
+      {employee.position && <span className={styles.cellAccent} />}
+      <span className={styles.cellAvatar}>
         <PixelAvatar config={avatarConfig} size={28} />
       </span>
-      <span className='team-ovl-cell-name' style={{ fontSize: compactNameFontSize(label) }}>
+      <span className={styles.cellName} style={{ fontSize: compactNameFontSize(label) }}>
         {label}
       </span>
-      <span className='team-ovl-cell-dept'>{teamName}</span>
-      <span className='team-ovl-cell-status'>
-        <span className='team-ovl-cell-statusdot' style={{ background: PRESENCE_COLOR[status] }} />
+      <span className={styles.cellDept}>{teamName}</span>
+      <span className={styles.cellStatus}>
+        <span className={styles.cellStatusdot} style={{ background: PRESENCE_COLOR[status] }} />
         <span style={{ color: PRESENCE_COLOR[status] }}>{loading ? '取得中…' : PRESENCE_LABEL[status]}</span>
       </span>
-      {isHit && <span className='team-ovl-hit'>HIT</span>}
+      {isHit && <span className={styles.hit}>HIT</span>}
     </button>
   )
 }

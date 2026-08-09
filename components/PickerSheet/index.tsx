@@ -3,6 +3,7 @@ import type { ReactNode } from 'react'
 import { FocusTrap } from '@/components/a11y/components/FocusTrap'
 import { useMediaQuery } from '@/hooks/use-media-query'
 import { useSwipeDismiss } from '@/hooks/use-swipe-dismiss'
+import styles from '../object-picker.module.css'
 
 // 選択シートの共通シェル。640px 未満はボトムシート(下スワイプで閉じる)、
 // 以上は中央モーダル。フォーカストラップと Esc 閉じを持つ。
@@ -35,21 +36,21 @@ export const PickerSheet = ({ isOpen, title, note, onClose, children }: Props) =
   if (!isOpen) return null
 
   return (
-    <div className='picker-wrap' role='presentation'>
-      <div className='picker-backdrop' onClick={onClose} />
-      <FocusTrap isActive className={`picker-panel${isCompact ? ' is-compact' : ''}`}>
-        <div ref={sheetRef} className='picker-inner' role='dialog' aria-modal='true' aria-label={title} {...bind}>
-          {isCompact && <span className='picker-grip' aria-hidden='true' />}
-          <div className='picker-head'>
-            <h2 className='picker-title'>{title}</h2>
-            <button type='button' className='picker-close' aria-label='閉じる' onClick={onClose}>
+    <div className={styles.pickerWrap} role='presentation'>
+      <div className={styles.pickerBackdrop} onClick={onClose} />
+      <FocusTrap isActive className={`${styles.pickerPanel}${isCompact ? ` ${styles.isCompact}` : ''}`}>
+        <div ref={sheetRef} className={styles.pickerInner} role='dialog' aria-modal='true' aria-label={title} {...bind}>
+          {isCompact && <span className={styles.pickerGrip} aria-hidden='true' />}
+          <div className={styles.pickerHead}>
+            <h2 className={styles.pickerTitle}>{title}</h2>
+            <button type='button' className={styles.pickerClose} aria-label='閉じる' onClick={onClose}>
               <span className='icon-msr-thin' aria-hidden='true'>
                 close
               </span>
             </button>
           </div>
-          {note && <p className='picker-note'>{note}</p>}
-          <div className='picker-body'>{children}</div>
+          {note && <p className={styles.pickerNote}>{note}</p>}
+          <div className={styles.pickerBody}>{children}</div>
         </div>
       </FocusTrap>
     </div>

@@ -3,6 +3,7 @@ import { useEmployeeAvatar } from '@/hooks/use-employee-avatar'
 import { PixelAvatar } from './PixelAvatar'
 import type { Employee, Lod, PresenceStatus, Seat } from '@/types'
 import { PRESENCE_COLOR, PRESENCE_LABEL } from '@/utils/format'
+import styles from './seatmap.module.css'
 
 
 type Props = {
@@ -38,7 +39,7 @@ const SeatCardInner = ({
 
   return (
     <div
-      className={`seat-card${isEmpty ? ' is-empty' : ''}${selected ? ' is-selected' : ''}${isEditMode ? ' is-edit-mode' : ''}${isEditDragging ? ' is-edit-dragging' : ''}`}
+      className={`${styles.seatCard}${isEmpty ? ` ${styles.isEmpty}` : ''}${selected ? ` ${styles.isSelected}` : ''}${isEditMode ? ` ${styles.isEditMode}` : ''}${isEditDragging ? ` ${styles.isEditDragging}` : ''}`}
       style={{
         left: seat.x,
         top: seat.y,
@@ -57,18 +58,18 @@ const SeatCardInner = ({
       aria-label={employee ? employee.name : '空席'}
     >
       {isEmpty ? (
-        <span className='seat-empty-pill'>空席</span>
+        <span className={styles.seatEmptyPill}>空席</span>
       ) : (
         <>
-          {employee.position && <div className='seat-accent-bar' />}
-          <div className='seat-avatar-frame'>
+          {employee.position && <div className={styles.seatAccentBar} />}
+          <div className={styles.seatAvatarFrame}>
             <PixelAvatar config={avatarConfig} size={28} />
           </div>
-          {showName && <div className='seat-name'>{employee.name}</div>}
-          <div className='seat-status-row' style={{ ['--status-color' as string]: PRESENCE_COLOR[status] }}>
-            <span className='seat-status-dot' />
+          {showName && <div className={styles.seatName}>{employee.name}</div>}
+          <div className={styles.seatStatusRow} style={{ ['--status-color' as string]: PRESENCE_COLOR[status] }}>
+            <span className={styles.seatStatusDot} />
             {showName && (
-              <span className='seat-status-label' style={{ fontSize: 9 * counterScale }}>
+              <span className={styles.seatStatusLabel} style={{ fontSize: 9 * counterScale }}>
                 {PRESENCE_LABEL[status]}
               </span>
             )}

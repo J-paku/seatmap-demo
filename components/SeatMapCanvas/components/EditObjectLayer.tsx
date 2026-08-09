@@ -1,6 +1,7 @@
 import type { PointerEvent as ReactPointerEvent } from 'react'
 import type { LivePosition } from '../type'
 import type { Facility, Furniture, LayoutObjectRef } from '@/types'
+import e from '@/components/edit/admin-edit.module.css'
 
 // 編集モード中だけ会議室・家具の上に重ねる操作面。
 //
@@ -49,7 +50,7 @@ export const EditObjectLayer = ({ facilities, furniture, selected, repositioning
         return (
           <div
             key={`${box.ref.kind}:${box.ref.id}`}
-            className={`edit-object-hit${isSelected ? ' is-selected' : ''}${isRepositioning ? ' is-repositioning' : ''}`}
+            className={`${e.editObjectHit}${isSelected ? ` ${e.isSelected}` : ''}${isRepositioning ? ` ${e.isRepositioning}` : ''}`}
             data-edit-object={`${box.ref.kind}:${box.ref.id}`}
             role='button'
             tabIndex={-1}

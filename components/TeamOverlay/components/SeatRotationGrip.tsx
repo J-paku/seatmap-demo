@@ -1,4 +1,5 @@
 import { useSeatRotationGrip } from '../hooks/use-seat-rotation-grip'
+import styles from '../team-overlay-modal.module.css'
 import type { Seat } from '@/types'
 
 // STEP D1: 編集中·選択中の席カード左上に出す回転グリップ。タップで時計回りに1段、
@@ -17,11 +18,11 @@ export const SeatRotationGrip = ({ seatId, rotation, onRotate, onDraggingChange 
   return (
     <button
       type='button'
-      className='team-ovl-rotation-grip'
+      className={styles.rotationGrip}
       aria-label='座席の向きを回転'
       {...gripProps}
     >
-      <span className='material-symbols-outlined team-ovl-rotation-grip-icon' aria-hidden='true'>
+      <span className='material-symbols-outlined' aria-hidden='true'>
         rotate_right
       </span>
     </button>

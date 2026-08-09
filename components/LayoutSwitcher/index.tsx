@@ -6,6 +6,7 @@ import { CustomLayoutList } from './components/CustomLayoutList'
 import { CreateLayoutForm } from './components/CreateLayoutForm'
 import { LayoutDeleteConfirmDialog } from './components/LayoutDeleteConfirmDialog'
 import { useLayoutSource } from '@/contexts/layout-source-context'
+import styles from './layout-switcher.module.css'
 
 type LayoutSwitcherProps = {
   // 展開/折りたたみの状態を親へ伝える。左下FABの表示制御に使う
@@ -42,7 +43,7 @@ export const LayoutSwitcher = ({ onExpandedChange }: LayoutSwitcherProps = {}) =
     <>
       <div
         ref={rootRef}
-        className={`layout-switcher${isOpen ? ' is-open' : ''}`}
+        className={`${styles.root}${isOpen ? ` ${styles.isOpen}` : ''}`}
         role='region'
         aria-label='レイアウト切り替え'
         data-coach='layout-switcher'
@@ -56,8 +57,8 @@ export const LayoutSwitcher = ({ onExpandedChange }: LayoutSwitcherProps = {}) =
         />
         {/* 折りたたみ中はinertでキーボード・スクリーンリーダーの侵入を止める。
             display:noneにしないのはmorphのトランジションを効かせ続けるため */}
-        <div className='layout-switcher-panel' id={panelId} inert={!isOpen}>
-          <div className='layout-switcher-panel-inner'>
+        <div className={styles.panel} id={panelId} inert={!isOpen}>
+          <div className={styles.panelInner}>
             <OfficialLayoutButton isSelected={source.type === 'official'} onSelect={selectOfficial} />
             <CustomLayoutList
               layoutMetas={layoutMetas}

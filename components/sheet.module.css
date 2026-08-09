@@ -1,13 +1,13 @@
 /* 03-detail-panel: 詳細パネルの共通シェル(中央モーダル・スワイプ・ヘッダー)
    社員/予定/施設それぞれの中身は employee-detail / schedule-* / facility-detail に分けてある */
 
-.sheet-backdrop {
+.backdrop {
   position: fixed;
   inset: 0;
   background: var(--color-scrim);
   /* 12: モーダルスタック表の相対順(社員/施設詳細)。ヘッダー等の共有トークン列に揃えて z-index-modal を使う */
   z-index: var(--z-index-modal);
-  animation: sheet-fade-in 0.2s ease-out;
+  animation: fadeIn 0.2s ease-out;
 }
 
 .sheet {
@@ -30,38 +30,38 @@
   width: calc(100% - 24px);
   max-width: 448px;
   border-radius: 16px;
-  animation: sheet-fade-in 0.2s ease-out;
+  animation: fadeIn 0.2s ease-out;
 }
 
-.sheet-employee {
+.employee {
   height: 88dvh;
 }
 
-.sheet-facility,
-.sheet-schedule {
+.facility,
+.schedule {
   max-height: 84dvh;
 }
 
 /* デスクトップ: 高さだけ広げる(配置はモバイルと共通) */
 @media (min-width: 640px) {
-  .sheet-employee {
+  .employee {
     height: 90dvh;
   }
-  .sheet-facility,
-  .sheet-schedule {
+  .facility,
+  .schedule {
     max-height: 90dvh;
   }
 }
 
-.sheet-stack-top .sheet-backdrop {
+.stackTop .backdrop {
   /* 12: 予定詳細(社員詳細より上にスタック) */
   z-index: calc(var(--z-index-modal) + 2);
 }
-.sheet-stack-top .sheet {
+.stackTop .sheet {
   z-index: calc(var(--z-index-modal) + 3);
 }
 
-.sheet-scroll {
+.scroll {
   overflow-y: auto;
   overscroll-behavior: contain;
   touch-action: pan-x pan-y;
@@ -69,7 +69,7 @@
   flex: 1;
 }
 
-.sheet-header {
+.header {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -77,13 +77,13 @@
   margin-bottom: 12px;
 }
 
-.sheet-title {
+.title {
   font-size: 18px;
   font-weight: 700;
   margin: 0;
 }
 
-.sheet-close {
+.close {
   width: 44px;
   height: 44px;
   min-width: 44px;
@@ -96,21 +96,45 @@
   position: relative;
   z-index: 2;
 }
-.sheet-close:focus-visible {
+.close:focus-visible {
   outline: 2px solid var(--color-accent);
   outline-offset: 2px;
 }
-.sheet-close:hover {
+.close:hover {
   background: var(--color-surface-muted-hover);
 }
 
 /* 12: 社員詳細のスクロール余白(px-4 py-6 pt-8, PC pt-6) */
-.sheet-employee .sheet-scroll {
+.employee .scroll {
   padding: 32px 16px 24px;
 }
 @media (min-width: 640px) {
-  .sheet-employee .sheet-scroll {
+  .employee .scroll {
     padding-top: 24px;
   }
 }
 
+/* 旧 schedule-detail.css 側にあった sheet 系アニメーション定義をここへ集約 */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sheet,
+  .backdrop {
+    animation: none;
+  }
+}

@@ -3,6 +3,7 @@
 // 文面が固有なのでそのまま残している(移行するなら別件で)
 import type { ReactNode } from 'react'
 import { useSwipeDismiss } from '@/hooks/use-swipe-dismiss'
+import e from './admin-edit.module.css'
 
 type Props = {
   ariaLabel: string
@@ -17,22 +18,22 @@ export const ConfirmDialog = ({ ariaLabel, message, confirmLabel, onConfirm, onC
   const { sheetRef, bind } = useSwipeDismiss({ onClose: onCancel })
 
   return (
-    <div className='edit-dialog-backdrop' onClick={onCancel}>
+    <div className={e.editDialogBackdrop} onClick={onCancel}>
       <div
         ref={sheetRef}
-        className='edit-dialog'
+        className={e.editDialog}
         role='dialog'
         aria-modal='true'
         aria-label={ariaLabel}
         onClick={(e) => e.stopPropagation()}
         {...bind}
       >
-        <p className='edit-dialog-message'>{message}</p>
-        <div className='edit-dialog-actions'>
-          <button type='button' className='pixel-btn edit-dialog-cancel' onClick={onCancel}>
+        <p className={e.editDialogMessage}>{message}</p>
+        <div className={e.editDialogActions}>
+          <button type='button' className={`pixel-btn ${e.editDialogCancel}`} onClick={onCancel}>
             やめる
           </button>
-          <button type='button' className='pixel-btn edit-dialog-confirm' onClick={onConfirm}>
+          <button type='button' className={`pixel-btn ${e.editDialogConfirm}`} onClick={onConfirm}>
             {confirmLabel}
           </button>
         </div>
