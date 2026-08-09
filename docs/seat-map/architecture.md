@@ -107,10 +107,10 @@ DOM 適用と次状態の保持だけを行う(関数は純粋・DOM に触れ�
 
 | フック | 値 | 付与箇所 | 契約 |
 |---|---|---|---|
-| `data-canvas-transform-layer="true"` | 固定文字列 | 変換レイヤーの `div` 1枚(`components/SeatMapCanvas/index.tsx:125`) | パン・ズームで一括変換される唯一のレイヤー。`getComputedStyle(...).transform` から現在の `scale` を読める(`verify-s1.js:47`) |
-| `data-team-id` | `Team.idPrefix`(**`Team.id` ではない**) | チーム箱のインタラクション面(`components/TeamArea.tsx:86`) | クリックを直接受ける矩形。`SeatMapCanvasHandle.measureTeamRect` もこの属性で `querySelector` する(`components/SeatMapCanvas/index.tsx:79`) |
-| `data-furniture-id` | `Facility.id` または `Furniture.id` | 会議室・ブース・共用部・通路・家具すべて(`components/FacilityBlock.tsx:23,40`, `components/FurnitureBlock.tsx:19`) | 種別を問わず「オブジェクトである」ことの共通マーカー |
-| `data-facility="true"` | 固定文字列(`meeting` 種別のみ) | `components/FacilityBlock.tsx:41`(`isMeeting` の時だけ属性が付く。他は `undefined` = 属性自体が付かない) | 「会議室として数える」対象の絞り込み。家具側は明示的にこの属性を付けない理由がコメントにある: 「検証スクリプトが会議室だけを数えているため」(`components/FurnitureBlock.tsx:5`) |
+| `data-canvas-transform-layer="true"` | 固定文字列 | 変換レイヤーの `div` 1枚(`components/SeatMapCanvas/index.tsx:128`) | パン・ズームで一括変換される唯一のレイヤー。`getComputedStyle(...).transform` から現在の `scale` を読める(`verify-s1.js:53`) |
+| `data-team-id` | `Team.idPrefix`(**`Team.id` ではない**) | チーム箱のインタラクション面(`components/TeamArea.tsx:84`) | クリックを直接受ける矩形。`SeatMapCanvasHandle.measureTeamRect` もこの属性で `querySelector` する(`components/SeatMapCanvas/index.tsx:82`) |
+| `data-furniture-id` | `Facility.id` または `Furniture.id` | 会議室・ブース・共用部・通路・家具すべて(`components/FacilityBlock.tsx:24,41`, `components/FurnitureBlock.tsx:20`) | 種別を問わず「オブジェクトである」ことの共通マーカー |
+| `data-facility="true"` | 固定文字列(`meeting` 種別のみ) | `components/FacilityBlock.tsx:42`(`isMeeting` の時だけ属性が付く。他は `undefined` = 属性自体が付かない) | 「会議室として数える」対象の絞り込み。家具側は明示的にこの属性を付けない理由がコメントにある: 「検証スクリプトが会議室だけを数えているため」(`components/FurnitureBlock.tsx:6`) |
 
 `measureTeamRect` の引数が `Team.idPrefix` であって `Team.id` でない点は、呼び出し側
 (`components/SeatMapView/hooks/use-team-seat-focus.ts:43`)・型定義のコメント
@@ -152,7 +152,7 @@ DOM 適用と次状態の保持だけを行う(関数は純粋・DOM に触れ�
 - **検索/自分の席経路**: `SeatMapView` の `handleDirectorySeatSelect` / `handleGoToMySeat` →
   `useTeamSeatFocus.focusSeat(seat)` → `canvasRef.current.measureTeamRect(team.idPrefix)` で
   キャンバスを動かさず対象チーム箱の `DOMRect` を実測(画面外でも常に描画されているため測れる、
-  `components/SeatMapCanvas/index.tsx:75-76` のコメント) → ヒット表示ありでオーバーレイを開く
+  `components/SeatMapCanvas/index.tsx:78-79` のコメント) → ヒット表示ありでオーバーレイを開く
 
 この先(オーバーレイ自体の DOM 構造・HIT表示・ミニマップ)は `docs/team-overlay/` の管轄。
 

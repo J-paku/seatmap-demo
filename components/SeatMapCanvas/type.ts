@@ -1,11 +1,10 @@
 import type { RefObject } from 'react'
 import type { Transform } from '@/utils/layout/geometry'
-import type { Employee, LayoutObjectRef, Lod, PresenceStatus, SeatLayout } from '@/types'
+import type { Employee, LayoutObjectRef, Lod, PresenceStatus, SeatLayout, TeamOverlayPayload } from '@/types'
 
 export type { Lod }
 import type { FacilityState } from '@/utils/facility-status'
 import type { FacilityHoverPayload } from '@/components/FacilityHoverCard'
-import type { TeamOverlayPayload } from '@/components/TeamOverlay'
 
 export type SeatMapCanvasProps = {
   layout: SeatLayout

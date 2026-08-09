@@ -2,9 +2,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { SetStateAction } from 'react'
 
-type ToastTone = 'info' | 'success' | 'warning' | 'error'
+export type ToastTone = 'info' | 'success' | 'warning' | 'error'
 
-interface AnnouncementContextValue {
+export interface AnnouncementContextValue {
   message: string
   setMessage: (value: SetStateAction<string>) => void
   announce: (message: string) => void

@@ -4,8 +4,15 @@
 import { isStructuralKind } from './furniture-catalog'
 import { resolveTeamColor } from './team-colors'
 import type { TeamColorEntry } from './team-colors'
-import type { MinimapArea, MinimapFurniture, MinimapKind } from '@/components/TeamOverlay'
-import type { Facility, Furniture, SeatLayout, Team } from '@/types'
+import type {
+  Facility,
+  Furniture,
+  MinimapArea,
+  MinimapFurniture,
+  MinimapKind,
+  SeatLayout,
+  Team,
+} from '@/types'
 
 export type MinimapPayload = {
   areas: MinimapArea[]

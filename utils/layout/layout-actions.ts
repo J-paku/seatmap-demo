@@ -178,7 +178,7 @@ export const applyLayoutAction = (layout: SeatLayout, action: LayoutAction): Sea
       if (!team) return layout
       const teamSeats = layout.seats.filter((s) => s.teamId === action.teamId)
       if (teamSeats.length === 0) return layout
-      const relaid = relayoutSeatsInGrid(teamSeats, team.area, action.rows, action.cols)
+      const relaid = relayoutSeatsInGrid(teamSeats, team.area, action.cols)
       const fitted = fitAreaToSeats(relaid, team.area)
       const relaidById = new Map(relaid.map((s) => [s.id, s]))
       return {
@@ -200,8 +200,6 @@ export const applyLayoutAction = (layout: SeatLayout, action: LayoutAction): Sea
         id: nextSequentialId(layout.teams.map((t) => t.id), 'team-', 2),
         idPrefix,
         name: action.name,
-        // かな検索用。日本語名からは機械的に導けないので名前をそのまま入れておく
-        kana: action.name,
         color: action.color,
         area: { x: action.x, y: action.y, w: action.width, h: action.height },
       }
@@ -230,7 +228,6 @@ export const applyLayoutAction = (layout: SeatLayout, action: LayoutAction): Sea
         y: action.y,
         width: action.width,
         height: action.height,
-        rotation: 0,
       }
       return { ...layout, furniture: [...layout.furniture, added] }
     }
@@ -252,7 +249,5 @@ export const applyLayoutAction = (layout: SeatLayout, action: LayoutAction): Sea
       if (!layout.furniture.some((f) => f.id === action.id)) return layout
       return { ...layout, furniture: layout.furniture.filter((f) => f.id !== action.id) }
     }
-    default:
-      return layout
   }
 }

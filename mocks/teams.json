@@ -3,7 +3,6 @@
     "id": "team-01",
     "idPrefix": "dept-sales",
     "name": "営業部",
-    "kana": "エイギョウブ",
     "color": "#C66A53",
     "area": {
       "x": 30,
@@ -16,7 +15,6 @@
     "id": "team-02",
     "idPrefix": "dept-dev",
     "name": "開発部",
-    "kana": "カイハツブ",
     "color": "#98C653",
     "area": {
       "x": 30,
@@ -29,7 +27,6 @@
     "id": "team-03",
     "idPrefix": "dept-general",
     "name": "総務部",
-    "kana": "ソウムブ",
     "color": "#53C698",
     "area": {
       "x": 30,
@@ -42,7 +39,6 @@
     "id": "team-04",
     "idPrefix": "dept-account",
     "name": "経理部",
-    "kana": "ケイリブ",
     "color": "#536AC6",
     "area": {
       "x": 30,
@@ -55,7 +51,6 @@
     "id": "team-05",
     "idPrefix": "dept-planning",
     "name": "企画部",
-    "kana": "キカクブ",
     "color": "#C653C6",
     "area": {
       "x": 30,

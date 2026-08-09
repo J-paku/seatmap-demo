@@ -10,7 +10,7 @@ import {
 } from '@/lib/layout-persistence'
 import { createEmptyLayout, createLayoutId } from '@/utils/layout/layout-id'
 import { useLayoutSource } from '@/contexts/layout-source-context'
-import { useGlobalAnnouncement } from '@/components/a11y'
+import { useGlobalAnnouncement } from '@/contexts/announcement-context'
 import { floorNameOf } from '@/utils/floors'
 import type { LayoutMeta } from '@/types'
 

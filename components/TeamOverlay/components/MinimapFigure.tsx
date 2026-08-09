@@ -1,6 +1,7 @@
 import { MINIMAP_MIN_SIZE_PX, minimapLabelStyle, singleLineLabel, truncateLabel } from '../utils/minimap-label'
 import type { MinimapData } from '../hooks/use-minimap-data'
-import type { MinimapArea, MinimapFurniture, MinimapRect } from '../type'
+import type { MinimapRect } from '../type'
+import type { MinimapArea, MinimapFurniture } from '@/types'
 import styles from '../team-overlay-modal.module.css'
 
 // ミニマップの図そのもの。格子・十字線・会議室・チーム領域を百分率で重ねる。

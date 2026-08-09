@@ -31,10 +31,12 @@ seatmap-demo/
 │  ├─ edit/                      編集モード専用の単発コンポーネント群。フォルダ化はしていない
 │  └─ *.tsx                      単一責務のまま短い共通部品(SeatCard.tsx / ZoomControls.tsx 等)
 ├─ contexts/                     Context + Provider(detail-panel-context.tsx 等)
-├─ hooks/                        2箇所以上から使われ昇格したフック(use-edit-session.ts 等10本)
+├─ hooks/                        2箇所以上から使われ昇格したフック(単一ファイル18本+フォルダ化した
+│                                use-layout-editor/ 3本(use-edit-session.ts 等)の計21本)
 ├─ lib/                          アプリ外部との接続
-│                                (fetch-mock.ts / mock-loader.ts / layout-persistence.ts / avatar-persistence.ts)
-├─ utils/                        純関数(geometry.ts / presence.ts / kana.ts 等)
+│                                (fetch-mock.ts / mock-loader.ts / layout-persistence.ts / avatar-persistence.ts /
+│                                 seat/ 配下のお気に入り永続化)
+├─ utils/                        純関数(layout/geometry.ts / avatar/ / gesture/ / presence.ts / employee-search.ts 等)
 ├─ types/                        型定義(index.ts)
 ├─ mocks/                        座標を含む全モック JSON。座標のコードへのハードコード禁止の根拠
 ├─ styles/                       CSS。globals.css が @import で列挙(並び順=カスケード順)
@@ -54,9 +56,9 @@ seatmap-demo/
 | `lib/` | `mock-loader.ts` | シード・キャッシュ入出力(SWR フック本体は `hooks/use-mock-data.ts`) |
 | `lib/` | `layout-persistence.ts` | localStorage への読み書き |
 | `lib/` | `avatar-persistence.ts` | localStorage への読み書き |
-| `utils/` | `geometry.ts` | 座標変換の計算だけ |
+| `utils/` | `layout/geometry.ts` | 座標変換の計算だけ |
 | `utils/` | `presence.ts` | 予定配列 → 在席状態の導出だけ |
-| `utils/` | `kana.ts` | 検索用の文字列正規化だけ |
+| `utils/` | `employee-search.ts` | 検索用の文字列正規化(`normalizeSearchText`)だけ |
 
 > `lib/` に純関数を置かない。`utils/` に fetch や localStorage を書かない。
 

@@ -10,7 +10,6 @@ import type { Lod, LivePosition } from '../type'
 type Props = {
   teams: SeatLayout['teams']
   assignedCountByTeam: Map<string, number>
-  counterScale: number
   lod: Lod
   liveTeamPos: LivePosition | null
   isEditMode?: boolean
@@ -22,7 +21,6 @@ type Props = {
 export const TeamAreaLayer = ({
   teams,
   assignedCountByTeam,
-  counterScale,
   lod,
   liveTeamPos,
   isEditMode,
@@ -41,9 +39,7 @@ export const TeamAreaLayer = ({
           area={liveTeamPos && liveTeamPos.id === team.id ? { ...team.area, x: liveTeamPos.x, y: liveTeamPos.y } : team.area}
           colorEntry={resolveTeamColor(teamColorMap, team.id, team.name)}
           presentCount={assignedCountByTeam.get(team.id) ?? 0}
-          counterScale={counterScale}
           lod={lod}
-          selected={false}
           dimmed={false}
           onBoundaryOpen={onBoundaryOpen}
           isEditMode={isEditMode}

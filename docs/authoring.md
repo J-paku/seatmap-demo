@@ -11,7 +11,7 @@
 
 - 関数名は `use` 接頭辞必須
 - ファイル名は kebab-case + `use-` 接頭辞(`use-canvas-pointer.ts` のように)。
-  **リポジトリ全体のフックファイル40本を確認済み。全て kebab-case + `use-` 接頭辞であり、この形式を維持する** `[hook-file-naming]`
+  **リポジトリ全体のフックファイル85本を確認済み。全て kebab-case + `use-` 接頭辞であり、この形式を維持する** `[hook-file-naming]`
 - Props / 戻り値の型はファイル上部に定義する
 - コンポーネント専用フックは `components/<Name>/hooks/` へ。2箇所以上で使われたら
   ルート直下の `hooks/` へ昇格する
@@ -133,8 +133,8 @@ import { useLayoutHistory } from '@/hooks/use-layout-editor/use-layout-history'
 命名は `[hook-file-naming]` の対象のまま。**フォルダ名・フォルダ内の全ファイルとも kebab-case +
 `use-` 接頭辞**にする(`hooks/layout-editor/` のように接頭辞を落とさない)。
 
-> 現時点でフォルダ化されたフックは無い。ルート `hooks/` の10本・コンポーネント専用の30本、
-> 計40本すべて単一責務のまま1ファイルで収まっている。最初にフォルダ化した時はここに実例を追記する。
+> 既にフォルダ化されたフックとして `hooks/use-layout-editor/`(3本、上記の実例そのもの)がある。
+> ルート `hooks/` は単一ファイル18本+フォルダ化3本の計21本、コンポーネント専用は64本、計85本。
 
 ## 4. コードスタイル
 

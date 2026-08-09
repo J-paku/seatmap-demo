@@ -29,7 +29,7 @@
 - 閉じるボタン
 - Escape — `use-modal-shell.ts` が window 側に置く。DetailPanels が document 段で
   `stopPropagation` して2段スタックの同時クローズを防いでいるため、こちらは必ず window 側
-- Compact のみ: 下スワイプ(`useSwipeDismiss`)、ハンドルタップ(`SheetHandle` の `onClose`)
+- Compact のみ: 下スワイプ(`useSwipeToDismiss`)、ハンドルタップ(`SheetHandle` の `onClose`)
 
 ## 2. Desktop / Compact 分岐
 

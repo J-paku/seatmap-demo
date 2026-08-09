@@ -12,11 +12,8 @@ interface SettingsPanelProps {
   onRefresh: () => void
   setTheme: (mode: ThemeMode) => void
   themeMode: ThemeMode
-  isGaroonConnected?: boolean
   onGaroonLogout?: () => void
   onOpenAvatarCustomizer: () => void
-  // 編集への入口は左下 FAB へ移したので、ここでは受け取っても行を出さない
-  onEnterEdit?: () => void
   // デモ固有: 実物には無いレイアウト初期化をここへ移設した(§5.4)
   onResetLayout?: () => void
 }
@@ -26,7 +23,6 @@ export function SettingsPanel({
   onRefresh,
   setTheme,
   themeMode,
-  isGaroonConnected,
   onGaroonLogout,
   onOpenAvatarCustomizer,
   onResetLayout,
@@ -164,7 +160,6 @@ export function SettingsPanel({
 
       {/* パネル右下: Garoonログアウト導線 */}
       <GaroonLogoutBar
-        isGaroonConnected={isGaroonConnected}
         onGaroonLogout={onGaroonLogout}
       />
     </div>

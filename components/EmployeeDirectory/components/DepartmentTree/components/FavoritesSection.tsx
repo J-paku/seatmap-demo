@@ -111,7 +111,6 @@ function FavoritesSection({
               onEmployeeTap={onEmployeeTap}
               onToggleFavorite={onToggleFavorite}
               avatarConfigByOwnerCode={avatarConfigByOwnerCode}
-              isAlwaysFilled
             />
           ))}
         </div>

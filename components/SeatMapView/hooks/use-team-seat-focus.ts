@@ -3,9 +3,8 @@
 import { useCallback, useMemo, useState } from 'react'
 import type { RefObject } from 'react'
 import type { SeatMapCanvasHandle } from '@/components/SeatMapCanvas'
-import type { TeamOverlayPayload } from '@/components/TeamOverlay'
 import { useTeamColorMap } from '@/hooks/use-team-color-map'
-import type { Seat, SeatLayout } from '@/types'
+import type { Seat, SeatLayout, TeamOverlayPayload } from '@/types'
 import { buildTeamOverlayPayload } from '@/utils/team-overlay-payload'
 
 // 座席は解決できたがチーム箱を測れなかった場合の理由。呼び出し側が通知文言を決める

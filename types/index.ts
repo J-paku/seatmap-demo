@@ -146,8 +146,6 @@ export type Employee = {
   // 氏名フリガナ(半角カタカナ)。デモの表示名は「部署名+連番」の合成なので姓側のみ持つ
   furiganaSei?: string
   furiganaMei?: string
-  // 外国籍社員フラグ(表示名を全カタカナ化し氏名レイアウトを左寄せにする)
-  isForeign?: boolean
   position?: string
   email?: string
   // 携帯電話番号(ハイフン無し11文字。公開リポジトリのため下4桁は 'xxxx' の伏せ字。表示側で 3-4-4 に整形する)
@@ -160,8 +158,6 @@ export type Team = {
   // 11: 座席ID接頭辞。seat.id.startsWith(idPrefix + '-') が座席↔チーム結束の唯一のキー
   idPrefix: string
   name: string
-  // 部署名の読み(全角カタカナ)。かな検索で部署名グループを引っ掛けるための検索用フィールド
-  kana: string
   color: string
   area: { x: number; y: number; w: number; h: number }
 }
@@ -221,7 +217,6 @@ export type Furniture = {
   y: number
   width: number
   height: number
-  rotation: 0 | 90 | 180 | 270
 }
 
 // 編集対象になりうるオブジェクトの種別。当たり判定・吸着・選択の対象を
@@ -262,6 +257,42 @@ export type SeatLayout = {
   teams: Team[]
   facilities: Facility[]
   furniture: Furniture[]
+}
+
+// チームバウンダリのクリックで渡ってくる情報。rect が拡大の原点になる
+export type TeamOverlayPayload = {
+  teamId: string
+  teamName: string
+  teamColor: string
+  rect: DOMRect
+}
+
+// ミニマップ上の描き分け区分。データ側の Facility.kind をそのまま渡さない。
+// 会議室は meeting/booth/common の3種あるがミニマップでは同じ「名前つきの箱」なので
+// ここで区分へ畳んでおき、ミニマップ側が元データの種別を知らずに済むようにする
+export type MinimapKind = 'facility' | 'aisle' | 'structure' | 'object'
+
+// チーム領域1件(座標は viewBox 系)。dotColor は解決済みのチーム色を受け取り、
+// ミニマップ側で色を再解決しない(同じ概念の判定基準を二重に持たないため)
+export type MinimapArea = {
+  idPrefix: string
+  x: number
+  y: number
+  w: number
+  h: number
+  label: string
+  dotColor: string
+}
+
+// 会議室・通路・家具1件(座標は viewBox 系)
+export type MinimapFurniture = {
+  id: string
+  kind: MinimapKind
+  name: string
+  x: number
+  y: number
+  width: number
+  height: number
 }
 
 // STEP1: 複数レイアウト対応 — カスタムレイアウトのメタ一覧(lib/layout-persistence.ts の

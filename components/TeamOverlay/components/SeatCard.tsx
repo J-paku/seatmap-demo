@@ -44,7 +44,10 @@ export const SeatCard = ({ seat, employee, status, teamName, teamColor, loading,
     </span>
     <span className={styles.cardText}>
       <span className={styles.cardName}>{employee ? employee.name : '空席'}</span>
-      {employee?.position && <span className={styles.cardPosition}>{employee.position}</span>}
+      {/* 役職の有無でテキスト列の高さが変わり、.card の align-items: center により
+          .cardName の開始 y が揺れるため、在職カードでは役職が無くても空 span を常時描画して
+          行の高さを予約する(空席カードは対象外・従来どおり非表示) */}
+      {employee && <span className={styles.cardPosition}>{employee.position ?? ''}</span>}
       {employee && <span className={styles.cardDept}>{teamName}</span>}
       {employee && (
         <span className={styles.cardStatus}>

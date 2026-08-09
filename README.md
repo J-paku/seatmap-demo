@@ -17,7 +17,6 @@
 | 言語 | TypeScript | 5.9.3 |
 | スタイル | Tailwind CSS (PostCSSプラグイン方式) | 4.3.3 |
 | データ取得 | SWR | 2.4.2 |
-| ユーティリティ | clsx / tailwind-merge | 2.1.1 / 3.6.0 |
 | Lint | ESLint | 9.39.5 |
 
 出力は静的export(`next build` → `out/`)で、GitHub Pages のプロジェクトサイト(`/seatmap-demo` サブパス)にそのまま配信しています。

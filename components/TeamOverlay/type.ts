@@ -1,43 +1,14 @@
 import type { UseSeatDragResult } from './hooks/use-seat-drag'
 import type { Rect } from '@/utils/layout/rect'
 import type { GridCell, SeatGridDraft } from '@/utils/layout/seat-grid-draft'
-import type { Employee, PresenceStatus, Seat } from '@/types'
-
-// チームバウンダリのクリックで渡ってくる情報。rect が拡大の原点になる
-export type TeamOverlayPayload = {
-  teamId: string
-  teamName: string
-  teamColor: string
-  rect: DOMRect
-}
-
-// ミニマップ上の描き分け区分。データ側の Facility.kind をそのまま渡さない。
-// 会議室は meeting/booth/common の3種あるがミニマップでは同じ「名前つきの箱」なので
-// ここで区分へ畳んでおき、ミニマップ側が元データの種別を知らずに済むようにする
-export type MinimapKind = 'facility' | 'aisle' | 'structure' | 'object'
-
-// チーム領域1件(座標は viewBox 系)。dotColor は解決済みのチーム色を受け取り、
-// ミニマップ側で色を再解決しない(同じ概念の判定基準を二重に持たないため)
-export type MinimapArea = {
-  idPrefix: string
-  x: number
-  y: number
-  w: number
-  h: number
-  label: string
-  dotColor: string
-}
-
-// 会議室・通路・家具1件(座標は viewBox 系)
-export type MinimapFurniture = {
-  id: string
-  kind: MinimapKind
-  name: string
-  x: number
-  y: number
-  width: number
-  height: number
-}
+import type {
+  Employee,
+  MinimapArea,
+  MinimapFurniture,
+  PresenceStatus,
+  Seat,
+  TeamOverlayPayload,
+} from '@/types'
 
 // 矩形は utils/layout/rect.ts の定義をそのまま使う(同じ形を再宣言すると同概念の型が二重化する)
 export type MinimapRect = Rect

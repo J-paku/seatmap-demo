@@ -19,7 +19,7 @@ import { SEAT_GRID_CELL_ATTR } from './utils/seat-drag-attrs'
 import { COMPACT_SIDE_PADDING_PX } from './utils/seat-grid'
 import type { TeamOverlayProps } from './type'
 import styles from './team-overlay-modal.module.css'
-import { useGlobalAnnouncement } from '@/components/a11y'
+import { useGlobalAnnouncement } from '@/contexts/announcement-context'
 import { ConfirmDialog } from '@/components/edit/ConfirmDialog'
 import { EmployeeAssignSheet } from '@/components/EmployeeAssignSheet'
 import { SeatMapPortal } from '@/components/SeatMapPortal'
@@ -31,9 +31,6 @@ import { countOccupiedSeats } from '@/utils/seat-occupancy'
 // 10: チームバウンダリクリックで開く大型オーバーレイ(座席グリッド全体)
 // クリックしたバウンダリ中心から膨らむように開く。中央固定拡大ではない
 // 幅 760px を境に、シェル形状・座席グリッド・入力モデルがまるごと切り替わる
-
-export type { TeamOverlayPayload } from './type'
-export type { MinimapArea, MinimapFurniture, MinimapKind } from './type'
 
 type Props = TeamOverlayProps
 

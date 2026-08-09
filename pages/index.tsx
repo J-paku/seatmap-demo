@@ -4,7 +4,7 @@ import { SeatMapView } from '@/components/SeatMapView'
 import { DetailPanelProvider } from '@/contexts/detail-panel-context'
 import { SelectedDateProvider } from '@/contexts/selected-date-context'
 import { AvatarsProvider } from '@/contexts/avatars-context'
-import { AnnouncementProvider } from '@/components/a11y'
+import { AnnouncementProvider } from '@/contexts/announcement-context'
 
 const SITE_URL = 'https://j-paku.github.io/seatmap-demo/'
 const SITE_TITLE = 'seat-map デモ'

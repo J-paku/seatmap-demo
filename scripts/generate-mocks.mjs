@@ -125,7 +125,7 @@ const toHalfWidthKana = (value) =>
     })
     .join('')
 
-// 服の単色から三色を生成。式は lib/avatar/avatar-color-utils.ts の deriveOutfitColors と同じに保つ
+// 服の単色から三色を生成。式は utils/avatar/avatar-color-utils.ts の deriveOutfitColors と同じに保つ
 // (このスクリプトは .mjs なので TS を import できず、やむを得ず複製している)
 const hexToRgb = (hex) => [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16))
 const rgbToHex = (rgb) =>
@@ -204,7 +204,7 @@ TEAM_DEFS.forEach((def, i) => {
     h: AREA_H,
   }
   if (!def.area) bandIndexByFloor.set(def.floorId, band + 1)
-  const team = { id: teamId, idPrefix, name: def.name, kana: def.kana, color, area }
+  const team = { id: teamId, idPrefix, name: def.name, color, area }
   teams.push(team)
   teamsByFloor.get(def.floorId).push(team)
 

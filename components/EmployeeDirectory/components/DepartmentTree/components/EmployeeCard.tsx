@@ -13,7 +13,6 @@ interface EmployeeCardProps {
   onEmployeeTap: (employee: Employee) => void
   onToggleFavorite: (empId: string) => void
   avatarConfigByOwnerCode: Map<string, PixelAvatarConfig>
-  isAlwaysFilled?: boolean
 }
 
 function EmployeeCard({
@@ -24,11 +23,10 @@ function EmployeeCard({
   onEmployeeTap,
   onToggleFavorite,
   avatarConfigByOwnerCode,
-  isAlwaysFilled,
 }: EmployeeCardProps) {
   const isCurrentUser = currentUserId === employee.id
   const myAvatarConfig = useMyAvatarConfig()
-  const isStarActive = isFavorite || isAlwaysFilled
+  const isStarActive = isFavorite
   // お気に入り星はテーマアクセント色で統一（テーマごとに自動調和）
   const starColor = isStarActive
     ? 'var(--color-accent)'

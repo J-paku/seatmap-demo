@@ -20,13 +20,10 @@ interface EmployeeDirectoryProps {
   currentUserId?: string
   // 席の解決は詳細パネル側が持つ。ここは押された社員を渡すだけ
   onEmployeeSelect: (employee: Employee) => void
-  isGaroonConnected?: boolean
   onGaroonLogout?: () => void
   onRefresh?: () => void
   setTheme: (mode: ThemeMode) => void
   themeMode: ThemeMode
-  // デモ固有: 実物のヘッダーに無い機能を設定パネルへ移設するための入口(§5.4)
-  onEnterEdit?: () => void
   onResetLayout?: () => void
 }
 
@@ -36,12 +33,10 @@ export function EmployeeDirectory({
   employees,
   currentUserId,
   onEmployeeSelect,
-  isGaroonConnected,
   onGaroonLogout,
   onRefresh,
   setTheme,
   themeMode,
-  onEnterEdit,
   onResetLayout,
 }: EmployeeDirectoryProps) {
   // スクロール領域の端での親伝播を遮断（非スクロール領域用）
@@ -219,13 +214,11 @@ export function EmployeeDirectory({
           {/* 設定パネルビュー */}
           {sidebarView === 'settings' && (
             <SettingsPanel
-              onEnterEdit={onEnterEdit}
               onResetLayout={onResetLayout}
               onBack={() => setSidebarView('directory')}
               onRefresh={onRefresh ?? (() => {})}
               setTheme={activeSetTheme}
               themeMode={activeThemeMode}
-              isGaroonConnected={isGaroonConnected}
               onGaroonLogout={onGaroonLogout}
               onOpenAvatarCustomizer={handleOpenAvatarCustomizer}
             />

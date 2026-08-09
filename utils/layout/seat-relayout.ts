@@ -22,7 +22,7 @@ export const sortSeatsForRelayout = (seats: Seat[]): Seat[] =>
   [...seats].sort((a, b) => (a.y === b.y ? a.x - b.x : a.y - b.y))
 
 // グリッドリファク後の座席配列(area 左上基準・パディング込み)
-export const relayoutSeatsInGrid = (seats: Seat[], area: Rect, rows: number, cols: number): Seat[] => {
+export const relayoutSeatsInGrid = (seats: Seat[], area: Rect, cols: number): Seat[] => {
   const originX = area.x + RELAYOUT_PADDING
   const originY = area.y + RELAYOUT_PADDING
   return sortSeatsForRelayout(seats).map((seat, i) => ({

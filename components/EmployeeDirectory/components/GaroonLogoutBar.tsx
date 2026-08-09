@@ -5,12 +5,10 @@ import { FocusTrap } from '@/components/a11y/components/FocusTrap'
 import { triggerHaptic } from '@/utils/haptic'
 
 interface GaroonLogoutBarProps {
-  isGaroonConnected?: boolean
   onGaroonLogout?: () => void
 }
 
 export function GaroonLogoutBar({
-  isGaroonConnected,
   onGaroonLogout,
 }: GaroonLogoutBarProps) {
   const [isLogoutConfirmOpen, setIsLogoutConfirmOpen] = useState(false)
@@ -30,11 +28,6 @@ export function GaroonLogoutBar({
     triggerHaptic('light')
     setIsLogoutConfirmOpen(false)
   }, [])
-
-  // Garoon未連携時は導線を出さない
-  if (!isGaroonConnected) {
-    return null
-  }
 
   return (
     <>

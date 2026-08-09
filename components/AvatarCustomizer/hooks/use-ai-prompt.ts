@@ -1,7 +1,7 @@
 // AI生成プロンプトの状態管理 — 要望テキスト入力・プロンプト組み立て・クリップボードコピー
 import { useCallback, useMemo, useState, type ChangeEvent } from 'react'
-import { useGlobalAnnouncement } from '../../a11y'
-import { TOAST_MESSAGES } from '@/constants/toast'
+import { useGlobalAnnouncement } from '@/contexts/announcement-context'
+import { TOAST_MESSAGES } from '@/utils/toast-messages'
 import { buildAiPromptText } from '../utils/avatar-prompt-builder'
 
 interface UseAiPromptResult {

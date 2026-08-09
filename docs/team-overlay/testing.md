@@ -11,7 +11,7 @@
 
 | 受入条件領域 | スクリプト | 主な確認内容 |
 |---|---|---|
-| 横スクロールヒント | `check-scrollhint.mjs` | Desktop/Compact 双方でボタン化・実クリックで `scrollLeft` 移動・端で `is-faded`+`disabled`・透過アルファ 0.30〜0.40(ライト/dracula 両テーマ) |
+| 横スクロールヒント | `check-scrollhint.mjs` | Desktop/Compact 双方でボタン化・実クリックで `scrollLeft` 移動・端で `isFaded`+`disabled`・透過アルファ 0.30〜0.40(ライト/dracula 両テーマ) |
 | ミニマップ既定値(localStorage 3状態) | `check-scrollhint.mjs`(D節、238〜307行) | キーなし/`'false'`/`'true'` の3状態で展開/折りたたみが一致するか、ハイドレーション不一致系のコンソールエラーが無いか |
 | ミニマップの図・操作 | `check-minimap.mjs` | 座席グリッド下配置・キーボード開閉・フォーカスリング・十字線/矩形が枠内・テーマ別配色・別チーム/リロード後の永続。**2節の既知の矛盾に注意** |
 | HIT 解除 | `check-hit-clear.mjs` | ヒット席自身/別の在席カード/空席/パネル余白/ヘッダー/ミニマップ の6ケース × WIDE(1280×900)/NARROW(390×844) |
@@ -44,7 +44,8 @@
 
 `components/TeamOverlay/components/SeatCard.tsx:32-38` の Desktop 空席カードは `<button disabled>`
 として描かれる。disabled なフォームコントロールはブラウザが `click` を一切ディスパッチしないため、
-素朴な実装のままだとパネル側の HIT 解除ハンドラ(`index.tsx:80-89`)にイベントが届かない —
+素朴な実装のままだとパネル側の highlightSeatId/onClearHighlight ハンドラ
+(`components/TeamOverlay/index.tsx:168-171`)にイベントが届かない —
 **ソースレビューだけでは発見できない**類のギャップで、実ブラウザでの capture 段リスナー計測で初めて
 `clickEventFired: 0件` として確認できた(`check-hit-clear.mjs` case3)。
 
@@ -57,11 +58,11 @@
 | 空席カード | **解除されなかった**(修正前) | 解除 |
 | パネル余白 / ヘッダー / ミニマップ | 解除 | 解除 |
 
-**修正**: `styles/team-overlay-modal.css` の `.team-ovl-card.is-empty` に `pointer-events: none` を
-追加し(コメント付き、CSS 側にのみ存在)、クリックを素通しして背後のグリッド枠(`data-seat-id` を
-持たない `<div>`)に当てる。ハンドラ側は無変更。
+**修正**: `components/TeamOverlay/team-overlay-modal.module.css` の `.card.isEmpty` に
+`pointer-events: none` を追加し(コメント付き、CSS 側にのみ存在)、クリックを素通しして背後の
+グリッド枠(`data-seat-id` を持たない `<div>`)に当てる。ハンドラ側は無変更。
 
-**この修正は CSS のルール1本だけで成立している**。`.team-ovl-card.is-empty` の宣言を「整理」目的で
+**この修正は CSS のルール1本だけで成立している**。`.card.isEmpty` の宣言を「整理」目的で
 書き換えたり `pointer-events` を削ったりすると、この回帰が黙って再発する — ビルドも型チェックも
 通り、コンソールエラーも出ない。`check-hit-clear.mjs` の case3 は現状 Desktop 側で固定期待値を置いて
 おらず(`disabled === true` の分岐は `clickEventFired`/`cleared` を実測記録するだけ、
@@ -74,7 +75,7 @@
 
 | 項目 | 理由 |
 |---|---|
-| CSS 特異度の順序依存(`.is-faded` が `.is-button` より後に宣言されている必要がある、`styles/team-overlay-modal.css:325-327`) | 3スクリプトいずれも「見た目のフェード有無」しか見ておらず、宣言順そのものは検査していない。宣言順を入れ替えて `.is-faded` が効かなくなることを確認する専用チェックは無い |
+| CSS 特異度の順序依存(`.hint.isFaded` が `.hint.isButton` より後に宣言されている必要がある、`components/TeamOverlay/team-overlay-modal.module.css:383-393`) | 3スクリプトいずれも「見た目のフェード有無」しか見ておらず、宣言順そのものは検査していない。宣言順を入れ替えて `.hint.isFaded` が効かなくなることを確認する専用チェックは無い |
 | WKWebView の合成クリック無視(`ViewSeatCell.tsx:71-72`) | 実 Safari の iOS WKWebView 実機以外では再現できない。Playwright(Chromium)では検証不能 |
 | StrictMode 二重書き込み回避(`use-minimap-collapse.ts:25-26`) | 開発ビルド固有の挙動で、本番ビルド配信に対する検証では観測できない |
 | 横スクロールヒントの `nudge` 量が実際に1列分か | `check-scrollhint.mjs` は `scrollLeft` の増減方向のみ見ており、移動量そのものの一致は見ていない |

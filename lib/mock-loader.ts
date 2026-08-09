@@ -41,7 +41,7 @@ export const seedAvatarRecords = (): StoredAvatarRecord[] => AVATAR_RECORDS
 // JSON の緩い型(rotation・kind が number/string)を受ける入口の形。フロアぶん同じ整形を通す
 type RawSeat = Omit<Seat, 'rotation'> & { rotation: number }
 type RawFacility = Omit<Facility, 'kind'> & { kind: string }
-type RawFurniture = Omit<Furniture, 'kind' | 'rotation'> & { kind: string; rotation: number }
+type RawFurniture = Omit<Furniture, 'kind'> & { kind: string }
 
 const toSeats = (raw: RawSeat[]): Seat[] =>
   raw.map((s) => ({ ...s, rotation: s.rotation as Seat['rotation'] }))
@@ -52,7 +52,6 @@ const toFurniture = (raw: RawFurniture[]): Furniture[] =>
   raw.map((f) => ({
     ...f,
     kind: f.kind as Furniture['kind'],
-    rotation: f.rotation as Furniture['rotation'],
   }))
 
 // フロアごとの種データ。Record<FloorId, ...> なので types の FLOORS へ足したフロアの
@@ -94,7 +93,7 @@ export const SCHEDULES: ScheduleEvent[] = anchorSchedulesToDate(
 )
 export const FACILITY_MEETINGS: FacilityMeeting[] = facilityMeetingsJson
 
-// lib/geometry.ts の定数から生成(数値を重複させず、キャンバス側と乖離しないようにする)
+// utils/layout/geometry.ts の定数から生成(数値を重複させず、キャンバス側と乖離しないようにする)
 export const VIEWBOX = { width: VIEWBOX_W, height: VIEWBOX_H }
 
 // キャッシュ+再試行(stale-while-revalidate 模倣)

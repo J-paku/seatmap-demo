@@ -1,8 +1,8 @@
 // AI生成コードの取り込み状態管理 — 貼り付けテキストの保持・厳格パース・失敗フィードバック
 // パース成功時の反映先 (パーツ / AI自由ピクセル) は呼び出し側のコールバックへ委譲する
 import { useCallback, useState, type ChangeEvent } from 'react'
-import { useGlobalAnnouncement } from '../../a11y'
-import { TOAST_MESSAGES } from '@/constants/toast'
+import { useGlobalAnnouncement } from '@/contexts/announcement-context'
+import { TOAST_MESSAGES } from '@/utils/toast-messages'
 import {
   parseAiImportedConfig,
   type AvatarImportError,

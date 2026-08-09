@@ -1,6 +1,6 @@
 import type { useCoachMarkTour } from '@/components/CoachMarkTour/hooks/use-coach-mark-tour'
-import type { TeamOverlayPayload } from '@/components/TeamOverlay'
 import { useDetailPanel } from '@/contexts/detail-panel-context'
+import type { TeamOverlayPayload } from '@/types'
 
 // 左下 FAB を出してよいかの判定を1本に集める。条件は今後も増えるので、
 // 呼び出し側に `||` を並べず、増えた分はこのフックの中だけで閉じる。

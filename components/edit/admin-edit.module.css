@@ -216,6 +216,133 @@
   height: 1px;
 }
 
+/* ── 上端コントロール(？/×・右上) ───────────────── */
+
+.editTopControls {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: var(--z-index-sticky);
+  display: flex;
+  gap: 8px;
+}
+
+.editTopBtn {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+}
+
+/* ── 下端リモートバー(変更n件+完了/キャンセル) ───────────────── */
+
+.editRemoteBar {
+  position: fixed;
+  left: 50%;
+  bottom: 20px;
+  transform: translateX(-50%);
+  z-index: var(--z-index-sticky);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  border-radius: 9999px;
+  background: var(--glass-bg);
+  backdrop-filter: blur(28px) saturate(170%);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+}
+
+@supports not (backdrop-filter: blur(1px)) {
+  .editRemoteBar {
+    background: var(--glass-bg-opaque);
+  }
+}
+
+.editRemoteCount {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-text-secondary);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.editRemoteCancel,
+.editRemoteFinish {
+  height: 40px;
+  padding: 0 18px;
+  font-size: 13px;
+}
+
+.editRemoteFinish {
+  background: var(--color-accent);
+  color: var(--color-text-on-accent);
+}
+
+/* ── 座席フローティングアクションバー ───────────────── */
+
+.seatActionBar {
+  position: absolute;
+  z-index: var(--z-index-dropdown);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px;
+  border-radius: var(--pixel-corner);
+  border: 1.5px solid var(--color-pixel-edge);
+  box-shadow: var(--pixel-shadow);
+  background: var(--color-surface-elevated);
+}
+
+.seatActionBtn {
+  height: 36px;
+  padding: 0 14px;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.seatActionBtn.isDanger {
+  border-color: var(--color-danger);
+  color: var(--color-danger);
+}
+
+/* ── 「元に戻す」チップ ───────────────── */
+
+.editUndoChip {
+  position: absolute;
+  z-index: var(--z-index-dropdown);
+  padding: 6px 14px;
+  border-radius: 9999px;
+  border: 1px solid var(--color-border-strong);
+  background: var(--color-surface-elevated);
+  box-shadow: var(--shadow-card);
+  color: var(--color-accent);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transform: translateX(-50%);
+}
+
+/* ── エラートースト ───────────────── */
+
+.editErrorToast {
+  position: fixed;
+  left: 50%;
+  bottom: 92px;
+  transform: translateX(-50%);
+  z-index: var(--z-index-toast);
+  padding: 10px 18px;
+  border-radius: 9999px;
+  background: var(--color-danger-soft);
+  color: var(--color-danger);
+  border: 1px solid var(--color-danger);
+  font-size: 13px;
+  font-weight: 700;
+  animation: toast-slide-up 300ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .editModeBadgeDot,
   .editErrorToast {

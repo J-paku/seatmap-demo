@@ -3,7 +3,6 @@ import type { CSSProperties } from 'react'
 import { triggerHaptic } from '@/utils/haptic'
 
 interface ActionsSectionProps {
-  onClose: () => void
   handleReset: () => void
   handleSave: () => void
   // フッター埋め込み時: ボタンをコンパクトサイズに
@@ -36,7 +35,6 @@ const ACTION_BTN_COMPACT: CSSProperties = {
 }
 
 export function ActionsSection({
-  onClose: _onClose,
   handleReset,
   handleSave,
   compact = false,

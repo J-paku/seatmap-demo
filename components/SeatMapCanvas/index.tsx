@@ -131,7 +131,6 @@ export const SeatMapCanvas = memo(forwardRef<SeatMapCanvasHandle, Props>(functio
         <TeamAreaLayer
           teams={layout.teams}
           assignedCountByTeam={view.assignedCountByTeam}
-          counterScale={view.counterScale}
           lod={view.lod}
           liveTeamPos={edit.liveTeamPos}
           isEditMode={isEditMode}

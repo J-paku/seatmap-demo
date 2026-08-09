@@ -1,6 +1,6 @@
 import type { PresenceStatus, ScheduleEvent } from '@/types'
 import { SELF_EMPLOYEE_ID } from '@/utils/demo-identity'
-import { type JstDate, jstClockLabel as jstClockLabelImpl } from '@/utils/jst-date'
+import { jstClockLabel as jstClockLabelImpl } from '@/utils/jst-date'
 
 // ISO8601(+09:00)から HH:MM を取り出す(表示専用・TZ 変換なし)
 const hhmm = (iso: string): string => iso.slice(11, 16)

@@ -14,9 +14,7 @@ type Props = {
   area: { x: number; y: number; w: number; h: number }
   colorEntry: TeamColorEntry
   presentCount: number
-  counterScale: number
   lod: Lod
-  selected: boolean
   dimmed: boolean
   onBoundaryOpen: (teamId: string, rect: DOMRect) => void
   isEditMode?: boolean

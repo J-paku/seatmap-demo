@@ -1,12 +1,12 @@
 // アバターカスタマイザモーダルの状態と保存ハンドラを管理するフック
 import { useCallback, useEffect, useState } from 'react'
-import { useGlobalAnnouncement } from '@/components/a11y'
+import { useGlobalAnnouncement } from '@/contexts/announcement-context'
 import { useEmployees } from '@/hooks/use-mock-data'
 import { SELF_EMPLOYEE_ID } from '@/utils/demo-identity'
 import { useSharedAvatars } from '@/contexts/avatars-context'
 import { useCurrentUserCode } from '@/hooks/use-current-user-code'
 import { lockBodyScroll, unlockBodyScroll } from '@/utils/body-scroll-lock'
-import { TOAST_MESSAGES } from '@/constants/toast'
+import { TOAST_MESSAGES } from '@/utils/toast-messages'
 import type { PixelAvatarConfig, StoredAvatarRecord } from '@/types'
 
 interface UseAvatarCustomizerModalParams {
@@ -19,7 +19,6 @@ interface UseAvatarCustomizerModalResult {
   initialConfig: PixelAvatarConfig | null
   currentUserName: string | undefined
   handleSave: (config: PixelAvatarConfig) => void
-  handleClose: () => void
 }
 
 export function useAvatarCustomizerModal({
@@ -93,15 +92,10 @@ export function useAvatarCustomizerModal({
     [ownerCode, currentUserName, upsertLocalAvatar, setGlobalAnnouncement, onClose]
   )
 
-  const handleClose = useCallback(() => {
-    onClose()
-  }, [onClose])
-
   return {
     isReady,
     initialConfig,
     currentUserName,
     handleSave,
-    handleClose,
   }
 }

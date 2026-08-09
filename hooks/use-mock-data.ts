@@ -26,7 +26,13 @@ import {
 } from '@/lib/mock-loader'
 import { useLayoutSource } from '@/contexts/layout-source-context'
 import type { LayoutSource } from '@/contexts/layout-source-context'
-import { useGlobalAnnouncement } from '@/components/a11y'
+import { useGlobalAnnouncement } from '@/contexts/announcement-context'
+
+// 実在する社員idの集合。保存レイアウトを読む時に、実在しない社員を指す座席を空席へ戻すために渡す。
+// EMPLOYEES はモジュール定数で初回レンダー時点から確定しているのでモジュールスコープに置く
+// (useEmployees() の SWR データを使うと初期レンダーで undefined になり、その時だけ全座席が
+// 空席に見えるレースが起きる)
+const VALID_EMPLOYEE_IDS: ReadonlySet<string> = new Set(EMPLOYEES.map((employee) => employee.id))
 
 // キャッシュ即時描画(fallbackData)+バックグラウンド再取得(SWR)+取得成功時にキャッシュ更新
 const useCached = <T,>(name: string, data: T, fallbackData?: T) => {
@@ -118,12 +124,12 @@ export const useSeatLayout = () => {
   const { data: override, mutate: mutateOverride } = useSWR<SeatLayout | null>(
     layoutSwrKey(source, floorId),
     async () => {
-      if (source.type === 'official') return loadStoredLayout(floorId)
-      const custom = loadCustomLayout(source.layoutId)
+      if (source.type === 'official') return loadStoredLayout(floorId, VALID_EMPLOYEE_IDS)
+      const custom = loadCustomLayout(source.layoutId, VALID_EMPLOYEE_IDS)
       if (custom) return custom
       // カスタムの保存分が見つからない(削除済み等): 公式へフォールバックして通知する
       announce('[warning]表示中のレイアウトが見つからないため公式レイアウトを表示しています')
-      return loadStoredLayout(DEFAULT_FLOOR_ID)
+      return loadStoredLayout(DEFAULT_FLOOR_ID, VALID_EMPLOYEE_IDS)
     },
     { revalidateOnFocus: false }
   )

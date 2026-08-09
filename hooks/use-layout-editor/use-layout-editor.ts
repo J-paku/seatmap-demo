@@ -138,7 +138,7 @@ export const useLayoutEditor = (sourceLayout: SeatLayout | undefined): UseLayout
       }
 
       // fit後のareaが他area/Facilityと交差する場合は適用しない
-      const fitted = fitAreaToSeats(relayoutSeatsInGrid(teamSeats, team.area, rows, cols), team.area)
+      const fitted = fitAreaToSeats(relayoutSeatsInGrid(teamSeats, team.area, cols), team.area)
       if (teamAreaOverlaps(layout.teams, teamId, fitted)) return { ok: false, message: MSG_TEAM_OVERLAP }
       if (seatOverlapsFixture(layout, fitted)) return { ok: false, message: MSG_FACILITY }
 

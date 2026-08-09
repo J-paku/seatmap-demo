@@ -1,7 +1,6 @@
 /* 09-visual-tokens: 3テーマ(light/dracula/kuroxxx)の CSS 変数実測表。変数名は原本のまま */
 
 .seat-map-root {
-  --color-bg-base: #f5efe9;
   --color-surface: #fffcf6;
   --color-surface-elevated: #ffffff;
   --color-surface-sunken: #f0e9df;
@@ -23,22 +22,18 @@
   --color-border-strong: #d4c7b6;
   --color-avatar-stroke: rgba(42, 37, 34, 0.05);
   --color-accent: #c76a4a;
-  --color-accent-hover: #a85636;
   --color-accent-soft: #ffe0d6;
   --color-edit-mode-bg: #ffdfc9;
   --color-edit-mode-border: #f0b68f;
   --color-warning: #c68f2a;
   --color-warning-soft: #ffefcc;
   --color-success: #6b8e5a;
-  --color-success-soft: #e8f0dd;
   --color-danger: #b8472a;
   --color-danger-soft: #ffd8cc;
   --color-seatmap-bg: #f5efe9;
-  --color-team-bg-opacity: 0.1;
   /* 会議室カード=原本実測のインディゴ系(空室=薄インディゴ / 会議中=薄ブルー・濃紺文字) */
   --color-meeting-room-busy-bg: #dbeafe;
   --color-meeting-room-busy-text: #1e40af;
-  --color-meeting-room-busy-border: #93c5fd;
   --color-meeting-room-empty-bg: #eef2ff;
   --color-meeting-room-empty-text: #4338ca;
   --color-meeting-room-empty-border: #a5b4fc;
@@ -52,24 +47,17 @@
   --glass-accent-bg: rgba(199, 106, 74, 0.85);
   --pixel-corner: 3px;
   --color-pixel-edge: #d4c7b6;
-  --color-pixel-edge-strong: #2a2520;
   --pixel-shadow: 2px 2px 0 var(--color-pixel-edge);
   --pixel-shadow-accent: 2px 2px 0 var(--color-accent);
   --color-canvas-dot: rgba(74, 60, 48, 0.1);
-  --color-brand: #667eea;
-  --color-brand-subtle: rgba(102, 126, 234, 0.2);
   --color-weekend-sun: #dc2626;
   --color-weekend-sat: #2563eb;
 
-  /* z-index 12層(100単位均等) */
-  --z-index-base: 0;
-  --z-index-inner-sticky: 10;
+  /* z-index 8層(値は個別設定) */
   --z-index-dropdown: 100;
   --z-index-sticky: 200;
   --z-index-popover: 300;
-  --z-index-filter: 400;
   --z-index-sidebar: 500;
-  --z-index-loading: 600;
   --z-index-modal: 700;
   --z-index-toast: 800;
   --z-index-overlay: 900;
@@ -77,7 +65,6 @@
 }
 
 .seat-map-root[data-theme='dracula'] {
-  --color-bg-base: #282a36;
   --color-surface: #343746;
   --color-surface-elevated: #3c3f51;
   --color-surface-sunken: #21222c;
@@ -93,21 +80,17 @@
   --color-border-strong: #6272a4;
   --color-avatar-stroke: rgba(248, 248, 242, 0.05);
   --color-accent: #bd93f9;
-  --color-accent-hover: #a876ee;
   --color-accent-soft: rgba(189, 147, 249, 0.16);
   --color-edit-mode-bg: rgba(255, 121, 198, 0.14);
   --color-edit-mode-border: rgba(255, 121, 198, 0.32);
   --color-warning: #ffb86c;
   --color-warning-soft: rgba(255, 184, 108, 0.14);
   --color-success: #50fa7b;
-  --color-success-soft: rgba(80, 250, 123, 0.14);
   --color-danger: #ff5555;
   --color-danger-soft: rgba(255, 85, 85, 0.16);
   --color-seatmap-bg: #282a36;
-  --color-team-bg-opacity: 0.18;
   --color-meeting-room-busy-bg: rgba(255, 85, 85, 0.14);
   --color-meeting-room-busy-text: #ff9999;
-  --color-meeting-room-busy-border: rgba(255, 85, 85, 0.4);
   --color-meeting-room-empty-bg: rgba(80, 250, 123, 0.14);
   --color-meeting-room-empty-text: #8fffac;
   --color-meeting-room-empty-border: rgba(80, 250, 123, 0.4);
@@ -120,14 +103,12 @@
   --glass-bg-opaque: rgba(52, 55, 70, 0.96);
   --glass-accent-bg: rgba(189, 147, 249, 0.84);
   --color-pixel-edge: #44475a;
-  --color-pixel-edge-strong: #f8f8f2;
   --color-canvas-dot: rgba(245, 239, 233, 0.06);
   --color-weekend-sun: #ff6e6e;
   --color-weekend-sat: #8be9fd;
 }
 
 .seat-map-root[data-theme='kuroxxx'] {
-  --color-bg-base: #1a1320;
   --color-surface: #241a2e;
   --color-surface-elevated: #2e2238;
   --color-surface-sunken: #150f1b;
@@ -143,21 +124,17 @@
   --color-border-strong: #4d3d5e;
   --color-avatar-stroke: rgba(245, 234, 242, 0.05);
   --color-accent: #f58fb8;
-  --color-accent-hover: #e87ba6;
   --color-accent-soft: rgba(245, 143, 184, 0.16);
   --color-edit-mode-bg: rgba(183, 155, 214, 0.16);
   --color-edit-mode-border: rgba(183, 155, 214, 0.36);
   --color-warning: #e5b45a;
   --color-warning-soft: rgba(229, 180, 90, 0.14);
   --color-success: #92b080;
-  --color-success-soft: rgba(146, 176, 128, 0.14);
   --color-danger: #e0567b;
   --color-danger-soft: rgba(224, 86, 123, 0.16);
   --color-seatmap-bg: #1a1320;
-  --color-team-bg-opacity: 0.18;
   --color-meeting-room-busy-bg: rgba(245, 143, 184, 0.14);
   --color-meeting-room-busy-text: #ffb7d5;
-  --color-meeting-room-busy-border: rgba(245, 143, 184, 0.4);
   --color-meeting-room-empty-bg: rgba(146, 176, 128, 0.14);
   --color-meeting-room-empty-text: #b8d4a6;
   --color-meeting-room-empty-border: rgba(146, 176, 128, 0.4);
@@ -170,7 +147,6 @@
   --glass-bg-opaque: rgba(46, 34, 56, 0.96);
   --glass-accent-bg: rgba(245, 143, 184, 0.83);
   --color-pixel-edge: #4d3d5e;
-  --color-pixel-edge-strong: #f5eaf2;
   --color-canvas-dot: rgba(245, 239, 233, 0.06);
   --color-weekend-sun: #e0567b;
   --color-weekend-sat: #8fb8e0;

@@ -3,14 +3,13 @@ import { useLiveRegion } from '../hooks/use-live-region'
 
 interface LiveRegionProps {
   message: string
-  politeness?: 'polite' | 'assertive'
 }
 
-export function LiveRegion({ message, politeness = 'polite' }: LiveRegionProps) {
+export function LiveRegion({ message }: LiveRegionProps) {
   const { ref } = useLiveRegion(message)
 
   return (
-    <div ref={ref} role='status' aria-live={politeness} aria-atomic='true' className='sr-only' />
+    <div ref={ref} role='status' aria-live='polite' aria-atomic='true' className='sr-only' />
   )
 }
 

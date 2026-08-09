@@ -212,7 +212,6 @@ export const SeatMapView = () => {
         setTheme={setTheme}
         onResetLayout={save.resetLayout}
         onRefresh={() => {}}
-        isGaroonConnected
         onGaroonLogout={() => {}}
       />
       {unassignedNotice && <div className={styles.empDirUnassignedToast}>{unassignedNotice}</div>}

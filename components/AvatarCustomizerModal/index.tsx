@@ -18,7 +18,7 @@ interface AvatarCustomizerModalProps {
 
 export function AvatarCustomizerModal({ isOpen, onClose }: AvatarCustomizerModalProps) {
   const customizerRef = useRef<AvatarCustomizerHandle>(null)
-  const { isReady, initialConfig, handleSave, handleClose } = useAvatarCustomizerModal({
+  const { isReady, initialConfig, handleSave } = useAvatarCustomizerModal({
     isOpen,
     onClose,
   })
@@ -134,8 +134,6 @@ export function AvatarCustomizerModal({ isOpen, onClose }: AvatarCustomizerModal
               ref={customizerRef}
               initialConfig={initialConfig}
               onSave={handleSave}
-              onClose={handleClose}
-              embedded
             />
           </div>
 
@@ -148,7 +146,6 @@ export function AvatarCustomizerModal({ isOpen, onClose }: AvatarCustomizerModal
             }}
           >
             <ActionsSection
-              onClose={handleClose}
               handleReset={() => customizerRef.current?.reset()}
               handleSave={() => customizerRef.current?.save()}
               compact

@@ -468,9 +468,13 @@
   -webkit-box-orient: vertical;
 }
 
+/* 役職が無い在職カードでも空 span を描画して行の高さを予約するため、
+   line-height と min-height を明示して空の場合でも同じ行高を保つ */
 .cardPosition {
+  min-height: 14px;
   font-size: 10px;
   font-weight: 600;
+  line-height: 14px;
   color: var(--color-accent);
   white-space: nowrap;
   overflow: hidden;

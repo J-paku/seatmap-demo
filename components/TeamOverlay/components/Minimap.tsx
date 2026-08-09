@@ -2,7 +2,7 @@ import { memo, useId } from 'react'
 import { MinimapFigure } from './MinimapFigure'
 import { useMinimapCollapse } from '../hooks/use-minimap-collapse'
 import { useMinimapData } from '../hooks/use-minimap-data'
-import type { MinimapArea, MinimapFurniture } from '../type'
+import type { MinimapArea, MinimapFurniture } from '@/types'
 import styles from '../team-overlay-modal.module.css'
 
 // オーバーレイ本文の折りたたみ式ミニマップ。座席グリッドの下に置く表示専用セクション。

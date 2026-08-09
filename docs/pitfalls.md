@@ -55,8 +55,9 @@ Playwright 実測ハーネスはリポジトリに常設せず、セッション
 
 ## 4. CSS Modules 化でカスケード順が逆転し、負けていた宣言が勝つ
 
-**症状**: `styles/team-overlay-modal.css` をモジュール化しただけで、オーバーレイのアイコン8種が
-26px から 14〜22px へ縮んだ。ソースの数値は一行も変えていない。
+**症状**: `styles/team-overlay-modal.css`(当時のグローバル CSS。現在は
+`components/TeamOverlay/team-overlay-modal.module.css`)をモジュール化しただけで、オーバーレイの
+アイコン8種が26px から 14〜22px へ縮んだ。ソースの数値は一行も変えていない。
 
 **原因**: `.sectionIcon { font-size: 18px }` と グローバルの `.material-symbols-outlined
 { font-size: 26px }` は**詳細度が同じ(0,1,0)**。グローバル CSS だった頃は `globals.css` 本体の

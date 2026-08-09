@@ -7,10 +7,10 @@ import type { UseOverlayEditModeResult } from './use-overlay-edit-mode'
 import { useSeatCommit } from './use-seat-commit'
 import type { UseSeatCommitResult } from './use-seat-commit'
 import type { UseSeatSelectionResult } from './use-seat-selection'
-import type { SeatGrid, TeamOverlayPayload } from '../type'
+import type { SeatGrid } from '../type'
 import type { GridCell } from '@/utils/layout/seat-grid-draft'
 import { DEFAULT_SEAT_HEIGHT, DEFAULT_SEAT_WIDTH } from '@/utils/layout/seat-relayout'
-import type { Employee, Seat } from '@/types'
+import type { Employee, Seat, TeamOverlayPayload } from '@/types'
 
 // TeamOverlayの編集配線をまとめて持つ。選択のトグル・席追加とその直後のハイライト・
 // 配属シートの開閉・一括配置・保存/取消・編集中の閉じる拒否は、どれも「編集セッション1つ」に
