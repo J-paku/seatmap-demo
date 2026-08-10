@@ -1,6 +1,11 @@
+<!-- GitHub は README を lang="en" のページに埋め込むため、ブラウザが日本語の CJK 字形を
+     選べず、中国語・韓国語の字形へ落ちる。本文を lang="ja" で包んで字形を確定させる。
+     空行を挟むと中の Markdown は通常どおり解釈される(表・mermaid・details とも描画は不変) -->
+<div lang="ja">
+
 # seat-map — 座席マップ
 
-<img src="docs/assets/seatmap-hero.svg" width="720" alt="座席マップの主要3画面(マップ / 社員一覧 / 社員詳細)">
+<p><img src="docs/assets/seatmap-hero.svg" width="720" alt="座席マップの主要3画面(マップ / 社員一覧 / 社員詳細)"></p>
 
 電話をかける前に、相手が会議中か外出中かがわかる。
 探している人の座席も役職も、スマートフォンから1画面で。
@@ -163,3 +168,5 @@ docs/        画面仕様・アーキテクチャ・検証手順
 作業ルール(コミット規約・実装規約)は `CLAUDE.md` と `AGENTS.md` を参照してください。
 
 </details>
+
+</div>
