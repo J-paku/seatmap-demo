@@ -56,7 +56,7 @@ export type ObjectPlacement = {
 
 type Options = {
   // 配置が成立したことの通知。呼び出し側が「元に戻す」チップを出すのに使う
-  onPlaced?: (rect: Rect) => void
+  onPlaced?: (rect: Rect, targetType: GhostRequest['target']['type']) => void
   // 閲覧モードから置き始めた時に編集セッションを起こす。冪等であることは呼び出し側が保証する
   onEnsureEditMode: () => void
 }
@@ -215,7 +215,7 @@ export const useObjectPlacement = (
               : false
     if (!ok) return
     setFlow({ step: 'idle' })
-    onPlaced?.(rect)
+    onPlaced?.(rect, target.type)
   }, [request, placement, editor, onPlaced])
 
   return useMemo(

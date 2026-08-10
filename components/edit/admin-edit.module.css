@@ -356,20 +356,51 @@
   z-index: var(--z-index-popover);
   display: inline-flex;
   align-items: center;
-  justify-content: center;
+  gap: 6px;
   min-height: 44px;
-  padding: 6px 14px;
+  padding: 0 6px 0 14px;
+  border-radius: 9999px;
+  font-size: 12px;
+  transform: translateX(-50%);
+}
+
+.editUndoMessage {
+  color: var(--color-text-primary);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.editUndoAction {
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0 10px;
   border-radius: 9999px;
   color: var(--color-accent);
   font-size: 12px;
   font-weight: 700;
   cursor: pointer;
-  transform: translateX(-50%);
+  white-space: nowrap;
 }
 
-.editUndoChip:focus-visible {
+.editUndoAction:focus-visible {
   outline: 2px solid var(--color-accent);
   outline-offset: 3px;
+}
+
+/* 削除位置に残す残像フレーム。opacity は原本と同じくインライン 0.45 固定(reduced-motion 分岐なし) */
+.editUndoFrame {
+  position: absolute;
+  z-index: var(--z-index-popover);
+  border: 2px dashed var(--color-accent);
+  border-radius: 10px;
+  pointer-events: none;
+  animation: editUndoFrameFadeIn 200ms ease-out;
+}
+
+@keyframes editUndoFrameFadeIn {
+  from {
+    opacity: 0;
+  }
 }
 
 /* ── エラートースト ───────────────── */

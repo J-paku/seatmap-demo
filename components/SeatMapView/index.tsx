@@ -20,6 +20,7 @@ import { FacilityHoverCard } from '@/components/FacilityHoverCard'
 import type { FacilityHoverPayload } from '@/components/FacilityHoverCard'
 import { FurniturePickerModal } from '@/components/FurniturePickerModal'
 import { GhostPlacementLayer } from '@/components/GhostPlacementLayer'
+import type { GhostRequest } from '@/components/GhostPlacementLayer'
 import { GuideButton } from '@/components/GuideButton'
 import { LayoutSwitcher } from '@/components/LayoutSwitcher'
 import { ObjectCategorySheet } from '@/components/ObjectCategorySheet'
@@ -65,8 +66,8 @@ export const SeatMapView = () => {
 
   // 追加・削除の直後は対象の直下へ「元に戻す」チップを出す。
   // どちらも undo スタックに載るので、ドラッグ移動と同じ導線で取り消せるようにする
-  const showUndoChipAt = useCallback((rect: Rect) => {
-    canvasRef.current?.showUndoChipAt(rect.x + rect.w / 2, rect.y + rect.h)
+  const showUndoChipAt = useCallback((rect: Rect, message: string, frame: Rect | null = null) => {
+    canvasRef.current?.showUndoChipAt(rect.x + rect.w / 2, rect.y + rect.h, message, frame)
   }, [])
 
   // 削除の実行はここに集約する。ダイアログ経由(会議室)も即時(家具)も同じ後始末を通す
@@ -74,7 +75,7 @@ export const SeatMapView = () => {
     (ref: LayoutObjectRef) => {
       const rect = effectiveLayout ? rectOfRef(effectiveLayout, ref) : null
       editor.deleteObject(ref)
-      if (rect) showUndoChipAt(rect)
+      if (rect) showUndoChipAt(rect, '削除しました', rect)
     },
     [editor, effectiveLayout, showUndoChipAt]
   )
@@ -85,9 +86,17 @@ export const SeatMapView = () => {
     if (!editor.isEditMode) editor.enterEditMode()
   }, [editor])
 
+  // 配置と掴み直しで文言を変える。対象の種別は配置フロー側だけが知っている
+  const handlePlaced = useCallback(
+    (rect: Rect, targetType: GhostRequest['target']['type']) => {
+      showUndoChipAt(rect, targetType === 'reposition' ? '移動しました' : '配置しました')
+    },
+    [showUndoChipAt]
+  )
+
   const dialogs = useEditDialogs(editor, employeeById, { onDeleteObject: handleDeleteObject })
   const placement = useObjectPlacement(editor, {
-    onPlaced: showUndoChipAt,
+    onPlaced: handlePlaced,
     onEnsureEditMode: ensureEditSession,
   })
   // 操作ガイド。編集モード初回だけ自動再生し、？ ボタンで何度でも見られる。

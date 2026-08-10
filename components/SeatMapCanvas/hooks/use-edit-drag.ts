@@ -35,7 +35,9 @@ type EditDragState = {
   editSelectedSeatId: string | null
   editSelectedObject: LayoutObjectRef | null
   undoChipPos: { x: number; y: number } | null
-  showUndoChipAt: (logicalX: number, logicalY: number) => void
+  undoChipMessage: string
+  undoChipFrame: Rect | null
+  showUndoChipAt: (logicalX: number, logicalY: number, message: string, frame?: Rect | null) => void
   onSeatEditPointerDown: (seatId: string, e: ReactPointerEvent) => void
   onTeamLabelEditPointerDown: (teamId: string, e: ReactPointerEvent) => void
   onObjectEditPointerDown: (ref: LayoutObjectRef, e: ReactPointerEvent) => void
@@ -201,7 +203,7 @@ export const useEditDrag = ({
         setLiveSeatPos(null)
         if (drag.moved) {
           onSeatMove?.(drag.seatId, drag.liveX, drag.liveY)
-          undoChip.showAt(drag.liveX, drag.liveY)
+          undoChip.showAt(drag.liveX, drag.liveY, '移動しました')
         } else {
           const seat = layout.seats.find((s) => s.id === drag.seatId)
           // 空席(実在しない社員IDを参照する「宙ぶらりん」座席も含む)は1タップで配属シートへ。
@@ -212,13 +214,13 @@ export const useEditDrag = ({
         setLiveObjectPos(null)
         if (drag.moved) {
           onObjectMove?.(drag.ref, drag.liveX, drag.liveY)
-          undoChip.showAt(drag.liveX, drag.liveY)
+          undoChip.showAt(drag.liveX, drag.liveY, '移動しました')
         }
       } else {
         setLiveTeamPos(null)
         if (drag.moved) {
           onTeamMove?.(drag.teamId, drag.liveX, drag.liveY)
-          undoChip.showAt(drag.liveX, drag.liveY)
+          undoChip.showAt(drag.liveX, drag.liveY, '移動しました')
         }
       }
     }
@@ -275,6 +277,8 @@ export const useEditDrag = ({
     editSelectedSeatId,
     editSelectedObject,
     undoChipPos: undoChip.pos,
+    undoChipMessage: undoChip.message,
+    undoChipFrame: undoChip.frame,
     showUndoChipAt: undoChip.showAt,
     onSeatEditPointerDown,
     onTeamLabelEditPointerDown,

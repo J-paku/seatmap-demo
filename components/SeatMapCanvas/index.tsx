@@ -225,6 +225,8 @@ export const SeatMapCanvas = memo(forwardRef<SeatMapCanvasHandle, Props>(functio
         <UndoChip
           x={edit.undoChipPos.x}
           y={edit.undoChipPos.y}
+          message={edit.undoChipMessage}
+          frame={edit.undoChipFrame}
           onUndo={() => {
             onUndo?.()
             edit.dismissUndoChip()
