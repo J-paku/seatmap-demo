@@ -23,7 +23,7 @@ export const GhostActionBar = ({ label, blocked, onConfirm, onCancel }: Props) =
   }
 
   return (
-    <div className={`${styles.actionbar} liquid-glass`}>
+    <div className={`${styles.actionbar} liquid-glass glass-stagger-item`}>
       <span className={styles.actionbarLabel}>{label}</span>
       <button type='button' className='pixel-btn ghost-actionbar-cancel' onClick={handleCancel}>
         キャンセル

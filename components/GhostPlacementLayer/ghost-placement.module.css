@@ -179,7 +179,9 @@
   align-items: center;
   gap: 10px;
   padding: 10px 14px;
-  transform: translateX(-50%);
+  /* glass-stagger-item の登場アニメーション(glass-pop-in)が transform を占有するため、
+     水平中央寄せは transform ではなく独立した translate プロパティで持つ */
+  translate: -50% 0;
   border-radius: 14px;
   pointer-events: auto;
 }
