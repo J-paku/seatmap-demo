@@ -220,7 +220,7 @@
 
 .editTopControls {
   position: absolute;
-  top: 16px;
+  top: calc(env(safe-area-inset-top) + 16px);
   right: 16px;
   z-index: var(--z-index-sticky);
   display: flex;
@@ -228,12 +228,21 @@
 }
 
 .editTopBtn {
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   display: flex;
   align-items: center;
   justify-content: center;
+  border-radius: 999px;
+  color: var(--color-text-primary);
   font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.editTopBtn:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 3px;
 }
 
 /* ── 下端リモートバー(変更n件+完了/キャンセル) ───────────────── */
@@ -241,7 +250,7 @@
 .editRemoteBar {
   position: fixed;
   left: 50%;
-  bottom: 20px;
+  bottom: calc(env(safe-area-inset-bottom) + 20px);
   transform: translateX(-50%);
   z-index: var(--z-index-sticky);
   display: flex;
@@ -249,16 +258,6 @@
   gap: 12px;
   padding: 10px 16px;
   border-radius: 9999px;
-  background: var(--glass-bg);
-  backdrop-filter: blur(28px) saturate(170%);
-  border: 1px solid var(--glass-border);
-  box-shadow: var(--glass-shadow);
-}
-
-@supports not (backdrop-filter: blur(1px)) {
-  .editRemoteBar {
-    background: var(--glass-bg-opaque);
-  }
 }
 
 .editRemoteCount {
@@ -271,14 +270,29 @@
 
 .editRemoteCancel,
 .editRemoteFinish {
-  height: 40px;
+  height: 44px;
   padding: 0 18px;
+  border-radius: 9999px;
+  color: var(--color-text-primary);
   font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.editRemoteCancel:focus-visible,
+.editRemoteFinish:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 3px;
+}
+
+.editRemoteCancel:disabled,
+.editRemoteFinish:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .editRemoteFinish {
-  background: var(--color-accent);
-  color: var(--color-text-on-accent);
+  color: var(--color-accent);
 }
 
 /* ── 座席フローティングアクションバー ───────────────── */
@@ -313,16 +327,22 @@
 .editUndoChip {
   position: absolute;
   z-index: var(--z-index-dropdown);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
   padding: 6px 14px;
   border-radius: 9999px;
-  border: 1px solid var(--color-border-strong);
-  background: var(--color-surface-elevated);
-  box-shadow: var(--shadow-card);
   color: var(--color-accent);
   font-size: 12px;
   font-weight: 700;
   cursor: pointer;
   transform: translateX(-50%);
+}
+
+.editUndoChip:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 3px;
 }
 
 /* ── エラートースト ───────────────── */

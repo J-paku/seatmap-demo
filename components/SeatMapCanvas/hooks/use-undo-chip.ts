@@ -2,9 +2,9 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { RefObject } from 'react'
 import type { Transform } from '@/utils/layout/geometry'
 
-// 07: 直前アクション対象の直下に出す「元に戻す」チップ。次操作または5秒経過で消える
+// 07: 直前アクション対象の直下に出す「元に戻す」チップ。次操作または4秒経過で消える
 
-const DISMISS_MS = 5000
+const DISMISS_MS = 4000
 // チップは対象の少し下に出す
 const OFFSET_Y = 40
 
