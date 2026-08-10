@@ -56,16 +56,30 @@ interface ArmedState {
   startY: number
   // 開始位置がスクロール途中の要素上にあり内部スクロールを優先すべきか(コミット保留)
   gateBlocked: boolean
+  // data-drag-handle 起点か。ハンドルは閉じるための持ち手なので離指で距離を問わず閉じる
+  fromHandle: boolean
 }
 
 // 確定前の「様子見」を許容する遊び幅(px)
 const COMMIT_SLOP = 10
+
+// 追従を解いて元位置へ戻すときの transition
+const SNAP_TRANSITION = 'transform 0.2s ease-out'
 
 // シート要素へ命令的に transform を反映(instant=true でスナップし transition を殺す)
 function driveTransform(node: HTMLElement | null, transform: string, instant: boolean): void {
   if (!node) return
   if (instant) node.style.transition = 'none'
   node.style.transform = transform
+}
+
+// 追従を打ち切り、アニメーション付きで元位置へ戻す。React の再レンダー任せにせず
+// ここで DOM を確定させる — 直前のレンダーと同じ style オブジェクトになった場合
+// React は書き込みを省き、命令的に書いた transform がそのまま残るため
+function releaseTransform(node: HTMLElement | null): void {
+  if (!node) return
+  node.style.transition = SNAP_TRANSITION
+  node.style.transform = ''
 }
 
 export function useSwipeToDismiss({
@@ -112,6 +126,19 @@ export function useSwipeToDismiss({
       // タッチ・ペン専用(マウスドラッグ・テキスト選択の誤動作を防ぐ)
       if (e.pointerType !== 'touch' && e.pointerType !== 'pen') return
 
+      // 2本目の指が乗ったらジェスチャーごと打ち切る。1本目の pointerup は
+      // 「armed と id が違う」経路で捨てられるため、打ち切らないと追従した
+      // transform が戻されないままシートがずれて固まる
+      const inFlight = armedRef.current
+      if (inFlight && inFlight.pointerId !== e.pointerId) {
+        dragOffsetRef.current = 0
+        releaseTransform(sheetNodeRef.current)
+        disarm()
+        // この指は以降 move/up とも素通しし、新しいドラッグを始めさせない
+        releasedPointerIdRef.current = e.pointerId
+        return
+      }
+
       // data-drag-handle 起点はゲート免除(ハンドルバーは常に閉じ操作優先)。ここでは capture も触覚も出さない
       const fromHandle =
         e.target instanceof Element && e.target.closest('[data-drag-handle]') !== null
@@ -120,12 +147,13 @@ export function useSwipeToDismiss({
         startX: e.clientX,
         startY: e.clientY,
         gateBlocked: fromHandle ? false : computeScrollGate(e.target, e.currentTarget),
+        fromHandle,
       }
       isDraggingRef.current = false
       samplesRef.current = []
       releasedPointerIdRef.current = null
     },
-    [enabled]
+    [enabled, disarm]
   )
 
   const onPointerMove = useCallback(
@@ -210,9 +238,23 @@ export function useSwipeToDismiss({
       const armed = armedRef.current
       if (!armed || armed.pointerId !== e.pointerId) return
 
-      // 未確定のまま離指 = タップ等。閉じ判定しない
+      // 未確定のまま離指 = タップ等。閉じ判定はせず button の onClick に任せる
       if (!isDraggingRef.current) {
         disarm()
+        return
+      }
+
+      // ハンドル起点は「閉じるための持ち手」なので、離指したら距離を問わず閉じる。
+      // 少しでも引くとドラッグが確定し、直後の合成 click を抑止するため
+      // ハンドルの onClick には届かず、閾値未満だと無反応に見えるのを防ぐ。
+      // 上/横へ逃げた場合は armedRef が既に落ちておりここへは来ない
+      if (armed.fromHandle) {
+        triggerHaptic(dismissHapticType)
+        dragOffsetRef.current = 0
+        releaseTransform(sheetNodeRef.current)
+        suppressGhostClick()
+        disarm()
+        onDismiss()
         return
       }
 
@@ -225,14 +267,19 @@ export function useSwipeToDismiss({
       suppressGhostClick()
 
       if (shouldDismiss) {
-        // 閾値・フリック速度成立で即閉じ。オフセットは維持し親の退場アニメへ委譲
+        // 閾値・フリック速度成立で即閉じ。追従分は閉じる場合も必ず戻す —
+        // onDismiss は呼び出し側の都合で実際には閉じないことがあり
+        // (編集中の破棄確認など)、アンマウント任せだとずれたまま残る
         triggerHaptic(dismissHapticType)
+        dragOffsetRef.current = 0
+        releaseTransform(sheetNodeRef.current)
         disarm()
         onDismiss()
         return
       }
-      // 不成立: スナップバック(disarm 再レンダーの dragStyle が transition 復帰・transform 解除)
+      // 不成立: スナップバック
       dragOffsetRef.current = 0
+      releaseTransform(sheetNodeRef.current)
       disarm()
     },
     [thresholdRatio, flickVelocityPxMs, onDismiss, disarm, dismissHapticType, enabled]
@@ -255,6 +302,7 @@ export function useSwipeToDismiss({
       if (!armed || armed.pointerId !== e.pointerId) return
       // ネイティブスクロール等の割り込みに対する安全復帰
       dragOffsetRef.current = 0
+      releaseTransform(sheetNodeRef.current)
       disarm()
     },
     [disarm, enabled]
@@ -293,7 +341,7 @@ export function useSwipeToDismiss({
     },
     dragStyle: {
       transform: dragOffsetRef.current ? `translateY(${dragOffsetRef.current}px)` : undefined,
-      transition: isDragging ? 'none' : 'transform 0.2s ease-out',
+      transition: isDragging ? 'none' : SNAP_TRANSITION,
       willChange: isDragging ? 'transform' : undefined,
     },
     resetDrag,

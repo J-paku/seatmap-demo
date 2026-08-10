@@ -30,9 +30,17 @@ export function attachSheetBackgroundGuard(node: HTMLElement): () => void {
     const deltaX = e.touches[0].clientX - touchStartX
     const deltaY = e.touches[0].clientY - touchStartY
     if (Math.abs(deltaX) > Math.abs(deltaY)) return
-    // タッチ地点から node までにスクロール可能な要素があれば native scroll を優先（遮断しない）
+    // タッチ地点から node までに「その向きへ実際にスクロール余地のある」要素が挟まる時だけ
+    // native scroll を優先する。容量(scrollHeight>clientHeight)だけで判定すると、最上端で
+    // 下へ引く閉じジェスチャーまで譲ってしまい、ブラウザがスクロールを先取りして
+    // pointercancel を発火 → スワイプ閉じが実機で一切効かなくなる(scrollTop は
+    // ジェスチャー中に変わるためキャッシュせず毎回ライブに読む)
     for (const el of touchScrollables) {
-      if (el.scrollHeight > el.clientHeight) return
+      const hasRoom =
+        deltaY > 0
+          ? el.scrollTop > 1 // 下方向ドラッグ = 上へ戻る余地(iOS の残留小数は 1px 許容)
+          : el.scrollTop + el.clientHeight < el.scrollHeight - 1 // 上方向ドラッグ = 下へ進む余地
+      if (hasRoom) return
     }
     // 慣性スクロール中は cancelable=false となり preventDefault が無視される（警告も出る）
     if (!e.cancelable) return
