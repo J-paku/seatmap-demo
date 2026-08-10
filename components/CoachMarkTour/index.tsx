@@ -41,9 +41,19 @@ export const CoachMarkTour = ({ tour }: Props) => {
     )
   }
 
-  if (!tour.step || !tour.targetRect) return null
+  if (!tour.step) return null
 
   const rect = tour.targetRect
+
+  if (!rect) {
+    // 対象の実測がまだ済んでいない間はスポットライトを出さず、全面ダイムだけ残す
+    return (
+      <div className={styles.layer} role='dialog' aria-modal='true' aria-label='操作ガイド'>
+        <div className={styles.scrim} />
+      </div>
+    )
+  }
+
   const below = rect.bottom + CARD_GAP_PX
   const flipped = window.innerHeight - below < CARD_MIN_SPACE_PX
   const isLast = tour.stepIndex === tour.stepCount - 1

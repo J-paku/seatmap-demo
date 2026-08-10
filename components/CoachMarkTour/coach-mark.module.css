@@ -14,18 +14,34 @@
   background: var(--color-scrim);
 }
 
-/* box-shadow を画面より大きく広げて、この矩形の外側だけを暗くする */
+/* box-shadow を画面より大きく広げて、この矩形の外側だけを暗くする。
+   二重リングの明滅と全面ダイムを同じ box-shadow の重ね書きで表現する */
 .spotlight {
   position: absolute;
   border-radius: 12px;
-  box-shadow: 0 0 0 9999px var(--color-scrim);
-  outline: 2px solid var(--color-accent);
-  outline-offset: 2px;
-  transition: all 200ms ease-out;
+  animation: spotlightPulse 1.8s ease-in-out infinite;
+  transition: left 200ms ease-out, top 200ms ease-out, width 200ms ease-out, height 200ms ease-out;
+}
+
+@keyframes spotlightPulse {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 2px var(--color-accent),
+      0 0 0 7px color-mix(in srgb, var(--color-accent) 40%, transparent),
+      0 0 0 9999px var(--color-scrim);
+  }
+  50% {
+    box-shadow:
+      0 0 0 3px var(--color-accent),
+      0 0 0 13px color-mix(in srgb, var(--color-accent) 40%, transparent),
+      0 0 0 9999px var(--color-scrim);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .spotlight {
+    animation: none;
     transition: none;
   }
 }
@@ -39,6 +55,24 @@
   background: var(--color-surface);
   box-shadow: var(--shadow-modal);
   pointer-events: auto;
+  animation: cardFadeIn 0.22s ease-out;
+}
+
+/* iOS Safari はアニメーション終了後にインライン transform へ戻れずカードが画面外へ外れるため、
+   登場演出は opacity のみに限定し、keyframes では transform を使わない */
+@keyframes cardFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card {
+    animation: none;
+  }
 }
 
 .card.isCentered {
