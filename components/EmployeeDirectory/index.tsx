@@ -6,12 +6,16 @@ import { useScrollChainGuard } from '@/hooks/use-scroll-chain-guard'
 import { FocusTrap } from '@/components/a11y/components/FocusTrap'
 import { SheetDragHandle } from '@/components/SheetDragHandle'
 import { AvatarCustomizerModal } from '@/components/AvatarCustomizerModal'
+import { CoachMarkTour } from '@/components/CoachMarkTour'
+import { useCoachMarkTour } from '@/components/CoachMarkTour/hooks/use-coach-mark-tour'
+import { GuideButton } from '@/components/GuideButton'
 import { useEmployeeDirectory } from './hooks/use-employee-directory'
 import { useEmployeeDirectoryView } from './hooks/use-employee-directory-view'
 import { DepartmentTree } from './components/DepartmentTree'
 import { DirectorySearchInput } from './components/DirectorySearchInput'
 import { GaroonFooter } from './components/GaroonFooter'
 import { SettingsPanel } from './components/SettingsPanel'
+import { DIRECTORY_TOUR_STEPS, DIRECTORY_TOUR_STORAGE_KEY } from './utils/tour-steps'
 
 interface EmployeeDirectoryProps {
   isOpen: boolean
@@ -49,8 +53,15 @@ export function EmployeeDirectory({
   const { isVisible, sidebarView, setSidebarView, sheetHandlers, dragStyle, isDragging } =
     useEmployeeDirectoryView(isOpen, onClose)
 
-  // §4: ガイドツアーは移植しない。ヘルプボタンは外形だけ残して no-op にする
-  const onHelp = () => {}
+  // ディレクトリガイド。分岐なしの3ステップで、自動再生はせずヘルプボタンからのみ再生する
+  const [tourReplayNonce, setTourReplayNonce] = useState(0)
+  const tour = useCoachMarkTour({
+    steps: DIRECTORY_TOUR_STEPS,
+    storageKey: DIRECTORY_TOUR_STORAGE_KEY,
+    replayNonce: tourReplayNonce,
+    autoStart: false,
+  })
+  const onHelp = useCallback(() => setTourReplayNonce((count) => count + 1), [])
 
   // アバターカスタマイザモーダルの開閉状態
   const [isAvatarCustomizerOpen, setIsAvatarCustomizerOpen] = useState(false)
@@ -150,26 +161,8 @@ export function EmployeeDirectory({
                     onQueryChange={setSearchQuery}
                   />
                 </div>
-                {/* ヘルプボタン — ? アイコンでガイドツアー再生 */}
-                <button
-                  type='button'
-                  onClick={() => {
-                    triggerHaptic('light')
-                    onHelp()
-                  }}
-                  aria-label='ディレクトリガイド'
-                  className='flex h-9 w-9 shrink-0 items-center justify-center rounded-full border transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--color-accent)]'
-                  style={{
-                    background: 'var(--color-surface-elevated)',
-                    borderColor: 'var(--color-border)',
-                    boxShadow: 'var(--shadow-modal)',
-                    color: 'var(--color-text-primary)',
-                  }}
-                >
-                  <span className='icon-msr-filled text-base leading-none' aria-hidden='true'>
-                    help_outline
-                  </span>
-                </button>
+                {/* ヘルプボタン — ? アイコンでガイドツアー再生。共通化した GuideButton の基準実物 */}
+                <GuideButton ariaLabel='ディレクトリガイド' onClick={onHelp} />
                 {/* モバイルはドラッグハンドルで閉じるため閉じるボタンは md 以上のみ表示 */}
                 <button
                   type='button'
@@ -240,7 +233,12 @@ export function EmployeeDirectory({
         </aside>
       </FocusTrap>
 
-      {/* ディレクトリガイドコーチマーク — aside の transform/overflow-hidden に閉じ込められると見切れるため、ルート直下(最上位)に配置 */}
+      {/* ディレクトリガイドコーチマーク — aside の transform/overflow-hidden に閉じ込められると見切れるため、
+          ルート直下(最上位)に配置する。SeatMapPortal は使わない: マウント時に .seat-map-root のテーマを
+          1回スナップショットし依存配列が [] で以降のテーマ変更を追えないため、設定パネル(directory-footer)で
+          テーマを切り替えてからガイドを再生すると旧テーマのまま描画されてしまう。ルート直下ならこの div 自体が
+          .seat-map-root 配下にあるのでテーマトークンをライブに継承できる */}
+      {isOpen && <CoachMarkTour tour={tour} />}
 
       {/* アバターカスタマイザモーダル — 設定パネルから起動 */}
       <AvatarCustomizerModal

@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef } from 'react'
+import { useCallback, useMemo, useRef, useState } from 'react'
 import { EditDock } from './components/EditDock'
 import { Minimap } from './components/Minimap'
 import { SeatDragGhost } from './components/SeatDragGhost'
@@ -17,9 +17,12 @@ import { useSeatSelection } from './hooks/use-seat-selection'
 import { anchorTransformOrigin } from './utils/anchor-origin'
 import { SEAT_GRID_CELL_ATTR } from './utils/seat-drag-attrs'
 import { COMPACT_SIDE_PADDING_PX } from './utils/seat-grid'
+import { SEAT_LAYOUT_TOUR_STEPS, SEAT_LAYOUT_TOUR_STORAGE_KEY } from './utils/tour-steps'
 import type { TeamOverlayProps } from './type'
 import styles from './team-overlay-modal.module.css'
 import { useGlobalAnnouncement } from '@/contexts/announcement-context'
+import { CoachMarkTour } from '@/components/CoachMarkTour'
+import { useCoachMarkTour } from '@/components/CoachMarkTour/hooks/use-coach-mark-tour'
 import { ConfirmDialog } from '@/components/edit/ConfirmDialog'
 import { EmployeeAssignSheet } from '@/components/EmployeeAssignSheet'
 import { SeatMapPortal } from '@/components/SeatMapPortal'
@@ -132,6 +135,17 @@ export const TeamOverlay = ({
   )
   useModalShell(payload !== null, sheetRef, guardedClose)
 
+  // 座席配置ガイド。分岐なし2ステップで自動再生はせず、ヘッダーのガイドボタンから
+  // 再生する度に既読を無視して最初から出す(既読フラグの無効化=replayNonceの加算)
+  const [tourReplayNonce, setTourReplayNonce] = useState(0)
+  const tour = useCoachMarkTour({
+    steps: SEAT_LAYOUT_TOUR_STEPS,
+    storageKey: SEAT_LAYOUT_TOUR_STORAGE_KEY,
+    replayNonce: tourReplayNonce,
+    autoStart: false,
+  })
+  const handleHelp = useCallback(() => setTourReplayNonce((count) => count + 1), [])
+
   if (!payload) return null
 
   const { teamColor, teamName, rect } = payload
@@ -211,6 +225,7 @@ export const TeamOverlay = ({
                 announce('[info]座席編集を開始しました')
               }}
               onExitEdit={handleCancelEdit}
+              onHelp={handleHelp}
             />
             {/* ドラッグ中だけ現れるゴミ箱。落とすとドラッグ元の席を削除する */}
             <TrashDropZone
@@ -312,6 +327,9 @@ export const TeamOverlay = ({
           />
         )}
       </SeatMapPortal>
+      {/* 座席配置ガイド。.panel は指追従の transform を受けるため、fixed 基準のスポットライトが
+          その中にあると座標系がずれる。.wrap(fixed・transform なし)直下に置いて基準を分ける */}
+      <CoachMarkTour tour={tour} />
     </div>
   )
 }

@@ -11,7 +11,7 @@ type Props = {
 }
 
 export const ZoomControls = ({ onZoomIn, onZoomOut, onReset, onGoToMySeat }: Props) => (
-  <div className={styles.zoomControls} role='group' aria-label='ズームコントロール'>
+  <div className={styles.zoomControls} role='group' aria-label='ズームコントロール' data-coach='zoom-controls'>
     <button
       type='button'
       aria-label='拡大'
