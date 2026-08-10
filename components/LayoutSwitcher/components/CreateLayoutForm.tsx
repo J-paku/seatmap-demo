@@ -35,7 +35,7 @@ export const CreateLayoutForm = ({ layoutCount, onCreate }: Props) => {
             value={name}
             onChange={(e) => setName(e.target.value)}
             maxLength={50}
-            placeholder='マイレイアウト作成'
+            placeholder='レイアウト名'
           />
           <button
             type='submit'

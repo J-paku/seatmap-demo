@@ -4,10 +4,10 @@
 .root {
   position: fixed;
   left: 50%;
-  top: calc(env(safe-area-inset-top) + 72px);
+  top: calc(env(safe-area-inset-top) + var(--layout-island-top));
   transform: translateX(-50%);
   z-index: var(--z-index-dropdown);
-  width: min(50vw, 176px);
+  width: calc(2 * var(--layout-island-half-closed));
   overflow: hidden;
   border-radius: 14px;
   border: 1px solid var(--color-border);
@@ -22,7 +22,7 @@
 }
 
 .root.isOpen {
-  width: min(80vw, 236px);
+  width: calc(2 * var(--layout-island-half-open));
   border-radius: 18px;
 }
 
