@@ -27,30 +27,26 @@
 .sheet {
   inset: 0;
   margin: auto;
-  width: calc(100% - 24px);
-  max-width: 448px;
-  border-radius: 16px;
+  width: var(--sheet-width);
+  border-radius: var(--sheet-radius);
   animation: fadeIn 0.2s ease-out;
 }
 
 .employee {
-  height: 88dvh;
+  height: var(--sheet-height-base);
 }
 
-.facility,
+.facility {
+  max-height: var(--sheet-height-facility);
+}
+
+/* inset:0 + margin:auto の下では max-height だけだと「上限」ではなく「確定値」になり
+   (CSS2.1 10.6.4)、中身が短くても常にその高さまで伸びる。社員詳細の上に積むこのシートは
+   中身なりの高さでないと下の社員詳細が1pxも覗かず、階層が読めなくなる。
+   よって height を明示し、max-height は伸び切った時の頭打ちとしてだけ効かせる */
 .schedule {
-  max-height: 84dvh;
-}
-
-/* デスクトップ: 高さだけ広げる(配置はモバイルと共通) */
-@media (min-width: 640px) {
-  .employee {
-    height: 90dvh;
-  }
-  .facility,
-  .schedule {
-    max-height: 90dvh;
-  }
+  height: fit-content;
+  max-height: var(--sheet-height-stacked-max);
 }
 
 .stackTop .backdrop {

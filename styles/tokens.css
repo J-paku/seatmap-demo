@@ -197,3 +197,33 @@
   --color-hit-glow-from: rgba(233, 169, 61, 0.55);
   --color-hit-glow-to: rgba(233, 169, 61, 0.22);
 }
+
+/* 詳細シート(社員/施設/予定)の幾何。色と同じく定義場所をここ1箇所に集約する。
+   env() には必ず 0px フォールバックを書く — 省くと計算値の解決に失敗して宣言ごと落ちる */
+.seat-map-root {
+  /* 画面端に最低限残す余白(safe-area が 0 の環境での下限) */
+  --sheet-inset-min: 12px;
+  /* シートが侵してはいけない画面端の帯。margin:auto は残余を上下で等分するため、
+     上下の大きい側に合わせないと切り欠き側だけ食い込む */
+  --sheet-safe-inset: max(var(--sheet-inset-min), env(safe-area-inset-top, 0px), env(safe-area-inset-bottom, 0px));
+  /* 全シート共通幅。従来の width + max-width の2宣言を1本に畳んだもの(値は等価) */
+  --sheet-width: min(100% - 24px, 448px);
+  --sheet-radius: 16px;
+  /* 単独で開くシート(社員詳細)の高さ */
+  --sheet-height-base: min(88dvh, calc(100dvh - 2 * var(--sheet-safe-inset)));
+  /* 施設詳細は今回の対象外なので従来値のまま移設するだけ */
+  --sheet-height-facility: min(84dvh, calc(100dvh - 2 * var(--sheet-safe-inset)));
+  /* 積んだシートが伸び切った時でも親シートを必ず覗かせる帯(片側) */
+  --sheet-stack-reveal-min: 32px;
+  /* 積んだシートの高さ上限。base からの導出なので覗き帯が構造的に消せない */
+  --sheet-height-stacked-max: calc(var(--sheet-height-base) - 2 * var(--sheet-stack-reveal-min));
+}
+
+/* デスクトップは高さだけ広げる。safe-area クランプは外さない —
+   min-width:640px にはノッチ付き端末の横向き(844x390 等)が該当するため */
+@media (min-width: 640px) {
+  .seat-map-root {
+    --sheet-height-base: min(90dvh, calc(100dvh - 2 * var(--sheet-safe-inset)));
+    --sheet-height-facility: min(90dvh, calc(100dvh - 2 * var(--sheet-safe-inset)));
+  }
+}
