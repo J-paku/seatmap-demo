@@ -1,4 +1,5 @@
-// ヘッダー: ロゴ・メニューボタンのみ(実物 SeatMapHeader の構成)。
+// ヘッダー: ロゴ・メニューボタン(実物 SeatMapHeader の構成)。
+// 使い方ガイド(？)はレイアウト切り替えアイランドの右隣へ移した(SeatMapView が描く)
 // リセット・編集トグルは §5.4 に従いサイドバーの設定パネルへ移設済み
 import Image from 'next/image'
 import { useRouter } from 'next/router'
@@ -64,6 +65,7 @@ export const AppHeader = ({ onOpenDirectory, isDirectoryOpen }: Props) => {
           type='button'
           aria-label='メニュー'
           aria-expanded={isDirectoryOpen}
+          data-coach='header-menu'
           onClick={() => {
             triggerHaptic('light')
             onOpenDirectory()

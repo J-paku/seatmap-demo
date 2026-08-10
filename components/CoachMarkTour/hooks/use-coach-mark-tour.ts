@@ -1,129 +1,163 @@
-import { useCallback, useEffect, useState } from 'react'
-import { TOUR_STEPS, TOUR_STORAGE_KEY } from '../utils/tour-steps'
-import type { TourFlow, TourStep } from '../utils/tour-steps'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import type { TourBranch, TourStep } from '../utils/tour-steps'
 
-// ツアーの進行。対象が見つからないステップは飛ばし、画面外なら中央へ寄せてから出す
+// コーチマークの汎用進行エンジン。分岐の有無・自動再生の可否・再生トリガーは呼び出し側が渡す。
+// ステップの中身(文言・セレクタ)は一切知らず、渡された対象をそのまま表示するだけ
 
-type Options = {
-  // 編集モードに入っているか。抜けたらツアーも畳む
-  isActive: boolean
-  // 対象を画面中央へ寄せる手段(キャンバス側が持つ)
-  centerOnSelector: (selector: string) => void
+export type UseCoachMarkTourParams = {
+  // 分岐なしで直列実行するステップ列
+  steps?: readonly TourStep[]
+  // 分岐カードから始める場合。steps より優先する
+  branch?: TourBranch
+  // 既読フラグの localStorage キー
+  storageKey: string
+  // 増えるたびに既読を無視して再生する
+  replayNonce: number
+  // 初回未読時の自動表示可否。既定は true
+  autoStart?: boolean
+  // 対象を画面中央へ寄せる手段(持たない画面は省略可)
+  centerOnSelector?: (selector: string) => void
 }
 
-type TourState = {
-  // 分岐カードを出しているか
+export type CoachMarkTourState = {
+  isOpen: boolean
   isBranching: boolean
+  branch: TourBranch | undefined
   step: TourStep | null
   stepIndex: number
   stepCount: number
   targetRect: DOMRect | null
-  open: () => void
-  chooseFlow: (flow: TourFlow) => void
+  chooseBranch: (optionIndex: number) => void
   next: () => void
+  prev: () => void
+  // 既読化して閉じる(スキップ・とじる・最終ステップ共通)。ユーザーが明示的に閉じた時に使う
   close: () => void
+  // 既読化せずに閉じる。編集モード退出など画面都合で畳む場合に使う。
+  // 一度も操作していないツアーを既読扱いにしないため、次に活性化条件を満たせば再び自動再生される
+  collapse: () => void
 }
 
-const isSeen = (flow: TourFlow): boolean => {
+// 既読判定。SSR では常に既読扱いにして自動表示を止める。localStorage 参照が例外を投げる
+// 環境では未読扱いにして再生は続ける。値は旧表記 'true' も既読とみなす(null でなければ既読)
+export const readSeen = (storageKey: string): boolean => {
   if (typeof window === 'undefined') return true
-  return window.localStorage.getItem(TOUR_STORAGE_KEY[flow]) === 'true'
+  try {
+    return window.localStorage.getItem(storageKey) !== null
+  } catch {
+    return false
+  }
 }
 
-const markSeen = (flow: TourFlow): void => {
+const markSeen = (storageKey: string): void => {
   if (typeof window === 'undefined') return
   try {
-    window.localStorage.setItem(TOUR_STORAGE_KEY[flow], 'true')
+    window.localStorage.setItem(storageKey, '1')
   } catch {
     // 保存できなくても再生は続ける
   }
 }
 
-const findTarget = (selector: string): HTMLElement | null =>
-  document.querySelector<HTMLElement>(selector)
-
-const isOffscreen = (rect: DOMRect): boolean =>
-  rect.bottom < 0 || rect.right < 0 || rect.top > window.innerHeight || rect.left > window.innerWidth
-
-export const useCoachMarkTour = ({ isActive, centerOnSelector }: Options): TourState => {
+export const useCoachMarkTour = ({
+  steps,
+  branch,
+  storageKey,
+  replayNonce,
+  autoStart,
+  centerOnSelector,
+}: UseCoachMarkTourParams): CoachMarkTourState => {
   const [isOpen, setIsOpen] = useState(false)
-  const [flow, setFlow] = useState<TourFlow | null>(null)
+  // 分岐カードを未選択の間は null。分岐なしのツアーは開いた瞬間に steps がそのまま積まれる
+  const [chosenSteps, setChosenSteps] = useState<readonly TourStep[] | null>(null)
   const [stepIndex, setStepIndex] = useState(0)
   const [targetRect, setTargetRect] = useState<DOMRect | null>(null)
+  const prevReplayNonceRef = useRef(replayNonce)
 
-  const steps = flow ? TOUR_STEPS[flow] : []
-  const step = flow && stepIndex < steps.length ? steps[stepIndex] : null
+  const step = isOpen && chosenSteps && stepIndex < chosenSteps.length ? chosenSteps[stepIndex] : null
+  const isBranching = isOpen && branch !== undefined && chosenSteps === null
 
-  const close = useCallback(() => {
-    setIsOpen(false)
-    setFlow(null)
+  // 開始(分岐カードへ戻すか、直列ステップの先頭から積み直す)。
+  // マウント時自動再生・replayNonce 再生のどちらからも呼ぶ共通処理
+  const openTour = useCallback(() => {
+    setIsOpen(true)
+    setChosenSteps(branch ? null : steps ?? [])
     setStepIndex(0)
     setTargetRect(null)
-  }, [])
+  }, [branch, steps])
 
-  // 編集モードを抜けたら畳む。close() は状態4本をまとめて戻す後始末で、
-  // 描画由来の派生値ではないので effect から呼ぶ以外の置き場が無い
+  // 初回未読時だけマウント時に自動再生する。「編集モードに入った」等の活性化判断は
+  // 呼び出し側の責務(replayNonce を上げる)なので、ここでは storageKey にしか反応しない
   useEffect(() => {
+    if (autoStart === false) return
+    if (readSeen(storageKey)) return
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    if (!isActive && isOpen) close()
-  }, [isActive, isOpen, close])
+    openTour()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [storageKey])
 
-  // 編集モードへ初めて入ったときだけ自動再生する
+  // replayNonce が前回より増えたら既読を無視して再生する。マウント直後の初期値と一致する間は発火しない
   useEffect(() => {
-    if (!isActive) return
-    if (isSeen('layout') && isSeen('facility')) return
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setIsOpen(true)
-  }, [isActive])
+    if (replayNonce > prevReplayNonceRef.current) {
+      openTour()
+    }
+    prevReplayNonceRef.current = replayNonce
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [replayNonce])
 
-  // 対象の実測。見つからなければ次のステップへ送る
+  // 対象の実測。見つからない・セレクタ未指定ならスポットライト無しの中央カードとして扱う(飛ばさない)
   useEffect(() => {
-    if (!isOpen || !step) return
-    const target = findTarget(step.selector)
-    if (!target) {
+    if (!isOpen || !step || !step.selector) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
-      setStepIndex((prev) => prev + 1)
+      setTargetRect(null)
       return
     }
-    const rect = target.getBoundingClientRect()
-    if (isOffscreen(rect)) {
-      centerOnSelector(step.selector)
+    const selector = step.selector
+    const target = document.querySelector<HTMLElement>(selector)
+    if (!target) {
+      setTargetRect(null)
+      return
+    }
+    if (step.centerOnShow && centerOnSelector) {
+      centerOnSelector(selector)
       const timer = window.setTimeout(() => {
-        const moved = findTarget(step.selector)
+        const moved = document.querySelector<HTMLElement>(selector)
         setTargetRect(moved ? moved.getBoundingClientRect() : null)
       }, 360)
       return () => window.clearTimeout(timer)
     }
-    setTargetRect(rect)
-  }, [isOpen, step, stepIndex, centerOnSelector])
-
-  // 最後まで進んだら閉じる。ステップ数の到達判定は描画後にしか出来ないので effect に置く
-  useEffect(() => {
-    if (!isOpen || !flow) return
-    if (stepIndex < steps.length) return
-    markSeen(flow)
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    close()
-  }, [isOpen, flow, stepIndex, steps.length, close])
+    setTargetRect(target.getBoundingClientRect())
+  }, [isOpen, step, centerOnSelector])
 
   return {
-    isBranching: isOpen && flow === null,
+    isOpen,
+    isBranching,
+    branch,
     step,
     stepIndex,
-    stepCount: steps.length,
+    stepCount: chosenSteps?.length ?? 0,
     targetRect,
-    open: useCallback(() => {
-      setFlow(null)
-      setStepIndex(0)
-      setIsOpen(true)
-    }, []),
-    chooseFlow: useCallback((next: TourFlow) => {
-      setFlow(next)
-      setStepIndex(0)
-    }, []),
-    next: useCallback(() => setStepIndex((prev) => prev + 1), []),
+    chooseBranch: useCallback(
+      (optionIndex: number) => {
+        const option = branch?.options[optionIndex]
+        if (!option) return
+        setChosenSteps(option.steps)
+        setStepIndex(0)
+      },
+      [branch]
+    ),
+    next: useCallback(() => setStepIndex((current) => current + 1), []),
+    prev: useCallback(() => setStepIndex((current) => Math.max(current - 1, 0)), []),
     close: useCallback(() => {
-      if (flow) markSeen(flow)
-      close()
-    }, [flow, close]),
+      markSeen(storageKey)
+      setIsOpen(false)
+      setChosenSteps(null)
+      setStepIndex(0)
+      setTargetRect(null)
+    }, [storageKey]),
+    collapse: useCallback(() => {
+      setIsOpen(false)
+      setChosenSteps(null)
+      setStepIndex(0)
+      setTargetRect(null)
+    }, []),
   }
 }

@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { AppHeader } from './components/AppHeader'
 import { EditDialogs } from './components/EditDialogs'
 import { EditModeLayer } from './components/EditModeLayer'
@@ -11,6 +11,7 @@ import { useSeatAssign } from './hooks/use-seat-assign'
 import { useSeatMapData } from './hooks/use-seat-map-data'
 import { useTeamSeatFocus } from './hooks/use-team-seat-focus'
 import type { FocusFailure } from './hooks/use-team-seat-focus'
+import { MAIN_TOUR_STEPS, MAIN_TOUR_STORAGE_KEY } from './utils/main-tour-steps'
 import { AdminAddFab } from '@/components/AdminAddFab'
 import { DetailPanels } from '@/components/DetailPanels'
 import { EmployeeAssignSheet } from '@/components/EmployeeAssignSheet'
@@ -19,12 +20,14 @@ import { FacilityHoverCard } from '@/components/FacilityHoverCard'
 import type { FacilityHoverPayload } from '@/components/FacilityHoverCard'
 import { FurniturePickerModal } from '@/components/FurniturePickerModal'
 import { GhostPlacementLayer } from '@/components/GhostPlacementLayer'
+import { GuideButton } from '@/components/GuideButton'
 import { LayoutSwitcher } from '@/components/LayoutSwitcher'
 import { ObjectCategorySheet } from '@/components/ObjectCategorySheet'
 import { TeamActionSheet } from '@/components/TeamActionSheet'
 import { TeamCreatePopover } from '@/components/TeamCreatePopover'
 import { CoachMarkTour } from '@/components/CoachMarkTour'
-import { useCoachMarkTour } from '@/components/CoachMarkTour/hooks/use-coach-mark-tour'
+import { readSeen, useCoachMarkTour } from '@/components/CoachMarkTour/hooks/use-coach-mark-tour'
+import { EDIT_TOUR_BRANCH, EDIT_TOUR_STORAGE_KEY } from '@/components/CoachMarkTour/utils/tour-steps'
 import { ConfirmDialog } from '@/components/edit/ConfirmDialog'
 import { LiveRegion } from '@/components/a11y/components/LiveRegion'
 import { SeatMapCanvas } from '@/components/SeatMapCanvas'
@@ -87,9 +90,44 @@ export const SeatMapView = () => {
     onPlaced: showUndoChipAt,
     onEnsureEditMode: ensureEditSession,
   })
-  // 操作ガイド。編集モード初回だけ自動再生し、？ ボタンで何度でも見られる
+  // 操作ガイド。編集モード初回だけ自動再生し、？ ボタンで何度でも見られる。
+  // エンジンは isActive を直接受けないので、活性化(初回自動再生・退出時に畳む)は
+  // ここ(呼び出し側)の責務として持つ
   const centerOnSelector = useCallback((selector: string) => canvasRef.current?.centerOnSelector(selector), [])
-  const tour = useCoachMarkTour({ isActive: editor.isEditMode, centerOnSelector })
+  const [tourReplayNonce, setTourReplayNonce] = useState(0)
+  const tour = useCoachMarkTour({
+    branch: EDIT_TOUR_BRANCH,
+    storageKey: EDIT_TOUR_STORAGE_KEY,
+    replayNonce: tourReplayNonce,
+    autoStart: false,
+    centerOnSelector,
+  })
+  const replayTour = useCallback(() => setTourReplayNonce((count) => count + 1), [])
+  const wasEditModeRef = useRef(editor.isEditMode)
+  useEffect(() => {
+    const wasEditMode = wasEditModeRef.current
+    wasEditModeRef.current = editor.isEditMode
+    if (editor.isEditMode) {
+      // 編集モードへ初めて入った時だけ、未読なら自動再生する
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      if (!wasEditMode && !readSeen(EDIT_TOUR_STORAGE_KEY)) replayTour()
+      return
+    }
+    // 編集モードを抜けたらツアーも畳む。画面都合の折りたたみなので既読化はしない(collapse)。
+    // 一度も操作していないツアーを close で既読化すると、次に編集モードへ入っても自動再生されなくなる
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (wasEditMode) tour.collapse()
+  }, [editor.isEditMode, replayTour, tour.collapse])
+  // メイン(閲覧)画面の使い方ガイド。編集ツアーとは別インスタンス・別 storageKey で、
+  // 初回未読なら自動再生(autoStart 既定 true)、以降はヘッダーの使い方ガイドボタンで再生する
+  const [mainTourReplayNonce, setMainTourReplayNonce] = useState(0)
+  const mainTour = useCoachMarkTour({
+    steps: MAIN_TOUR_STEPS,
+    storageKey: MAIN_TOUR_STORAGE_KEY,
+    replayNonce: mainTourReplayNonce,
+    centerOnSelector,
+  })
+  const replayMainTour = useCallback(() => setMainTourReplayNonce((count) => count + 1), [])
   // 配属の結果はライブリージョンとトーストへ同じ文言を流す(実装を二重化しない)
   const assign = useSeatAssign({ editor, employeeById, onDone: (message) => showNotice(message) })
 
@@ -126,7 +164,7 @@ export const SeatMapView = () => {
     isDirectoryOpen,
     isPlacementActive: placement.isActive,
     assignSeatId: assign.assignSeatId,
-    tour,
+    tours: [tour, mainTour],
     isLayoutSwitcherOpen,
   })
 
@@ -168,13 +206,14 @@ export const SeatMapView = () => {
   return (
     <div className={styles.seatMapPage}>
       {!editor.isEditMode && (
-        <AppHeader
-          onOpenDirectory={() => setIsDirectoryOpen(true)}
-          isDirectoryOpen={isDirectoryOpen}
-        />
+        <AppHeader onOpenDirectory={() => setIsDirectoryOpen(true)} isDirectoryOpen={isDirectoryOpen} />
       )}
       {/* 編集中は土台(公式/カスタム)を差し替えさせない。差し替えるとワーキングコピーが宙に浮く */}
       {!editor.isEditMode && <LayoutSwitcher onExpandedChange={setIsLayoutSwitcherOpen} />}
+      {/* 使い方ガイドの入口。アイランドと同じ行に並べたいので、ヘッダーではなくここで描く */}
+      {!editor.isEditMode && (
+        <GuideButton ariaLabel='使い方ガイド' onClick={replayMainTour} className={styles.mapGuideButton} />
+      )}
       {ready && effectiveLayout && (
         <SeatMapCanvas
           ref={canvasRef}
@@ -266,7 +305,7 @@ export const SeatMapView = () => {
           changedCount={editor.changedCount}
           isSaving={save.isSaving}
           isPlacing={placement.request !== null}
-          onHelp={tour.open}
+          onHelp={replayTour}
           onFinish={save.finish}
           onCancel={save.cancel}
         />
@@ -280,6 +319,7 @@ export const SeatMapView = () => {
         <AdminAddFab
           onSelectTeam={() => placement.selectCategory('team')}
           onSelectFacility={placement.openCategory}
+          onEditLayout={ensureEditSession}
         />
       )}
       <ObjectCategorySheet
@@ -341,6 +381,7 @@ export const SeatMapView = () => {
       )}
 
       {editor.isEditMode && <CoachMarkTour tour={tour} />}
+      {!editor.isEditMode && <CoachMarkTour tour={mainTour} />}
 
       <EditDialogs editor={editor} dialogs={dialogs} />
 

@@ -4,7 +4,10 @@
   position: fixed;
   inset: 0;
   z-index: var(--z-index-top);
-  pointer-events: none;
+  /* pointer-events は継承される。ここを auto にすることで、明示的に上書きしていない
+     .scrim / .spotlight も自動的にクリックを受け取るようになる(box-shadow はヒットテスト
+     対象にならないため、くり抜きの穴の内側は .spotlight 自身の実体の矩形が受け止める) */
+  pointer-events: auto;
 }
 
 /* 分岐カードのときだけ全面を覆う */
@@ -154,4 +157,14 @@
 
 .actions .skip {
   margin-top: 0;
+}
+
+.back {
+  height: 44px;
+  padding: 0 14px;
+}
+
+.back:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 3px;
 }

@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
-import type { KeyboardEvent as ReactKeyboardEvent, RefObject } from 'react'
+import type { KeyboardEvent as ReactKeyboardEvent, PointerEvent as ReactPointerEvent, RefObject } from 'react'
 import { useBodyScrollLock } from '@/hooks/use-body-scroll-lock'
 import { triggerHaptic } from '@/utils/haptic'
+import { useFabLongPress } from './use-fab-long-press'
 
 // メニュー項目の実体。ロービングタブの移動対象をこれで数える
 const MENU_ITEM_SELECTOR = '[role=menuitem]'
@@ -9,6 +10,7 @@ const MENU_ITEM_SELECTOR = '[role=menuitem]'
 export type UseAdminAddFabParams = {
   onSelectTeam: () => void
   onSelectFacility: () => void
+  onEditLayout: () => void
 }
 
 type UseAdminAddFabResult = {
@@ -17,7 +19,11 @@ type UseAdminAddFabResult = {
   fabRef: RefObject<HTMLButtonElement | null>
   menuRef: RefObject<HTMLDivElement | null>
   fabHandlers: {
-    onPointerDown: () => void
+    onPointerDown: (e: ReactPointerEvent) => void
+    onPointerMove: (e: ReactPointerEvent) => void
+    onPointerUp: () => void
+    onPointerLeave: () => void
+    onPointerCancel: () => void
     onClick: () => void
   }
   onMenuKeyDown: (e: ReactKeyboardEvent) => void
@@ -30,6 +36,7 @@ type UseAdminAddFabResult = {
 export const useAdminAddFab = ({
   onSelectTeam,
   onSelectFacility,
+  onEditLayout,
 }: UseAdminAddFabParams): UseAdminAddFabResult => {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const fabRef = useRef<HTMLButtonElement>(null)
@@ -78,9 +85,24 @@ export const useAdminAddFab = ({
     items[(current + delta + items.length) % items.length]?.focus()
   }
 
-  const onPointerDown = () => triggerHaptic('light')
+  // 500ms 長押しでメニューを開かず編集モードへ直行する。タイマー発火自体には haptic を鳴らさない仕様
+  const longPress = useFabLongPress({
+    onLongPress: () => {
+      closeMenu()
+      onEditLayout()
+    },
+  })
 
-  const onClick = () => setIsMenuOpen((open) => !open)
+  const onPointerDown = (e: ReactPointerEvent) => {
+    triggerHaptic('light')
+    longPress.handlers.onPointerDown(e)
+  }
+
+  // 長押しが発火した直後の click はここで消費する。それ以外は通常のメニュー開閉トグル
+  const onClick = () => {
+    if (longPress.consumeFired()) return
+    setIsMenuOpen((open) => !open)
+  }
 
   // 各項目は必ず先にメニューを閉じてから本処理を呼ぶ。逆順だと
   // 消えかけのメニューの上に本処理の結果が重なって見える
@@ -96,10 +118,11 @@ export const useAdminAddFab = ({
     onSelectFacility()
   }
 
-  // レイアウト編集の行。以前のフロア編集モードは廃止したので今は何も起動しない。
-  // 後から別ロジックを差し込む枠として行だけ残す
+  // レイアウト編集の行。メニュー経由なので長押し直行と異なり haptic を鳴らす
   const handleEditLayout = () => {
-    // 非活性行のためno-op
+    triggerHaptic('light')
+    closeMenu()
+    onEditLayout()
   }
 
   return {
@@ -107,7 +130,14 @@ export const useAdminAddFab = ({
     closeMenu,
     fabRef,
     menuRef,
-    fabHandlers: { onPointerDown, onClick },
+    fabHandlers: {
+      onPointerDown,
+      onPointerMove: longPress.handlers.onPointerMove,
+      onPointerUp: longPress.handlers.onPointerUp,
+      onPointerLeave: longPress.handlers.onPointerLeave,
+      onPointerCancel: longPress.handlers.onPointerCancel,
+      onClick,
+    },
     onMenuKeyDown,
     handleSelectTeam,
     handleSelectFacility,

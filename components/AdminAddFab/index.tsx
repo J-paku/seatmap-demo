@@ -15,7 +15,7 @@ type MenuItem = {
   hint?: string
 }
 
-export const AdminAddFab = ({ onSelectTeam, onSelectFacility }: Props) => {
+export const AdminAddFab = ({ onSelectTeam, onSelectFacility, onEditLayout }: Props) => {
   const {
     isMenuOpen,
     closeMenu,
@@ -26,12 +26,12 @@ export const AdminAddFab = ({ onSelectTeam, onSelectFacility }: Props) => {
     handleSelectTeam,
     handleSelectFacility,
     handleEditLayout,
-  } = useAdminAddFab({ onSelectTeam, onSelectFacility })
+  } = useAdminAddFab({ onSelectTeam, onSelectFacility, onEditLayout })
 
   const items: MenuItem[] = [
     { key: 'team', label: 'チーム', icon: 'groups', onClick: handleSelectTeam },
     { key: 'facility', label: '設備', icon: 'event_note', onClick: handleSelectFacility },
-    { key: 'edit', label: 'レイアウトを編集', icon: 'edit', onClick: handleEditLayout, disabled: true, hint: '準備中' },
+    { key: 'edit', label: 'レイアウトを編集', icon: 'edit', onClick: handleEditLayout },
   ]
 
   return (
@@ -76,7 +76,12 @@ export const AdminAddFab = ({ onSelectTeam, onSelectFacility }: Props) => {
         aria-expanded={isMenuOpen}
         aria-label={isMenuOpen ? '追加メニューを閉じる' : '追加メニューを開く'}
         onPointerDown={fabHandlers.onPointerDown}
+        onPointerMove={fabHandlers.onPointerMove}
+        onPointerUp={fabHandlers.onPointerUp}
+        onPointerLeave={fabHandlers.onPointerLeave}
+        onPointerCancel={fabHandlers.onPointerCancel}
         onClick={fabHandlers.onClick}
+        onContextMenu={(e) => e.preventDefault()}
       >
         <span className={`icon-msr-thin ${styles.adminFabIcon}`} aria-hidden='true'>
           add
