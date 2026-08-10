@@ -54,6 +54,7 @@ flowchart LR
 | 社員・座席データ | Pleasanter API | `mocks/` の生成データ |
 | 予定 | Pleasanter サーバー経由で Garoon の SOAP / REST API から取得 | `mocks/` の生成データ |
 | 永続化 | サーバー保存 | `localStorage` |
+| 保存の結果種別 | noop / queued / staged / saved / rolled_back / conflict_discarded / blocked | サーバー保存が無いため queued / rolled_back / conflict_discarded は結果種別から省いた |
 | 本人特定 | Garoon 認証 | 画面右上の役割トグル(閲覧⇄編集) |
 | 電話帳登録 | iOS アプリ(Swift)からワンタップで登録 | ボタンは表示するが、ブラウザ版のため保存はされない |
 
