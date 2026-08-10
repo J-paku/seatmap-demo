@@ -36,7 +36,7 @@ export const FacilityScheduleRow = ({ meeting, organizerName, isNow, isDone, isN
           type='button'
           className={styles.facAttendeeBtn}
           data-attendee-popover=''
-          aria-label={`参加者 ${attendeeCount}名を表示`}
+          aria-label={`出席者 ${attendeeCount}名を表示`}
           onMouseEnter={(e) => attendee.onEnter(meeting.id, e.currentTarget)}
           onMouseLeave={attendee.onLeave}
           onClick={(e) => attendee.onToggle(meeting.id, e.currentTarget)}

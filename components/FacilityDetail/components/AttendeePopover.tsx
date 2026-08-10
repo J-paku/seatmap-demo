@@ -20,7 +20,10 @@ export const AttendeePopover = ({ state, meeting, employees, onMouseEnter, onMou
 
   const empById = useEmployeeMap(employees)
   const organizer = empById.get(meeting.organizerId)
+  // participantIds は登録者を含む出席者全員。参加者欄は登録者を除いた人だけを出す
+  // (両方に同じ人が出ると、どちらが登録者かを行から読み取れなくなる)
   const participants = meeting.participantIds
+    .filter((id) => id !== meeting.organizerId)
     .map((id) => empById.get(id))
     .filter((employee): employee is Employee => employee != null)
 

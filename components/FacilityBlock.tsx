@@ -70,7 +70,7 @@ export const FacilityBlock = ({ facility, counterScale, onSelect, state, lod = '
             {state.current.title}
           </span>
           <span className={styles.facilityMeetingParts} style={{ fontSize: 8 * counterScale }}>
-            参加者{state.current.participantIds.length}名
+            出席者{state.current.participantIds.length}名
           </span>
         </>
       )}
