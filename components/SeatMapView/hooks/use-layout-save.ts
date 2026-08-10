@@ -9,6 +9,8 @@ import { useSeatLayout } from '@/hooks/use-mock-data'
 const FINISH_DELAY_MS = 400
 const TOAST_MS = 2400
 
+const MSG_SAVE_FAILED = '保存に失敗しました。もう一度お試しください'
+
 type LayoutSave = {
   isSaving: boolean
   saveToast: string | null
@@ -19,7 +21,8 @@ type LayoutSave = {
 
 export const useLayoutSave = (editor: LayoutEditor): LayoutSave => {
   const { persistLayout, resetLayout } = useSeatLayout()
-  const [isSaving, setIsSaving] = useState(false)
+  // 保存中フラグは編集セッションが持つ(保存中の編集を dispatch 側で弾くため)。
+  // ここは通し先を変えず editor の値をそのまま流す
   // 07: 「完了」で保存が発生した時だけ表示する一過性トースト
   const [saveToast, setSaveToast] = useState<string | null>(null)
   const toastTimeoutRef = useRef<number | null>(null)
@@ -38,19 +41,30 @@ export const useLayoutSave = (editor: LayoutEditor): LayoutSave => {
       editor.finishEdit()
       return
     }
-    setIsSaving(true)
-    fetchMock(true, FINISH_DELAY_MS).then(async () => {
-      await persistLayout(layoutToSave)
-      setIsSaving(false)
+    editor.beginSave()
+    const run = async () => {
+      try {
+        await fetchMock(true, FINISH_DELAY_MS)
+        // saveStoredLayout(同期書き込み)と SWR の mutate のどちらも投げうる
+        await persistLayout(layoutToSave)
+      } catch {
+        // 失敗時は localStorage へ何も書かれていない。ここでセッションを畳むと編集が丸ごと消えるので、
+        // ロックだけ解いて編集内容と編集モードを残し、やり直せるようにする
+        editor.endSave()
+        editor.showError(MSG_SAVE_FAILED)
+        return
+      }
+      editor.endSave()
       editor.finishEdit()
       setSaveToast('保存しました')
       if (toastTimeoutRef.current !== null) window.clearTimeout(toastTimeoutRef.current)
       toastTimeoutRef.current = window.setTimeout(() => setSaveToast(null), TOAST_MS)
-    })
+    }
+    void run()
   }, [editor, persistLayout])
 
   return {
-    isSaving,
+    isSaving: editor.isSaving,
     saveToast,
     finish,
     cancel: useCallback(() => editor.cancelEdit(), [editor]),
