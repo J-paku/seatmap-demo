@@ -400,6 +400,14 @@
   animation: editFramePulse 2.2s ease-in-out infinite;
 }
 
+/* 編集モード限定の3層構成(ディム < キャンバス < 編集クロム)。
+   キャンバスを z-index-sticky まで持ち上げて編集対象(チーム箱・家具)を
+   ディムの上に出す。ビューモードでは適用しない — 常時 200 にすると
+   AppHeader(z-index-sticky・DOM 先行)の下に地図が沈む */
+.seatMapPage:has([data-edit-mode-badge]) .seatMapTransform {
+  z-index: var(--z-index-sticky);
+}
+
 @keyframes editFramePulse {
   0%,
   100% {
@@ -416,4 +424,15 @@
   .seatMapPage:has([data-edit-mode-badge])::after {
     animation: none;
   }
+}
+
+/* 使い方ガイド(？)。ヘッダーではなくレイアウト切り替えアイランドの右隣に置く。
+   アイランドは開閉で幅が変わる(min(50vw,176px) → 2×--layout-island-half-open)ので、
+   展開時の右端の外側へ固定し、開いても重ならないようにする。
+   狭い画面では画面外へ出ないよう min() で右端に丸める */
+.mapGuideButton {
+  position: fixed;
+  top: calc(env(safe-area-inset-top) + var(--layout-island-top) - 3px);
+  left: min(calc(50% + var(--layout-island-half-open) + 6px), calc(100% - 42px));
+  z-index: var(--z-index-dropdown);
 }

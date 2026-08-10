@@ -1,32 +1,17 @@
-// 07-admin-edit: 編集中バッジ(キャンバス左上)+上端コントロール(？/×・右上)
+// 07-admin-edit: 上端コントロール(？/×・右上)
+// 編集中バッジは 09 で EditingOverlay の editingOverlayLabel に統合した(役割が重複するため)
 import { triggerHaptic } from '@/utils/haptic'
+import { GuideButton } from '@/components/GuideButton'
 import e from './admin-edit.module.css'
 type Props = {
   onHelp: () => void
   onExit: () => void
 }
 
-export const EditBadge = () => (
-  <div className={e.editModeBadge} data-edit-mode-badge='true'>
-    <span className={e.editModeBadgeDot} />
-    編集中
-  </div>
-)
-
 // ？ は静的な説明ではなくツアーを再生する。既読フラグは無視して何度でも見られる
 export const EditTopControls = ({ onHelp, onExit }: Props) => (
   <div className={e.editTopControls}>
-    <button
-      type='button'
-      className={`${e.editTopBtn} liquid-glass`}
-      aria-label='操作ガイドを見る'
-      onClick={() => {
-        triggerHaptic('light')
-        onHelp()
-      }}
-    >
-      ？
-    </button>
+    <GuideButton ariaLabel='操作ガイドを見る' onClick={onHelp} />
     <button
       type='button'
       className={`${e.editTopBtn} liquid-glass`}
