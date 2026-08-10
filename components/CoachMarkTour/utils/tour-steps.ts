@@ -27,7 +27,7 @@ export type TourBranch = {
 export const EDIT_TOUR_STORAGE_KEY = 'seatmap_coach_layout'
 
 const FINISH_STEP: TourStep = {
-  selector: '.edit-remote-finish',
+  selector: 'button[aria-label="編集を完了"]',
   text: '配置が決まったら『完了』を押すと保存されます',
 }
 

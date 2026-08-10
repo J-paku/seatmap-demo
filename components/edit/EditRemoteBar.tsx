@@ -28,6 +28,7 @@ export const EditRemoteBar = ({ changedCount, isSaving, onFinish, onCancel }: Pr
       <button
         type='button'
         className={e.editRemoteFinish}
+        aria-label='編集を完了'
         onClick={() => {
           if (!canComplete) return
           triggerHaptic('success')
