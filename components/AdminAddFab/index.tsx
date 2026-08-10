@@ -37,7 +37,13 @@ export const AdminAddFab = ({ onSelectTeam, onSelectFacility }: Props) => {
   return (
     <div className={styles.adminFabWrap}>
       {isMenuOpen && (
-        <div className={styles.adminFabBackdrop} onClick={closeMenu} onWheel={closeMenu} onTouchMove={closeMenu} />
+        <div
+          className={styles.adminFabBackdrop}
+          aria-hidden='true'
+          onClick={closeMenu}
+          onWheel={closeMenu}
+          onTouchMove={closeMenu}
+        />
       )}
 
       {isMenuOpen && (
