@@ -1,5 +1,6 @@
-import { FacilityPersonRow } from './FacilityPersonRow'
+import { PersonRow } from '@/components/PersonRow'
 import { useEmployeeMap } from '@/hooks/use-employee-map'
+import { useDetailPanel } from '@/contexts/detail-panel-context'
 import { minToHHMM } from '@/utils/facility-status'
 import type { Employee, FacilityMeeting } from '@/types'
 import styles from '../facility-detail.module.css'
@@ -12,6 +13,7 @@ type Props = {
 
 // 現在進行中の会議: 件名・時刻・残り分数と、登録者/参加者をアバター付き人物行で表示する
 export const FacilityCurrentEvent = ({ meeting, nowMin, employees }: Props) => {
+  const { openPersonDetail } = useDetailPanel()
   const empById = useEmployeeMap(employees)
   const organizer = empById.get(meeting.organizerId)
   // participantIds は登録者を含む出席者全員。参加者欄は登録者を除いた人だけを出す
@@ -34,7 +36,7 @@ export const FacilityCurrentEvent = ({ meeting, nowMin, employees }: Props) => {
 
       <div className={styles.facCurrentGroup}>
         <div className={styles.facCurrentGroupLabel}>登録者</div>
-        {organizer && <FacilityPersonRow employee={organizer} />}
+        {organizer && <PersonRow employee={organizer} onClick={openPersonDetail} />}
       </div>
 
       <div className={styles.facCurrentHairline} />
@@ -51,7 +53,7 @@ export const FacilityCurrentEvent = ({ meeting, nowMin, employees }: Props) => {
         </div>
         <div className={styles.facCurrentPartsList}>
           {participants.map((employee) => (
-            <FacilityPersonRow key={employee.id} employee={employee} />
+            <PersonRow key={employee.id} employee={employee} onClick={openPersonDetail} />
           ))}
         </div>
       </div>

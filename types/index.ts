@@ -318,4 +318,8 @@ export type ScheduleEvent = {
   facilityId?: string
   // 非公開予定。本人以外には件名を出さず時間帯だけ見せる。区分は残るので在席状態は変わらない
   isPrivate?: boolean
+  // 会議の登録者の社員ID。category が 'meeting' の予定のみ持つ
+  organizerId?: string
+  // 会議の参加者全員(登録者を含む)の社員ID配列。category が 'meeting' の予定のみ持つ
+  participantIds?: string[]
 }
