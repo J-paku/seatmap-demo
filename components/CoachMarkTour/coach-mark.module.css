@@ -51,8 +51,8 @@
 
 .card {
   position: absolute;
-  width: min(320px, calc(100vw - 32px));
-  padding: 14px 16px;
+  width: min(340px, calc(100vw - 32px));
+  padding: 18px 20px 16px;
   border: 1px solid var(--color-border);
   border-radius: 14px;
   background: var(--color-surface);
@@ -85,17 +85,17 @@
 }
 
 .question {
-  margin: 0 0 10px;
+  margin: 0 0 12px;
   color: var(--color-text-primary);
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 700;
 }
 
 .text {
-  margin: 0 0 12px;
+  margin: 0 0 18px;
   color: var(--color-text-primary);
-  font-size: 13px;
-  line-height: 1.6;
+  font-size: 14px;
+  line-height: 1.7;
 }
 
 .choices {
@@ -138,33 +138,76 @@
   font-size: 11px;
 }
 
-.actions {
+/* 残り段数を一目で示すドット。件数が少ない(4段前後)前提の表現 */
+.progress {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
+  margin: 0 0 14px;
 }
 
-.progress {
-  margin-right: auto;
-  color: var(--color-text-muted);
-  font-size: 11px;
-  font-variant-numeric: tabular-nums;
+.dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-border-strong);
 }
 
-.skip {
-  margin-top: 10px;
+.dotActive {
+  background: var(--color-accent);
 }
 
-.actions .skip {
-  margin-top: 0;
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 
-.back {
-  height: 44px;
-  padding: 0 14px;
+/* .pixel-btn(特異度 0,1,0)に負けないよう .card を前置して 0,2,0 にする。
+   枠と影は pixel 規格のまま、面だけ accent にして主ボタンだけを持ち上げる */
+.card .next {
+  width: 100%;
+  height: 48px;
+  border-color: var(--color-accent);
+  background: var(--color-accent);
+  color: var(--color-text-on-accent);
+  font-size: 15px;
 }
 
-.back:focus-visible {
+.card .next:focus-visible {
   outline: 2px solid var(--color-accent);
   outline-offset: 3px;
+}
+
+.subActions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+.link {
+  min-height: 44px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  color: var(--color-text-secondary);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.link:hover {
+  color: var(--color-text-primary);
+}
+
+.link:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+.linkDivider {
+  color: var(--color-text-muted);
+  font-size: 12px;
 }
