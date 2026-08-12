@@ -10,12 +10,12 @@ import type { UseLayoutEditorApi } from '@/hooks/use-layout-editor/use-layout-ed
 import { FURNITURE_DEFAULT_SIZE, FURNITURE_KIND_LABEL } from '@/utils/furniture-catalog'
 import { rectOfRef } from '@/utils/layout/layout-objects'
 import { lockedMessage, placementBlockReason } from '@/utils/layout/layout-rules'
+import { GHOST_MIN_SIZE } from '@/utils/layout/rect'
 import type { Rect } from '@/utils/layout/rect'
 import { DEFAULT_SEAT_HEIGHT, DEFAULT_SEAT_WIDTH } from '@/utils/layout/seat-relayout'
 import { NEW_TEAM_AREA_SIZE } from '@/utils/layout/team-create-grid'
 import { buildTeamImportPlan } from '@/utils/layout/team-import'
 import type { TeamImportSource } from '@/utils/layout/team-import'
-import { GHOST_MIN_SIZE } from '@/hooks/use-ghost-placement'
 import type { FurnitureKind, LayoutObjectRef } from '@/types'
 
 // 追加導線の状態機械。カテゴリ → (家具なら)ピッカー → ゴースト → 確定。
@@ -121,7 +121,6 @@ export const useObjectPlacement = (
     minSize: request?.minSize,
     siblings,
     blockReason,
-    floorSize: layout?.viewBox ?? null,
   })
 
   // 入口はどれも同じ手順で始める。閲覧モードなら先に編集セッションを起こし、

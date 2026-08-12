@@ -7,6 +7,9 @@ export type Rect = { x: number; y: number; w: number; h: number }
 // 判定は重なっている」が起き、置けない理由が利用者から見えなくなる
 const GHOST_DISPLAY_MIN = 44
 
+// 実物由来のゴースト最小辺(viewBox 単位)。配置・リサイズの下限が共有する
+export const GHOST_MIN_SIZE = 40
+
 // 対象オブジェクトの矩形(rotation は判定に加味しない=AABB)
 export const rectOf = (o: { x: number; y: number; width: number; height: number }): Rect => ({
   x: o.x,
@@ -38,7 +41,7 @@ export const clampGhostDisplaySize = (size: { width: number; height: number }) =
 export const pointInRect = (px: number, py: number, r: Rect): boolean =>
   px >= r.x && px <= r.x + r.w && py >= r.y && py <= r.y + r.h
 
-// viewBox 全域クランプ(ドラッグ中常時)
+// viewBox 全域クランプ
 export const clampRectToViewBox = (r: Rect, viewW: number, viewH: number): Rect => ({
   x: Math.min(Math.max(r.x, 0), viewW - r.w),
   y: Math.min(Math.max(r.y, 0), viewH - r.h),

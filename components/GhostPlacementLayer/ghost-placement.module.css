@@ -96,20 +96,6 @@
   pointer-events: none;
 }
 
-/* フロア境界。外側は巨大 outline の一様シェードで「フロアではない」を示す。
-   フロア外がブロック理由の間だけ境界線を危険色にする */
-.floorBoundary {
-  position: fixed;
-  border: 2px dashed var(--color-border-strong);
-  outline: 200vmax solid color-mix(in srgb, var(--color-scrim) 35%, transparent);
-  pointer-events: none;
-}
-
-.floorBoundary.isBlocking {
-  border-color: var(--color-danger);
-  border-style: solid;
-}
-
 /* §04-2: 移動モードのときだけ枠上部に出す名前バッジ。新規配置では出さない */
 .moveLabel {
   position: absolute;

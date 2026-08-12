@@ -1154,10 +1154,18 @@
 /* §06-2: ドラッグ中のドロップ先ハイライト。セルのラッパー(位置決め用のdiv、空セル・在席セル
    どちらにも付く)へ直接付ける。3pxアウトライン・拡大1.04倍・accent12%地。色はvar(--color-accent)
    から導出し、リテラルのHEX/rgbaは使わない */
+/* 落とし先のセル。拡大(transform)で示さない —
+   transform はスクロール可能なはみ出しに数えられるため、最終行のセルが1.04倍になるだけで
+   グリッドに縦スクロールが生えてしまう(Desktop は縦スクロールバーが出現、Compact は
+   overflow-y: hidden なので代わりに欠ける)。枠と地色だけで示せば箱の大きさは変わらない */
 .dropTarget {
+  /* 内側(-)へ寄せるとカードの不透明な地に隠れるので、枠は箱の外側へ出す。
+     outline と box-shadow はスクロール可能なはみ出しに数えられないので広げても安全 */
   outline: 3px solid var(--color-accent);
-  transform: scale(1.04);
-  background: color-mix(in srgb, var(--color-accent) 12%, transparent);
+  outline-offset: 2px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--color-accent) 16%, transparent);
+  box-shadow: 0 0 0 5px color-mix(in srgb, var(--color-accent) 16%, transparent);
 }
 
 /* STEP B2: タッチドラッグ中に指へ追従するゴースト(SeatDragGhost)。座標はJS側でleft/topへ渡し、

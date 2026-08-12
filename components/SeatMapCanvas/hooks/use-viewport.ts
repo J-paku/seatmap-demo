@@ -156,8 +156,8 @@ export const useViewport = (): Viewport => {
     mountedRef.current = true
   }, [applyTransform])
 
-  // 入力(リサイズ・キーボード・ホイール)は useViewportInput が変換モデルへ繋ぐ
-  useViewportInput({ containerRef, rectRef, rect, cancelAnim, lerpZoom, immediateZoom })
+  // 入力(リサイズ・キーボード・ホイール・画面端自動パン)は useViewportInput が変換モデルへ繋ぐ
+  useViewportInput({ containerRef, rectRef, transformRef, animRef, rect, cancelAnim, applyTransform, commitSnap, lerpZoom, immediateZoom })
 
   useEffect(() => () => cancelAnim(), [cancelAnim])
 

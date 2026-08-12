@@ -1,9 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { PointerEvent as ReactPointerEvent } from 'react'
 import { SEATMAP_BG_ID } from '@/components/SheetShell'
+import { useEdgeAutoPan } from '@/hooks/use-edge-auto-pan'
 import { triggerHaptic } from '@/utils/haptic'
+import { edgePanDelta } from '@/utils/layout/edge-pan'
 import { clamp } from '@/utils/layout/geometry'
-import { clampGhostDisplaySize } from '@/utils/layout/rect'
+import { GHOST_MIN_SIZE, clampGhostDisplaySize } from '@/utils/layout/rect'
 import type { Rect } from '@/utils/layout/rect'
 import { resizeRect } from '@/utils/layout/resize-anchor'
 import type { ResizeHandle } from '@/utils/layout/resize-anchor'
@@ -22,9 +24,12 @@ import type { PlacementBlockReason } from '@/utils/layout/layout-rules'
 // キャンバスの DOM 木の外へ置くため。ゴーストをキャンバスの子にすると、その scrim が
 // キャンバスの pointerdown を丸ごと奪ってパン/ズームが完全に止まる
 
-// 実物由来のゴースト最小・最大辺(viewBox 単位)
-export const GHOST_MIN_SIZE = 40
+// 実物由来のゴースト最大辺(viewBox 単位)。最小辺は utils/layout/rect の GHOST_MIN_SIZE
 const GHOST_MAX_SIZE = 2500
+
+// ドラッグ確定の移動量。これ未満は「掴んだだけ」とみなし自動パンを起こさない
+// (編集ドラッグの DRAG_THRESHOLD_PX と同値)
+const DRAG_CONFIRM_PX = 3
 
 type Transform = { scale: number; tx: number; ty: number }
 
@@ -41,8 +46,6 @@ type Options = {
   siblings: Rect[]
   // 置けない理由の判定。ポリシーは utils/layout/layout-rules 側に置き、ここは呼ぶだけ
   blockReason?: (rect: Rect) => PlacementBlockReason | null
-  // フロア(viewBox)実寸。ゴースト層が「フロアの外」を可視化するのに使う
-  floorSize?: { width: number; height: number } | null
 }
 
 export type GhostPlacement = {
@@ -55,9 +58,6 @@ export type GhostPlacement = {
   blockReason: PlacementBlockReason | null
   // 重なっている障害物の画面座標矩形。ゴースト層が強調表示に使う
   screenBlockedRects: { left: number; top: number; width: number; height: number }[]
-  // フロア全域の画面座標矩形。キャンバスはフロアの外まで見えるため、
-  // 境界を描かないと「余白に見えるがフロア外」を利用者が判別できない
-  screenFloorRect: { left: number; top: number; width: number; height: number } | null
   isDragging: boolean
   onGhostPointerDown: (e: ReactPointerEvent) => void
   onHandlePointerDown: (handle: ResizeHandle, e: ReactPointerEvent) => void
@@ -77,7 +77,9 @@ const findCanvas = (): HTMLElement | null => document.getElementById(SEATMAP_BG_
 
 type DragState =
   | { kind: 'none' }
-  | { kind: 'move'; pointerId: number; grabDx: number; grabDy: number }
+  // startX/startY/moved はドラッグ確定判定用。端ゾーンでゴーストを掴んだだけの
+  // タップ(指の微振動)で自動パンを始めないため、確定前は edgePan を呼ばない
+  | { kind: 'move'; pointerId: number; grabDx: number; grabDy: number; startX: number; startY: number; moved: boolean }
   | { kind: 'resize'; pointerId: number; handle: ResizeHandle; startX: number; startY: number; startRect: Rect }
 
 export const useGhostPlacement = ({
@@ -87,7 +89,6 @@ export const useGhostPlacement = ({
   minSize = { width: GHOST_MIN_SIZE, height: GHOST_MIN_SIZE },
   siblings,
   blockReason: getBlockReason,
-  floorSize = null,
 }: Options): GhostPlacement => {
   const [transform, setTransform] = useState<Transform>({ scale: 1, tx: 0, ty: 0 })
   // 画面座標のゴースト中心
@@ -104,6 +105,8 @@ export const useGhostPlacement = ({
   const siblingsRef = useRef(siblings)
   const dragRef = useRef<DragState>({ kind: 'none' })
   const minSizeRef = useRef(minSize)
+  // 画面端自動パン。ゴーストが端で止まっても、地図側が滑って行き先が画面外へ広がる
+  const edgePan = useEdgeAutoPan()
 
   // ポインタ/rAF ハンドラは「今の値」を読む必要がある。effect へ移すと、同じコミットで
   // 張ったハンドラが1フレーム古い値を掴んでドラッグが1フレーム遅れて追従する
@@ -188,6 +191,8 @@ export const useGhostPlacement = ({
       setCenter(null)
       setGuides([])
       dragRef.current = { kind: 'none' }
+      // ドラッグ中に配置がキャンセルされた場合、パンループだけ生き残らせない
+      edgePan.stop()
       return
     }
     const canvas = findCanvas()
@@ -207,7 +212,7 @@ export const useGhostPlacement = ({
           y: canvasRectRef.current.top + canvasRectRef.current.height / 2,
         }
     setCenter(initial)
-  }, [active, size, initialRect, toScreenCenter])
+  }, [active, size, initialRect, toScreenCenter, edgePan])
 
   // キャンバスの transform を監視して、ゴーストの表示寸法を実寸×scale に追従させる
   useEffect(() => {
@@ -248,21 +253,29 @@ export const useGhostPlacement = ({
     return () => window.removeEventListener('resize', onResize)
   }, [active])
 
-  const onGhostPointerDown = useCallback((e: ReactPointerEvent) => {
-    const cur = centerRef.current
-    if (!cur) return
-    e.stopPropagation()
-    dragRef.current = {
-      kind: 'move',
-      pointerId: e.pointerId,
-      grabDx: e.clientX - cur.x,
-      grabDy: e.clientY - cur.y,
-    }
-    ;(e.target as HTMLElement).setPointerCapture(e.pointerId)
-    setIsDragging(true)
-    // §04-1: 掴み = light
-    triggerHaptic('light')
-  }, [])
+  const onGhostPointerDown = useCallback(
+    (e: ReactPointerEvent) => {
+      const cur = centerRef.current
+      if (!cur) return
+      e.stopPropagation()
+      // 2本目の指がドラッグ状態を上書きしても、1本目が起こしたパンループを残さない
+      edgePan.stop()
+      dragRef.current = {
+        kind: 'move',
+        pointerId: e.pointerId,
+        grabDx: e.clientX - cur.x,
+        grabDy: e.clientY - cur.y,
+        startX: e.clientX,
+        startY: e.clientY,
+        moved: false,
+      }
+      ;(e.target as HTMLElement).setPointerCapture(e.pointerId)
+      setIsDragging(true)
+      // §04-1: 掴み = light
+      triggerHaptic('light')
+    },
+    [edgePan]
+  )
 
   const onHandlePointerDown = useCallback(
     (handle: ResizeHandle, e: ReactPointerEvent) => {
@@ -271,6 +284,8 @@ export const useGhostPlacement = ({
       const rect = toLogicalRect(cur, sizeRef.current)
       if (!rect) return
       e.stopPropagation()
+      // リサイズ経路は edgePan を使わないので、移動ドラッグのループをここで確実に止める
+      edgePan.stop()
       dragRef.current = {
         kind: 'resize',
         pointerId: e.pointerId,
@@ -284,7 +299,7 @@ export const useGhostPlacement = ({
       // §04-1: リサイズ開始 = light
       triggerHaptic('light')
     },
-    [toLogicalRect]
+    [toLogicalRect, edgePan]
   )
 
   useEffect(() => {
@@ -296,10 +311,25 @@ export const useGhostPlacement = ({
       const t = transformRef.current
 
       if (drag.kind === 'move') {
+        if (!drag.moved && Math.hypot(e.clientX - drag.startX, e.clientY - drag.startY) > DRAG_CONFIRM_PX) {
+          drag.moved = true
+        }
         const raw = clampCenter({ x: e.clientX - drag.grabDx, y: e.clientY - drag.grabDy })
-        const snapped = applySnap(raw)
-        setCenter(clampCenter(snapped.center))
-        setGuides(toScreenGuides(snapped.guides))
+        // 端ゾーンでは吸着させない。自動パンで地図側が毎フレーム動くため、吸着先も
+        // 毎フレーム変わり、ガイドが実位置とずれたまま凍り付く
+        const canvas = canvasRectRef.current
+        const panning =
+          drag.moved && canvas !== null && edgePanDelta({ x: e.clientX, y: e.clientY }, canvas) !== null
+        if (panning) {
+          setCenter(raw)
+          setGuides([])
+        } else {
+          const snapped = applySnap(raw)
+          setCenter(clampCenter(snapped.center))
+          setGuides(toScreenGuides(snapped.guides))
+        }
+        // 自動パンはドラッグ確定後のみ。端ゾーンで掴んだだけのタップでパンさせない
+        if (drag.moved) edgePan.update(e.clientX, e.clientY, canvas)
         return
       }
 
@@ -332,6 +362,7 @@ export const useGhostPlacement = ({
       const drag = dragRef.current
       if (drag.kind === 'none' || drag.pointerId !== e.pointerId) return
       dragRef.current = { kind: 'none' }
+      edgePan.stop()
       setIsDragging(false)
       setGuides([])
       // §04-1: 離し = medium。pointercancel は「離した」ではないので鳴らさない
@@ -349,7 +380,7 @@ export const useGhostPlacement = ({
       window.removeEventListener('pointerup', onUp)
       window.removeEventListener('pointercancel', onCancel)
     }
-  }, [active, applySnap, clampCenter, toScreenCenter, toScreenGuides])
+  }, [active, applySnap, clampCenter, toScreenCenter, toScreenGuides, edgePan])
 
   // 実測したキャンバス矩形(ref)から描画用の論理矩形を導く。state に持たせると
   // 実測 → setState → 再描画 の1往復が挟まり、ゴーストが1フレーム遅れて出る
@@ -370,7 +401,7 @@ export const useGhostPlacement = ({
 
   // 重なった障害物を画面座標へ移す。ゴースト層の強調表示用
   const screenBlockedRects =
-    blockReason?.kind === 'overlap' && screenOrigin
+    blockReason && screenOrigin
       ? blockReason.rects.map((r) => ({
           left: screenOrigin.x + r.x * transform.scale,
           top: screenOrigin.y + r.y * transform.scale,
@@ -378,17 +409,6 @@ export const useGhostPlacement = ({
           height: r.h * transform.scale,
         }))
       : []
-
-  // フロア全域の画面座標矩形(境界の可視化用)
-  const screenFloorRect =
-    floorSize && screenOrigin
-      ? {
-          left: screenOrigin.x,
-          top: screenOrigin.y,
-          width: floorSize.width * transform.scale,
-          height: floorSize.height * transform.scale,
-        }
-      : null
 
   // 表示寸法は実寸×scale(最小44pxのみ保証)。表示と当たり判定を等尺にする —
   // 縮小表示は「見た目は重なっていないのに置けない」を生むため上限クランプは廃止した
@@ -424,7 +444,6 @@ export const useGhostPlacement = ({
     blocked,
     blockReason,
     screenBlockedRects,
-    screenFloorRect,
     isDragging,
     onGhostPointerDown,
     onHandlePointerDown,

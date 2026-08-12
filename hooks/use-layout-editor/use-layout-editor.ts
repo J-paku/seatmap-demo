@@ -5,7 +5,6 @@ import type { LayoutAction, SeatShape } from '@/utils/layout/layout-actions'
 import { useErrorToast } from './use-error-toast'
 import type { ErrorToastState } from './use-error-toast'
 import type { GaroonFacility } from '@/lib/garoon-facilities'
-import { clampRectToViewBox } from '@/utils/layout/rect'
 import type { Rect } from '@/utils/layout/rect'
 import { findOverlappingSeat, findTeamContaining, lockedMessage, placementBlocked, seatOverlapsFixture } from '@/utils/layout/layout-rules'
 import { rectOfRef } from '@/utils/layout/layout-objects'
@@ -107,11 +106,7 @@ export const useLayoutEditor = (sourceLayout: SeatLayout | undefined): UseLayout
       if (!layout) return
       const seat = layout.seats.find((s) => s.id === seatId)
       if (!seat) return
-      const candidate = clampRectToViewBox(
-        { x, y, w: seat.width, h: seat.height },
-        layout.viewBox.width,
-        layout.viewBox.height
-      )
+      const candidate: Rect = { x, y, w: seat.width, h: seat.height }
 
       // ドロップ先が他座席と重なる場合はスワップとして解釈(座標は互いに維持)
       const overlapped = findOverlappingSeat(layout.seats, seatId, candidate)
@@ -182,17 +177,16 @@ export const useLayoutEditor = (sourceLayout: SeatLayout | undefined): UseLayout
         return false
       }
       const candidate: Rect = { x, y, w: team.area.w, h: team.area.h }
-      const clamped = clampRectToViewBox(candidate, layout.viewBox.width, layout.viewBox.height)
 
       // 置ける場所の判定はゴーストと同じ placementBlocked を通す(§04-4: チーム枠は4px内側
       // インセット + 会議室)。ここだけ teamAreaOverlaps(インセット無し・会議室を見ない)で
       // 判定していると、「ゴーストは置けると言うのに配置を押すと動かない」ズレが出る。
       // 実際に1Fの隣接チーム(枠が2px間隔で並ぶ)で再現した
-      if (placementBlocked(layout, { kind: 'team', id: teamId }, clamped)) {
+      if (placementBlocked(layout, { kind: 'team', id: teamId }, candidate)) {
         showError(MSG_OVERLAP)
         return false
       }
-      return stage({ type: 'team-move', teamId, x: clamped.x, y: clamped.y }) !== 'blocked'
+      return stage({ type: 'team-move', teamId, x: candidate.x, y: candidate.y }) !== 'blocked'
     },
     [editingLayout, stage, showError]
   )

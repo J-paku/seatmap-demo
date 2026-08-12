@@ -338,16 +338,16 @@
   z-index: var(--z-index-popover);
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 10px 16px;
+  gap: 8px;
+  padding: 6px 10px;
   border-radius: 9999px;
 }
 
 /* 変更件数のチップ。主ボタンの中に入れて「あと何件で押せるか」を操作の場所で示す */
 .editRemoteCount {
-  padding: 1px 7px;
+  padding: 1px 6px;
   border-radius: 9999px;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
@@ -359,10 +359,10 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 44px;
+  height: 38px;
   border: 0;
   border-radius: 9999px;
-  font-size: 13px;
+  font-size: 12.5px;
   font-weight: 700;
   white-space: nowrap;
   cursor: pointer;
@@ -390,7 +390,7 @@
 
 /* 副操作。塗らずに文字だけで置き、主ボタンと重さを分ける */
 .editRemoteCancel {
-  padding: 0 16px;
+  padding: 0 12px;
   background: transparent;
   color: var(--color-text-secondary);
 }
@@ -401,9 +401,9 @@
 
 /* 主操作。塗って前に出す。最小幅は保存中のスピナー差し替えで幅が動かないための保険 */
 .editRemoteFinish {
-  gap: 6px;
-  min-width: 132px;
-  padding: 0 18px;
+  gap: 5px;
+  min-width: 108px;
+  padding: 0 14px;
   background: var(--color-accent);
   color: var(--color-text-on-accent);
   box-shadow: var(--shadow-card);
@@ -431,6 +431,12 @@
 
 .editRemoteFinish:disabled .editRemoteCount {
   background: color-mix(in srgb, var(--color-text-disabled) 22%, transparent);
+}
+
+/* グローバル .material-symbols-outlined は 26px。この文字サイズには大きすぎるので下げる
+   (同詳細度では勝てないので子孫セレクタで詳細度を上げる。docs/styling.md 1.) */
+.editRemoteFinish :global(.material-symbols-outlined) {
+  font-size: 18px;
 }
 
 /* 保存中のスピナー。チェックアイコンと同じ幅で置き換わる */

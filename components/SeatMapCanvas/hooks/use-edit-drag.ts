@@ -3,6 +3,7 @@ import type { PointerEvent as ReactPointerEvent } from 'react'
 import { useUndoChip } from './use-undo-chip'
 import { siblingRectsForObject, siblingRectsForTeam } from '../utils/sibling-rects'
 import type { EditDrag, LivePosition, Rect, Viewport } from '../type'
+import { useEdgeAutoPan } from '@/hooks/use-edge-auto-pan'
 import { computeSnap, snapThreshold } from '@/utils/layout/snap-guides'
 import type { SnapGuide } from '@/utils/layout/snap-guides'
 import { rectOfRef } from '@/utils/layout/layout-objects'
@@ -61,9 +62,11 @@ export const useEditDrag = ({
   onObjectTap,
   onEndSession,
 }: Options): EditDragState => {
-  const { transformRef } = viewport
+  const { transformRef, rect } = viewport
   const editDragRef = useRef<EditDrag>({ kind: 'none' })
   const undoChip = useUndoChip(transformRef)
+  // 画面端自動パン。掴んだまま端へ寄せると地図側が滑り、行き先が画面外へ広がる
+  const edgePan = useEdgeAutoPan()
   // ドラッグで動かした直後にブラウザが送る click を1回だけ握り潰すための目印。
   // 読み取りと消費を1関数へ閉じるのは FAB の長押し(consumeFired)と同じ理由 —
   // 呼び出し側へ ref を渡すと外から書き換える形になり React Compiler の検査に反する
@@ -129,58 +132,82 @@ export const useEditDrag = ({
     return true
   }, [layout.seats, applySeatSelection])
 
+  // ポインタの論理座標(viewBox 系)。画面差分の積み上げではなく毎回ここから引き直すことで、
+  // 画面端自動パンで変換が動いている間も掴んだ矩形が指の真下に残る
+  const pointerLogical = useCallback(
+    (clientX: number, clientY: number) => {
+      const r = rect()
+      if (!r) return null
+      const t = transformRef.current
+      return { x: (clientX - r.left - t.translateX) / t.scale, y: (clientY - r.top - t.translateY) / t.scale }
+    },
+    [rect, transformRef]
+  )
+
   const onTeamLabelEditPointerDown = useCallback(
     (teamId: string, e: ReactPointerEvent) => {
       if (!isEditMode) return
       e.stopPropagation()
       const team = layout.teams.find((t) => t.id === teamId)
       if (!team) return
+      const p = pointerLogical(e.clientX, e.clientY)
+      if (!p) return
       suppressTapRef.current = false
       applySeatSelection([])
       setEditSelectedObject(null)
       undoChip.dismiss()
+      // 2本目の指がドラッグ状態を上書きしても、1本目が起こしたパンループを残さない
+      edgePan.stop()
       editDragRef.current = {
         kind: 'team',
         teamId,
         pointerId: e.pointerId,
         startScreenX: e.clientX,
         startScreenY: e.clientY,
-        startLogicalX: team.area.x,
-        startLogicalY: team.area.y,
+        grabDx: p.x - team.area.x,
+        grabDy: p.y - team.area.y,
+        lastClientX: e.clientX,
+        lastClientY: e.clientY,
         liveX: team.area.x,
         liveY: team.area.y,
         moved: false,
       }
       ;(e.target as HTMLElement).setPointerCapture(e.pointerId)
     },
-    [isEditMode, layout.teams, applySeatSelection, undoChip]
+    [isEditMode, layout.teams, applySeatSelection, undoChip, pointerLogical, edgePan]
   )
 
   const onObjectEditPointerDown = useCallback(
     (ref: LayoutObjectRef, e: ReactPointerEvent) => {
       if (!isEditMode) return
       e.stopPropagation()
-      const rect = rectOfRef(layout, ref)
-      if (!rect) return
+      const objRect = rectOfRef(layout, ref)
+      if (!objRect) return
+      const p = pointerLogical(e.clientX, e.clientY)
+      if (!p) return
       suppressTapRef.current = false
       setEditSelectedObject(ref)
       applySeatSelection([])
       undoChip.dismiss()
+      // 2本目の指がドラッグ状態を上書きしても、1本目が起こしたパンループを残さない
+      edgePan.stop()
       editDragRef.current = {
         kind: 'object',
         ref,
         pointerId: e.pointerId,
         startScreenX: e.clientX,
         startScreenY: e.clientY,
-        startLogicalX: rect.x,
-        startLogicalY: rect.y,
-        liveX: rect.x,
-        liveY: rect.y,
+        grabDx: p.x - objRect.x,
+        grabDy: p.y - objRect.y,
+        lastClientX: e.clientX,
+        lastClientY: e.clientY,
+        liveX: objRect.x,
+        liveY: objRect.y,
         moved: false,
       }
       ;(e.target as HTMLElement).setPointerCapture(e.pointerId)
     },
-    [isEditMode, layout, applySeatSelection, undoChip]
+    [isEditMode, layout, applySeatSelection, undoChip, pointerLogical, edgePan]
   )
 
   // 05-3: チーム枠タップ = 移動ゴースト。ラベルを掴んで動かした後の click はここで捨てる。
@@ -212,15 +239,15 @@ export const useEditDrag = ({
   useEffect(() => {
     if (!isEditMode) return
 
-    const onMove = (e: PointerEvent) => {
+    // 掴んだ矩形をポインタの真下へ引き直す。pointermove と自動パンの両方から毎フレーム呼ばれる
+    const follow = (clientX: number, clientY: number) => {
       const drag = editDragRef.current
-      if (drag.kind === 'none' || drag.pointerId !== e.pointerId) return
+      if (drag.kind === 'none') return
+      const p = pointerLogical(clientX, clientY)
+      if (!p) return
       const scale = transformRef.current.scale
-      const dxScreen = e.clientX - drag.startScreenX
-      const dyScreen = e.clientY - drag.startScreenY
-      if (!drag.moved && Math.hypot(dxScreen, dyScreen) > DRAG_THRESHOLD_PX) drag.moved = true
-      const rawX = drag.startLogicalX + dxScreen / scale
-      const rawY = drag.startLogicalY + dyScreen / scale
+      const rawX = p.x - drag.grabDx
+      const rawY = p.y - drag.grabDy
 
       if (drag.kind === 'object') {
         const rect = rectOfRef(layout, drag.ref)
@@ -243,10 +270,29 @@ export const useEditDrag = ({
       }
     }
 
+    const onMove = (e: PointerEvent) => {
+      const drag = editDragRef.current
+      if (drag.kind === 'none' || drag.pointerId !== e.pointerId) return
+      if (!drag.moved && Math.hypot(e.clientX - drag.startScreenX, e.clientY - drag.startScreenY) > DRAG_THRESHOLD_PX) {
+        drag.moved = true
+      }
+      drag.lastClientX = e.clientX
+      drag.lastClientY = e.clientY
+      follow(e.clientX, e.clientY)
+      // 自動パンはドラッグが確定してから。端の近くで掴んだだけのタップでパンさせない
+      if (drag.moved) {
+        edgePan.update(e.clientX, e.clientY, rect(), () => {
+          const d = editDragRef.current
+          if (d.kind !== 'none') follow(d.lastClientX, d.lastClientY)
+        })
+      }
+    }
+
     const onUp = (e: PointerEvent) => {
       const drag = editDragRef.current
       if (drag.kind === 'none' || drag.pointerId !== e.pointerId) return
       editDragRef.current = { kind: 'none' }
+      edgePan.stop()
       // 動かして離した = ドラッグ確定。この直後に来る click はタップではないので捨てる
       suppressTapRef.current = drag.moved
       setSnapGuides([])
@@ -273,7 +319,7 @@ export const useEditDrag = ({
       window.removeEventListener('pointerup', onUp)
       window.removeEventListener('pointercancel', onUp)
     }
-  }, [isEditMode, layout, transformRef, onTeamMove, onObjectMove, undoChip])
+  }, [isEditMode, layout, transformRef, onTeamMove, onObjectMove, undoChip, pointerLogical, rect, edgePan])
 
   // 05-3 のキー操作。Escape は1回の押下で ①選択解除 ②セッション終了(ステージング破棄)の
   // 両方を発火させる — 確認は挟まない
@@ -305,7 +351,9 @@ export const useEditDrag = ({
     setSnapGuides([])
     undoChip.dismiss()
     editDragRef.current = { kind: 'none' }
-  }, [isEditMode, undoChip])
+    // ドラッグ中にセッションが終わった場合、パンループだけ生き残らせない
+    edgePan.stop()
+  }, [isEditMode, undoChip, edgePan])
 
   return {
     liveTeamPos,

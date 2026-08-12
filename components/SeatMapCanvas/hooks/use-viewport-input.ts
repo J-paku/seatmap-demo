@@ -1,7 +1,11 @@
 import { useEffect } from 'react'
 import type { RefObject } from 'react'
 import { isModalOpen } from '../utils/canvas-metrics'
+import type { Anim } from '../type'
+import { EDGE_PAN_END_EVENT, EDGE_PAN_EVENT } from '@/utils/layout/edge-pan'
+import type { EdgePanDelta } from '@/utils/layout/edge-pan'
 import { clamp } from '@/utils/layout/geometry'
+import type { Transform } from '@/utils/layout/geometry'
 
 // キャンバスへの入力(リサイズ再計測・キーボード ±・ホイール/トラックパッド)を変換モデルへ繋ぐ。
 // 変換そのものは useViewport が持ち、ここは「いつ呼ぶか」だけを担う
@@ -16,8 +20,12 @@ const LINE_TO_PX = 33
 type Options = {
   containerRef: RefObject<HTMLDivElement | null>
   rectRef: RefObject<DOMRect | null>
+  transformRef: RefObject<Transform>
+  animRef: RefObject<Anim>
   rect: () => DOMRect | null
   cancelAnim: () => void
+  applyTransform: (t: Transform, allowOverscroll?: boolean) => void
+  commitSnap: () => void
   lerpZoom: (deltaLevel: number, anchorX: number, anchorY: number) => void
   immediateZoom: (deltaLevel: number, anchorX: number, anchorY: number, overscroll?: boolean) => void
 }
@@ -25,8 +33,12 @@ type Options = {
 export const useViewportInput = ({
   containerRef,
   rectRef,
+  transformRef,
+  animRef,
   rect,
   cancelAnim,
+  applyTransform,
+  commitSnap,
   lerpZoom,
   immediateZoom,
 }: Options): void => {
@@ -38,6 +50,29 @@ export const useViewportInput = ({
     window.addEventListener('resize', onResize)
     return () => window.removeEventListener('resize', onResize)
   }, [containerRef, rectRef])
+
+  // ドラッグ中の画面端自動パン(hooks/use-edge-auto-pan が飛ばす)を変換モデルへ繋ぐ。
+  // ゴースト層はキャンバスの DOM 木の外にいるため、結線はイベント経由になる
+  useEffect(() => {
+    const onPan = (e: Event) => {
+      const { dx, dy } = (e as CustomEvent<EdgePanDelta>).detail
+      // バウンス中はスプリングに譲る。ここで消すと過大 scale のまま取り残されるか、
+      // クランプが基点補正なしで scale を1フレームで飛ばす
+      if (animRef.current.kind === 'bounce') return
+      cancelAnim()
+      const t = transformRef.current
+      // 平行移動のみの1歩。scale は現在値をそのまま通す(クランプすると、進行中の
+      // ピンチのオーバースクロール scale と毎フレーム拮抗してジッタになる)
+      applyTransform({ scale: t.scale, translateX: t.translateX + dx, translateY: t.translateY + dy }, true)
+    }
+    const onEnd = () => commitSnap()
+    window.addEventListener(EDGE_PAN_EVENT, onPan)
+    window.addEventListener(EDGE_PAN_END_EVENT, onEnd)
+    return () => {
+      window.removeEventListener(EDGE_PAN_EVENT, onPan)
+      window.removeEventListener(EDGE_PAN_END_EVENT, onEnd)
+    }
+  }, [animRef, transformRef, applyTransform, cancelAnim, commitSnap])
 
   // キーボード ±level
   useEffect(() => {

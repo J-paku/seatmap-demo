@@ -77,8 +77,14 @@ type EditDragBase = {
   pointerId: number
   startScreenX: number
   startScreenY: number
-  startLogicalX: number
-  startLogicalY: number
+  // 掴んだ点と矩形原点の論理座標差。画面端自動パンで変換が毎フレーム動くため、
+  // 画面差分の積み上げではなく毎回絶対座標から引き直して指の真下に保つ
+  grabDx: number
+  grabDy: number
+  // 最後に観測したポインタ位置。自動パン中は pointermove が来ないフレームでも
+  // この位置から論理座標を引き直す
+  lastClientX: number
+  lastClientY: number
   liveX: number
   liveY: number
   moved: boolean

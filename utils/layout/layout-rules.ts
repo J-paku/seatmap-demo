@@ -27,14 +27,6 @@ export const findTeamContaining = (teams: Team[], excludeTeamId: string, candida
     (t) => t.id !== excludeTeamId && pointInRect(candidate.x + candidate.w / 2, candidate.y + candidate.h / 2, areaRect(t.area))
   ) ?? null
 
-// フロアの外へはみ出しているか。キャンバスはフロアの外側まで見えるので、
-// 「画面上は空いて見えるがフロア外」という位置が実在する
-const outsideViewBox = (layout: SeatLayout, candidate: Rect): boolean =>
-  candidate.x < 0 ||
-  candidate.y < 0 ||
-  candidate.x + candidate.w > layout.viewBox.width ||
-  candidate.y + candidate.h > layout.viewBox.height
-
 // §04-4: チーム枠を障害物として当てるときの内側インセット。枠線に触れる程度の重なりは通す
 const TEAM_COLLISION_INSET = 4
 
@@ -48,13 +40,11 @@ const obstacleRects = (layout: SeatLayout, self: LayoutObjectRef | null): Rect[]
   ...rectsOfKinds(layout, ['facility'], self),
 ]
 
-// 置けない理由。「フロア外」と「何かと重なっている」は利用者への見せ方が違う —
-// 前者は見た目上ただの余白なので文言で伝えるしかなく、後者は相手の矩形を強調できる
-export type PlacementBlockReason =
-  | { kind: 'outside-floor' }
-  | { kind: 'overlap'; rects: Rect[] }
+// 置けない理由。重なっている相手の矩形を返し、表示側が強調に使う。
+// フロア(viewBox)外は制限しない — フロアはあくまで初期表示の範囲で、配置はどこでも可
+export type PlacementBlockReason = { kind: 'overlap'; rects: Rect[] }
 
-// 会議室・家具・チーム枠の新規配置と再配置の可否。フロアの外も置けない場所として扱う。
+// 会議室・家具・チーム枠の新規配置と再配置の可否。
 //
 // ゴーストの表示判定と発行前の検証が同じ関数を通ることが要点。別々に書くと
 // 「ゴーストは置けると言うのに確定すると何も起きない」という無言の失敗になる。
@@ -66,7 +56,6 @@ export const placementBlockReason = (
   self: LayoutObjectRef | null,
   candidate: Rect
 ): PlacementBlockReason | null => {
-  if (outsideViewBox(layout, candidate)) return { kind: 'outside-floor' }
   const hits = obstacleRects(layout, self).filter((r) => rectsIntersect(r, candidate))
   return hits.length > 0 ? { kind: 'overlap', rects: hits } : null
 }
