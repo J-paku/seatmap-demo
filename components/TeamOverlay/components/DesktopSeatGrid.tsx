@@ -126,6 +126,7 @@ export const DesktopSeatGrid = ({
         >
           {isEditMode ? (
             <EditSeatCell
+              isCompact={false}
               seat={seat}
               employee={employee}
               teamName={teamName}

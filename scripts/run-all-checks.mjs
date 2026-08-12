@@ -20,7 +20,7 @@
 
 import { createRequire } from 'node:module'
 import { fileURLToPath } from 'node:url'
-import { readFileSync, readdirSync } from 'node:fs'
+import { existsSync, readFileSync, readdirSync } from 'node:fs'
 import path from 'node:path'
 
 const __filename = fileURLToPath(import.meta.url)
@@ -92,6 +92,22 @@ const findCoachMarkKeys = (dir, keys = new Set()) => {
 
 const COACH_MARK_KEYS = [...findCoachMarkKeys(REPO_ROOT)]
 
+// ---- 2-2. ログインゲートの通過キー。撒かないとログイン画面で止まり、どの状態にも到達できない
+// (画面は正常に描画されるので接続エラーにもならず、全状態が同じ理由で「到達失敗」になる)。
+// キーは lib/session-auth.ts の定義をソースから読む(二重定義にしない)。値は writeSessionAuth と
+// 同じ JSON 形にする — ゲート自体は非 null なら通すが、保存形が違うと読む側で崩れうる ----
+const SESSION_AUTH = (() => {
+  const file = path.join(REPO_ROOT, 'lib/session-auth.ts')
+  if (!existsSync(file)) return null
+  const m = readFileSync(file, 'utf8').match(/SESSION_AUTH_KEY\s*=\s*'([^']+)'/)
+  if (!m) {
+    console.error('[run-all-checks] lib/session-auth.ts の SESSION_AUTH_KEY を読めません。')
+    console.error('  対処: 定数名を変えたなら、この抽出正規表現も合わせて直してください。')
+    process.exit(2)
+  }
+  return { key: m[1], value: JSON.stringify({ loginId: 'E0001' }) }
+})()
+
 // ---- 3. 画面状態ごとの到達手順。verify-edit-anchors.js の状態判定(state)と1対1で対応させる ----
 
 const CANVAS_LAYER_SELECTOR = '[data-canvas-transform-layer="true"]'
@@ -104,13 +120,17 @@ const openFreshPage = async (browser) => {
   page.on('console', (m) => {
     if (m.type() === 'error') consoleErrors.push(`console.error: ${m.text()}`)
   })
-  await page.addInitScript((keys) => {
-    try {
-      keys.forEach((k) => localStorage.setItem(k, '1'))
-    } catch {
-      // localStorage が使えない環境でも到達確認自体は続行させる
-    }
-  }, COACH_MARK_KEYS)
+  await page.addInitScript(
+    ({ keys, auth }) => {
+      try {
+        keys.forEach((k) => localStorage.setItem(k, '1'))
+        if (auth) sessionStorage.setItem(auth.key, auth.value)
+      } catch {
+        // localStorage / sessionStorage が使えない環境でも到達確認自体は続行させる
+      }
+    },
+    { keys: COACH_MARK_KEYS, auth: SESSION_AUTH }
+  )
   // 接続自体ができない(ホスト間違い・サーバー未起動)場合は、どの状態を試しても同じ理由で
   // 全滅するだけなので、状態ごとの FAIL には振り分けず、ハーネス自体のエラーとして即終了する。
   // ここで BASE_URL をそのまま出す(引数がハードコードで無視されていないことの実証)

@@ -247,7 +247,6 @@ export const SeatMapView = () => {
   const minimap = useMinimapPayload(effectiveLayout, focus.payload?.teamId ?? null)
   // 左下 FAB の可否。条件が増えても組み立てが太らないよう判定はフックへ寄せる
   const isAdminFabVisible = useAdminFabVisibility({
-    isEditSession: editor.isEditMode,
     teamOverlayPayload: focus.payload,
     isDirectoryOpen,
     isPlacementActive: placement.isActive,

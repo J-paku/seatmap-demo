@@ -30,6 +30,9 @@
   --color-text-muted: #9c8e80;
   --color-text-disabled: #c4b8ab;
   --color-text-on-accent: #ffffff;
+  /* テーマを問わず白固定の反転文字色(FABアイコン等、ガラスアクセント地の上)。
+     --color-text-on-accent はテーマごとにコントラストを選ぶ別概念なので流用しない */
+  --color-text-inverse: #ffffff;
   --color-border: #e8dfd3;
   --color-border-strong: #d4c7b6;
   --color-avatar-stroke: rgba(42, 37, 34, 0.05);
@@ -90,6 +93,7 @@
   --color-text-muted: #6272a4;
   --color-text-disabled: #4d5066;
   --color-text-on-accent: #282a36;
+  --color-text-inverse: #ffffff;
   --color-border: #44475a;
   --color-border-strong: #6272a4;
   --color-avatar-stroke: rgba(248, 248, 242, 0.05);
@@ -134,6 +138,7 @@
   --color-text-muted: #8b7799;
   --color-text-disabled: #5a4a66;
   --color-text-on-accent: #2a1320;
+  --color-text-inverse: #ffffff;
   --color-border: #3a2d47;
   --color-border-strong: #4d3d5e;
   --color-avatar-stroke: rgba(245, 234, 242, 0.05);

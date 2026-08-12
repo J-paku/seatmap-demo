@@ -1,11 +1,11 @@
 import styles from '../team-overlay-modal.module.css'
 import { GuideButton } from '@/components/GuideButton'
+import { triggerHaptic } from '@/utils/haptic'
 
-// 座席配置セクションの見出しと同期状態。モバイル時だけグリッドの左右パディングに合わせて
-// 縦線を揃える。編集モードの出入口(鉛筆⇔編集中バッジ+終了)もここが同じ位置で持つ
+// 座席配置セクションの見出し(タイトル/座席モード/席数/ガイド/編集の出入口)。
+// 見た目と並びは本家 PiPiT-web の SeatLayoutHeader に揃える
 //
-// isEditMode / onEnterEdit / onExitEdit は STEP A3 時点では任意。呼び出し側(TeamOverlay/index.tsx)
-// の配線は別 STEP の担当で、渡されない間は何も描かず既存表示を1ピクセルも変えない
+// 同期状態の行はこの直下の ScheduleSyncBadge が持つ。ここは見出し行だけを描く
 //
 // onHelp(座席配置ガイド)は編集モードでない時だけ生成する。disabledで殺すのではなく
 // 条件レンダーでそもそも作らない(編集中は鉛筆の代わりに終了ボタンが同じ位置に出るため)
@@ -17,17 +17,16 @@ import { GuideButton } from '@/components/GuideButton'
 // §06-4: 一括取込(部署一括取込)の入口は編集モードのヘッダー。シート内の同名ボタンではなく
 // ここが仕様上の入口で、押すと社員検索シートが開く(選択と確定はシート側の担当)
 
-// §06-2 座席モード: 固定席 ⇄ フリーアドレスのチップトグル(チーム属性 freeAddressEnabled)。
-// 編集モードの時だけ描く。閲覧中に出さないのは、このヘッダーが「閲覧=ガイド+鉛筆 / 編集=一括取込+
-// 編集中バッジ+終了」の排他入れ替えで出来ており、§06-2 のグリッド編集操作は全て編集モード側の
-// 操作だから — 閲覧中に disabled で置くと、押せないのに状態だけ表示する死んだコントロールが増える。
-// 見出し行(.sectionHead)は既に4要素が並ぶので、チップは直下の専用行へ出してグリッドと左端を揃える
+// §06-2 座席モード: 固定席 ⇄ フリーアドレス(チーム属性 freeAddressEnabled)は
+// 「チップ=常時出る状態表示 / スイッチ=編集モード中だけ出る操作」の2部品に分ける。
+// 閲覧中も現在値が読めないと、その席が固定席として空いているのか流動席なのか区別できない。
+// 操作だけを編集モードに閉じれば、押せないのに置いてある死んだコントロールも生まれない
 
 type Props = {
   seatCount: number
-  loading: boolean
-  syncedAt: string
   sidePadding: number
+  // モバイル時は横幅が足りないので2段に組み替える(呼び出し側の useIsCompactMobile の値)
+  isCompactMobile: boolean
   isEditMode?: boolean
   isSaving?: boolean
   onEnterEdit?: () => void
@@ -44,9 +43,8 @@ type Props = {
 
 export const SeatLayoutHeader = ({
   seatCount,
-  loading,
-  syncedAt,
   sidePadding,
+  isCompactMobile,
   isEditMode = false,
   isSaving = false,
   onEnterEdit,
@@ -56,72 +54,141 @@ export const SeatLayoutHeader = ({
   onBulkAssign,
   freeAddressEnabled = false,
   onToggleFreeAddress,
-}: Props) => (
-  <>
-    <div className={styles.sectionHead} style={{ paddingLeft: sidePadding, paddingRight: sidePadding }}>
-      <span className={`material-symbols-outlined ${styles.sectionIcon}`}>grid_view</span>
-      <span className={styles.sectionTitle}>座席配置</span>
-      <span className={styles.sectionCount}>{seatCount}席</span>
-      {isEditMode && onExitEdit ? (
-        <span className={styles.editStatus}>
-          {onBulkAssign && canBulkAssign && (
-            <button
-              type='button'
-              className={styles.bulkImport}
-              aria-label='部署メンバーを一括取込'
-              onClick={onBulkAssign}
-              disabled={isSaving}
-            >
-              部署一括取込
-            </button>
-          )}
-          <span className={styles.editBadge}>編集中</span>
-          <button type='button' className={styles.editFinish} onClick={onExitEdit} disabled={isSaving}>
-            終了
-          </button>
+}: Props) => {
+  const titleNode = (
+    <span className={styles.seatTitleGroup}>
+      <span className={`icon-msr-filled ${styles.seatTitleIcon}`} aria-hidden='true'>
+        grid_view
+      </span>
+      座席配置
+    </span>
+  )
+
+  const countNode = <span className={styles.seatCount}>{seatCount}席</span>
+
+  // 座席モードチップ。閲覧中も含めて常に同じ見た目で現在値を出す
+  const chipNode = (
+    <span className={`${styles.modeChip}${freeAddressEnabled ? ` ${styles.isFree}` : ''}`}>
+      <span className='icon-msr-filled' aria-hidden='true'>
+        {freeAddressEnabled ? 'shuffle' : 'push_pin'}
+      </span>
+      {freeAddressEnabled ? 'フリーアドレス' : '固定席'}
+    </span>
+  )
+
+  const switchNode = isEditMode && onToggleFreeAddress && (
+    <button
+      type='button'
+      role='switch'
+      aria-checked={freeAddressEnabled}
+      aria-label='フリーアドレス設定'
+      className={styles.modeSwitch}
+      disabled={isSaving}
+      onClick={() => {
+        triggerHaptic('light')
+        onToggleFreeAddress()
+      }}
+    >
+      <span className={styles.modeSwitchKnob} aria-hidden='true' />
+    </button>
+  )
+
+  const bulkImportNode = isEditMode && onBulkAssign && canBulkAssign && (
+    <button
+      type='button'
+      className={styles.bulkImport}
+      aria-label='部署メンバーを一括取込'
+      disabled={isSaving}
+      onClick={() => {
+        triggerHaptic('light')
+        onBulkAssign()
+      }}
+    >
+      部署一括取込
+    </button>
+  )
+
+  const helpNode = !isEditMode && onHelp && <GuideButton ariaLabel='座席配置ガイド' onClick={onHelp} />
+
+  // data-coach はコーチマークツアーの固定フックなので付け替えない
+  const enterEditNode = !isEditMode && onEnterEdit && (
+    <button
+      type='button'
+      className={styles.editToggle}
+      data-coach='overlay-edit'
+      aria-label='所属人員を編集'
+      onClick={() => {
+        triggerHaptic('light')
+        onEnterEdit()
+      }}
+    >
+      <span className='icon-msr-filled' aria-hidden='true'>
+        edit
+      </span>
+    </button>
+  )
+
+  // 編集中バッジ+終了✕。鉛筆が消えた同じ位置に入れ替わりで入る
+  const editingNode = isEditMode && onExitEdit && (
+    <span className={styles.editStatus}>
+      <span className={styles.editBadge}>編集中</span>
+      <button
+        type='button'
+        className={styles.editExit}
+        aria-label='編集を終了'
+        disabled={isSaving}
+        onClick={() => {
+          triggerHaptic('light')
+          onExitEdit()
+        }}
+      >
+        <span className='icon-msr-filled' aria-hidden='true'>
+          close
         </span>
-      ) : (
-        <>
-          {onHelp && (
-            <GuideButton ariaLabel='座席配置ガイド' onClick={onHelp} className='ml-2' />
-          )}
-          {onEnterEdit && (
-            <button
-              type='button'
-              className={styles.editToggle}
-              data-coach='overlay-edit'
-              aria-label='所属人員を編集'
-              onClick={onEnterEdit}
-            >
-              <span className='material-symbols-outlined' aria-hidden='true'>
-                edit
-              </span>
-            </button>
-          )}
-        </>
-      )}
-    </div>
-    {isEditMode && onToggleFreeAddress && (
-      <div className={styles.seatModeRow} style={{ paddingLeft: sidePadding, paddingRight: sidePadding }}>
-        <span className={styles.seatModeLabel}>座席モード</span>
-        <button
-          type='button'
-          role='switch'
-          aria-label='フリーアドレス設定'
-          aria-checked={freeAddressEnabled}
-          className={styles.seatModeSwitch}
-          onClick={onToggleFreeAddress}
-          disabled={isSaving}
-        >
-          <span className={`${styles.seatModeChip}${freeAddressEnabled ? '' : ` ${styles.isOn}`}`}>固定席</span>
-          <span className={`${styles.seatModeChip}${freeAddressEnabled ? ` ${styles.isOn}` : ''}`}>
-            フリーアドレス
+      </button>
+    </span>
+  )
+
+  // モバイルは1行に詰めると全要素が折り返すため、
+  // 「タイトル+席数+操作」と「座席モード+一括取込」の2段に分ける
+  if (isCompactMobile) {
+    return (
+      <div
+        className={styles.seatHeadCompact}
+        style={{ paddingLeft: sidePadding, paddingRight: sidePadding }}
+      >
+        <div className={styles.seatHeadRow}>
+          {titleNode}
+          <span className={styles.seatHeadActions}>
+            {countNode}
+            {helpNode}
+            {enterEditNode}
+            {editingNode}
           </span>
-        </button>
+        </div>
+        <div className={styles.seatModeLine}>
+          {chipNode}
+          {switchNode}
+          {bulkImportNode}
+        </div>
       </div>
-    )}
-    <div className={styles.sync} style={{ paddingLeft: sidePadding, paddingRight: sidePadding }}>
-      {loading ? '最新スケジュールを取得中…' : `最終取得 ${syncedAt}`}
+    )
+  }
+
+  return (
+    <div className={styles.seatHead} style={{ paddingLeft: sidePadding, paddingRight: sidePadding }}>
+      <span className={styles.seatHeadLead}>
+        {titleNode}
+        {chipNode}
+        {switchNode}
+      </span>
+      <span className={styles.seatHeadActions}>
+        {bulkImportNode}
+        {countNode}
+        {helpNode}
+        {enterEditNode}
+        {editingNode}
+      </span>
     </div>
-  </>
-)
+  )
+}

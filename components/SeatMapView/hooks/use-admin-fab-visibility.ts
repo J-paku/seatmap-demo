@@ -5,8 +5,8 @@ import type { TeamOverlayPayload } from '@/types'
 // 左下 FAB を出してよいかの判定を1本に集める。条件は今後も増えるので、
 // 呼び出し側に `||` を並べず、増えた分はこのフックの中だけで閉じる。
 //
-// 編集セッション中は常に非表示(仕様 01「非表示条件: セッション中は常に非表示」)。
-// セッション中の追加導線はリモコン側が持つので、ここで `+` を出すと入口が二重になる
+// 編集セッション中も FAB は閉じた状態で表示し続ける(本家仕様 F-06)。
+// 隠すのはシート・オーバーレイ等が画面を占有している間だけ
 
 // ツアーは再生中だけ画面全面を覆う。分岐カードか、対象を指すステップが立っている状態。
 // 画面には複数のツアーインスタンス(メイン・編集)が同時に存在しうるので、
@@ -14,8 +14,6 @@ import type { TeamOverlayPayload } from '@/types'
 type TourState = Pick<CoachMarkTourState, 'isBranching' | 'step'>
 
 type Params = {
-  // レイアウト編集セッション中(仕様 01)
-  isEditSession: boolean
   // チーム箱タップで開くオーバーレイ
   teamOverlayPayload: TeamOverlayPayload | null
   isDirectoryOpen: boolean
@@ -30,7 +28,6 @@ type Params = {
 }
 
 export const useAdminFabVisibility = ({
-  isEditSession,
   teamOverlayPayload,
   isDirectoryOpen,
   isPlacementActive,
@@ -45,7 +42,6 @@ export const useAdminFabVisibility = ({
   const isTourPlaying = tours.some((t) => t.isBranching || t.step !== null)
 
   return !(
-    isEditSession ||
     isDetailOpen ||
     teamOverlayPayload !== null ||
     isDirectoryOpen ||

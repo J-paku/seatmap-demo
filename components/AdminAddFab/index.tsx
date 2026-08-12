@@ -58,7 +58,7 @@ export const AdminAddFab = ({ onSelectTeam, onSelectFacility, onEditLayout }: Pr
               onClick={item.disabled ? undefined : item.onClick}
               aria-disabled={item.disabled}
             >
-              <span className={`icon-msr-thin ${styles.adminFabRowIcon}`} aria-hidden='true'>
+              <span className={`icon-msr-filled ${styles.adminFabRowIcon}`} aria-hidden='true'>
                 {item.icon}
               </span>
               <span className={styles.adminFabRowLabel}>{item.label}</span>
@@ -83,7 +83,7 @@ export const AdminAddFab = ({ onSelectTeam, onSelectFacility, onEditLayout }: Pr
         onClick={fabHandlers.onClick}
         onContextMenu={(e) => e.preventDefault()}
       >
-        <span className={`icon-msr-thin ${styles.adminFabIcon}`} aria-hidden='true'>
+        <span className={`icon-msr-filled ${styles.adminFabIcon}`} aria-hidden='true'>
           add
         </span>
       </button>

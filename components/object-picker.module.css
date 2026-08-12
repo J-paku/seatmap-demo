@@ -522,9 +522,17 @@
   outline-offset: 3px;
 }
 
+/* 本家寄せ: FABアイコンは白の塗りつぶし系。モバイル16px→(sm)24px の2段階 */
 .adminFabIcon {
-  font-size: 26px;
+  font-size: 16px;
+  color: var(--color-text-inverse);
   transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@media (min-width: 640px) {
+  .adminFabIcon {
+    font-size: 24px;
+  }
 }
 
 .adminFabBtn.isOpen .adminFabIcon {
@@ -556,6 +564,8 @@
 
 .adminFabRow {
   display: flex;
+  /* ガラスパネル上の文字色を継承任せにせず固定する */
+  color: var(--color-text-primary);
   min-height: 44px;
   align-items: center;
   gap: 8px;

@@ -9,6 +9,8 @@ const FETCH_JITTER_MS = 300
 type ScheduleRefresh = {
   isRefreshing: boolean
   cooldown: number
+  // 予定を取り込んだ時刻(epoch ms)。まだ取り込んでいない間は null
+  lastUpdatedMs: number | null
   // 予定を取り込んだ時刻(JST の HH:MM)。まだ取り込んでいない間は null
   lastUpdatedLabel: string | null
   refresh: () => void
@@ -52,6 +54,7 @@ export const useScheduleRefresh = (): ScheduleRefresh => {
   return {
     isRefreshing,
     cooldown,
+    lastUpdatedMs,
     lastUpdatedLabel: lastUpdatedMs === null ? null : jstClockLabel(lastUpdatedMs),
     refresh,
   }

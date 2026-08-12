@@ -1,0 +1,25 @@
+/* アナウンストースト。ガラス面(blur・影・枠線幅)は .liquid-glass に任せ、
+   ここではトーン色による染めだけを上書きする */
+.toast {
+  background: color-mix(in srgb, var(--tone-color) 12%, var(--glass-bg));
+  border-color: color-mix(in srgb, var(--tone-color) 40%, var(--glass-border));
+}
+
+/* backdrop-filter 非対応環境では liquid-glass 側が不透明フォールバックへ切り替わるが、
+   このモジュールが後に読まれて上書きしてしまうため、同じ切り替えをこちらにも持たせる
+   (無いと半透明のまま blur も効かず、文字が背景に沈む) */
+@supports not (backdrop-filter: blur(1px)) {
+  .toast {
+    background: color-mix(in srgb, var(--tone-color) 12%, var(--glass-bg-opaque));
+  }
+}
+
+.icon {
+  color: var(--tone-color);
+}
+
+/* グローバル .material-symbols-outlined は 26px。本文 14px に対して大きすぎるので下げる
+   (同詳細度では勝てないので :global で詳細度を上げる。docs/styling.md 1.) */
+.icon:global(.material-symbols-outlined) {
+  font-size: 20px;
+}

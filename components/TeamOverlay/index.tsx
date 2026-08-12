@@ -2,6 +2,7 @@ import { useCallback, useMemo, useRef, useState } from 'react'
 import { EditDock } from './components/EditDock'
 import { Minimap } from './components/Minimap'
 import { OverlayDialogs } from './components/OverlayDialogs'
+import { ScheduleSyncBadge } from './components/ScheduleSyncBadge'
 import { SeatDragGhost } from './components/SeatDragGhost'
 import { SeatGridFrame } from './components/SeatGridFrame'
 import { SeatLayoutHeader } from './components/SeatLayoutHeader'
@@ -52,7 +53,10 @@ export const TeamOverlay = ({
 }: Props) => {
   const bodyRef = useRef<HTMLDivElement>(null)
   const isCompactMobile = useIsCompactMobile()
-  const { loading, clickLocked, syncedAt } = useOverlaySession(payload !== null, bodyRef)
+  const { loading, clickLocked, syncedAtMs, syncCooldown, isSyncing, retrySync } = useOverlaySession(
+    payload !== null,
+    bodyRef
+  )
   // STEP D3: 編集の開始・保存・キャンセル・一括配置の結果はここから唯一のLiveRegion(a11y全体で
   // 共有するAnnouncementProvider)へ流す。TeamOverlay専用のLiveRegionは新設しない
   const { announce } = useGlobalAnnouncement()
@@ -234,9 +238,8 @@ export const TeamOverlay = ({
           <section className={styles.section}>
             <SeatLayoutHeader
               seatCount={teamSeats.length}
-              loading={loading}
-              syncedAt={syncedAt}
               sidePadding={sidePadding}
+              isCompactMobile={isCompactMobile}
               isEditMode={editMode.isEditMode}
               isSaving={seatCommit.isSaving}
               onEnterEdit={() => {
@@ -249,6 +252,14 @@ export const TeamOverlay = ({
               onBulkAssign={handleOpenBulkAssign}
               freeAddressEnabled={freeAddressEnabled}
               onToggleFreeAddress={toggleFreeAddress}
+            />
+            {/* 見出しの直下1行で、今どの時点のスケジュールを見ているかと再取得の入口を出す */}
+            <ScheduleSyncBadge
+              isLoading={loading || isSyncing}
+              lastUpdatedMs={syncedAtMs}
+              cooldown={syncCooldown}
+              onRetry={retrySync}
+              sidePadding={sidePadding}
             />
             {/* ドラッグ中だけ現れるゴミ箱。落とすと§07-2確認モーダルを開く(即時削除はしない) */}
             <TrashDropZone
