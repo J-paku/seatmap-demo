@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-14.3 21.5 170 170" role="img" aria-label="J-Paku">
+  <!-- logo.svg のマーク部分だけを正方形に切り出したもの。座標は logo.svg と同一なので
+       ロゴを描き直す時はこちらも同じ数値へ揃える -->
+  <rect x="-14.3" y="21.5" width="170" height="170" rx="42" fill="#C76A4A"/>
+  <g fill="#FFF7F1">
+    <rect x="16" y="56" width="46" height="34" rx="10"/>
+    <rect x="78" y="56" width="46" height="34" rx="10"/>
+    <rect x="16" y="122" width="46" height="34" rx="10"/>
+    <rect x="78" y="122" width="46" height="34" rx="10"/>
+  </g>
+  <rect x="16" y="102" width="108" height="8" rx="4" fill="#FFF7F1" opacity="0.45"/>
+</svg>

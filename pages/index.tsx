@@ -1,10 +1,12 @@
 import Head from 'next/head'
 import { useRouter } from 'next/router'
+import { LoginGate } from '@/components/LoginGate'
 import { SeatMapView } from '@/components/SeatMapView'
 import { DetailPanelProvider } from '@/contexts/detail-panel-context'
 import { SelectedDateProvider } from '@/contexts/selected-date-context'
 import { AvatarsProvider } from '@/contexts/avatars-context'
 import { AnnouncementProvider } from '@/contexts/announcement-context'
+import { useLoginSession } from '@/hooks/use-login-session'
 
 const SITE_URL = 'https://j-paku.github.io/seatmap-demo/'
 const SITE_TITLE = 'seat-map デモ'
@@ -14,6 +16,8 @@ const SITE_DESCRIPTION =
 const HomePage = () => {
   // GitHub Pages配信(basePath付与)でも favicon が404にならないよう router から basePath を取得
   const { basePath } = useRouter()
+  // 実物と同じくログイン画面から始まる。タブを開き直すと必ずゲートへ戻る
+  const { isAuthenticated, authenticate } = useLoginSession()
 
   return (
     <>
@@ -33,18 +37,26 @@ const HomePage = () => {
         <meta name='twitter:card' content='summary' />
         <meta name='twitter:title' content={SITE_TITLE} />
         <meta name='twitter:description' content={SITE_DESCRIPTION} />
-        <link rel='icon' href={`${basePath}/favicon.ico`} />
+        {/* ブラウザは rel=icon の候補から自分で最適な方を選ぶ。.ico は 16/32/48 の PNG を
+            束ねたもので、SVG を読めない環境向けに残す。どちらも logo.svg のマークと同じ図形 */}
+        <link rel='icon' href={`${basePath}/favicon.ico`} sizes='any' />
+        <link rel='icon' type='image/svg+xml' href={`${basePath}/favicon.svg`} />
       </Head>
       <div className='seat-map-root'>
-        <AnnouncementProvider>
-          <AvatarsProvider>
-          <SelectedDateProvider>
-            <DetailPanelProvider>
-              <SeatMapView />
-            </DetailPanelProvider>
-          </SelectedDateProvider>
-          </AvatarsProvider>
-        </AnnouncementProvider>
+        {/* ゲート中は座席マップを載せない。裏で初回ツアーやデータ取得が走るのを避ける */}
+        {isAuthenticated ? (
+          <AnnouncementProvider>
+            <AvatarsProvider>
+              <SelectedDateProvider>
+                <DetailPanelProvider>
+                  <SeatMapView />
+                </DetailPanelProvider>
+              </SelectedDateProvider>
+            </AvatarsProvider>
+          </AnnouncementProvider>
+        ) : (
+          <LoginGate onAuthenticated={authenticate} />
+        )}
       </div>
     </>
   )

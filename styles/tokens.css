@@ -258,3 +258,31 @@
     --sheet-height-facility: min(90dvh, calc(100dvh - 2 * var(--sheet-safe-inset)));
   }
 }
+
+/* ログインゲートのブランド配色。ゲートはテーマ選択より前に出る画面なので3テーマとも
+   同じ見え方にする(--color-scrim と同じ理由でテーマ別ブロックへ複製しない)。
+   半透明は color-mix でトークンを薄めて作り、rgba リテラルを増やさない */
+.seat-map-root {
+  --color-gate-primary: #1c2e8c;
+  --color-gate-primary-hover: #16256f;
+  --color-gate-danger: #dc2626;
+  --color-gate-alert: #c81e5a;
+  --color-gate-blob-sky: #6cc5e8;
+  --color-gate-blob-rose: #f26e92;
+  --color-gate-blob-amber: #f4c44a;
+  /* バッジ地 10% / focus リング 15% / ボタン影 20% / focus-visible リング 30%・40% / 装飾矢印 50% */
+  --color-gate-primary-badge: color-mix(in srgb, var(--color-gate-primary) 10%, transparent);
+  --color-gate-primary-ring: color-mix(in srgb, var(--color-gate-primary) 15%, transparent);
+  --color-gate-primary-shadow: color-mix(in srgb, var(--color-gate-primary) 20%, transparent);
+  --color-gate-primary-ring-strong: color-mix(in srgb, var(--color-gate-primary) 30%, transparent);
+  --color-gate-primary-ring-soft: color-mix(in srgb, var(--color-gate-primary) 40%, transparent);
+  --color-gate-primary-faint: color-mix(in srgb, var(--color-gate-primary) 50%, transparent);
+  --color-gate-blob-sky-wash: color-mix(in srgb, var(--color-gate-blob-sky) 20%, transparent);
+  --color-gate-blob-rose-wash: color-mix(in srgb, var(--color-gate-blob-rose) 15%, transparent);
+  --color-gate-blob-amber-wash: color-mix(in srgb, var(--color-gate-blob-amber) 15%, transparent);
+  /* 蛍光ペン風の下線。透明 55% から色を敷いて文字の下半分だけ塗る */
+  --color-gate-marker-danger: color-mix(in srgb, var(--color-gate-danger) 22%, transparent);
+  --color-gate-marker-neutral: color-mix(in srgb, #94a3b8 35%, transparent);
+  /* ゲートは座席マップより手前。オーバーレイ(900)より上、最前面(9999)より下に置く */
+  --z-index-login-gate: 1000;
+}

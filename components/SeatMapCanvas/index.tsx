@@ -1,9 +1,11 @@
 import { forwardRef, memo, useCallback, useImperativeHandle, useMemo } from 'react'
 import { EditObjectLayer } from './components/EditObjectLayer'
+import { OffscreenTeamIndicator } from './components/OffscreenTeamIndicator'
 import { TeamAreaLayer } from './components/TeamAreaLayer'
 import { useCanvasPointer } from './hooks/use-canvas-pointer'
 import { useCanvasViewModel } from './hooks/use-canvas-view-model'
 import { useEditDrag } from './hooks/use-edit-drag'
+import { useOffscreenTeamIndicator } from './hooks/use-offscreen-team-indicator'
 import { useViewport } from './hooks/use-viewport'
 import { useZoomControls } from './hooks/use-zoom-controls'
 import type { LivePosition, SeatMapCanvasHandle, SeatMapCanvasProps } from './type'
@@ -16,7 +18,10 @@ import { AlignmentGuides } from '@/components/edit/AlignmentGuides'
 import { ObjectActionBar } from '@/components/edit/ObjectActionBar'
 import { SeatActionBar } from '@/components/edit/SeatActionBar'
 import { UndoChip } from '@/components/edit/UndoChip'
+import { useTeamColorMap } from '@/hooks/use-team-color-map'
+import { useGlobalAnnouncement } from '@/contexts/announcement-context'
 import { isOccupiedSeat } from '@/utils/seat-occupancy'
+import { resolveTeamColor } from '@/utils/team-colors'
 import styles from '@/components/seatmap.module.css'
 
 // ドラッグ中の対象だけ live 座標へ差し替える。実体を動かすことで座席と同じ手触りにする
@@ -85,6 +90,20 @@ export const SeatMapCanvas = memo(forwardRef<SeatMapCanvasHandle, SeatMapCanvasP
     onSeatSelect,
     onTeamBoundaryClick,
   })
+
+  // 11: 全チームが画面外へ出た時だけ端に出る「最近傍チームへ移動」タグ。
+  // 更新はジェスチャー終了時の transformSnap に同期する(毎フレーム再レンダーはしない)
+  const teamColorMap = useTeamColorMap()
+  const { announce } = useGlobalAnnouncement()
+  const offscreen = useOffscreenTeamIndicator(
+    viewport.containerRef,
+    viewport.transformSnap,
+    layout.teams,
+    layout.seats,
+    layout.facilities,
+    viewport.animateTo,
+    announce
+  )
 
   // 検索ヒット経由でオーバーレイを開く際の拡大原点。チーム箱は画面外でも常に描画されているため
   // キャンバスを動かさずに実測できる(data-team-id の値は Team.idPrefix)
@@ -229,6 +248,15 @@ export const SeatMapCanvas = memo(forwardRef<SeatMapCanvasHandle, SeatMapCanvasP
         selectedSeatIds={isEditMode ? edit.editSelectedSeatIds : undefined}
         onSelect={handleMirrorSelect}
       />
+      {/* 変換レイヤーの外(画面固定)。編集モードでは出さない — 編集オーバーレイと操作が衝突するため */}
+      {!isEditMode && offscreen.nearestTeam && offscreen.pingPos && (
+        <OffscreenTeamIndicator
+          team={offscreen.nearestTeam}
+          colorEntry={resolveTeamColor(teamColorMap, offscreen.nearestTeam.id, offscreen.nearestTeam.name)}
+          pingPos={offscreen.pingPos}
+          onGo={offscreen.goToNearestTeam}
+        />
+      )}
       {/* 原本には常時表示の凡例パネルは無い(チーム名は各アイランドのラベル板で表示) */}
       <ZoomControls
         onZoomIn={zoom.zoomIn}

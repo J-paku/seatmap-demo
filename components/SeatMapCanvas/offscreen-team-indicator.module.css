@@ -1,0 +1,89 @@
+/* オフスクリーンチームエッジインジケーター */
+.indicator {
+  position: absolute;
+  z-index: var(--z-index-sticky);
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+}
+
+.edgeRight {
+  right: 0;
+  transform: translateY(-50%);
+}
+.edgeLeft {
+  left: 0;
+  transform: translateY(-50%);
+}
+.edgeTop {
+  top: 0;
+  transform: translateX(-50%);
+}
+.edgeBottom {
+  bottom: 0;
+  transform: translateX(-50%);
+}
+
+.body {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  border-radius: 12px;
+  overflow: hidden;
+  /* 外周リング + 浮き影(原本の ring-2 ring-white/40 + shadow-2xl 相当)。
+     白リテラルは使わず既存トークンで置く(docs/styling.md 2.) */
+  box-shadow:
+    0 0 0 2px var(--color-surface-elevated),
+    var(--shadow-modal);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.isVertical {
+  flex-direction: column;
+}
+.indicator:hover .body,
+.indicator:focus-visible .body {
+  box-shadow:
+    0 0 0 3px var(--color-surface-elevated),
+    var(--shadow-modal);
+  transform: scale(1.05);
+}
+.indicator:focus-visible {
+  outline: none;
+}
+
+.labelCell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 6em;
+  padding: 10px 14px;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.arrowCell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 12px;
+  animation: offscreen-indicator-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes offscreen-indicator-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .arrowCell {
+    animation: none;
+  }
+}
