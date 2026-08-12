@@ -2,11 +2,10 @@
 // 「同じチーム=常に同じ色」を全画面で保証する唯一の参照元
 import type { Team } from '@/types'
 
-// レジストリが公開する3値(使用側はこれだけを参照する)
+// レジストリが公開する2値(使用側はこれだけを参照する)
 export type TeamColorEntry = {
   background: string
   foreground: string
-  border: string
   index: number
 }
 
@@ -44,33 +43,6 @@ const pickForeground = (background: string) => {
   const blackContrast = contrastRatio(background, '#000000')
   const whiteContrast = contrastRatio(background, '#ffffff')
   return blackContrast >= whiteContrast ? '#000000' : '#ffffff'
-}
-
-// 背景色より明度20pt暗い枠色(HSL経由)
-const darkenBorder = (background: string) => {
-  const { r, g, b } = hexToRgb(background)
-  const hsl = rgbToHsl(r, g, b)
-  const l = Math.max(0, hsl.l - 20)
-  return hslToHex(hsl.h, hsl.s, l)
-}
-
-const rgbToHsl = (r: number, g: number, b: number) => {
-  const rn = r / 255
-  const gn = g / 255
-  const bn = b / 255
-  const max = Math.max(rn, gn, bn)
-  const min = Math.min(rn, gn, bn)
-  const l = (max + min) / 2
-  const d = max - min
-  if (d === 0) return { h: 0, s: 0, l: l * 100 }
-  const s = d / (1 - Math.abs(2 * l - 1))
-  let h: number
-  if (max === rn) h = ((gn - bn) / d) % 6
-  else if (max === gn) h = (bn - rn) / d + 2
-  else h = (rn - gn) / d + 4
-  h *= 60
-  if (h < 0) h += 360
-  return { h, s: s * 100, l: l * 100 }
 }
 
 const hslToHex = (h: number, s: number, l: number) => {
@@ -117,11 +89,10 @@ const hashString = (value: string) => {
   return hash
 }
 
-// 背景色から3値(背景・前景・枠)を導出
+// 背景色から2値(背景・前景)を導出
 const deriveEntry = (background: string, index: number): TeamColorEntry => ({
   background,
   foreground: pickForeground(background),
-  border: darkenBorder(background),
   index,
 })
 

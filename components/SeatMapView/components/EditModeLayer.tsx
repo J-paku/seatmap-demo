@@ -17,7 +17,7 @@ type Props = {
 export const EditModeLayer = ({ changedCount, isSaving, isPlacing, onHelp, onFinish, onCancel }: Props) => (
   <>
     <EditingOverlay />
-    <EditTopControls onHelp={onHelp} onExit={onCancel} />
+    <EditTopControls onHelp={onHelp} onExit={onCancel} isPlacing={isPlacing} />
     {/* 配置中はリモコンバーを出さない。画面下端で2本のバーが重なるうえ、
         配置を決めていない途中で「完了」を押させる意味も無い */}
     {!isPlacing && (

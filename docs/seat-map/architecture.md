@@ -24,7 +24,6 @@ components/SeatMapView/index.tsx          画面ルート。組み立てのみ
    ├─ hooks/use-edit-drag.ts              編集モードのドラッグ(座席/チーム/オブジェクト共通)
    ├─ hooks/use-undo-chip.ts              「元に戻す」チップの表示位置と自動消去
    ├─ components/TeamAreaLayer.tsx        → @/components/TeamArea (data-team-id)
-   ├─ components/EditSeatLayer.tsx        編集モードのみ。座席カードを描画
    ├─ components/EditObjectLayer.tsx      編集モードのみ。会議室/家具の操作面
    └─ utils/                              anim-step.ts / canvas-metrics.ts / gesture-math.ts / sibling-rects.ts
 ```
@@ -162,8 +161,8 @@ DOM 適用と次状態の保持だけを行う(関数は純粋・DOM に触れ�
 編集系の分岐に一切到達しない(`components/SeatMapCanvas/type.ts:21` のコメント)。
 編集モードのドラッグ状態機械(`use-edit-drag.ts`)・配置フロー(`SeatMapView/hooks/use-object-placement.ts`)・
 保存(`use-layout-save.ts`)は本書の範囲外。DOM フック(5章)は編集モードでも同じ値・同じ意味を
-保つ(`docs/seat-map/testing.md` の `run-all-checks.mjs` が view/edit/ghost の3状態で
-`verify-s1.js` を走らせている根拠)。
+保つ(`scripts/run-all-checks.mjs` が閲覧/編集セッション中/ゴースト配置中の3状態で
+`verify-s1.js` を走らせている根拠。詳細は `docs/seat-map/testing.md` 3章)。
 
 ## 未検証・要確認
 

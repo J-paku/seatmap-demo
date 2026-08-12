@@ -16,8 +16,8 @@ import type { GridCell } from '@/utils/layout/seat-grid-draft'
 // 既存のサイト共通規約(`data-seat-id`, ViewSeatCell/SeatCard と同じ)をそのまま付ければ、
 // このフックが返す props を spread するだけでドラッグ/ドロップが成立する
 
-// タッチ: 長押しでドラッグ開始とみなすまでの時間(ms)
-const TOUCH_LONG_PRESS_MS = 220
+// タッチ: 長押しでドラッグ開始とみなすまでの時間(ms)。§06-2の仕様値
+const TOUCH_LONG_PRESS_MS = 350
 // タッチ: 開始前にこれ以上動いたらスクロール優先でキャンセルする距離(px)
 const TOUCH_DRAG_TOLERANCE_PX = 10
 

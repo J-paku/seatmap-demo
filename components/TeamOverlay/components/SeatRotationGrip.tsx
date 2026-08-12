@@ -1,4 +1,5 @@
 import { useSeatRotationGrip } from '../hooks/use-seat-rotation-grip'
+import { seatDirectionLabel } from '../utils/seat-direction'
 import styles from '../team-overlay-modal.module.css'
 import type { Seat } from '@/types'
 
@@ -19,7 +20,7 @@ export const SeatRotationGrip = ({ seatId, rotation, onRotate, onDraggingChange 
     <button
       type='button'
       className={styles.rotationGrip}
-      aria-label='座席の向きを回転'
+      aria-label={`座席の向きを回転（現在 ${seatDirectionLabel(rotation)}）`}
       {...gripProps}
     >
       <span className='material-symbols-outlined' aria-hidden='true'>

@@ -61,14 +61,16 @@ export type SeatGridProps = {
   // STEP B1: 編集モード。true の間はカードが EditSeatCell / EmptyGridCell へ差し替わる
   isEditMode: boolean
   isSeatSelected: (seatId: string) => boolean
-  isEmptyCellSelected: (cell: GridCell) => boolean
   onSelectSeat: (seatId: string) => void
-  onSelectEmptyCell: (cell: GridCell) => void
   // STEP B2/B3: ドラッグ配線。isEditMode=falseの間は呼び出し側(各グリッド)が
   // スプレッドを止めるため、値自体は常に渡してよい(表示モードのDOMは変わらない)
   seatMouseDragProps: UseSeatDragResult['seatMouseDragProps']
   cellMouseDropProps: UseSeatDragResult['cellMouseDropProps']
   seatTouchProps: UseSeatDragResult['seatTouchProps']
+  // §06-2: ドロップ先ハイライト用。use-seat-drag(担当外)が計算するhoverCellをそのまま渡す。
+  // DesktopSeatGrid/CompactSeatGridは既にoptional(既定null)で受けているため、渡さない
+  // 呼び出し元があっても壊れない
+  hoverCell?: GridCell | null
   // STEP B4: グリッド編集の行・列増減。値自体は常に渡してよく、isEditMode=falseの間は
   // 呼び出し側(各グリッド)が描画自体をスキップする(ドラッグ配線と同じ方針)。
   // editGridは行・列の空判定(isRowEmpty/isColEmpty)にそのまま使う生のSeatGridDraft

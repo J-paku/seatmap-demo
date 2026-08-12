@@ -19,6 +19,16 @@ type SeatDraftSeatSources = {
   resolved: Seat[]
 }
 
+// 2つのid集合が同じ内容か(順序は問わない)。§06-3のgrid移動席数の差し引きゼロ判定にしか
+// 使わないためこのファイル内に閉じる
+const isSameIdSet = (a: Set<string>, b: Set<string>): boolean => {
+  if (a.size !== b.size) return false
+  for (const id of a) {
+    if (!b.has(id)) return false
+  }
+  return true
+}
+
 export type SeatDraftState = {
   // 割当の差分。値 '' は「空席にした」、キーが無い(undefined)は「差分なし」
   assignmentsOverride: Map<string, string>
@@ -32,7 +42,15 @@ export type SeatDraftState = {
   // 値が元の座席id。移動先が削除されたり他人へ再割当されたりして社員がそこから外れる時、
   // 元の座席へ配属を戻す起点にする(記録しないと動かした人がどこにも居なくなる)
   moveOrigins: Map<string, string>
-  // 4種の差分の合計件数。同じ席を何度いじっても Map/Set のサイズは1のまま増えない
+  // §06-3: 現在baseline(編集開始時のグリッド)からセル位置が動いている座席idの集合。
+  // grid自体(セル配置)はこの容れ物の外(use-overlay-edit-mode)にあるため、baselineとの
+  // 差分計算はそちら側の担当。ここはsyncMovedSeatIdsで渡された結果を持つだけ
+  movedSeatIds: Set<string>
+  // §06-2 座席モード: フリーアドレス設定(チーム属性 Team.freeAddressEnabled)の差分。
+  // null は「差分なし」。座席ではなくチーム属性なので、上の座席差分とは別の容れ物で持つ
+  freeAddressOverride: boolean | null
+  // 差分の合計件数(4種の座席差分+グリッド移動席数+フリーアドレス変更なら1)。同じ席を
+  // 何度いじっても Map/Set のサイズは1のまま増えない
   changeCount: number
   // 割当の唯一の解決口。呼び出し側はここを通すだけで済み、
   // override ?? seat.employeeId のような '' 判定を各所に書かずに済む
@@ -46,6 +64,12 @@ export type SeatDraftState = {
   assignEmployee: (seatId: string, employeeId: string | null) => void
   // 回転変更
   rotateSeat: (seatId: string, rotation: Seat['rotation']) => void
+  // §06-2: フリーアドレス設定の現在値。保存値を引数で受けるのは resolveEffectiveEmployeeId と
+  // 同じ理由 — 保存済みチームを知っているのは呼び出し側で、ここに2つ目の出所を作らない
+  resolveFreeAddressEnabled: (savedFreeAddressEnabled: boolean) => boolean
+  // §06-2: フリーアドレス設定の切り替え。保存値と同じ値へ戻ったら差分を落とす
+  // (割当・回転と同じ規則。行き来しただけの差し引きゼロを「変更あり」で残さない)
+  toggleFreeAddress: (savedFreeAddressEnabled: boolean) => void
   // 判定の土台(保存済み・下書き反映後の全座席)を受け取る唯一の口。use-draft-applied-seats が
   // 算出したものを毎レンダー渡す。渡らない間は元席の空席化・差し引きゼロ判定が働かないだけで、
   // 差分の記録そのものは従来どおり動く
@@ -53,6 +77,11 @@ export type SeatDraftState = {
   // STEP C3: 移動先(destSeatId)と元の座席(originSeatId)の対応を記録する。
   // 一括配置がaddSeatで新設した席にだけ呼ぶ想定で、既存席を移動先にはしない
   recordMoveOrigin: (destSeatId: string, originSeatId: string) => void
+  // §06-3: movedSeatIdsの唯一の書き込み口。syncSeatSourcesと同じ「外で計算済みの値を渡すだけの
+  // 受け口」方針だが、こちらはchangeCount(=描画)に使うためrefではなくstateで持つ。
+  // 呼び出し側(baselineグリッドと現在グリッドを両方持つuse-overlay-edit-mode、担当外)が
+  // レンダー毎に「今baselineから動いている座席id集合」を渡す想定
+  syncMovedSeatIds: (ids: Set<string>) => void
   // 差分を全て破棄する
   clearDraft: () => void
 }
@@ -63,6 +92,9 @@ export const useSeatDraftState = (): SeatDraftState => {
   const [removedSeatIds, setRemovedSeatIds] = useState<Set<string>>(new Set())
   const [rotationOverrides, setRotationOverrides] = useState<Map<string, Seat['rotation']>>(new Map())
   const [moveOrigins, setMoveOrigins] = useState<Map<string, string>>(new Map())
+  const [movedSeatIds, setMovedSeatIds] = useState<Set<string>>(new Set())
+  // §06-2: フリーアドレス設定の差分。null=差分なし
+  const [freeAddressOverride, setFreeAddressOverride] = useState<boolean | null>(null)
   // 追加席の連番。clearDraft でのみ 0 へ戻す
   const draftIdCounterRef = useRef(0)
   // 判定の土台。イベントハンドラからしか読まないため state ではなく ref で持つ
@@ -230,6 +262,23 @@ export const useSeatDraftState = (): SeatDraftState => {
     [addedSeats]
   )
 
+  // §06-2 座席モード: 保存値に上書きを重ねた現在値。上書きが無ければ保存値をそのまま返す
+  // (resolveEffectiveEmployeeId と同じ形)
+  const resolveFreeAddressEnabled = useCallback(
+    (savedFreeAddressEnabled: boolean): boolean => freeAddressOverride ?? savedFreeAddressEnabled,
+    [freeAddressOverride]
+  )
+
+  // 切り替えは現在値の反転。反転先が保存値と同じなら差分そのものを落とす — 積んだままだと
+  // ON/OFFして元へ戻しただけの差し引きゼロが変更数に残り、保存ボタンが押せてしまう
+  const toggleFreeAddress = useCallback(
+    (savedFreeAddressEnabled: boolean) => {
+      const next = !(freeAddressOverride ?? savedFreeAddressEnabled)
+      setFreeAddressOverride(next === savedFreeAddressEnabled ? null : next)
+    },
+    [freeAddressOverride]
+  )
+
   // STEP C3: 部署一括配置がaddSeatで新設した席(destSeatId)と、そこへ移動してきた社員の
   // 元の座席(originSeatId)を対応づける。moveOrigins自体はchangeCountに数えない
   // (実際の変更はaddedSeats/assignmentsOverride側に既に計上されているため、二重計上を避ける)
@@ -241,17 +290,34 @@ export const useSeatDraftState = (): SeatDraftState => {
     })
   }, [])
 
+  // §06-3: movedSeatIdsは呼び出し側がbaseline比較の結果をレンダー毎に渡す想定(syncSeatSourcesと
+  // 同じ形)。中身が同じなら同じMap/Set参照を保つ他の差分と同様、内容が変わらない限り新しい
+  // Setに差し替えない(不要な再レンダーを避ける)
+  const syncMovedSeatIds = useCallback((ids: Set<string>) => {
+    setMovedSeatIds((prev) => (isSameIdSet(prev, ids) ? prev : ids))
+  }, [])
+
   const clearDraft = useCallback(() => {
     setAssignmentsOverride(new Map())
     setAddedSeats([])
     setRemovedSeatIds(new Set())
     setRotationOverrides(new Map())
     setMoveOrigins(new Map())
+    setMovedSeatIds(new Set())
+    setFreeAddressOverride(null)
     draftIdCounterRef.current = 0
   }, [])
 
+  // §06-3: 変更数 = 配属+追加+削除+回転の差分 + グリッド移動席数(movedSeatIds)
+  // + フリーアドレス変更なら+1。フリーアドレスは席数によらず1件(チーム属性1つの差分)で、
+  // 保存値へ戻ると freeAddressOverride が null へ畳まれるのでこの項も消える
   const changeCount =
-    assignmentsOverride.size + addedSeats.length + removedSeatIds.size + rotationOverrides.size
+    assignmentsOverride.size +
+    addedSeats.length +
+    removedSeatIds.size +
+    rotationOverrides.size +
+    movedSeatIds.size +
+    (freeAddressOverride === null ? 0 : 1)
 
   return {
     assignmentsOverride,
@@ -259,14 +325,19 @@ export const useSeatDraftState = (): SeatDraftState => {
     removedSeatIds,
     rotationOverrides,
     moveOrigins,
+    movedSeatIds,
+    freeAddressOverride,
     changeCount,
     resolveEffectiveEmployeeId,
     addSeat,
     removeSeat,
     assignEmployee,
     rotateSeat,
+    resolveFreeAddressEnabled,
+    toggleFreeAddress,
     syncSeatSources,
     recordMoveOrigin,
+    syncMovedSeatIds,
     clearDraft,
   }
 }

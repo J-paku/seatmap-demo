@@ -16,19 +16,17 @@
 | 2 | 会議室・電話ブース・共用部・通路 | `FacilityBlock`(`layout.facilities` を map) |
 | 3 | 家具(壁・柱・階段・ドア・窓・ソファ等) | `FurnitureBlock`(`layout.furniture` を map) |
 | 4 | (編集モードのみ)会議室・家具の操作面 | `EditObjectLayer` |
-| 5 | (編集モードのみ)個人座席カード | `EditSeatLayer` → `SeatCard` |
-| 6 | (編集モードのみ)整列ガイド線 | `AlignmentGuides` |
+| 5 | (編集モードのみ)整列ガイド線 | `AlignmentGuides` |
 
-1〜6 は `data-canvas-transform-layer="true"` の1枚のレイヤー(`components/SeatMapCanvas/index.tsx:125`)
+1〜5 は `data-canvas-transform-layer="true"` の1枚のレイヤー(`components/SeatMapCanvas/index.tsx:125`)
 に収まり、パン・ズームで一括変換される。ズームボタン・sr-only 座席ミラーはこの変換レイヤーの外
 (`SeatMapCanvas` 内だが変換 `div` の兄弟)にあり、画面に固定される
 (`components/SeatMapCanvas/index.tsx:192-199`)。「自分の席」ボタン(`MySeatButton`)は
 `SeatMapCanvas` 自体の外——`SeatMapView` が閲覧モード時のみ直接マウントする独立コンポーネントで、
 キャンバスの変換には一切触れない(`components/SeatMapView/index.tsx:188`)。
 
-閲覧モードでは 4〜6 は描画されない。**個人座席カードが画面に出るのは編集モード中だけ**であり、
-これは `CLAUDE.md` 不変ルール1の明示的な例外(`components/SeatMapCanvas/components/EditSeatLayer.tsx:6-7`
-のコメント「座席カードは編集モード中のみ描画」)。閲覧モードでの座席表現は 4章を参照。
+閲覧モードでは 4〜5 は描画されない。**個人座席カードは閲覧・編集どちらのモードでもキャンバスに
+出ない**——`CLAUDE.md` 不変ルール1に例外は無い。座席へのアクセス経路は 5章(`SeatMirrorLayer`)を参照。
 
 ## 2. パン・ズーム操作
 
@@ -147,7 +145,9 @@
 
 - 編集モード中は `isEditMode=true` が伝播し、4章の会議室クリックは詳細パネルを開かず選択のみ、
   チーム箱クリックはバウンダリを開かない(3章参照)
-- 編集モード中は 1章の座席カード(`EditSeatLayer`)が例外的に描画される
+- 編集モード中も 1章の座席カードは描画されない。座席選択は sr-only ミラーレイヤー
+  (`SeatMirrorLayer`)のボタンが唯一の入口で、Shift+クリックでトグル選択、Ctrl/Cmd+A で
+  直前に選択した座席の所属チーム全席を選択する(5章参照)
 - `data-canvas-transform-layer` / `data-team-id` / `data-furniture-id` / `data-facility` の
   DOM フックは編集モードでも同じ値・同じ位置で存在する(検証スクリプトが編集モードでも走る根拠。
   `docs/seat-map/testing.md` 参照)

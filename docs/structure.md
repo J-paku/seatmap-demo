@@ -23,20 +23,26 @@ seatmap-demo/
 │  ├─ SeatMapCanvas/              ← 分割の模範例。index.tsx が最薄
 │  │  ├─ index.tsx               組み立てのみ。ロジックは全て hooks へ委譲
 │  │  ├─ type.ts
-│  │  ├─ components/             EditSeatLayer.tsx / JumpMarker.tsx / TeamAreaLayer.tsx
+│  │  ├─ components/             TeamAreaLayer.tsx / EditObjectLayer.tsx
 │  │  ├─ hooks/                  use-canvas-pointer.ts / use-viewport.ts / use-edit-drag.ts 等9本
 │  │  └─ utils/                  anim-step.ts / canvas-metrics.ts / gesture-math.ts / sibling-rects.ts
 │  ├─ TeamOverlay/ EmployeeDirectory/ EmployeeDetail/ AvatarCustomizer/ SwipeDateStage/
-│  │                             同型構造(index.tsx + type.ts + components/ + hooks/ + utils/)
+│  │                             同型構造(index.tsx + type.ts + components/ + hooks/ + utils/)。
+│  │                             TeamOverlay/components/OverlayDialogs.tsxは配属シート+確認ダイアログ群の集約先
+│  ├─ TeamCategorySheet/ TeamImportSheet/ FacilityPickerModal/
+│  │                             単一シート/モーダルをindex.tsx+専用cssモジュールのフォルダに閉じる軽量版
+│  │                             (type.ts/hooks/は持たない。TeamImportSheetのみutils/を持つ)
 │  ├─ edit/                      編集モード専用の単発コンポーネント群。フォルダ化はしていない
-│  └─ *.tsx                      単一責務のまま短い共通部品(SeatCard.tsx / ZoomControls.tsx 等)
-├─ contexts/                     Context + Provider(detail-panel-context.tsx 等)
+│  └─ *.tsx                      単一責務のまま短い共通部品(SheetHandle.tsx / ZoomControls.tsx 等)
+├─ contexts/                     Context + Provider(detail-panel-context.tsx / seat-delete-context.tsx 等)
 ├─ hooks/                        2箇所以上から使われ昇格したフック(単一ファイル18本+フォルダ化した
 │                                use-layout-editor/ 3本(use-edit-session.ts 等)の計21本)
 ├─ lib/                          アプリ外部との接続
 │                                (fetch-mock.ts / mock-loader.ts / layout-persistence.ts / avatar-persistence.ts /
-│                                 seat/ 配下のお気に入り永続化)
-├─ utils/                        純関数(layout/geometry.ts / avatar/ / gesture/ / presence.ts / employee-search.ts 等)
+│                                 garoon-facilities.ts / seat/ 配下のお気に入り永続化)
+├─ utils/                        純関数(layout/geometry.ts / layout/seat-shape.ts / layout/team-create-grid.ts /
+│                                 layout/spiral-placement.ts / layout/team-import.ts / avatar/ / gesture/ /
+│                                 presence.ts / employee-search.ts 等)
 ├─ types/                        型定義(index.ts)
 ├─ mocks/                        座標を含む全モック JSON。座標のコードへのハードコード禁止の根拠
 ├─ styles/                       CSS。globals.css が @import で列挙(並び順=カスケード順)

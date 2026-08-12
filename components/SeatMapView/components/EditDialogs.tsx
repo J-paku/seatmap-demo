@@ -1,13 +1,13 @@
+import { ConfirmDialog, buildTeamDeleteConfirmMessage } from '@/components/edit/ConfirmDialog'
 import { DeleteConfirmDialog } from '@/components/edit/DeleteConfirmDialog'
 import { ObjectDeleteDialog } from '@/components/edit/ObjectDeleteDialog'
 import { TeamChangeSheet } from '@/components/edit/TeamChangeSheet'
-import { TeamRelayoutModal } from '@/components/edit/TeamRelayoutModal'
 import { resolveTeamColor } from '@/utils/team-colors'
 import { useTeamColorMap } from '@/hooks/use-team-color-map'
 import type { LayoutEditor } from '../type'
 import type { useEditDialogs } from '../hooks/use-edit-dialogs'
 
-// 07: 編集モードから開く3つのダイアログ。開閉状態は useEditDialogs が持つ
+// 07: 編集モードから開くダイアログ群。開閉状態は useEditDialogs が持つ
 
 type Props = {
   editor: LayoutEditor
@@ -38,6 +38,26 @@ export const EditDialogs = ({ editor, dialogs }: Props) => {
         />
       )}
 
+      {/* 05-3/07-3: 移動ゴーストの削除ボタンから来るチーム削除。オーバーレイ(§06-6)と同種の
+          タイプ確認モーダルで、チーム名を打つまで「削除する」は押せない */}
+      {dialogs.deleteTeamTarget && (
+        <ConfirmDialog
+          ariaLabel='チーム削除の確認'
+          title='このチームを削除しますか？'
+          message={buildTeamDeleteConfirmMessage(
+            dialogs.deleteTeamTarget.name,
+            dialogs.deleteTeamOccupiedCount,
+            dialogs.deleteTeamEmptyCount
+          )}
+          confirmLabel='削除する'
+          cancelLabel='キャンセル'
+          confirmIcon='delete_forever'
+          typedConfirmation={{ keyword: dialogs.deleteTeamTarget.name }}
+          onConfirm={dialogs.confirmTeamDelete}
+          onCancel={dialogs.closeTeamDelete}
+        />
+      )}
+
       {dialogs.teamChangeSeatId && dialogs.teamChangeTargetSeat && editor.editingLayout && (
         <TeamChangeSheet
           teams={editor.editingLayout.teams}
@@ -48,15 +68,6 @@ export const EditDialogs = ({ editor, dialogs }: Props) => {
             dialogs.closeTeamChange()
           }}
           onClose={dialogs.closeTeamChange}
-        />
-      )}
-
-      {dialogs.relayoutTeamId && dialogs.relayoutTargetTeam && (
-        <TeamRelayoutModal
-          team={dialogs.relayoutTargetTeam}
-          seatCount={dialogs.relayoutTargetSeatCount}
-          onApply={(rows, cols) => editor.relayoutTeam(dialogs.relayoutTeamId as string, rows, cols)}
-          onClose={dialogs.closeRelayout}
         />
       )}
     </>

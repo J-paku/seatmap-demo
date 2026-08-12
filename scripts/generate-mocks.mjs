@@ -30,7 +30,7 @@ const DEFAULT_FLOOR_ID = FLOOR_DEFS[0].floorId
 // チーム定義(名称順が定義順 team-01..06)
 // idPrefix: 座席ID接頭辞(11-layout-pipeline.md — seat.id.startsWith(idPrefix + '-') が唯一の結束キー)
 // kana: 部署名の読み(全角カタカナ)。かな検索用。社員 nameKana(=kana+連番)の元にもなる
-// size: 箱幅算出専用の想定列数(座席2行化に合わせて箱高だけ変更・幅はここを据え置いて7/7/6/6/5列を維持)
+// size: 箱幅算出専用の想定列数(座席2行化に合わせて箱高だけ変更・幅はここを据え置いて7/7/6/6/4列を維持)
 // empCount: 実際の社員数(再席率70%前後に合わせて size とは独立に増員)
 // floorId: 所属フロア。color/area を明示したチームは帯レイアウトの自動算出に載せない
 const TEAM_DEFS = [
@@ -38,7 +38,10 @@ const TEAM_DEFS = [
   { name: '開発部', kana: 'カイハツブ', mail: 'ka', size: 8, empCount: 10, idPrefix: 'dept-dev', floorId: 'floor-1' },
   { name: '総務部', kana: 'ソウムブ', mail: 'so', size: 7, empCount: 9, idPrefix: 'dept-general', floorId: 'floor-1' },
   { name: '経理部', kana: 'ケイリブ', mail: 'ke', size: 7, empCount: 8, idPrefix: 'dept-account', floorId: 'floor-1' },
-  { name: '企画部', kana: 'キカクブ', mail: 'ki', size: 6, empCount: 7, idPrefix: 'dept-planning', floorId: 'floor-1' },
+  // 企画部だけ箱幅を明示する。帯自動算出(size 6 → w744)のままだと 1F の空き幅が最大246pxしか残らず、
+  // §02-2 の新規チームゴースト454×190を置ける位置が 1F に1つも無い(10px格子の全探索で0件)。
+  // w514 は colsMax=4 になる幅で、右へ230px空ける。x/y/h は帯レイアウト4番目の帯と同値なので箱位置は動かない
+  { name: '企画部', kana: 'キカクブ', mail: 'ki', size: 6, empCount: 7, idPrefix: 'dept-planning', floorId: 'floor-1', area: { x: 30, y: 894, w: 514, h: 220 } },
   // 2F の小部屋。色相環(72°刻み)を5チームで使い切っており自動採番だと営業部と同じ色相になるため、
   // 色と箱位置は既存 mocks/floor-2/teams.json の値をそのまま定義として持つ
   {
@@ -163,7 +166,7 @@ const SEAT_W = 105
 const SEAT_H = 75
 const PITCH_X = SEAT_W + 18 // 123(11-layout-pipeline.md の列ピッチ)
 
-// 箱幅算出専用(座席の内側余白ではない・幅は size を据え置いて7/7/6/6/5列を維持する)
+// 箱幅算出専用(座席の内側余白ではない・幅は size を据え置いて7/7/6/6/4列を維持する)
 const BOX_PAD_X = 12
 
 // 座席配置は 11-layout-pipeline.md の固定値に従う(LAYOUT_PADDING=20 / 行ピッチ95)
@@ -591,6 +594,64 @@ schedules
   } else if (target) {
     target.isPrivate = true
   }
+}
+
+// ── 予定の登録者・参加者 ────────────────────────────────
+// 会議の名簿(登録者と参加者)は抽選せず定義として持つ。この2項目は生成器を通さず
+// mocks/schedules.json へ直接書き込まれた経緯があり、抽選で作り直すと画面に出ている顔ぶれが
+// 別人に入れ替わる。既存値を再現できる規則が無いので、2F の総務部分室の色・箱位置と同じく
+// 「既存 mocks の値をそのまま定義として持つ」形にする。
+// 名簿は予定単位ではなく会議単位なので、同じ会議に出ている全員の予定へ同じ配列を入れる
+// (会議室の割り当てと同じ規則)。登録者は先頭の1人で、会議室会議側の規則と揃える。
+// hour は開始時刻(会議は1時間枠なので終了は hour+1)。BASE_DATE を動かしても照合が切れないよう
+// 日付は持たず、照合キーは meetingKey で組み立てる
+const MEETING_ROSTERS = [
+  { hour: 9, title: '打ち合わせ', participantIds: ['emp-003', 'emp-001', 'emp-002', 'emp-004'] },
+  { hour: 14, title: '打ち合わせ', participantIds: ['emp-005', 'emp-001', 'emp-004', 'emp-008'] },
+  { hour: 17, title: '定例ミーティング', participantIds: ['emp-006', 'emp-034', 'emp-035', 'emp-007'] },
+  { hour: 14, title: '定例ミーティング', participantIds: ['emp-006', 'emp-007', 'emp-008', 'emp-010'] },
+  { hour: 12, title: 'プロジェクト会議', participantIds: ['emp-012', 'emp-022', 'emp-013', 'emp-023'] },
+  { hour: 9, title: 'プロジェクト会議', participantIds: ['emp-016', 'emp-011', 'emp-013', 'emp-014'] },
+  { hour: 15, title: '週次レビュー', participantIds: ['emp-018', 'emp-021', 'emp-019', 'emp-024'] },
+  { hour: 10, title: 'プロジェクト会議', participantIds: ['emp-021', 'emp-023', 'emp-024', 'emp-028'] },
+  { hour: 16, title: '部門会議', participantIds: ['emp-026', 'emp-042', 'emp-027', 'emp-043'] },
+  { hour: 13, title: 'プロジェクト会議', participantIds: ['emp-027', 'emp-021', 'emp-025', 'emp-028'] },
+  { hour: 11, title: 'プロジェクト会議', participantIds: ['emp-034', 'emp-030', 'emp-031', 'emp-033'] },
+  { hour: 12, title: '定例ミーティング', participantIds: ['emp-035', 'emp-036', 'emp-030', 'emp-037'] },
+  { hour: 14, title: 'プロジェクト会議', participantIds: ['emp-036', 'emp-031', 'emp-033', 'emp-037'] },
+  { hour: 16, title: '週次レビュー', participantIds: ['emp-039', 'emp-038', 'emp-040', 'emp-041'] },
+  { hour: 17, title: '週次レビュー', participantIds: ['emp-039', 'emp-041', 'emp-043', 'emp-044'] },
+  { hour: 13, title: '打ち合わせ', participantIds: ['emp-045', 'emp-046', 'emp-047', 'emp-048'] },
+  { hour: 15, title: '定例ミーティング', participantIds: ['emp-045', 'emp-047', 'emp-048'] },
+]
+
+const rosterByKey = new Map(
+  MEETING_ROSTERS.map((r) => [
+    meetingKey({ start: iso(r.hour, 0), end: iso(r.hour + 1, 0), title: r.title }),
+    r.participantIds,
+  ])
+)
+
+// 名簿の無い会議・名簿が出席者を網羅していない会議は、黙って2項目を落とさず報告する。
+// 落とすと予定詳細の登録者・参加者欄だけが静かに消え、生成物と画面が退行する
+const rosterlessMeetings = []
+meetingGroups.forEach((group, key) => {
+  const roster = rosterByKey.get(key)
+  if (!roster || group.some((s) => !roster.includes(s.employeeId))) {
+    rosterlessMeetings.push(key)
+    return
+  }
+  group.forEach((s) => {
+    s.organizerId = roster[0]
+    s.participantIds = [...roster]
+  })
+})
+if (rosterlessMeetings.length > 0) {
+  console.error(`参加者名簿と一致しない会議: ${rosterlessMeetings.join(' / ')}`)
+}
+const unusedRosters = [...rosterByKey.keys()].filter((key) => !meetingGroups.has(key))
+if (unusedRosters.length > 0) {
+  console.error(`どの会議とも一致しない参加者名簿: ${unusedRosters.join(' / ')}`)
 }
 
 // 会議室会議(時刻=分のみ・日付非依存でいつ見ても活性)。参加者は同じフロアの社員から抽選する

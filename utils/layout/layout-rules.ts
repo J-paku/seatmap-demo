@@ -1,4 +1,4 @@
-import { pointInRect, rectOf, rectsIntersect } from './rect'
+import { insetRect, pointInRect, rectOf, rectsIntersect } from './rect'
 import type { Rect } from './rect'
 import { rectsOfKinds } from './layout-objects'
 import type { LayoutObjectRef, Seat, SeatLayout, Team } from '@/types'
@@ -35,8 +35,20 @@ const outsideViewBox = (layout: SeatLayout, candidate: Rect): boolean =>
   candidate.x + candidate.w > layout.viewBox.width ||
   candidate.y + candidate.h > layout.viewBox.height
 
-// 会議室・家具の新規配置と再配置の可否。座席・チームエリア・会議室・家具の全てが障害物になり、
-// フロアの外も置けない場所として扱う。
+// §04-4: チーム枠を障害物として当てるときの内側インセット。枠線に触れる程度の重なりは通す
+const TEAM_COLLISION_INSET = 4
+
+// §04-4 の障害物。①全チーム枠(4px内側インセット) ②会議室(設備)だけ。
+// 壁・ソファなどの家具は重なり配置を許す。
+//
+// 吸着候補(sibling-rects)は全家具を含むのに障害物は設備だけ、という非対称は意図的。
+// 家具は「揃えたいが避ける必要はない」もので、避けさせると壁沿いに何も置けなくなる
+const obstacleRects = (layout: SeatLayout, self: LayoutObjectRef | null): Rect[] => [
+  ...rectsOfKinds(layout, ['team'], self).map((r) => insetRect(r, TEAM_COLLISION_INSET)),
+  ...rectsOfKinds(layout, ['facility'], self),
+]
+
+// 会議室・家具・チーム枠の新規配置と再配置の可否。フロアの外も置けない場所として扱う。
 //
 // ゴーストの表示判定と発行前の検証が同じ関数を通ることが要点。別々に書くと
 // 「ゴーストは置けると言うのに確定すると何も起きない」という無言の失敗になる。
@@ -44,5 +56,31 @@ const outsideViewBox = (layout: SeatLayout, candidate: Rect): boolean =>
 // 座席がチームエリアの内側に載るのは正常(所属を表す)なので、その判定はここではなく
 // findTeamContaining が担う — 同じ「重なり」でも意味が違うので混ぜない
 export const placementBlocked = (layout: SeatLayout, self: LayoutObjectRef | null, candidate: Rect): boolean =>
-  outsideViewBox(layout, candidate) ||
-  rectsOfKinds(layout, ['seat', 'team', 'facility', 'furniture'], self).some((r) => rectsIntersect(r, candidate))
+  outsideViewBox(layout, candidate) || obstacleRects(layout, self).some((r) => rectsIntersect(r, candidate))
+
+// §05-3: ロック・レイアウト固定で編集を拒む対象かどうか。拒む場合だけ理由文言を返す。
+//
+// 判定をここ1つに置くのは、同じ「ロック中か」を入口(ゴーストを開く側)と発行口(editor)の
+// 両方が見るため。条件を各所で組み立て直すと、片方だけ locked を見て fixedLayout を見落とす、
+// といったズレが静かに入る(03-pitfalls #4)。
+// 文言の骨格は §07-2 のロック文と揃え、動詞だけを呼び出し側から受ける
+export const lockedMessage = (layout: SeatLayout, ref: LayoutObjectRef, action: string): string | null => {
+  const suffix = (label: string): string => `「${label}」はロックまたはレイアウト固定中のため${action}できません`
+  if (ref.kind === 'team') {
+    const team = layout.teams.find((t) => t.id === ref.id)
+    if (!team) return null
+    return team.locked || team.fixedLayout ? suffix(team.name) : null
+  }
+  if (ref.kind === 'facility') {
+    const facility = layout.facilities.find((f) => f.id === ref.id)
+    if (!facility) return null
+    return facility.locked ? suffix(facility.name) : null
+  }
+  if (ref.kind === 'furniture') {
+    const item = layout.furniture.find((f) => f.id === ref.id)
+    if (!item) return null
+    return item.locked ? suffix(item.name || '家具') : null
+  }
+  // 座席のロックは持たない(Seat に locked が無い)。ここで嘘の許可を返さないよう明示する
+  return null
+}

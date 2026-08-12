@@ -1,3 +1,4 @@
+import type { GaroonFacility } from '@/lib/garoon-facilities'
 import type { Rect } from '@/utils/layout/rect'
 import type { FurnitureKind, LayoutObjectRef } from '@/types'
 
@@ -5,7 +6,9 @@ import type { FurnitureKind, LayoutObjectRef } from '@/types'
 // ゴースト層は「どう描くか」だけを見る
 type GhostTarget =
   | { type: 'add-furniture'; furnitureKind: FurnitureKind }
-  | { type: 'add-facility' }
+  // §03-3: どの Garoon 施設を置こうとしているか。マスタの1件をそのまま持ち、
+  // 確定時に名前と施設IDをレイアウトへ引き渡す(会議室N の自動採番に落とさない)
+  | { type: 'add-facility'; facility: GaroonFacility }
   | { type: 'add-team'; name: string; color: string }
   | { type: 'reposition'; ref: LayoutObjectRef }
 

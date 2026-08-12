@@ -10,12 +10,19 @@ import { formatSeatGridCellAttr } from '../utils/seat-drag-attrs'
 import type { SeatGridProps } from '../type'
 import { useScrollHints } from '../hooks/use-scroll-hints'
 import { useSeatHighlightAnimation } from '../hooks/use-seat-highlight-animation'
+import type { UseSeatDragResult } from '../hooks/use-seat-drag'
 import styles from '../team-overlay-modal.module.css'
 import type { PresenceStatus } from '@/types'
 
 // 列幅は固定 180px。ブラウザ幅次第でオーバーフロー量が変わるため、ヒントは実測で出す
 
-type Props = SeatGridProps
+type Props = SeatGridProps & {
+  // §06-2: ドロップ先ハイライト用。use-seat-drag(担当内)が計算するhoverCellをそのまま受け取る。
+  // SeatGridProps(../type.ts)にはまだフィールドが無く、そちらの追加は担当外(呼び出し側の配線も
+  // 含め報告に記載)。optionalにして、現状の呼び出し側(SeatGridFrame/TeamOverlay/index.tsx)が
+  // 渡さなくても型エラーにならないようにしてある
+  hoverCell?: UseSeatDragResult['hoverCell']
+}
 
 export const DesktopSeatGrid = ({
   grid,
@@ -29,9 +36,7 @@ export const DesktopSeatGrid = ({
   onClearHighlight,
   isEditMode,
   isSeatSelected,
-  isEmptyCellSelected,
   onSelectSeat,
-  onSelectEmptyCell,
   seatMouseDragProps,
   cellMouseDropProps,
   seatTouchProps,
@@ -43,6 +48,7 @@ export const DesktopSeatGrid = ({
   onAddSeat,
   onAssignSeat,
   onRotateSeat,
+  hoverCell = null,
 }: Props) => {
   const scrollRef = useRef<HTMLDivElement>(null)
   const { hasOverflow, atStart, atEnd } = useScrollHints(scrollRef, grid.cols)
@@ -57,6 +63,10 @@ export const DesktopSeatGrid = ({
   const hasGridEdgeControls = isEditMode && editGrid !== null
   const rowOffset = hasGridEdgeControls ? 1 : 0
   const colOffset = hasGridEdgeControls ? 1 : 0
+
+  // §06-2: 0席チームは1×1グリッドで生成される(createInitialGrid、担当外)。その1マスだけ
+  // 「最初の席を追加」に文言を変える
+  const isFirstSeatGrid = grid.rows === 1 && grid.cols === 1 && grid.positionedSeats.length === 0
 
   // ヒントのタップで 1 列ぶんだけ滑らかに送る
   const nudge = (direction: -1 | 1) => {
@@ -76,22 +86,21 @@ export const DesktopSeatGrid = ({
         // ループ変数(row/col)をそのまま閉じ込めるとイテレーションを跨いだ書き換えとみなされるため、
         // このセル分だけの不変な束縛(cell)を作ってから閉じる
         const cell = { row, col }
+        const isDropTarget = isEditMode && hoverCell !== null && hoverCell.row === row && hoverCell.col === col
         cells.push(
           <div
             key={`empty-${row}-${col}`}
+            className={isDropTarget ? styles.dropTarget : undefined}
             style={{
               gridRow: row + 1 + rowOffset,
               gridColumn: col + 1 + colOffset,
               display: 'flex',
-              // STEP B5: SeatActionOverlay(pill)をこのセル基準で絶対配置するための起点
-              position: 'relative',
             }}
             data-seat-grid-cell={formatSeatGridCellAttr(cell)}
             {...cellMouseDropProps}
           >
-            <EmptyGridCell isSelected={isEmptyCellSelected(cell)} onSelect={() => onSelectEmptyCell(cell)} />
-            {/* STEP B5: 選択中のセルにだけ「席追加」ピルを重ねる */}
-            {isEmptyCellSelected(cell) && <SeatActionOverlay variant='emptyCell' onAddSeat={() => onAddSeat(cell)} />}
+            {/* §06-2: 空セルタップ=即追加(1段階)。選択→ピルタップの中間状態は経由しない */}
+            <EmptyGridCell variant={isFirstSeatGrid ? 'firstSeat' : 'default'} onAdd={() => onAddSeat(cell)} />
           </div>
         )
         continue
@@ -100,9 +109,11 @@ export const DesktopSeatGrid = ({
       const status: PresenceStatus = employee ? presenceMap.get(employee.id) ?? 'present' : 'present'
       const isHit = highlightSeatId === seat.id
       const dimmed = spotlight && !isHit
+      const isDropTarget = isEditMode && hoverCell !== null && hoverCell.row === row && hoverCell.col === col
       cells.push(
         <div
           key={seat.id}
+          className={isDropTarget ? styles.dropTarget : undefined}
           style={{
             gridRow: row + 1 + rowOffset,
             gridColumn: col + 1 + colOffset,

@@ -14,13 +14,18 @@ const COMPACT_QUERY = '(max-width: 639px)'
 type Props = {
   isOpen: boolean
   title: string
+  // ダイアログのaria-label。省略時はtitleをそのまま使う(既存呼び出し元の挙動を変えない)。
+  // §08-4: 社員検索シートのように、見出し文言(座席配置)とaria-label(社員検索)が異なる画面のために分離
+  ariaLabel?: string
+  // 見出し左に置くMaterial Symbolsのアイコン名(任意)
+  icon?: string
   // 見出し直下の補足。ゴーストがどこに出るかの予告などに使う
   note?: string
   onClose: () => void
   children: ReactNode
 }
 
-export const PickerSheet = ({ isOpen, title, note, onClose, children }: Props) => {
+export const PickerSheet = ({ isOpen, title, ariaLabel, icon, note, onClose, children }: Props) => {
   const isCompact = useMediaQuery(COMPACT_QUERY)
   const { sheetHandlers, dragStyle } = useSwipeToDismiss({
     onDismiss: onClose,
@@ -46,7 +51,7 @@ export const PickerSheet = ({ isOpen, title, note, onClose, children }: Props) =
           className={styles.pickerInner}
           role='dialog'
           aria-modal='true'
-          aria-label={title}
+          aria-label={ariaLabel ?? title}
           {...sheetHandlers}
           style={{
             // ドラッグ中は指へ追従(transform はフックが直接書き込む)、離指後はここの
@@ -58,6 +63,11 @@ export const PickerSheet = ({ isOpen, title, note, onClose, children }: Props) =
         >
           {isCompact && <span className={styles.pickerGrip} aria-hidden='true' />}
           <div className={styles.pickerHead}>
+            {icon && (
+              <span className='icon-msr-thin' aria-hidden='true'>
+                {icon}
+              </span>
+            )}
             <h2 className={styles.pickerTitle}>{title}</h2>
             <button type='button' className={styles.pickerClose} aria-label='閉じる' onClick={onClose}>
               <span className='icon-msr-thin' aria-hidden='true'>

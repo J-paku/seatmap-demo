@@ -1,6 +1,5 @@
-import { forwardRef, memo, useCallback, useImperativeHandle } from 'react'
+import { forwardRef, memo, useCallback, useImperativeHandle, useMemo } from 'react'
 import { EditObjectLayer } from './components/EditObjectLayer'
-import { EditSeatLayer } from './components/EditSeatLayer'
 import { TeamAreaLayer } from './components/TeamAreaLayer'
 import { useCanvasPointer } from './hooks/use-canvas-pointer'
 import { useCanvasViewModel } from './hooks/use-canvas-view-model'
@@ -8,7 +7,6 @@ import { useEditDrag } from './hooks/use-edit-drag'
 import { useViewport } from './hooks/use-viewport'
 import { useZoomControls } from './hooks/use-zoom-controls'
 import type { LivePosition, SeatMapCanvasHandle, SeatMapCanvasProps } from './type'
-import type { LayoutObjectRef } from '@/types'
 import { FacilityBlock } from '@/components/FacilityBlock'
 import { FurnitureBlock } from '@/components/FurnitureBlock'
 import { SeatMirrorLayer } from '@/components/SeatMirrorLayer'
@@ -18,6 +16,7 @@ import { AlignmentGuides } from '@/components/edit/AlignmentGuides'
 import { ObjectActionBar } from '@/components/edit/ObjectActionBar'
 import { SeatActionBar } from '@/components/edit/SeatActionBar'
 import { UndoChip } from '@/components/edit/UndoChip'
+import { isOccupiedSeat } from '@/utils/seat-occupancy'
 import styles from '@/components/seatmap.module.css'
 
 // ドラッグ中の対象だけ live 座標へ差し替える。実体を動かすことで座席と同じ手触りにする
@@ -30,46 +29,58 @@ const livePosOf = <T extends { id: string; x: number; y: number }>(item: T, live
 
 export type { SeatMapCanvasHandle } from './type'
 
-type Props = SeatMapCanvasProps
-
-export const SeatMapCanvas = memo(forwardRef<SeatMapCanvasHandle, Props>(function SeatMapCanvas(
+export const SeatMapCanvas = memo(forwardRef<SeatMapCanvasHandle, SeatMapCanvasProps>(function SeatMapCanvas(
   {
     layout,
     employeeById,
-    presenceMap,
     onSeatSelect,
     onFacilitySelect,
     onTeamBoundaryClick,
     facilityStateById,
     onFacilityHover,
     isEditMode = false,
-    onSeatMove,
     onTeamMove,
     onSeatEditSelect,
-    onTeamLabelTap,
+    onTeamTap,
     onSeatAssignRequest,
-    onSeatChangeTeamRequest,
     onSeatDeleteRequest,
     onObjectMove,
     onObjectRepositionRequest,
     onObjectDeleteRequest,
+    onObjectLockToggle,
+    onObjectLabelToggle,
     repositioningRef = null,
     onUndo,
     canUndo,
     onGoToMySeat,
+    onSeatRotateRequest,
+    onSeatShapeRequest,
+    onSeatBulkDeleteRequest,
+    onEndSession,
+    onEnterEditSession,
   },
   ref
 ) {
   const viewport = useViewport()
   const zoom = useZoomControls(viewport)
   const { isPanningRef, handlers } = useCanvasPointer(viewport)
-  const edit = useEditDrag({ viewport, layout, employeeById, isEditMode, onSeatMove, onTeamMove, onSeatEditSelect, onObjectMove, onEmptySeatTap: onSeatAssignRequest })
+  // 05-3: 家具・会議室のタップは「掴み直し」と同じ行き先(移動ゴースト)なので同じ口へ渡す
+  const edit = useEditDrag({
+    viewport,
+    layout,
+    isEditMode,
+    onTeamMove,
+    onSeatEditSelect,
+    onObjectMove,
+    onTeamTap,
+    onObjectTap: onObjectRepositionRequest,
+    onEndSession,
+  })
   const view = useCanvasViewModel({
     layout,
     employeeById,
     viewport,
     isEditMode,
-    editSelectedSeatId: edit.editSelectedSeatId,
     editSelectedObject: edit.editSelectedObject,
     onSeatSelect,
     onTeamBoundaryClick,
@@ -112,6 +123,35 @@ export const SeatMapCanvas = memo(forwardRef<SeatMapCanvasHandle, Props>(functio
     if (isEditMode) edit.clearSelection()
   }, [isEditMode, edit])
 
+  // 05-3: 編集セッション中の座席選択はミラーボタンが唯一の入口。閲覧モードは従来どおり詳細を開く
+  const handleMirrorSelect = useCallback(
+    (seatId: string, toggle: boolean) => {
+      if (isEditMode) edit.selectSeat(seatId, toggle)
+      else view.handleSeatSelect(seatId)
+    },
+    [isEditMode, edit, view]
+  )
+
+  // 05-4: 単独選択のときだけ「配属/変更」が分かれる。着席判定は seat-occupancy に一本化する
+  const isSelectedSeatOccupied = useMemo(() => {
+    if (edit.editSelectedSeatIds.length !== 1) return false
+    const seat = layout.seats.find((s) => s.id === edit.editSelectedSeatIds[0])
+    return seat ? isOccupiedSeat(seat, employeeById) : false
+  }, [edit.editSelectedSeatIds, layout.seats, employeeById])
+
+  // 05-3: 属性バーの材料。ローカル const へ写すのはコールバックの中でも絞り込みを効かせるため
+  // (view.x / edit.x のままだと呼び出しごとに null 判定が要る)
+  const selectedObject = edit.editSelectedObject
+  const objectAttrs = view.selectedObjectAttrs
+
+  // 1席は既存の確認ダイアログへ、2席以上は件数ごと一括削除確認へ渡す(文言は仕様 07-2・別担当)
+  const handleSeatDelete = useCallback(() => {
+    const ids = edit.editSelectedSeatIds
+    if (ids.length === 0) return
+    if (ids.length === 1) onSeatDeleteRequest?.(ids[0])
+    else onSeatBulkDeleteRequest?.(ids)
+  }, [edit.editSelectedSeatIds, onSeatDeleteRequest, onSeatBulkDeleteRequest])
+
   return (
     <div
       ref={viewport.containerRef}
@@ -126,8 +166,8 @@ export const SeatMapCanvas = memo(forwardRef<SeatMapCanvasHandle, Props>(functio
       onContextMenu={(e) => e.preventDefault()}
     >
       <div ref={viewport.layerRef} className={styles.seatMapTransform} data-canvas-transform-layer='true'>
-        {/* z順: チームエリア → 施設/通路 → (編集モードのみ)座席。DOM順で座席をチーム箱より手前に置き、
-            クリック/ドラッグを座席側へ優先させる */}
+        {/* z順: チームエリア → 施設/通路 → 設備の編集操作面。編集セッション中も座席は描かない
+            (キャンバス = 通路線 + チーム箱 + 家具/会議室。CLAUDE.md 不変ルール1・仕様 00-2) */}
         <TeamAreaLayer
           teams={layout.teams}
           assignedCountByTeam={view.assignedCountByTeam}
@@ -136,7 +176,8 @@ export const SeatMapCanvas = memo(forwardRef<SeatMapCanvasHandle, Props>(functio
           isEditMode={isEditMode}
           onBoundaryOpen={view.handleTeamBoundaryOpen}
           onLabelEditPointerDown={edit.onTeamLabelEditPointerDown}
-          onLabelTap={onTeamLabelTap}
+          onEditTap={edit.onTeamEditTap}
+          onLongPressEditSession={isEditMode ? undefined : onEnterEditSession}
         />
         {layout.facilities.map((f) => (
           <FacilityBlock
@@ -157,6 +198,7 @@ export const SeatMapCanvas = memo(forwardRef<SeatMapCanvasHandle, Props>(functio
             key={f.id}
             furniture={livePosOf(f, edit.liveObjectPos)}
             counterScale={view.counterScale}
+            onLongPressEditSession={isEditMode ? undefined : onEnterEditSession}
           />
         ))}
         {isEditMode && (
@@ -167,19 +209,7 @@ export const SeatMapCanvas = memo(forwardRef<SeatMapCanvasHandle, Props>(functio
             repositioning={repositioningRef}
             livePos={edit.liveObjectPos}
             onEditPointerDown={edit.onObjectEditPointerDown}
-          />
-        )}
-        {isEditMode && (
-          <EditSeatLayer
-            seats={layout.seats}
-            employeeById={employeeById}
-            presenceMap={presenceMap}
-            liveSeatPos={edit.liveSeatPos}
-            editSelectedSeatId={edit.editSelectedSeatId}
-            lod={view.lod}
-            counterScale={view.counterScale}
-            onSelect={view.handleSeatSelect}
-            onEditPointerDown={edit.onSeatEditPointerDown}
+            onEditTap={edit.onObjectEditTap}
           />
         )}
         {isEditMode && edit.snapGuides.length > 0 && (
@@ -190,12 +220,14 @@ export const SeatMapCanvas = memo(forwardRef<SeatMapCanvasHandle, Props>(functio
           />
         )}
       </div>
-      {/* 座席は個人カードとして描画しない。sr-only ミラー層のみがキーボード/スクリーンリーダー経路を提供する */}
+      {/* 座席は個人カードとして描画しない。sr-only ミラー層のみがキーボード/スクリーンリーダー経路と、
+          編集セッション中の座席選択入口を提供する */}
       <SeatMirrorLayer
         seats={layout.seats}
         employeeById={employeeById}
         teams={layout.teams}
-        onSelect={view.handleSeatSelect}
+        selectedSeatIds={isEditMode ? edit.editSelectedSeatIds : undefined}
+        onSelect={handleMirrorSelect}
       />
       {/* 原本には常時表示の凡例パネルは無い(チーム名は各アイランドのラベル板で表示) */}
       <ZoomControls
@@ -204,21 +236,30 @@ export const SeatMapCanvas = memo(forwardRef<SeatMapCanvasHandle, Props>(functio
         onReset={zoom.reset}
         onGoToMySeat={onGoToMySeat}
       />
-      {isEditMode && view.seatActionBarPos && edit.editSelectedSeatId && (
+      {isEditMode && edit.editSelectedSeatIds.length > 0 && (
         <SeatActionBar
-          x={view.seatActionBarPos.x}
-          y={view.seatActionBarPos.y}
-          onAssign={() => onSeatAssignRequest?.(edit.editSelectedSeatId as string)}
-          onChangeTeam={() => onSeatChangeTeamRequest?.(edit.editSelectedSeatId as string)}
-          onDelete={() => onSeatDeleteRequest?.(edit.editSelectedSeatId as string)}
+          seatIds={edit.editSelectedSeatIds}
+          isSelectedSeatOccupied={isSelectedSeatOccupied}
+          onAssign={() => onSeatAssignRequest?.(edit.editSelectedSeatIds[0])}
+          onRotate={() => onSeatRotateRequest?.(edit.editSelectedSeatIds)}
+          onEnlarge={() => onSeatShapeRequest?.(edit.editSelectedSeatIds)}
+          onDelete={handleSeatDelete}
+          onClearSelection={edit.clearSelection}
         />
       )}
-      {isEditMode && view.objectActionBarPos && edit.editSelectedObject && (
+      {/* 05-3: 移動ゴーストが出ている間は隠す。ゴースト層(z=overlay)の暗幕の下へ潜って
+          触れなくなるため、出しっぱなしにすると「押せないボタン」になる */}
+      {isEditMode && view.objectActionBarPos && objectAttrs && selectedObject && !repositioningRef && (
         <ObjectActionBar
           x={view.objectActionBarPos.x}
           y={view.objectActionBarPos.y}
-          onReposition={() => onObjectRepositionRequest?.(edit.editSelectedObject as LayoutObjectRef)}
-          onDelete={() => onObjectDeleteRequest?.(edit.editSelectedObject as LayoutObjectRef)}
+          name={objectAttrs.name}
+          locked={objectAttrs.locked}
+          labelVisible={objectAttrs.labelVisible}
+          canToggleLabel={objectAttrs.canToggleLabel}
+          onToggleLock={() => onObjectLockToggle?.(selectedObject, !objectAttrs.locked)}
+          onToggleLabel={() => onObjectLabelToggle?.(selectedObject, !objectAttrs.labelVisible)}
+          onDelete={() => onObjectDeleteRequest?.(selectedObject)}
         />
       )}
       {isEditMode && edit.undoChipPos && canUndo && (

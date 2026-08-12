@@ -24,7 +24,7 @@ export const FurniturePickerModal = ({ isOpen, onSelect, onClose }: Props) => {
   return (
     <PickerSheet
       isOpen={isOpen}
-      title='家具を選ぶ'
+      title='家具を選択'
       note='選択すると画面中央に配置されます'
       onClose={onClose}
     >
@@ -33,7 +33,13 @@ export const FurniturePickerModal = ({ isOpen, onSelect, onClose }: Props) => {
           <h3 className={styles.furnPickGroupTitle}>{group.label}</h3>
           <div className={styles.furnPickGrid}>
             {group.kinds.map((kind) => (
-              <button key={kind} type='button' className={styles.furnPickCell} onClick={() => handleSelect(kind)}>
+              <button
+                key={kind}
+                type='button'
+                className={styles.furnPickCell}
+                aria-label={`${FURNITURE_KIND_LABEL[kind]}を配置`}
+                onClick={() => handleSelect(kind)}
+              >
                 <FurnitureIcon kind={kind} />
                 <span className={styles.furnPickLabel}>{FURNITURE_KIND_LABEL[kind]}</span>
               </button>

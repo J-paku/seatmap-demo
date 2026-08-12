@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useSeatDraftState } from './use-seat-draft-state'
 import type { SeatDraftState } from './use-seat-draft-state'
 import {
@@ -36,6 +36,43 @@ const isSameSeatGridDraft = (a: SeatGridDraft, b: SeatGridDraft): boolean => {
     const other = b.cells[r]
     return row.length === other.length && row.every((cell, c) => cell === other[c])
   })
+}
+
+// baselineGrid内で指定seatIdが今どのセルにあるかを探す。無ければnull(下書き追加席など、
+// baseline時点でまだ存在しなかった席)
+const findSeatCell = (draft: SeatGridDraft, seatId: string): GridCell | null => {
+  for (let r = 0; r < draft.cells.length; r += 1) {
+    const c = draft.cells[r].indexOf(seatId)
+    if (c !== -1) return { row: r, col: c }
+  }
+  return null
+}
+
+// §06-3: baselineから絶対座標(origin + セル位置×ピッチ)が動いた既存席のid集合を求める。
+// row/col の生インデックスだけでは比較できない — addRow('top')/addCol('left') は既存席の
+// 絶対座標を保つためoriginを補正しつつ全セルのインデックスをずらす(seat-grid-draft.ts参照)。
+// 生インデックス比較だとこの補正込みの「動いていない」席まで全部「動いた」と誤判定してしまう。
+// 下書き追加席(addedSeatIds)はbaselineに存在せず、件数はaddedSeats.length側で既に計上済みのため除外する
+const computeMovedSeatIds = (
+  grid: SeatGridDraft,
+  baselineGrid: SeatGridDraft,
+  addedSeatIds: Set<string>
+): Set<string> => {
+  const moved = new Set<string>()
+  for (let row = 0; row < grid.cells.length; row += 1) {
+    for (let col = 0; col < grid.cells[row].length; col += 1) {
+      const seatId = grid.cells[row][col]
+      if (seatId === null || addedSeatIds.has(seatId)) continue
+      const basePos = findSeatCell(baselineGrid, seatId)
+      if (basePos === null) continue
+      const currentX = grid.originX + col * grid.colPitch
+      const currentY = grid.originY + row * grid.rowPitch
+      const baseX = baselineGrid.originX + basePos.col * baselineGrid.colPitch
+      const baseY = baselineGrid.originY + basePos.row * baselineGrid.rowPitch
+      if (currentX !== baseX || currentY !== baseY) moved.add(seatId)
+    }
+  }
+  return moved
 }
 
 export type UseOverlayEditModeResult = {
@@ -118,6 +155,17 @@ export const useOverlayEditMode = (): UseOverlayEditModeResult => {
     (from: GridCell, to: GridCell) => updateGrid((g) => moveSeat(g, from, to)),
     [updateGrid]
   )
+
+  // §06-3: grid/baselineGridが変わるたびに「baselineからセル位置が動いている席id集合」を
+  // 計算し、唯一の書き込み口(draft.syncMovedSeatIds)へ渡す。use-draft-applied-seats.tsの
+  // syncSeatSources呼び出しと同じ「外で計算し、下書き側の受け口へ渡すだけ」の方針に揃える。
+  // syncMovedSeatIds自体が内容不変なら同じSet参照を返す(use-seat-draft-state.ts)ため、
+  // 値が動かなくなればこの効果は再レンダーを起こさず収束する
+  useEffect(() => {
+    if (!grid || !baselineGrid) return
+    const addedSeatIds = new Set(draft.addedSeats.map((s) => s.id))
+    draft.syncMovedSeatIds(computeMovedSeatIds(grid, baselineGrid, addedSeatIds))
+  }, [grid, baselineGrid, draft.addedSeats, draft.syncMovedSeatIds])
 
   // 指摘#11: 戻り値をuseMemoで安定化する。isEditMode/grid/baselineGridと各コールバックが
   // 変わらない限り同一オブジェクト参照を返し続けるため、これをdepsに置く呼び出し側の

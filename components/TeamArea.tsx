@@ -1,12 +1,9 @@
-import { useRef, useState } from 'react'
+import { useState } from 'react'
+import { useLongPress } from '@/hooks/use-long-press'
 import { hexToRgba } from '@/utils/color'
 import { clamp } from '@/utils/layout/geometry'
 import type { TeamColorEntry } from '@/utils/team-colors'
 import type { Lod, Team } from '@/types'
-
-// 10: ロングプレス(押し続け)判定のしきい値。これを超えて発火した後は click を無視する
-const LONG_PRESS_MS = 300
-
 
 // チームエリア(バウンダリ)。原本の5層構造: 床カード / 上バー / 左バー / インタラクション面 / ラベル板
 type Props = {
@@ -19,7 +16,11 @@ type Props = {
   onBoundaryOpen: (teamId: string, rect: DOMRect) => void
   isEditMode?: boolean
   onLabelEditPointerDown?: (teamId: string, e: React.PointerEvent) => void
-  onLabelTap?: (teamId: string) => void
+  // 05-3: 編集セッション中のチーム枠タップ。移動ゴーストを開く(実体はその場に残る)
+  onEditTap?: (teamId: string) => void
+  // 05-1: 閲覧モードで管理者がチーム枠を長押しすると編集セッションへ入る。
+  // 渡されない(=長押しの行き先が無い)ときは長押し判定そのものを持たない
+  onLongPressEditSession?: () => void
 }
 
 const ISLAND_INSET = 4
@@ -34,26 +35,33 @@ export const TeamArea = ({
   onBoundaryOpen,
   isEditMode,
   onLabelEditPointerDown,
-  onLabelTap,
+  onEditTap,
+  onLongPressEditSession,
 }: Props) => {
   const [hovered, setHovered] = useState(false)
   const [pressed, setPressed] = useState(false)
-  const longPressTimerRef = useRef(0)
-  // 300ms 経過でロングプレス発火済みを示す。true の間は続く click を無視する
-  const longPressedRef = useRef(false)
-
-  const clearLongPress = () => {
-    window.clearTimeout(longPressTimerRef.current)
-  }
+  // 05-1: しきい値(500ms / 10px)は +FAB の長押しと同じフックを共有する。
+  // 同じ「長押し」に2つ目の値を作らないため、ここには数値を書かない
+  const longPress = useLongPress({
+    onLongPress: () => {
+      setPressed(false)
+      onLongPressEditSession?.()
+    },
+  })
+  const canLongPress = !isEditMode && onLongPressEditSession !== undefined
 
   // 開くのは click で行う(キャンバスが pointer capture を取るため pointerup はここへ来ない)。
   // ドラッグ後の合成 click はキャンバス側の onClickCapture が抑制する
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation()
     setPressed(false)
-    if (isEditMode) return
-    if (longPressedRef.current) {
-      longPressedRef.current = false
+    // 長押しの直後に来る click は、その押下の続きなので何もしない。
+    // 判定を編集モードの分岐より前に置くのが要点 — 長押しでセッションへ入った瞬間に
+    // 同じ押下の click が届くので、後ろに置くと入った途端に移動ゴーストまで開いてしまう
+    if (longPress.consumeFired()) return
+    // 05-3: セッション中は枠のどこを叩いても移動ゴースト。ラベル板の click もここへ上がってくる
+    if (isEditMode) {
+      onEditTap?.(team.id)
       return
     }
     onBoundaryOpen(team.id, e.currentTarget.getBoundingClientRect())
@@ -82,27 +90,27 @@ export const TeamArea = ({
         role='button'
         tabIndex={-1}
         data-team-id={team.idPrefix}
+        title={isEditMode ? `${team.name}をタップして移動` : `${team.name} - ${presentCount}名`}
         onClick={handleClick}
         onPointerEnter={() => setHovered(true)}
         onPointerLeave={() => {
           setHovered(false)
           setPressed(false)
-          // 途中離脱では click が来ないためここでフラグも破棄する
-          clearLongPress()
-          longPressedRef.current = false
+          if (canLongPress) longPress.handlers.onPointerLeave()
         }}
-        onPointerDown={() => {
+        onPointerDown={(e) => {
           if (!isEditMode) setPressed(true)
-          clearLongPress()
-          longPressTimerRef.current = window.setTimeout(() => {
-            longPressedRef.current = true
-          }, LONG_PRESS_MS)
+          if (canLongPress) longPress.handlers.onPointerDown(e)
         }}
-        onPointerUp={clearLongPress}
+        onPointerMove={(e) => {
+          if (canLongPress) longPress.handlers.onPointerMove(e)
+        }}
+        onPointerUp={() => {
+          if (canLongPress) longPress.handlers.onPointerUp()
+        }}
         onPointerCancel={() => {
           setPressed(false)
-          clearLongPress()
-          longPressedRef.current = false
+          if (canLongPress) longPress.handlers.onPointerCancel()
         }}
         style={{
           position: 'absolute',
@@ -112,7 +120,7 @@ export const TeamArea = ({
           height: inner.h,
           borderRadius: 16,
           background: hexToRgba(dot, 0.15),
-          border: `1px solid ${hexToRgba(colorEntry.border, 0.5)}`,
+          border: `1px solid ${hexToRgba(dot, 0.5)}`,
           boxSizing: 'border-box',
           cursor: 'pointer',
           boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
@@ -127,7 +135,6 @@ export const TeamArea = ({
         {/* ラベル板(ネオブルータル) */}
         <div
           onPointerDown={isEditMode ? (e) => { e.stopPropagation(); onLabelEditPointerDown?.(team.id, e) } : undefined}
-          onClick={isEditMode ? (e) => { e.stopPropagation(); onLabelTap?.(team.id) } : undefined}
           style={{
             display: 'grid',
             gridTemplateColumns: '14px 1fr auto',

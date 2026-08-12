@@ -18,12 +18,19 @@ import { useCompensateLeftInsert } from '../hooks/use-compensate-left-insert'
 import { useScrollActivity } from '../hooks/use-scroll-activity'
 import { useScrollHints } from '../hooks/use-scroll-hints'
 import { useSeatHighlightAnimation } from '../hooks/use-seat-highlight-animation'
+import type { UseSeatDragResult } from '../hooks/use-seat-drag'
 import styles from '../team-overlay-modal.module.css'
 import type { PresenceStatus } from '@/types'
 
 // 列幅は可変。6 列がコンテナ幅にちょうど収まる幅を実測して minmax の下限に使う
 
-type Props = SeatGridProps
+type Props = SeatGridProps & {
+  // §06-2: ドロップ先ハイライト用。use-seat-drag(担当内)が計算するhoverCellをそのまま受け取る。
+  // SeatGridProps(../type.ts)にはまだフィールドが無く、そちらの追加は担当外(呼び出し側の配線も
+  // 含め報告に記載)。optionalにして、現状の呼び出し側(SeatGridFrame/TeamOverlay/index.tsx)が
+  // 渡さなくても型エラーにならないようにしてある
+  hoverCell?: UseSeatDragResult['hoverCell']
+}
 
 // コンテナ幅から 1 セルぶんの下限幅を求める
 const useCompactCellWidth = (ref: RefObject<HTMLElement | null>): number => {
@@ -58,9 +65,7 @@ export const CompactSeatGrid = ({
   onClearHighlight,
   isEditMode,
   isSeatSelected,
-  isEmptyCellSelected,
   onSelectSeat,
-  onSelectEmptyCell,
   seatMouseDragProps,
   cellMouseDropProps,
   seatTouchProps,
@@ -72,6 +77,7 @@ export const CompactSeatGrid = ({
   onAddSeat,
   onAssignSeat,
   onRotateSeat,
+  hoverCell = null,
 }: Props) => {
   const scrollRef = useRef<HTMLDivElement>(null)
   const cellWidth = useCompactCellWidth(scrollRef)
@@ -84,6 +90,10 @@ export const CompactSeatGrid = ({
   const hasGridEdgeControls = isEditMode && editGrid !== null
   const rowOffset = hasGridEdgeControls ? 1 : 0
   const colOffset = hasGridEdgeControls ? 1 : 0
+
+  // §06-2: 0席チームは1×1グリッドで生成される(createInitialGrid、担当外)。その1マスだけ
+  // 「最初の席を追加」に文言を変える
+  const isFirstSeatGrid = grid.rows === 1 && grid.cols === 1 && grid.positionedSeats.length === 0
 
   // 左へ列を足した回数を数え、増分ぶんだけ scrollLeft を補正する。render中にref.currentを
   // 読まないよう、カウンタ自体はstateで持つ(コミット後の副作用はuseCompensateLeftInsert内のrefが担う)
@@ -119,9 +129,11 @@ export const CompactSeatGrid = ({
             const status: PresenceStatus = employee ? presenceMap.get(employee.id) ?? 'present' : 'present'
             const isHit = highlightSeatId === seat.id
             const dimmed = spotlight && !isHit
+            const isDropTarget = isEditMode && hoverCell !== null && hoverCell.row === row && hoverCell.col === col
             return (
               <div
                 key={seat.id}
+                className={isDropTarget ? styles.dropTarget : undefined}
                 style={{
                   gridRow: row + 1 + rowOffset,
                   gridColumn: col + 1 + colOffset,
@@ -173,26 +185,25 @@ export const CompactSeatGrid = ({
           })}
           {/* 空セルは編集中だけ埋まる(use-seat-layout-compose 参照)。表示モードでは常に空配列 */}
           {isEditMode &&
-            (grid.emptyCells ?? []).map((cell) => (
-              <div
-                key={`empty-${cell.row}-${cell.col}`}
-                style={{
-                  gridRow: cell.row + 1 + rowOffset,
-                  gridColumn: cell.col + 1 + colOffset,
-                  display: 'flex',
-                  // STEP B5: SeatActionOverlay(pill)をこのセル基準で絶対配置するための起点
-                  position: 'relative',
-                }}
-                data-seat-grid-cell={formatSeatGridCellAttr(cell)}
-                {...cellMouseDropProps}
-              >
-                <EmptyGridCell isSelected={isEmptyCellSelected(cell)} onSelect={() => onSelectEmptyCell(cell)} />
-                {/* STEP B5: 選択中のセルにだけ「席追加」ピルを重ねる */}
-                {isEmptyCellSelected(cell) && (
-                  <SeatActionOverlay variant='emptyCell' onAddSeat={() => onAddSeat(cell)} />
-                )}
-              </div>
-            ))}
+            (grid.emptyCells ?? []).map((cell) => {
+              const isDropTarget = hoverCell !== null && hoverCell.row === cell.row && hoverCell.col === cell.col
+              return (
+                <div
+                  key={`empty-${cell.row}-${cell.col}`}
+                  className={isDropTarget ? styles.dropTarget : undefined}
+                  style={{
+                    gridRow: cell.row + 1 + rowOffset,
+                    gridColumn: cell.col + 1 + colOffset,
+                    display: 'flex',
+                  }}
+                  data-seat-grid-cell={formatSeatGridCellAttr(cell)}
+                  {...cellMouseDropProps}
+                >
+                  {/* §06-2: 空セルタップ=即追加(1段階)。選択→ピルタップの中間状態は経由しない */}
+                  <EmptyGridCell variant={isFirstSeatGrid ? 'firstSeat' : 'default'} onAdd={() => onAddSeat(cell)} />
+                </div>
+              )
+            })}
           {/* STEP B4: 空行・空列のヘッダにだけ出す削除ボタン(ヘッダー行・列トラックの分は上でオフセット済み) */}
           {hasGridEdgeControls && editGrid && (
             <GridRemoveHeaders grid={editGrid} onRemoveRow={onRemoveRow} onRemoveCol={onRemoveCol} />

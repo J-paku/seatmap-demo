@@ -17,7 +17,8 @@ export type TrashDropZoneProps = {
   // タッチ経路など外部で判定した「ドラッグがゾーン上にあるか」。マウス経路は内部の
   // onDragOver/onDragLeave で判定するため、外部判定が無ければ内部判定だけを使う
   isOver?: boolean
-  // ドロップ確定時に呼ばれる。席の削除自体は呼び出し側(removeSeatAtCell)が行う
+  // ドロップ確定時に呼ばれる。§07-2確認モーダルの要求まで(実削除自体)は呼び出し側が行う。
+  // 呼び出し側はマウス/タッチ共通で確認要求(requestSeatDeleteAtCell)を渡し、即時削除はしない
   onDrop: () => void
 }
 

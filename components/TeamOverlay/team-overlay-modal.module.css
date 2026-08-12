@@ -312,6 +312,90 @@
   background: var(--color-surface-muted);
 }
 
+/* §06-4: 編集モードヘッダーの「部署一括取込」専用ピル。.editFinish と同じ形状で、
+   枠・文字だけアクセント色にして役割(取込 vs 終了)を視覚的に区別する */
+.bulkImport {
+  flex-shrink: 0;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  border: 1px solid var(--color-accent);
+  background: var(--color-surface);
+  color: var(--color-accent);
+  cursor: pointer;
+}
+
+.bulkImport:hover {
+  background: var(--color-surface-muted);
+}
+
+/* §06-2 座席モード: 固定席 ⇄ フリーアドレスのチップトグル行。見出し(.sectionHead)の直下に
+   1行だけ挿し、左右パディングはグリッドと同じ値を呼び出し側から受ける */
+.seatModeRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.seatModeLabel {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--color-text-secondary);
+}
+
+/* トグル本体(role=switch)。2つのチップを内側に並べ、現在値の側だけ塗る */
+.seatModeSwitch {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px;
+  border-radius: 9999px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface-muted);
+  cursor: pointer;
+}
+
+.seatModeSwitch:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+.seatModeSwitch:disabled {
+  cursor: default;
+  opacity: 0.6;
+}
+
+.seatModeChip {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 9999px;
+  color: var(--color-text-secondary);
+}
+
+.seatModeChip.isOn {
+  background: var(--color-accent);
+  color: var(--color-text-on-accent);
+}
+
+/* §06-6: オーバーレイ内のチーム削除フッター(ボタンを中央寄せする行) */
+.teamDeleteFooter {
+  display: flex;
+  justify-content: center;
+  margin: 16px 0 8px;
+}
+
+/* §06-6: チーム削除ボタン本体(danger色)。pixel-btn と併用する想定 */
+.teamDeleteButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--color-danger);
+  border-color: var(--color-danger);
+}
+
 .sync {
   font-size: 11px;
   color: var(--color-text-muted);
@@ -833,6 +917,15 @@
   font-size: 9px;
 }
 
+/* §06-2: ドラッグ中のドロップ先ハイライト。セルのラッパー(位置決め用のdiv、空セル・在席セル
+   どちらにも付く)へ直接付ける。3pxアウトライン・拡大1.04倍・accent12%地。色はvar(--color-accent)
+   から導出し、リテラルのHEX/rgbaは使わない */
+.dropTarget {
+  outline: 3px solid var(--color-accent);
+  transform: scale(1.04);
+  background: color-mix(in srgb, var(--color-accent) 12%, transparent);
+}
+
 /* STEP B2: タッチドラッグ中に指へ追従するゴースト(SeatDragGhost)。座標はJS側でleft/topへ渡し、
    指に隠れないよう指の上方へオフセットする。マウスはネイティブDnDの既定画像に任せるためここは
    タッチ専用 */
@@ -987,9 +1080,21 @@
   opacity: 0.6;
 }
 
-/* 選択中。席・空セルどちらも同じ見せ方(2px の accent 枠+外側にわずかなグロー) */
-.editcard.isSelected,
-.emptycell.isSelected {
+/* §06-2: 0席チーム(1×1グリッド)専用の「最初の席を追加」表記。アイコン単体ではなく縦積みで
+   可視テキストを添える(通常のemptycellはaria-labelのみで可視テキストを持たない) */
+.emptycell.isFirstSeat {
+  flex-direction: column;
+  gap: 6px;
+}
+
+.emptycellLabel {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-text-secondary);
+}
+
+/* 選択中(在席カードのみ)。空セルは§06-2で1段階化(タップ即追加)したため選択状態を持たない */
+.editcard.isSelected {
   border: 2px solid var(--color-accent);
   box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-accent) 20%, transparent);
 }
@@ -1145,6 +1250,17 @@
 
 .rotationGrip:active {
   cursor: grabbing;
+}
+
+/* §06-2: 座席削除ボタン。.rotationGrip(回転グリップ)と同じ丸ボタン形状を流用し、
+   位置(左上→右上)・色(danger)・カーソルだけ上書きする。回転グリップと反対の右上へ置く。
+   .rotationGripとの併記(2クラス)は特異度(0,2,0)を.rotationGrip単体・.rotationGrip:active
+   のどちらにも確実に勝たせるため */
+.rotationGrip.seatDeleteGrip {
+  left: auto;
+  right: 3px;
+  color: var(--color-danger);
+  cursor: pointer;
 }
 
 /* STEP D2: 席の向きの帯。編集中の席カード(.editcard、position: relativeを持つ)の

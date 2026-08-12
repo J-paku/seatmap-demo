@@ -9,7 +9,19 @@
   --color-surface-muted-hover: #ddd2bf;
   /* モーダル背後の暗幕。前景を沈めるのが目的なのでテーマを問わず同値 */
   --color-scrim: rgba(0, 0, 0, 0.4);
+  /* 編集セッションの全面ディム(§05-1: rgba(0,0,0,0.55))。--color-scrim(0.4)とは
+     不透明度が異なる別値で color-mix の希釈からは作れないため独立トークンにする。
+     --color-scrim と同じ理由でテーマを問わず同値 */
+  --color-scrim-strong: rgba(0, 0, 0, 0.55);
   --color-scrim-overlay: rgba(15, 23, 42, 0.34);
+  /* 確認モーダル共通シェルの背景暗幕(§07-1: rgba(20,16,12,0.44)+blur(8px))。
+     --color-scrim(0.4 の黒)・--color-scrim-strong(0.55 の黒)とは色相・不透明度が異なる
+     別値のため独立トークンにする。--color-scrim と同じ理由でテーマを問わず同値 */
+  --color-scrim-confirm: rgba(20, 16, 12, 0.44);
+  /* 編集中ピル(§05-1: #000地+#ff3b30文字)。admin-edit.module.css の .editingOverlayLabel に
+     ローカル定義(--edit-label-bg/--edit-label-fg)されていたものを昇格。テーマを問わず同値 */
+  --color-edit-label-bg: #000000;
+  --color-edit-label-fg: #ff3b30;
   /* プロフィール帯グラデーションの明るい側。暗色テーマでの見え方は要デザイン判断のため
      現状は全テーマ共通で白のまま(テーマ側で上書きすれば個別調整できる) */
   --color-band-highlight: #ffffff;
@@ -53,7 +65,9 @@
   --color-weekend-sun: #dc2626;
   --color-weekend-sat: #2563eb;
 
-  /* z-index 8層(値は個別設定) */
+  /* z-index 8層(値は個別設定)。SPEC §00-4 の Z_EDIT_DIM(8)〜Z_MODAL(50)は原典の絶対値定数だが、
+     このデモは独自の8段トークン尺度を使い、値そのものは移植しない。実際に同時表示され得る
+     組み合わせに限り、仕様表と同じ相対順序(例: シート > 編集コントロール > オーバーレイ)を保つ */
   --z-index-dropdown: 100;
   --z-index-sticky: 200;
   --z-index-popover: 300;
@@ -159,6 +173,11 @@
   --color-status-meeting: #2563eb;
   --color-status-out: #d97706;
   --color-status-vacation: #6b7280;
+}
+
+/* ゴースト配置の整列ガイド線色(§04-3)。原本仕様の固定色で全テーマ共通 */
+.seat-map-root {
+  --color-align-guide: #e74c3c;
 }
 
 /* 検索ヒット表示色。原本の #e9a93d は light のカード地(#ffffff)に対して 2.06:1 しかなく

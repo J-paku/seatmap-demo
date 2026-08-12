@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import type { KeyboardEvent as ReactKeyboardEvent, PointerEvent as ReactPointerEvent, RefObject } from 'react'
 import { useBodyScrollLock } from '@/hooks/use-body-scroll-lock'
+import { useLongPress } from '@/hooks/use-long-press'
 import { triggerHaptic } from '@/utils/haptic'
-import { useFabLongPress } from './use-fab-long-press'
 
 // メニュー項目の実体。ロービングタブの移動対象をこれで数える
 const MENU_ITEM_SELECTOR = '[role=menuitem]'
@@ -86,7 +86,7 @@ export const useAdminAddFab = ({
   }
 
   // 500ms 長押しでメニューを開かず編集モードへ直行する。タイマー発火自体には haptic を鳴らさない仕様
-  const longPress = useFabLongPress({
+  const longPress = useLongPress({
     onLongPress: () => {
       closeMenu()
       onEditLayout()

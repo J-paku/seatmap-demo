@@ -155,11 +155,28 @@ export type Employee = {
 // チーム(部署)
 export type Team = {
   id: string
-  // 11: 座席ID接頭辞。seat.id.startsWith(idPrefix + '-') が座席↔チーム結束の唯一のキー
+  // 座席ID接頭辞。所属判定の正本は seat.teamId であり、idPrefix は
+  // 座席IDの採番('{idPrefix}-{nnn}')と data-team-id フックの値にだけ使う。
+  // 所属判定には使わない(seat.id.startsWith(idPrefix + '-') で所属を見ている
+  // ランタイムコードは存在しない。両方を判定基準にすると片方だけ壊れる)
   idPrefix: string
   name: string
   color: string
   area: { x: number; y: number; w: number; h: number }
+  // 移動・リサイズ・座席増減を全て禁止する
+  locked?: boolean
+  // 固定グリッド。指定があるチームは座席の並びをこの行×列に保つ
+  fixedLayout?: { rows: number; cols: number }
+  // フリーアドレス(席を個人へ固定しない運用)
+  freeAddressEnabled?: boolean
+  // 所属人数に合わせて座席を自動増減する
+  autoFillEnabled?: boolean
+  // チームラベルの表示位置(viewBox座標)。未指定なら area から算出する。
+  // 既定値を埋めないのは「未指定 = area 追従」が意味のある状態のため
+  labelX?: number
+  labelY?: number
+  // bg / stroke / labelColor / dotColor は持たない。配色は color 1つから
+  // utils/team-colors.ts が派生させる(色の判定基準を2箇所に持たないため)
 }
 
 // LOD(詳細度)。detail=アバター+名前+状態 / mid=アバター+状態ドット / overview=最小表示。
@@ -169,6 +186,7 @@ export type Lod = 'detail' | 'mid' | 'overview'
 // 座席
 export type Seat = {
   id: string
+  // 座席↔チーム所属判定の正本。Team.idPrefix では判定しない
   teamId: string
   x: number
   y: number
@@ -176,6 +194,16 @@ export type Seat = {
   height: number
   rotation: 0 | 90 | 180 | 270
   employeeId: string | null
+  // 座席形状。既定サイズは standard 105×75 / executive 110×90 / vertical 75×105
+  shape?: 'standard' | 'executive' | 'vertical'
+  // 編集セッション中に追加された未確定座席。保存時に自動で取り除く
+  isPending?: boolean
+  // 座席が生まれた経緯。'auto_fill_toggle' は自動席数調整が作った席
+  origin?: 'manual' | 'auto_fill_toggle'
+  // 利用者が shape の既定サイズから手で変えた。以降は shape 変更でサイズを上書きしない
+  isSizeOverridden?: boolean
+  // status / employee は増やさない。着席判定は utils/seat-occupancy.ts の employeeId 基準1本に
+  // 保ち、同じ概念の2つ目の判定基準を作らないため(2つあると片方だけ壊れて気付けない)
 }
 
 // 施設
@@ -191,6 +219,10 @@ export type Facility = {
   height: number
   // 11: 予定システムの施設ID。無ければ 施設未連携(会議が付かない)
   facilityId?: string
+  // 移動・リサイズ・削除を禁止する
+  locked?: boolean
+  // キャンバス上に名前ラベルを描くか
+  labelVisible?: boolean
 }
 
 // 家具。会議室(Facility)とは別型にする。Facility.kind へ家具種別を混ぜると
@@ -206,6 +238,7 @@ export type FurnitureKind =
   | 'shelf'
   | 'plant'
   | 'bed'
+// 'facility' は足さない。会議室は Facility 型が持ち、混ぜると上記の巻き添えが起きる
 
 // name は建設設備(壁・柱・階段・ドア・窓)では空文字固定。ラベル・既定サイズ・
 // グループ分けは utils/furniture-catalog.ts が持つ
@@ -217,6 +250,12 @@ export type Furniture = {
   y: number
   width: number
   height: number
+  // 回転角。90/270 は中心基準で w/h を入れ替えて描く
+  rotation?: 0 | 90 | 180 | 270
+  // キャンバス上に名前ラベルを描くか(建設設備は name が空文字なので実質無効)
+  labelVisible?: boolean
+  // 移動・リサイズ・削除を禁止する
+  locked?: boolean
 }
 
 // 編集対象になりうるオブジェクトの種別。当たり判定・吸着・選択の対象を
@@ -257,7 +296,21 @@ export type SeatLayout = {
   teams: Team[]
   facilities: Facility[]
   furniture: Furniture[]
+  // 保存フォーマットの版。書き込みは lib/layout-persistence.ts が行う
+  schemaVersion?: number
+  // 最終保存時刻(ISO文字列)。楽観ロック(「他の管理者が更新しました」)の照合キー
+  updatedTime?: string
 }
+
+// 保存済みレイアウト(localStorage から読んだもの)。schemaVersion と updatedTime が
+// 必ず入っている点だけが SeatLayout と違う。埋めるのは lib/layout-persistence.ts の
+// 読み込み口1箇所だけ。
+//
+// SeatLayout 側で必須にしない理由: 種データ合成分(hooks/use-mock-data.ts)と
+// 空レイアウトの雛形(utils/layout/layout-id.ts)は一度も保存されておらず、
+// 保存時刻を持ちようがない。必須にすると「保存していないのに保存時刻がある」嘘の値を
+// 各所で作ることになり、楽観ロックの照合が意味を失う
+export type StoredSeatLayout = SeatLayout & { schemaVersion: number; updatedTime: string }
 
 // チームバウンダリのクリックで渡ってくる情報。rect が拡大の原点になる
 export type TeamOverlayPayload = {

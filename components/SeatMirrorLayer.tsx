@@ -2,15 +2,19 @@ import { useRef, useState } from 'react'
 import type { Employee, Seat, Team } from '@/types'
 
 // 11: 原本のキャンバスは個人座席カードを描かない。座席は sr-only ミラー層にのみ存在し、
-// キーボード/スクリーンリーダー経路(roving tabindex)で全座席へ到達できるようにする
+// キーボード/スクリーンリーダー経路(roving tabindex)で全座席へ到達できるようにする。
+// 05-3: 編集セッション中はこの層が唯一のキャンバス側の座席選択入口になる
+// (Shift+クリック=トグル / 通常クリック=単独選択)
 type Props = {
   seats: Seat[]
   employeeById: Map<string, Employee>
   teams: Team[]
-  onSelect: (seatId: string) => void
+  // 編集セッション中のみ渡す。渡された時だけボタンをトグル(aria-pressed)として扱う
+  selectedSeatIds?: readonly string[]
+  onSelect: (seatId: string, toggle: boolean) => void
 }
 
-export const SeatMirrorLayer = ({ seats, employeeById, teams, onSelect }: Props) => {
+export const SeatMirrorLayer = ({ seats, employeeById, teams, selectedSeatIds, onSelect }: Props) => {
   const [activeIndex, setActiveIndex] = useState(0)
   const btnRefs = useRef<Array<HTMLButtonElement | null>>([])
 
@@ -47,9 +51,14 @@ export const SeatMirrorLayer = ({ seats, employeeById, teams, onSelect }: Props)
             type='button'
             tabIndex={index === activeIndex ? 0 : -1}
             aria-label={label}
+            aria-pressed={selectedSeatIds ? selectedSeatIds.includes(seat.id) : undefined}
             onFocus={() => setActiveIndex(index)}
             onKeyDown={(e) => onKeyDown(e, index)}
-            onClick={() => onSelect(seat.id)}
+            // キャンバス余白のクリック(選択解除)へ伝播させない。止めないと選んだ直後に解除される
+            onClick={(e) => {
+              e.stopPropagation()
+              onSelect(seat.id, e.shiftKey)
+            }}
           />
         )
       })}

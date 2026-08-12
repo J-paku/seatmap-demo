@@ -1,0 +1,130 @@
+/* §02-1 チームカテゴリシート。中央モーダルカード固定(ボトムシート化しない) */
+
+.wrap {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-index-modal);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 原典 bg-black/30。--color-scrim(黒0.4)を薄めて同値にする */
+.backdrop {
+  position: absolute;
+  inset: 0;
+  background: color-mix(in srgb, var(--color-scrim) 75%, transparent);
+}
+
+.panel {
+  position: relative;
+  width: 340px;
+  max-width: calc(100vw - 32px);
+  max-height: min(80vh, 640px);
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  border-radius: 16px;
+  background: var(--color-surface);
+  box-shadow: var(--shadow-modal);
+}
+
+.inner {
+  display: flex;
+  max-height: inherit;
+  flex-direction: column;
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 14px 6px;
+}
+
+.title {
+  margin: 0;
+  color: var(--color-text-primary);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.close {
+  display: flex;
+  width: 44px;
+  height: 44px;
+  align-items: center;
+  justify-content: center;
+  margin-left: auto;
+  border: 0;
+  border-radius: 999px;
+  background: none;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+}
+
+.close:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: -2px;
+}
+
+.list {
+  display: flex;
+  overflow-y: auto;
+  flex-direction: column;
+  gap: 8px;
+  padding: 4px 14px 16px;
+}
+
+.tile {
+  display: flex;
+  min-height: 72px;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  background: var(--color-surface-elevated);
+  cursor: pointer;
+  text-align: left;
+}
+
+.tile:hover:not(:disabled) {
+  border-color: var(--color-accent);
+}
+
+.tile:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+.tile:disabled {
+  cursor: default;
+  opacity: 0.5;
+}
+
+.tileIcon {
+  font-size: 32px;
+  color: var(--color-accent);
+}
+
+.tile:disabled .tileIcon {
+  color: var(--color-text-disabled);
+}
+
+.tileText {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.tileTitle {
+  color: var(--color-text-primary);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.tileDesc {
+  color: var(--color-text-muted);
+  font-size: 11px;
+}

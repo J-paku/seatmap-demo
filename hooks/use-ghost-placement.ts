@@ -1,11 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { PointerEvent as ReactPointerEvent } from 'react'
 import { SEATMAP_BG_ID } from '@/components/SheetShell'
+import { triggerHaptic } from '@/utils/haptic'
 import { clamp } from '@/utils/layout/geometry'
+import { clampGhostDisplaySize } from '@/utils/layout/rect'
 import type { Rect } from '@/utils/layout/rect'
 import { resizeRect } from '@/utils/layout/resize-anchor'
 import type { ResizeHandle } from '@/utils/layout/resize-anchor'
-import { SNAP_THRESHOLD_SCREEN_PX, computeSnap } from '@/utils/layout/snap-guides'
+import { computeResizeSnap, computeSnap, snapThreshold } from '@/utils/layout/snap-guides'
 import type { SnapGuide } from '@/utils/layout/snap-guides'
 
 // ビューファインダー式ゴーストの配置モデル。
@@ -140,15 +142,18 @@ export const useGhostPlacement = ({
     }
   }, [])
 
-  // ガイド線を画面座標へ移す。ゴースト層はキャンバスの変換の外にいるので viewBox 座標では描けない
+  // ガイド線を画面座標へ移す。ゴースト層はキャンバスの変換の外にいるので viewBox 座標では描けない。
+  // start/end は線に沿った軸の値なので、pos とは別の軸で変換する
   const toScreenGuides = useCallback((gs: SnapGuide[]): SnapGuide[] => {
     const canvas = canvasRectRef.current
     if (!canvas) return []
     const t = transformRef.current
+    const toX = (v: number) => canvas.left + t.tx + v * t.scale
+    const toY = (v: number) => canvas.top + t.ty + v * t.scale
     return gs.map((g) =>
       g.axis === 'vertical'
-        ? { axis: 'vertical', pos: canvas.left + t.tx + g.pos * t.scale }
-        : { axis: 'horizontal', pos: canvas.top + t.ty + g.pos * t.scale }
+        ? { axis: 'vertical', pos: toX(g.pos), start: toY(g.start), end: toY(g.end) }
+        : { axis: 'horizontal', pos: toY(g.pos), start: toX(g.start), end: toX(g.end) }
     )
   }, [])
 
@@ -157,7 +162,7 @@ export const useGhostPlacement = ({
     const rect = toLogicalRect(screenCenter, sizeRef.current)
     if (!rect) return { center: screenCenter, guides: [] as SnapGuide[] }
     const t = transformRef.current
-    const snap = computeSnap(rect, siblingsRef.current, SNAP_THRESHOLD_SCREEN_PX / t.scale)
+    const snap = computeSnap(rect, siblingsRef.current, snapThreshold(rect, t.scale))
     return {
       center: { x: screenCenter.x + (snap.x - rect.x) * t.scale, y: screenCenter.y + (snap.y - rect.y) * t.scale },
       guides: snap.guides,
@@ -205,10 +210,21 @@ export const useGhostPlacement = ({
       if (next.scale === cur.scale && next.tx === cur.tx && next.ty === cur.ty) return
       transformRef.current = next
       setTransform(next)
+      // §04-3: パン・ズーム中もスナップを引き直す。ゴーストは画面に固定なので、
+      // 地図が動いた分だけ論理位置が変わり、吸着相手も変わる。ここで引き直さないと
+      // 「ゴーストを触らず地図側で位置を合わせた」ときガイドが出ないまま確定時に吸着する
+      if (dragRef.current.kind !== 'none') return
+      const held = centerRef.current
+      if (!held) return
+      const snapped = applySnap(held)
+      const nextCenter = clampCenter(snapped.center)
+      centerRef.current = nextCenter
+      setCenter(nextCenter)
+      setGuides(toScreenGuides(snapped.guides))
     })
     observer.observe(layer, { attributes: true, attributeFilter: ['style'] })
     return () => observer.disconnect()
-  }, [active])
+  }, [active, applySnap, clampCenter, toScreenGuides])
 
   // ウィンドウサイズが変わるとキャンバス矩形が変わる
   useEffect(() => {
@@ -233,6 +249,8 @@ export const useGhostPlacement = ({
     }
     ;(e.target as HTMLElement).setPointerCapture(e.pointerId)
     setIsDragging(true)
+    // §04-1: 掴み = light
+    triggerHaptic('light')
   }, [])
 
   const onHandlePointerDown = useCallback(
@@ -252,6 +270,8 @@ export const useGhostPlacement = ({
       }
       ;(e.target as HTMLElement).setPointerCapture(e.pointerId)
       setIsDragging(true)
+      // §04-1: リサイズ開始 = light
+      triggerHaptic('light')
     },
     [toLogicalRect]
   )
@@ -275,13 +295,21 @@ export const useGhostPlacement = ({
       // リサイズは論理座標で計算する。掴んだ反対側エッジは論理位置が動かない
       const dx = (e.clientX - drag.startX) / t.scale
       const dy = (e.clientY - drag.startY) / t.scale
-      const resized = resizeRect(drag.startRect, drag.handle, dx, dy, {
+      const limits = {
         minW: minSizeRef.current.width,
         minH: minSizeRef.current.height,
         max: GHOST_MAX_SIZE,
-      })
-      const snap = computeSnap(resized, siblingsRef.current, SNAP_THRESHOLD_SCREEN_PX / t.scale)
-      const snappedRect: Rect = { ...resized, x: snap.x, y: snap.y }
+      }
+      const resized = resizeRect(drag.startRect, drag.handle, dx, dy, limits)
+      // 移動と違い、リサイズでは矩形を平行移動させない。対辺を止めたまま動く辺だけ吸着させる
+      const snap = computeResizeSnap(
+        resized,
+        siblingsRef.current,
+        snapThreshold(resized, t.scale),
+        drag.handle,
+        limits
+      )
+      const snappedRect: Rect = snap.rect
       sizeRef.current = { width: snappedRect.w, height: snappedRect.h }
       setLogicalSize({ width: snappedRect.w, height: snappedRect.h })
       const nextCenter = toScreenCenter(snappedRect)
@@ -289,21 +317,26 @@ export const useGhostPlacement = ({
       setGuides(toScreenGuides(snap.guides))
     }
 
-    const onUp = (e: PointerEvent) => {
+    const endDrag = (e: PointerEvent, released: boolean) => {
       const drag = dragRef.current
       if (drag.kind === 'none' || drag.pointerId !== e.pointerId) return
       dragRef.current = { kind: 'none' }
       setIsDragging(false)
       setGuides([])
+      // §04-1: 離し = medium。pointercancel は「離した」ではないので鳴らさない
+      if (released) triggerHaptic('medium')
     }
+
+    const onUp = (e: PointerEvent) => endDrag(e, true)
+    const onCancel = (e: PointerEvent) => endDrag(e, false)
 
     window.addEventListener('pointermove', onMove)
     window.addEventListener('pointerup', onUp)
-    window.addEventListener('pointercancel', onUp)
+    window.addEventListener('pointercancel', onCancel)
     return () => {
       window.removeEventListener('pointermove', onMove)
       window.removeEventListener('pointerup', onUp)
-      window.removeEventListener('pointercancel', onUp)
+      window.removeEventListener('pointercancel', onCancel)
     }
   }, [active, applySnap, clampCenter, toScreenCenter, toScreenGuides])
 
@@ -313,12 +346,19 @@ export const useGhostPlacement = ({
   const logicalRect = center ? toLogicalRect(center, logicalSize) : null
   const blocked = logicalRect && isBlocked ? isBlocked(logicalRect) : false
 
+  // §04-1: 表示寸法は実寸×scale をクランプした値。中心は動かさないので、
+  // クランプで変わるのは見た目の大きさだけで、確定する論理矩形には影響しない
+  const displaySize = clampGhostDisplaySize({
+    width: logicalSize.width * transform.scale,
+    height: logicalSize.height * transform.scale,
+  })
+
   const screenRect = center
     ? {
-        left: center.x - (logicalSize.width * transform.scale) / 2,
-        top: center.y - (logicalSize.height * transform.scale) / 2,
-        width: logicalSize.width * transform.scale,
-        height: logicalSize.height * transform.scale,
+        left: center.x - displaySize.width / 2,
+        top: center.y - displaySize.height / 2,
+        width: displaySize.width,
+        height: displaySize.height,
       }
     : null
 
@@ -329,7 +369,7 @@ export const useGhostPlacement = ({
     if (!rect) return null
     // 確定時にもう一度スナップを掛ける。ゴーストを触らずキャンバス側を動かして位置を
     // 合わせた場合、ドラッグ中に計算した吸着結果は既に古いため
-    const snap = computeSnap(rect, siblingsRef.current, SNAP_THRESHOLD_SCREEN_PX / transformRef.current.scale)
+    const snap = computeSnap(rect, siblingsRef.current, snapThreshold(rect, transformRef.current.scale))
     return { ...rect, x: snap.x, y: snap.y }
   }, [toLogicalRect])
 

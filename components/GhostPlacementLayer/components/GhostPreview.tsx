@@ -22,6 +22,8 @@ type Props = {
   outline: 'solid' | 'dashed'
   blocked: boolean
   resizable: boolean
+  // 移動モード('reposition')のときだけ枠上部にラベルバッジを出す(§04-2)
+  mode: 'create' | 'move'
   label: string
   onPointerDown: (e: ReactPointerEvent) => void
   onHandlePointerDown: (handle: ResizeHandle, e: ReactPointerEvent) => void
@@ -32,6 +34,7 @@ export const GhostPreview = ({
   outline,
   blocked,
   resizable,
+  mode,
   label,
   onPointerDown,
   onHandlePointerDown,
@@ -42,14 +45,30 @@ export const GhostPreview = ({
     onPointerDown={onPointerDown}
     role='presentation'
   >
-    <span className={styles.previewLabel}>{label}</span>
+    {mode === 'move' && (
+      <span className={styles.moveLabel}>
+        <span className='material-symbols-outlined' aria-hidden='true'>
+          {blocked ? 'block' : 'open_with'}
+        </span>
+        {label}
+      </span>
+    )}
+    {/* 中央ハンドル: 掴む場所を示す見た目だけの要素。ドラッグ自体は枠全体(.preview)が受ける */}
+    <span className={styles.centerHandle} role='img' aria-label='配置プレビュー（ドラッグで移動）'>
+      <span className='material-symbols-outlined' aria-hidden='true'>
+        {blocked ? 'block' : 'drag_pan'}
+      </span>
+    </span>
+    {/* 衝突中はリサイズハンドルを隠す(§04-2) */}
     {resizable &&
+      !blocked &&
       RESIZE_HANDLES.map((handle) => (
         <span
           key={handle}
           className={`${styles.handle} ${HANDLE_CLASS[handle]}`}
           onPointerDown={(e) => onHandlePointerDown(handle, e)}
           role='presentation'
+          aria-label='サイズを変更'
         />
       ))}
   </div>

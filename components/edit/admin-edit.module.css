@@ -19,14 +19,17 @@
      編集クロム(このラベル・上端コントロール・下端リモートバー・
      アクションバー・元に戻すチップ)は z-index-popover で常にキャンバスより上 */
   z-index: var(--z-index-dropdown);
-  background: var(--color-scrim);
+  /* 原本仕様: 全画面ディムは rgba(0,0,0,0.55)。既定の --color-scrim(0.4)とは
+     不透明度が異なる別値のため流用不可 */
+  background: var(--color-scrim-strong);
   pointer-events: none;
 }
 
 .editingOverlayLabel {
   position: absolute;
   top: 16px;
-  left: 16px;
+  left: 50%;
+  transform: translateX(-50%);
   z-index: var(--z-index-popover);
   display: flex;
   align-items: center;
@@ -34,12 +37,9 @@
   padding: 6px 14px;
   border-radius: 9999px;
   /* 原本仕様: #000 地 + #ff3b30 文字。--color-scrim と同じくテーマ非依存の固定色。
-     tokens.css が並行セッション編集中のため一時的にローカル定義 —
-     ロック解除後 --color-edit-label-bg / --color-edit-label-fg として tokens.css へ昇格すること */
-  --edit-label-bg: #000000;
-  --edit-label-fg: #ff3b30;
-  background: var(--edit-label-bg);
-  color: var(--edit-label-fg);
+     tokens.css の --color-edit-label-bg / --color-edit-label-fg に昇格済み */
+  background: var(--color-edit-label-bg);
+  color: var(--color-edit-label-fg);
   font-size: 13px;
   font-weight: 700;
   pointer-events: none;
@@ -49,7 +49,7 @@
   width: 8px;
   height: 8px;
   border-radius: 9999px;
-  background: var(--edit-label-fg);
+  background: var(--color-edit-label-fg);
   animation: editDotBlink 1.1s ease-in-out infinite;
 }
 
@@ -68,28 +68,112 @@
   position: fixed;
   inset: 0;
   z-index: var(--z-index-top);
-  background: var(--color-scrim);
+  /* §07-1 共通シェル: rgba(20,16,12,0.44) + blur(8px)。--webkit- 等の手書きプレフィックスは
+     付けない(ビルド側の自動プレフィックスと衝突して標準宣言が消える事故があるため) */
+  background: var(--color-scrim-confirm);
+  backdrop-filter: blur(8px);
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .editDialog {
+  position: relative;
   width: 100%;
   max-width: 340px;
   margin: 0 16px;
   padding: 20px;
-  border-radius: var(--pixel-corner);
+  /* §07-1: 角丸24。従来の --pixel-corner(3px)とは値が異なるため直書き(色ではないためトークン化対象外) */
+  border-radius: 24px;
   border: 1.5px solid var(--color-pixel-edge);
   box-shadow: var(--pixel-shadow);
   background: var(--color-surface);
   color: var(--color-text-primary);
 }
 
+/* §07-1: 右上の任意の×(aria-label='閉じる') */
+.editDialogClose {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 9999px;
+  background: transparent;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+}
+
+.editDialogClose:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+/* §07-1: 56pxアイコンバッジ。danger系(既定)は危険色、それ以外(isDefaultVariant)はアクセント色 */
+.editDialogIconBadge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  margin: 0 auto 12px;
+  border-radius: 9999px;
+  background: var(--color-danger-soft);
+  color: var(--color-danger);
+  font-size: 28px;
+}
+
+.editDialogIconBadge.isDefaultVariant {
+  background: var(--color-accent-soft);
+  color: var(--color-accent);
+}
+
+.editDialogTitle {
+  margin: 0 0 8px;
+  font-size: 16px;
+  font-weight: 800;
+  text-align: center;
+}
+
 .editDialogMessage {
   margin: 0 0 16px;
   font-size: 14px;
   line-height: 1.5;
+}
+
+/* §05-3・§06-6: タイプ確認モーダルのキーワード入力欄 */
+.editDialogTypedInput {
+  width: 100%;
+  height: 40px;
+  margin: 0 0 16px;
+  padding: 0 12px;
+  border-radius: 8px;
+  border: 1.5px solid var(--color-pixel-edge);
+  background: var(--color-surface-elevated);
+  color: var(--color-text-primary);
+  font-size: 14px;
+}
+
+/* §07-5: 一括移動確認の対象一覧(名前 (部署))。最大高160pxでスクロール */
+.editDialogList {
+  display: block;
+  max-height: 160px;
+  overflow-y: auto;
+  margin: 8px 0;
+  font-weight: 700;
+}
+
+.editDialogListItem {
+  display: block;
+}
+
+/* §07-4 の補足行(元の席は空席になります 等) */
+.editDialogSupplement {
+  color: var(--color-text-secondary);
 }
 
 .editDialogActions {
@@ -100,14 +184,24 @@
 
 .editDialogCancel,
 .editDialogConfirm {
-  height: 40px;
+  /* §07-1: ボタン高さ48px以上 */
+  height: 48px;
   padding: 0 16px;
   font-size: 13px;
 }
 
 .editDialogConfirm {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   background: var(--color-danger);
   border-color: var(--color-danger);
+  color: var(--color-text-on-accent);
+}
+
+.editDialogConfirm.isDefaultVariant {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
   color: var(--color-text-on-accent);
 }
 
@@ -177,48 +271,6 @@
   border-radius: 9999px;
 }
 
-/* ── チームレイアウトエディタ(行×列ステッパー) ───────────────── */
-
-.editRelayoutCount {
-  margin: 0 0 12px;
-  font-size: 12px;
-  color: var(--color-text-secondary);
-}
-
-.editStepperRow {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 10px;
-}
-
-.editStepperLabel {
-  width: 24px;
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--color-text-secondary);
-}
-
-.editStepperBtn {
-  width: 32px;
-  height: 32px;
-  font-size: 16px;
-}
-
-.editStepperValue {
-  min-width: 28px;
-  text-align: center;
-  font-size: 14px;
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
-}
-
-.editRelayoutError {
-  margin: 4px 0 12px;
-  font-size: 12px;
-  color: var(--color-danger);
-}
-
 /* ── 座席カード/チームラベルの編集モード視覚状態 ───────────────── */
 
 /* ── 整列スナップガイド ───────────────── */
@@ -249,12 +301,24 @@
   gap: 8px;
 }
 
+/* SPEC §05-2: ゴースト配置中もヘルプ/終了は常時表示のはずが、通常時の
+   z-index-popover(300)のままだとゴースト層のスクリム(z-index-overlay=900)の下に
+   沈んで disabled のように暗く見える(実測)。isPlacing 中はセッションの状態機械上
+   シート(z-index-modal=700)が同時に開けないため、この1状態だけを引き上げれば
+   他の組み合わせ(シート表示中はコントロール300のまま)に逆転を作らずに済む。
+   901 を無条件固定にしない理由はこれ — シート表示時に popover(300)へ戻らないと
+   シート(700) > コントロール(35)という仕様順序側が壊れる */
+.editTopControls.isAbovePlacement {
+  z-index: calc(var(--z-index-overlay) + 1);
+}
+
 .editTopBtn {
-  width: 44px;
   height: 44px;
+  padding: 0 18px;
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 6px;
   border-radius: 999px;
   color: var(--color-text-primary);
   font-size: 16px;
@@ -296,8 +360,10 @@
 
 .editRemoteCancel,
 .editRemoteFinish {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   height: 44px;
-  padding: 0 18px;
   border-radius: 9999px;
   color: var(--color-text-primary);
   font-size: 13px;
@@ -318,26 +384,66 @@
   cursor: not-allowed;
 }
 
+/* アイコンのみ(キャンセル)。44×44の正方形ヒット領域を確保する */
+.editRemoteCancel {
+  width: 44px;
+  padding: 0;
+}
+
 .editRemoteFinish {
+  gap: 6px;
+  padding: 0 18px;
   color: var(--color-accent);
 }
 
 /* ── 座席フローティングアクションバー ───────────────── */
 
+/* §05-4: FloatingActionBar。座席選択DOM(またはフォールバック位置)へ position:fixed で追従する
+   (実際の座標決定は SeatActionBar.tsx の inline style。ここは基準の position/レイアウト方向のみ) */
 .seatActionBar {
-  position: absolute;
+  position: fixed;
   z-index: var(--z-index-popover);
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  align-items: center;
   gap: 6px;
   padding: 8px;
+  width: min(96vw, 760px);
   border-radius: var(--pixel-corner);
   border: 1.5px solid var(--color-pixel-edge);
   box-shadow: var(--pixel-shadow);
   background: var(--color-surface-elevated);
+  /* translate は JS が inline style で与える transform(位置決め)と独立して合成されるため、
+     アニメーション側で inline transform を上書きしない */
+  translate: 0 16px;
+  opacity: 0;
+  animation: seatActionBarSlideUp 0.25s ease-out forwards;
+}
+
+@keyframes seatActionBarSlideUp {
+  from {
+    translate: 0 16px;
+    opacity: 0;
+  }
+  to {
+    translate: 0 0;
+    opacity: 1;
+  }
+}
+
+/* 先頭の「✓ {n}席 選択中」表示。SeatActionBar.tsx が参照するが定義が無かった */
+.seatActionCount {
+  flex-shrink: 0;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
 }
 
 .seatActionBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   height: 36px;
   padding: 0 14px;
   font-size: 12px;
@@ -371,6 +477,9 @@
 }
 
 .editUndoAction {
+  display: flex;
+  align-items: center;
+  gap: 4px;
   min-width: 44px;
   min-height: 44px;
   padding: 0 10px;
@@ -425,6 +534,12 @@
   .editingOverlayDot,
   .editErrorToast {
     animation: none;
+  }
+
+  .seatActionBar {
+    animation: none;
+    translate: 0 0;
+    opacity: 1;
   }
 }
 

@@ -1,17 +1,16 @@
 import { useCallback, useMemo } from 'react'
 import { useEditSession } from './use-edit-session'
 import type { DispatchResult } from './use-edit-session'
-import { applyLayoutAction } from '@/utils/layout/layout-actions'
-import type { LayoutAction } from '@/utils/layout/layout-actions'
+import type { LayoutAction, SeatShape } from '@/utils/layout/layout-actions'
 import { useErrorToast } from './use-error-toast'
 import type { ErrorToastState } from './use-error-toast'
+import type { GaroonFacility } from '@/lib/garoon-facilities'
 import { clampRectToViewBox } from '@/utils/layout/rect'
 import type { Rect } from '@/utils/layout/rect'
-import { findOverlappingSeat, findTeamContaining, placementBlocked, seatOverlapsFixture, teamAreaOverlaps } from '@/utils/layout/layout-rules'
-import { fitAreaToSeats, relayoutSeatsInGrid } from '@/utils/layout/seat-relayout'
+import { findOverlappingSeat, findTeamContaining, lockedMessage, placementBlocked, seatOverlapsFixture } from '@/utils/layout/layout-rules'
 import { rectOfRef } from '@/utils/layout/layout-objects'
 import type { EditableObjectKind } from '@/utils/layout/layout-actions'
-import type { FurnitureKind, LayoutObjectRef, Seat, SeatLayout } from '@/types'
+import type { FurnitureKind, LayoutObjectRef, Seat, SeatLayout, Team } from '@/types'
 
 // 07-admin-edit: 編集アクションの発行口。セッション管理は useEditSession、
 // 判定規則は utils/layout/layout-rules が持ち、ここは「発行してよいか」を決めるだけ。
@@ -37,25 +36,32 @@ export type UseLayoutEditorApi = {
   moveSeat: (seatId: string, x: number, y: number) => void
   assignSeat: (seatId: string, teamId: string) => void
   deleteSeat: (seatId: string) => void
-  moveTeam: (teamId: string, x: number, y: number) => void
-  relayoutTeam: (teamId: string, rows: number, cols: number) => { ok: true } | { ok: false; message: string }
+  // 05-4 の一括操作。3つとも選択中の座席をまとめて1アクションで扱う(undo 1回で戻る)
+  rotateSeats: (seatIds: string[]) => void
+  reshapeSeats: (seatIds: string[], shape: SeatShape) => void
+  deleteSeats: (seatIds: string[]) => void
+  // 移動ゴーストの確定に使うので成否を返す(拒まれたらゴーストを開いたままにする)
+  moveTeam: (teamId: string, x: number, y: number) => boolean
+  // §05-3/§07-3: タイプ確認モーダルを通った後のチーム削除。所属座席もリデューサー側で消える
+  deleteTeam: (teamId: string) => void
   addFurniture: (furnitureKind: FurnitureKind, rect: Rect) => boolean
-  addFacility: (rect: Rect) => boolean
+  // §03-3: Garoon マスタから選んだ1件を置く。省略時は未連携の会議室として採番する
+  addFacility: (rect: Rect, facility?: GaroonFacility) => boolean
   moveObject: (ref: LayoutObjectRef, x: number, y: number) => void
   resizeObject: (ref: LayoutObjectRef, rect: Rect) => boolean
   deleteObject: (ref: LayoutObjectRef) => void
+  // §05-3: 会議室・家具のロック/ラベル表示トグル
+  setObjectLocked: (ref: LayoutObjectRef, locked: boolean) => void
+  setObjectLabelVisible: (ref: LayoutObjectRef, labelVisible: boolean) => void
   addTeam: (name: string, color: string, rect: Rect) => boolean
-  addSeat: (teamId: string) => boolean
+  // §02-3 既存チーム取り込み。チームと複製座席を1アクションで積む(undo 1回で取り込み全体が戻る)。
+  // 採番・ラベル重複回避・配置座標は utils/layout/team-import が決め終えた状態で渡ってくる
+  importTeams: (teams: Team[], seats: Seat[]) => boolean
   assignEmployee: (seatId: string, employeeId: string | null) => void
 }
 
-const seatsOfTeam = (seats: Seat[], teamId: string): Seat[] => seats.filter((s) => s.teamId === teamId)
-
 const MSG_FACILITY = '設備と重なるため配置できません'
-const MSG_TEAM_OVERLAP = 'チームエリアが重なるため適用できません'
-const MSG_NOT_FIT = '座席が収まらないため適用できません'
 const MSG_OVERLAP = 'ここには配置できません'
-const MSG_AREA_FULL = 'エリアが広がって他と重なるため追加できません'
 const MSG_SAVING = '保存中は操作できません'
 
 export const useLayoutEditor = (sourceLayout: SeatLayout | undefined): UseLayoutEditorApi => {
@@ -135,50 +141,75 @@ export const useLayoutEditor = (sourceLayout: SeatLayout | undefined): UseLayout
 
   const deleteSeat = useCallback((seatId: string) => stage({ type: 'seat-delete', seatId }), [stage])
 
+  // 05-4 の一括操作。空配列は発行しない — リデューサーが無変化を返すだけだが、
+  // 「押したのに何も起きない」経路をここで閉じておく
+  const rotateSeats = useCallback(
+    (seatIds: string[]) => {
+      if (seatIds.length === 0) return
+      stage({ type: 'seat-rotate', seatIds })
+    },
+    [stage]
+  )
+
+  const reshapeSeats = useCallback(
+    (seatIds: string[], shape: SeatShape) => {
+      if (seatIds.length === 0) return
+      stage({ type: 'seat-reshape', seatIds, shape })
+    },
+    [stage]
+  )
+
+  const deleteSeats = useCallback(
+    (seatIds: string[]) => {
+      if (seatIds.length === 0) return
+      stage({ type: 'seat-delete-many', seatIds })
+    },
+    [stage]
+  )
+
   // チームラベルドラッグ: area+所属全座席を同一delta平行移動(単一アクション=team-move)
   const moveTeam = useCallback(
-    (teamId: string, x: number, y: number) => {
+    (teamId: string, x: number, y: number): boolean => {
       const layout = editingLayout
-      if (!layout) return
+      if (!layout) return false
       const team = layout.teams.find((t) => t.id === teamId)
-      if (!team) return
+      if (!team) return false
+      // §05-3: 入口(ゴースト)でも同じ判定を通しているが、発行口でも必ず見る。
+      // 二重ガードにしないと、入口を増やしたときにロックを素通りする経路が生まれる
+      const locked = lockedMessage(layout, { kind: 'team', id: teamId }, '移動')
+      if (locked) {
+        showError(locked)
+        return false
+      }
       const candidate: Rect = { x, y, w: team.area.w, h: team.area.h }
       const clamped = clampRectToViewBox(candidate, layout.viewBox.width, layout.viewBox.height)
 
-      if (teamAreaOverlaps(layout.teams, teamId, clamped)) {
-        showError(MSG_TEAM_OVERLAP)
-        return
+      // 置ける場所の判定はゴーストと同じ placementBlocked を通す(§04-4: チーム枠は4px内側
+      // インセット + 会議室)。ここだけ teamAreaOverlaps(インセット無し・会議室を見ない)で
+      // 判定していると、「ゴーストは置けると言うのに配置を押すと動かない」ズレが出る。
+      // 実際に1Fの隣接チーム(枠が2px間隔で並ぶ)で再現した
+      if (placementBlocked(layout, { kind: 'team', id: teamId }, clamped)) {
+        showError(MSG_OVERLAP)
+        return false
       }
-      stage({ type: 'team-move', teamId, x: clamped.x, y: clamped.y })
+      return stage({ type: 'team-move', teamId, x: clamped.x, y: clamped.y }) !== 'blocked'
     },
     [editingLayout, stage, showError]
   )
 
-  // 行×列適用: グリッドリファク+area自動fit。座席数超過/衝突は拒否
-  const relayoutTeam = useCallback(
-    (teamId: string, rows: number, cols: number): { ok: true } | { ok: false; message: string } => {
+  // §07-3 のタイプ確認を通った後に呼ばれる。確認そのものは呼び出し側(ダイアログ)の担当
+  const deleteTeam = useCallback(
+    (teamId: string) => {
       const layout = editingLayout
-      if (!layout) return { ok: false, message: '編集対象がありません' }
-      const team = layout.teams.find((t) => t.id === teamId)
-      if (!team) return { ok: false, message: '対象チームが見つかりません' }
-      const teamSeats = seatsOfTeam(layout.seats, teamId)
-      if (teamSeats.length === 0 || rows * cols < teamSeats.length) {
-        return { ok: false, message: MSG_NOT_FIT }
+      if (!layout) return
+      const locked = lockedMessage(layout, { kind: 'team', id: teamId }, '削除')
+      if (locked) {
+        showError(locked)
+        return
       }
-
-      // fit後のareaが他area/Facilityと交差する場合は適用しない
-      const fitted = fitAreaToSeats(relayoutSeatsInGrid(teamSeats, team.area, cols), team.area)
-      if (teamAreaOverlaps(layout.teams, teamId, fitted)) return { ok: false, message: MSG_TEAM_OVERLAP }
-      if (seatOverlapsFixture(layout, fitted)) return { ok: false, message: MSG_FACILITY }
-
-      // ここだけ stage を通さない。他の拒否理由と同じくモーダル内へ文言を返す
-      // (モーダルの上にトーストを重ねると、暗幕の裏に隠れて読めない)
-      if (dispatch({ type: 'team-relayout', teamId, rows, cols }) === 'blocked') {
-        return { ok: false, message: MSG_SAVING }
-      }
-      return { ok: true }
+      stage({ type: 'team-delete', teamId })
     },
-    [editingLayout, dispatch]
+    [editingLayout, stage, showError]
   )
 
   // 新規配置の共通ガード。ゴースト側の表示判定と同じ placementBlocked を通す。
@@ -210,10 +241,20 @@ export const useLayoutEditor = (sourceLayout: SeatLayout | undefined): UseLayout
   )
 
   const addFacility = useCallback(
-    (rect: Rect): boolean => {
+    (rect: Rect, facility?: GaroonFacility): boolean => {
       const placed = guardPlacement(rect)
       if (!placed) return false
-      return stage({ type: 'facility-add', x: placed.x, y: placed.y, width: placed.w, height: placed.h }) !== 'blocked'
+      return (
+        stage({
+          type: 'facility-add',
+          x: placed.x,
+          y: placed.y,
+          width: placed.w,
+          height: placed.h,
+          name: facility?.name,
+          facilityId: facility?.facilityId,
+        }) !== 'blocked'
+      )
     },
     [guardPlacement, stage]
   )
@@ -225,6 +266,11 @@ export const useLayoutEditor = (sourceLayout: SeatLayout | undefined): UseLayout
       if (!layout) return
       const rect = rectOfRef(layout, ref)
       if (!rect) return
+      const locked = lockedMessage(layout, ref, '移動')
+      if (locked) {
+        showError(locked)
+        return
+      }
       const candidate: Rect = { x, y, w: rect.w, h: rect.h }
       if (placementBlocked(layout, ref, candidate)) {
         showError(MSG_OVERLAP)
@@ -239,6 +285,11 @@ export const useLayoutEditor = (sourceLayout: SeatLayout | undefined): UseLayout
     (ref: LayoutObjectRef, rect: Rect): boolean => {
       const layout = editingLayout
       if (!layout) return false
+      const locked = lockedMessage(layout, ref, '移動')
+      if (locked) {
+        showError(locked)
+        return false
+      }
       if (placementBlocked(layout, ref, rect)) {
         showError(MSG_OVERLAP)
         return false
@@ -260,29 +311,30 @@ export const useLayoutEditor = (sourceLayout: SeatLayout | undefined): UseLayout
 
   const deleteObject = useCallback(
     (ref: LayoutObjectRef) => {
+      const layout = editingLayout
+      const locked = layout ? lockedMessage(layout, ref, '削除') : null
+      if (locked) {
+        showError(locked)
+        return
+      }
       stage({ type: 'object-delete', kind: ref.kind as EditableObjectKind, id: ref.id })
+    },
+    [editingLayout, stage, showError]
+  )
+
+  // §05-3 のトグル2種。ロック中でもロック自体は外せる(外せないと解除する手段が無くなる)
+  const setObjectLocked = useCallback(
+    (ref: LayoutObjectRef, locked: boolean) => {
+      stage({ type: 'object-lock', kind: ref.kind as EditableObjectKind, id: ref.id, locked })
     },
     [stage]
   )
 
-  // 座席の追加。エリアは座席群へ自動で広がるので、広げた結果が他と重なるときだけ拒否する。
-  // 判定はリデューサーの結果に対して行う — 事前に手で予測すると計算が二重化する
-  const addSeat = useCallback(
-    (teamId: string): boolean => {
-      const layout = editingLayout
-      if (!layout) return false
-      const next = applyLayoutAction(layout, { type: 'seat-add', teamId })
-      if (next === layout) return false
-      const team = next.teams.find((t) => t.id === teamId)
-      if (!team) return false
-      const area: Rect = { x: team.area.x, y: team.area.y, w: team.area.w, h: team.area.h }
-      if (teamAreaOverlaps(next.teams, teamId, area) || seatOverlapsFixture(next, area)) {
-        showError(MSG_AREA_FULL)
-        return false
-      }
-      return stage({ type: 'seat-add', teamId }) !== 'blocked'
+  const setObjectLabelVisible = useCallback(
+    (ref: LayoutObjectRef, labelVisible: boolean) => {
+      stage({ type: 'object-label-visible', kind: ref.kind as EditableObjectKind, id: ref.id, labelVisible })
     },
-    [editingLayout, stage, showError]
+    [stage]
   )
 
   const addTeam = useCallback(
@@ -295,6 +347,17 @@ export const useLayoutEditor = (sourceLayout: SeatLayout | undefined): UseLayout
       )
     },
     [guardPlacement, stage]
+  )
+
+  // 取り込みは guardPlacement を通さない。置ける場所が無いときに強制配置へ落ちるのが
+  // §02-3 の回避3段の仕様で、ここで弾くと1階のように埋まったフロアでは取り込みが常に失敗する。
+  // どの段で置いたか(置けなかったか)の通知は呼び出し側の担当
+  const importTeams = useCallback(
+    (teams: Team[], seats: Seat[]): boolean => {
+      if (teams.length === 0) return false
+      return stage({ type: 'team-import', teams, seats }) !== 'blocked'
+    },
+    [stage]
   )
 
   const assignEmployee = useCallback(
@@ -327,15 +390,20 @@ export const useLayoutEditor = (sourceLayout: SeatLayout | undefined): UseLayout
       moveSeat,
       assignSeat,
       deleteSeat,
+      rotateSeats,
+      reshapeSeats,
+      deleteSeats,
       moveTeam,
-      relayoutTeam,
+      deleteTeam,
       addFurniture,
       addFacility,
       moveObject,
       resizeObject,
       deleteObject,
+      setObjectLocked,
+      setObjectLabelVisible,
       addTeam,
-      addSeat,
+      importTeams,
       assignEmployee,
     }),
     [
@@ -356,15 +424,20 @@ export const useLayoutEditor = (sourceLayout: SeatLayout | undefined): UseLayout
       moveSeat,
       assignSeat,
       deleteSeat,
+      rotateSeats,
+      reshapeSeats,
+      deleteSeats,
       moveTeam,
-      relayoutTeam,
+      deleteTeam,
       addFurniture,
       addFacility,
       moveObject,
       resizeObject,
       deleteObject,
+      setObjectLocked,
+      setObjectLabelVisible,
       addTeam,
-      addSeat,
+      importTeams,
       assignEmployee,
     ]
   )

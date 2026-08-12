@@ -3,6 +3,7 @@ import type { TourStep } from '@/components/CoachMarkTour/utils/tour-steps'
 // メイン(閲覧)画面の使い方ガイド導線。分岐なしの4ステップ固定。
 // エンジンのステップ定義(components/CoachMarkTour/utils/tour-steps.ts)は他ワーカー所有のため、
 // この画面専用のステップはここに置く
+// (このキーを含む全6本のコーチマーク既読キー一覧は tour-steps.ts 冒頭の表を見る)
 
 export const MAIN_TOUR_STORAGE_KEY = 'seatmap_coach_main'
 

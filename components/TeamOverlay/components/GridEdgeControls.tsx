@@ -11,7 +11,7 @@ import styles from '../team-overlay-modal.module.css'
 //   (GRID_HEADER_TRACK_PX)ぶん、呼び出し側は既存セルのgridRow/gridColumnを+1オフセットする
 
 // ヘッダー行・列トラックの一辺(px)。呼び出し側のgridTemplateColumns/gridTemplateRowsと1箇所で揃える
-export const GRID_HEADER_TRACK_PX = 24
+export const GRID_HEADER_TRACK_PX = 28
 
 type EdgeAddProps = {
   onAddRow: (edge: 'top' | 'bottom') => void
@@ -83,7 +83,7 @@ export const GridRemoveHeaders = ({ grid, onRemoveRow, onRemoveCol }: RemoveHead
             <button
               type='button'
               className={styles.edgeRemove}
-              aria-label='この行を削除'
+              aria-label='空き行を削除'
               onClick={() => onRemoveRow(row)}
             >
               <span className='material-symbols-outlined' aria-hidden='true'>
@@ -99,7 +99,7 @@ export const GridRemoveHeaders = ({ grid, onRemoveRow, onRemoveCol }: RemoveHead
             <button
               type='button'
               className={styles.edgeRemove}
-              aria-label='この列を削除'
+              aria-label='空き列を削除'
               onClick={() => onRemoveCol(col)}
             >
               <span className='material-symbols-outlined' aria-hidden='true'>

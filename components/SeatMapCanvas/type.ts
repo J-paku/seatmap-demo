@@ -1,6 +1,6 @@
 import type { RefObject } from 'react'
 import type { Transform } from '@/utils/layout/geometry'
-import type { Employee, LayoutObjectRef, Lod, PresenceStatus, SeatLayout, TeamOverlayPayload } from '@/types'
+import type { Employee, LayoutObjectRef, Lod, SeatLayout, TeamOverlayPayload } from '@/types'
 
 export type { Lod }
 import type { FacilityState } from '@/utils/facility-status'
@@ -9,7 +9,6 @@ import type { FacilityHoverPayload } from '@/components/FacilityHoverCard'
 export type SeatMapCanvasProps = {
   layout: SeatLayout
   employeeById: Map<string, Employee>
-  presenceMap: Map<string, PresenceStatus>
   onSeatSelect?: (seatId: string) => void
   onFacilitySelect?: (facilityId: string) => void
   // 10: チームバウンダリのタップで大型オーバーレイを開く(画面座標 rect を親へ渡す)
@@ -19,23 +18,36 @@ export type SeatMapCanvasProps = {
   onFacilityHover?: (payload: FacilityHoverPayload | null) => void
   // 07: 編集モード中のみ有効。未指定(閲覧モード)では以下の分岐へ一切到達しない
   isEditMode?: boolean
-  onSeatMove?: (seatId: string, x: number, y: number) => void
   onTeamMove?: (teamId: string, x: number, y: number) => void
   onSeatEditSelect?: (seatId: string | null) => void
-  onTeamLabelTap?: (teamId: string) => void
+  // 05-3: セッション中のチーム枠タップ。呼び出し側は移動ゴーストを開く
+  onTeamTap?: (teamId: string) => void
   onSeatAssignRequest?: (seatId: string) => void
-  onSeatChangeTeamRequest?: (seatId: string) => void
   onSeatDeleteRequest?: (seatId: string) => void
+  // 05-4 の一括操作バー。選択中の座席IDをそのまま渡す
+  onSeatRotateRequest?: (seatIds: string[]) => void
+  onSeatShapeRequest?: (seatIds: string[]) => void
+  // 2席以上の一括削除確認(仕様 07-2)。1席は onSeatDeleteRequest がそのまま受ける
+  onSeatBulkDeleteRequest?: (seatIds: string[]) => void
+  // Escape 2段目のセッション終了(仕様 05-3)。ゴースト配置中は渡さないこと —
+  // 渡すと Escape が配置キャンセルではなくセッション破棄になる(仕様 04-1 違反)
+  onEndSession?: () => void
   // 会議室・家具の編集。閲覧モードでは undefined のままでこの経路へ到達しない
   onObjectMove?: (ref: LayoutObjectRef, x: number, y: number) => void
+  // 05-3: 家具・会議室タップの行き先。移動ゴーストを開く(タップ即1段階)
   onObjectRepositionRequest?: (ref: LayoutObjectRef) => void
   onObjectDeleteRequest?: (ref: LayoutObjectRef) => void
+  // 05-3: 属性バーのロック/ラベル表示トグル
+  onObjectLockToggle?: (ref: LayoutObjectRef, locked: boolean) => void
+  onObjectLabelToggle?: (ref: LayoutObjectRef, labelVisible: boolean) => void
   // ゴーストで掴み直し中の対象(実体を淡く描くためだけに使う)
   repositioningRef?: LayoutObjectRef | null
   onUndo?: () => void
   canUndo?: boolean
   // リモコンの自席ボタン。編集モードでは渡さない(オーバーレイが出ないため)
   onGoToMySeat?: () => void
+  // 05-1: チーム枠・家具の長押しで編集セッションへ入る。編集モードでは渡さない
+  onEnterEditSession?: () => void
 }
 
 // 親が ref 経由で呼び出すキャンバスの命令
@@ -60,7 +72,7 @@ export type Anim =
   | { kind: 'lerp'; targetLevel: number; ax: number; ay: number; alx: number; aly: number }
   | { kind: 'bounce'; limit: number; ax: number; ay: number; alx: number; aly: number }
 
-// 07: 編集モード中のドラッグ状態(座席/チームラベル共用)。view モードでは常に不使用
+// 07: 編集モード中のドラッグ状態(チームラベル/設備共用)。view モードでは常に不使用
 type EditDragBase = {
   pointerId: number
   startScreenX: number
@@ -72,9 +84,10 @@ type EditDragBase = {
   moved: boolean
 }
 
+// 座席のドラッグ移動はここに無い。座席はキャンバスに描かれない(CLAUDE.md 不変ルール1)ため、
+// 座席位置の編集はチームオーバーレイのグリッド(編集4)が持つ
 export type EditDrag =
   | { kind: 'none' }
-  | (EditDragBase & { kind: 'seat'; seatId: string })
   | (EditDragBase & { kind: 'team'; teamId: string })
   | (EditDragBase & { kind: 'object'; ref: LayoutObjectRef })
 

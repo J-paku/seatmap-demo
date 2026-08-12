@@ -122,8 +122,26 @@
   text-align: left;
 }
 
-.objCatCard:hover {
+.objCatCard:hover:not(:disabled) {
   border-color: var(--color-accent);
+}
+
+/* §03-1: Garoon 未接続の施設タイル。詳細度は .objCatCard(0,1,0)より高い(0,2,0) */
+.objCatCard:disabled {
+  cursor: default;
+  opacity: 0.5;
+}
+
+.objCatCard:disabled .objCatIcon {
+  color: var(--color-text-disabled);
+}
+
+/* §03-1 脚注。タイル直下に置くので上の gap を詰める */
+.objCatNote {
+  margin: -4px 0 0;
+  padding: 0 2px;
+  color: var(--color-text-muted);
+  font-size: 11px;
 }
 
 .objCatCard:focus-visible {
@@ -373,14 +391,93 @@
   color: var(--color-danger);
 }
 
-.teamNewSubmit {
-  width: 100%;
+.teamNewHexError {
+  margin: 6px 0 0;
+  color: var(--color-danger);
+  font-size: 11px;
+}
+
+.teamNewActions {
+  display: flex;
+  gap: 8px;
   margin-top: 14px;
+}
+
+.teamNewCancel {
+  flex: 1;
+  height: 40px;
+  font-size: 13px;
+}
+
+.teamNewSubmit {
+  flex: 1;
+  height: 40px;
+  font-size: 13px;
 }
 
 .teamNewSubmit:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+/* --- チーム作成ダイアログ専用の形状(§02-2) ---
+   PickerSheet は他ピッカーと共有されるため、直接改変せず専用マーカー
+   [data-team-create-panel] を子に持つインスタンスだけ :has() で選んで上書きする。
+   共有クラス(.pickerPanel 等)自体の幅・角は変えない */
+
+.pickerWrap:has([data-team-create-panel]) .pickerBackdrop {
+  background: var(--color-scrim-overlay);
+  backdrop-filter: blur(12px);
+  animation: teamNewFadeIn 0.2s ease-out;
+}
+
+.pickerPanel:has([data-team-create-panel]) {
+  width: min(calc(100vw - 32px), 400px);
+  border-radius: 20px;
+  animation: teamNewFadeIn 0.2s ease-out, teamNewExpand 0.3s cubic-bezier(0.2, 0.9, 0.2, 1);
+}
+
+/* 640px 未満は共有シェルがボトムシート化するが、本ダイアログは常時この固定カード形状(§02-2) */
+.pickerPanel.isCompact:has([data-team-create-panel]) {
+  position: relative;
+  bottom: auto;
+  left: auto;
+  width: min(calc(100vw - 32px), 400px);
+  max-width: none;
+  border-radius: 20px;
+  border-bottom: 1px solid var(--color-border);
+  padding-bottom: 0;
+}
+
+.pickerInner:has([data-team-create-panel]) .pickerGrip {
+  display: none;
+}
+
+@keyframes teamNewFadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes teamNewExpand {
+  from {
+    transform: scale(0.94);
+  }
+
+  to {
+    transform: scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pickerWrap:has([data-team-create-panel]) .pickerBackdrop,
+  .pickerPanel:has([data-team-create-panel]) {
+    animation: none;
+  }
 }
 
 /* --- 管理パネル FAB (スピードダイヤル) --- */

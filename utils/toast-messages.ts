@@ -10,6 +10,10 @@ export const TOAST_MESSAGES = {
   NETWORK_CHECK: 'ネットワーク接続を確認してください',
   ADMIN_REQUIRED: '編集には管理者権限が必要です',
   CONFLICT_UPDATE: '他の管理者が更新しました',
+  // §07-6 原文の編集不可文言。ADMIN_REQUIRED とは文言・利用箇所が別(既存キー・文言はどちらも変更しない。
+  // 同一概念に2文言残る状態の統合は後続ラウンドの課題)
+  EDIT_DISABLED_OFFLINE: 'オフラインのため編集できません',
+  EDIT_DISABLED_ADMIN: '管理者権限がないため編集できません',
 
   // ズーム操作系
   VIEW_RESET: '表示をリセットしました',
@@ -24,6 +28,7 @@ export const TOAST_MESSAGES = {
   ASSIGN_REPLACE: '{seatId}の配属を{name}に変更しました',
   ASSIGN_MOVE: '{name}を{seatId}に移動しました',
   ASSIGN_SWAP: '{name1}({seat1})と{name2}({seat2})の座席を交換しました',
+  ASSIGN_DEDUPED: '{name}が複数席に重複していたため、最後に配置した席のみ残しました',
 
   // 削除系
   DELETE_SUCCESS: '削除しました',

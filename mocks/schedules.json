@@ -28,7 +28,12 @@
     "isAllDay": false,
     "facilityId": "F-02",
     "organizerId": "emp-003",
-    "participantIds": ["emp-003", "emp-001", "emp-002", "emp-004"]
+    "participantIds": [
+      "emp-003",
+      "emp-001",
+      "emp-002",
+      "emp-004"
+    ]
   },
   {
     "id": "ev-0004",
@@ -49,7 +54,12 @@
     "isAllDay": false,
     "facilityId": "F-01",
     "organizerId": "emp-005",
-    "participantIds": ["emp-005", "emp-001", "emp-004", "emp-008"]
+    "participantIds": [
+      "emp-005",
+      "emp-001",
+      "emp-004",
+      "emp-008"
+    ]
   },
   {
     "id": "ev-0006",
@@ -61,7 +71,12 @@
     "isAllDay": false,
     "facilityId": "F-01",
     "organizerId": "emp-006",
-    "participantIds": ["emp-006", "emp-034", "emp-035", "emp-007"]
+    "participantIds": [
+      "emp-006",
+      "emp-034",
+      "emp-035",
+      "emp-007"
+    ]
   },
   {
     "id": "ev-0007",
@@ -73,7 +88,12 @@
     "isAllDay": false,
     "facilityId": "F-03",
     "organizerId": "emp-006",
-    "participantIds": ["emp-006", "emp-007", "emp-008", "emp-010"]
+    "participantIds": [
+      "emp-006",
+      "emp-007",
+      "emp-008",
+      "emp-010"
+    ]
   },
   {
     "id": "ev-0008",
@@ -139,7 +159,12 @@
     "isAllDay": false,
     "facilityId": "F-03",
     "organizerId": "emp-012",
-    "participantIds": ["emp-012", "emp-022", "emp-013", "emp-023"]
+    "participantIds": [
+      "emp-012",
+      "emp-022",
+      "emp-013",
+      "emp-023"
+    ]
   },
   {
     "id": "ev-0015",
@@ -171,7 +196,12 @@
     "isPrivate": true,
     "facilityId": "F-03",
     "organizerId": "emp-016",
-    "participantIds": ["emp-016", "emp-011", "emp-013", "emp-014"]
+    "participantIds": [
+      "emp-016",
+      "emp-011",
+      "emp-013",
+      "emp-014"
+    ]
   },
   {
     "id": "ev-0018",
@@ -193,7 +223,12 @@
     "isPrivate": true,
     "facilityId": "F-03",
     "organizerId": "emp-018",
-    "participantIds": ["emp-018", "emp-021", "emp-019", "emp-024"]
+    "participantIds": [
+      "emp-018",
+      "emp-021",
+      "emp-019",
+      "emp-024"
+    ]
   },
   {
     "id": "ev-0020",
@@ -205,7 +240,12 @@
     "isAllDay": false,
     "facilityId": "F-03",
     "organizerId": "emp-021",
-    "participantIds": ["emp-021", "emp-023", "emp-024", "emp-028"]
+    "participantIds": [
+      "emp-021",
+      "emp-023",
+      "emp-024",
+      "emp-028"
+    ]
   },
   {
     "id": "ev-0021",
@@ -218,7 +258,12 @@
     "isPrivate": true,
     "facilityId": "F-03",
     "organizerId": "emp-018",
-    "participantIds": ["emp-018", "emp-021", "emp-019", "emp-024"]
+    "participantIds": [
+      "emp-018",
+      "emp-021",
+      "emp-019",
+      "emp-024"
+    ]
   },
   {
     "id": "ev-0022",
@@ -230,7 +275,12 @@
     "isAllDay": false,
     "facilityId": "F-03",
     "organizerId": "emp-012",
-    "participantIds": ["emp-012", "emp-022", "emp-013", "emp-023"]
+    "participantIds": [
+      "emp-012",
+      "emp-022",
+      "emp-013",
+      "emp-023"
+    ]
   },
   {
     "id": "ev-0023",
@@ -261,7 +311,12 @@
     "isAllDay": false,
     "facilityId": "F-01",
     "organizerId": "emp-026",
-    "participantIds": ["emp-026", "emp-042", "emp-027", "emp-043"]
+    "participantIds": [
+      "emp-026",
+      "emp-042",
+      "emp-027",
+      "emp-043"
+    ]
   },
   {
     "id": "ev-0026",
@@ -282,7 +337,12 @@
     "isAllDay": false,
     "facilityId": "F-01",
     "organizerId": "emp-027",
-    "participantIds": ["emp-027", "emp-021", "emp-025", "emp-028"]
+    "participantIds": [
+      "emp-027",
+      "emp-021",
+      "emp-025",
+      "emp-028"
+    ]
   },
   {
     "id": "ev-0028",
@@ -321,7 +381,12 @@
     "isAllDay": false,
     "facilityId": "F-01",
     "organizerId": "emp-006",
-    "participantIds": ["emp-006", "emp-034", "emp-035", "emp-007"]
+    "participantIds": [
+      "emp-006",
+      "emp-034",
+      "emp-035",
+      "emp-007"
+    ]
   },
   {
     "id": "ev-0032",
@@ -343,7 +408,12 @@
     "isAllDay": false,
     "facilityId": "F-01",
     "organizerId": "emp-034",
-    "participantIds": ["emp-034", "emp-030", "emp-031", "emp-033"]
+    "participantIds": [
+      "emp-034",
+      "emp-030",
+      "emp-031",
+      "emp-033"
+    ]
   },
   {
     "id": "ev-0034",
@@ -355,7 +425,12 @@
     "isAllDay": false,
     "facilityId": "F-04",
     "organizerId": "emp-035",
-    "participantIds": ["emp-035", "emp-036", "emp-030", "emp-037"]
+    "participantIds": [
+      "emp-035",
+      "emp-036",
+      "emp-030",
+      "emp-037"
+    ]
   },
   {
     "id": "ev-0035",
@@ -367,7 +442,12 @@
     "isAllDay": false,
     "facilityId": "F-04",
     "organizerId": "emp-036",
-    "participantIds": ["emp-036", "emp-031", "emp-033", "emp-037"]
+    "participantIds": [
+      "emp-036",
+      "emp-031",
+      "emp-033",
+      "emp-037"
+    ]
   },
   {
     "id": "ev-0036",
@@ -379,7 +459,12 @@
     "isAllDay": false,
     "facilityId": "F-04",
     "organizerId": "emp-035",
-    "participantIds": ["emp-035", "emp-036", "emp-030", "emp-037"]
+    "participantIds": [
+      "emp-035",
+      "emp-036",
+      "emp-030",
+      "emp-037"
+    ]
   },
   {
     "id": "ev-0037",
@@ -419,7 +504,12 @@
     "isAllDay": false,
     "facilityId": "F-02",
     "organizerId": "emp-039",
-    "participantIds": ["emp-039", "emp-038", "emp-040", "emp-041"]
+    "participantIds": [
+      "emp-039",
+      "emp-038",
+      "emp-040",
+      "emp-041"
+    ]
   },
   {
     "id": "ev-0041",
@@ -431,7 +521,12 @@
     "isAllDay": false,
     "facilityId": "F-03",
     "organizerId": "emp-039",
-    "participantIds": ["emp-039", "emp-041", "emp-043", "emp-044"]
+    "participantIds": [
+      "emp-039",
+      "emp-041",
+      "emp-043",
+      "emp-044"
+    ]
   },
   {
     "id": "ev-0042",
@@ -470,7 +565,12 @@
     "isAllDay": false,
     "facilityId": "F-01",
     "organizerId": "emp-026",
-    "participantIds": ["emp-026", "emp-042", "emp-027", "emp-043"]
+    "participantIds": [
+      "emp-026",
+      "emp-042",
+      "emp-027",
+      "emp-043"
+    ]
   },
   {
     "id": "ev-0046",
@@ -491,7 +591,12 @@
     "isAllDay": false,
     "facilityId": "F-06",
     "organizerId": "emp-045",
-    "participantIds": ["emp-045", "emp-046", "emp-047", "emp-048"]
+    "participantIds": [
+      "emp-045",
+      "emp-046",
+      "emp-047",
+      "emp-048"
+    ]
   },
   {
     "id": "ev-0048",
@@ -513,7 +618,11 @@
     "isAllDay": false,
     "facilityId": "F-06",
     "organizerId": "emp-045",
-    "participantIds": ["emp-045", "emp-047", "emp-048"]
+    "participantIds": [
+      "emp-045",
+      "emp-047",
+      "emp-048"
+    ]
   },
   {
     "id": "ev-0050",

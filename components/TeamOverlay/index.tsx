@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useRef, useState } from 'react'
 import { EditDock } from './components/EditDock'
 import { Minimap } from './components/Minimap'
+import { OverlayDialogs } from './components/OverlayDialogs'
 import { SeatDragGhost } from './components/SeatDragGhost'
 import { SeatGridFrame } from './components/SeatGridFrame'
 import { SeatLayoutHeader } from './components/SeatLayoutHeader'
@@ -21,11 +22,9 @@ import { SEAT_LAYOUT_TOUR_STEPS, SEAT_LAYOUT_TOUR_STORAGE_KEY } from './utils/to
 import type { TeamOverlayProps } from './type'
 import styles from './team-overlay-modal.module.css'
 import { useGlobalAnnouncement } from '@/contexts/announcement-context'
+import { SeatDeleteProvider } from '@/contexts/seat-delete-context'
 import { CoachMarkTour } from '@/components/CoachMarkTour'
 import { useCoachMarkTour } from '@/components/CoachMarkTour/hooks/use-coach-mark-tour'
-import { ConfirmDialog } from '@/components/edit/ConfirmDialog'
-import { EmployeeAssignSheet } from '@/components/EmployeeAssignSheet'
-import { SeatMapPortal } from '@/components/SeatMapPortal'
 import { SheetHandle } from '@/components/SheetHandle'
 import { useSwipeToDismiss } from '@/hooks/use-swipe-to-dismiss'
 import type { Rect } from '@/utils/layout/rect'
@@ -76,26 +75,36 @@ export const TeamOverlay = ({
   // STEP B1: 編集中セルの選択(席か空セルのどちらか1件だけ)。編集モードを抜けると自動で消える
   const seatSelection = useSeatSelection(editMode.isEditMode)
 
-  // STEP B2/B3: 編集中セルのドラッグ移動/入替とゴミ箱への削除。moveSeat/removeSeatAtCellは
-  // どちらもuseOverlayEditModeが持つ唯一のgrid差分適用口をそのまま渡す
-  const seatDrag = useSeatDrag({ moveSeat: editMode.moveSeat, removeSeatAtCell: editMode.removeSeatAtCell })
-
   // 編集セッションの配線(選択のトグル・席追加とハイライト・配属シート・一括配置・保存/取消・
   // 編集中の閉じるガード)はuse-overlay-edit-wiringの1本にまとめてある
   const {
     handleSelectSeat,
-    handleSelectEmptyCell,
     handleAddSeat,
     assignSeatId,
     assignTargetSeat,
     assignEmployees,
     draftAppliedSeats,
+    assignInitialBulkMode,
     handleAssignSeat,
     handleAssignSelect,
+    handleAssignSelectRequiringConfirm,
+    assignConfirm,
+    confirmAssignSelect,
+    cancelAssignSelect,
     handleAssignClear,
     handleAssignClose,
     bulkAssign,
     handleBulkAssignRequest,
+    handleBulkAssignSelected,
+    handleOpenBulkAssign,
+    canOpenBulkAssign,
+    freeAddressEnabled,
+    toggleFreeAddress,
+    requestSeatDelete,
+    requestSeatDeleteAtCell,
+    seatDeleteConfirm,
+    confirmSeatDelete,
+    cancelSeatDelete,
     seatCommit,
     handleSaveEdit,
     handleCancelEdit,
@@ -103,6 +112,10 @@ export const TeamOverlay = ({
     isDiscardConfirmOpen,
     confirmDiscardClose,
     cancelDiscardClose,
+    isTeamDeleteConfirmOpen,
+    requestTeamDelete,
+    confirmTeamDelete,
+    cancelTeamDelete,
     guardedClose,
   } = useOverlayEditWiring({
     payload,
@@ -116,6 +129,12 @@ export const TeamOverlay = ({
     announce,
     onClose,
   })
+
+  // STEP B2/B3: 編集中セルのドラッグ移動/入替とゴミ箱への削除。moveSeatはuseOverlayEditModeの
+  // grid差分適用口をそのまま渡す。§07-2: ゴミ箱投下(このフック内部のタッチ経路+後段の
+  // TrashDropZoneのマウス経路、両方がこの1つの引数を呼ぶ)は即時削除ではなく確認要求
+  // (requestSeatDeleteAtCell)へ差し替え、§06-2セルの削除ボタンと同じ確認モーダルへ合流させる
+  const seatDrag = useSeatDrag({ moveSeat: editMode.moveSeat, removeSeatAtCell: requestSeatDeleteAtCell })
 
   // 下スワイプで閉じるのは Compact だけの挙動。内部スクロールが上端かどうかの判定は
   // フック側(computeScrollGate)がイベント経路から遡って行うため bodyRef は渡さない
@@ -226,43 +245,51 @@ export const TeamOverlay = ({
               }}
               onExitEdit={handleCancelEdit}
               onHelp={handleHelp}
+              canBulkAssign={canOpenBulkAssign}
+              onBulkAssign={handleOpenBulkAssign}
+              freeAddressEnabled={freeAddressEnabled}
+              onToggleFreeAddress={toggleFreeAddress}
             />
-            {/* ドラッグ中だけ現れるゴミ箱。落とすとドラッグ元の席を削除する */}
+            {/* ドラッグ中だけ現れるゴミ箱。落とすと§07-2確認モーダルを開く(即時削除はしない) */}
             <TrashDropZone
               isVisible={seatDrag.draggingCell !== null}
               isOver={seatDrag.isOverTrash}
               onDrop={() => {
-                if (seatDrag.draggingCell) editMode.removeSeatAtCell(seatDrag.draggingCell)
+                if (seatDrag.draggingCell) requestSeatDeleteAtCell(seatDrag.draggingCell)
               }}
             />
-            <SeatGridFrame
-              isCompactMobile={isCompactMobile}
-              grid={seatGrid}
-              employeeById={employeeById}
-              presenceMap={presenceMap}
-              teamName={teamName}
-              teamColor={teamColor}
-              loading={loading}
-              highlightSeatId={highlightSeatId}
-              onSeatClick={onSeatClick}
-              onClearHighlight={onClearHighlight}
-              isEditMode={editMode.isEditMode}
-              isSeatSelected={seatSelection.isSeatSelected}
-              isEmptyCellSelected={seatSelection.isEmptyCellSelected}
-              onSelectSeat={handleSelectSeat}
-              onSelectEmptyCell={handleSelectEmptyCell}
-              seatMouseDragProps={seatDrag.seatMouseDragProps}
-              cellMouseDropProps={seatDrag.cellMouseDropProps}
-              seatTouchProps={seatDrag.seatTouchProps}
-              editGrid={editMode.grid}
-              onAddRow={editMode.addRow}
-              onAddCol={editMode.addCol}
-              onRemoveRow={editMode.removeRow}
-              onRemoveCol={editMode.removeCol}
-              onAddSeat={handleAddSeat}
-              onAssignSeat={handleAssignSeat}
-              onRotateSeat={editMode.draft.rotateSeat}
-            />
+            {/* §06-2: セルの削除ボタン(aria-label='座席を削除')の要求口をContext経由で配る。
+                DesktopSeatGrid/CompactSeatGrid(担当外)を経由してEditSeatCellが描かれるため、
+                そちら側にprops追加をせずに済ませる(EditSeatCell.tsx参照) */}
+            <SeatDeleteProvider value={requestSeatDelete}>
+              <SeatGridFrame
+                isCompactMobile={isCompactMobile}
+                grid={seatGrid}
+                employeeById={employeeById}
+                presenceMap={presenceMap}
+                teamName={teamName}
+                teamColor={teamColor}
+                loading={loading}
+                highlightSeatId={highlightSeatId}
+                onSeatClick={onSeatClick}
+                onClearHighlight={onClearHighlight}
+                isEditMode={editMode.isEditMode}
+                isSeatSelected={seatSelection.isSeatSelected}
+                onSelectSeat={handleSelectSeat}
+                seatMouseDragProps={seatDrag.seatMouseDragProps}
+                cellMouseDropProps={seatDrag.cellMouseDropProps}
+                seatTouchProps={seatDrag.seatTouchProps}
+                hoverCell={seatDrag.hoverCell}
+                editGrid={editMode.grid}
+                onAddRow={editMode.addRow}
+                onAddCol={editMode.addCol}
+                onRemoveRow={editMode.removeRow}
+                onRemoveCol={editMode.removeCol}
+                onAddSeat={handleAddSeat}
+                onAssignSeat={handleAssignSeat}
+                onRotateSeat={editMode.draft.rotateSeat}
+              />
+            </SeatDeleteProvider>
           </section>
           {/* タッチドラッグ中だけ指へ追従するゴースト。マウスはネイティブDnDの既定画像に任せる */}
           {seatDrag.touchGhostPosition && (
@@ -278,6 +305,23 @@ export const TeamOverlay = ({
               teamName={teamName}
             />
           )}
+          {/* §06-6: チーム削除はオーバーレイのフッター。編集モード(=管理者が鉛筆から入った状態)
+              でだけ出し、押すとタイプ確認モーダルへ進む */}
+          {editMode.isEditMode && (
+            <div className={styles.teamDeleteFooter}>
+              <button
+                type='button'
+                className={`pixel-btn ${styles.teamDeleteButton}`}
+                onClick={requestTeamDelete}
+                disabled={seatCommit.isSaving}
+              >
+                <span className='material-symbols-outlined' aria-hidden='true'>
+                  delete_forever
+                </span>
+                {`${teamName}を削除`}
+              </button>
+            </div>
+          )}
         </div>
         {/* STEP D3: 保存/キャンセルの編集ドック。styles.panel(position: relative)基準の
             絶対配置で下部に浮かせるだけなので、TrashDropZoneと違いSeatMapPortalへは逃がさない
@@ -292,41 +336,39 @@ export const TeamOverlay = ({
           />
         )}
       </div>
-      {/* STEP C2: styles.panel は backdrop-filter + overflow:hidden で fixed 子を閉じ込めるため、
-          TrashDropZone と同じ理由で SeatMapPortal 経由で body 直下へ描く */}
-      <SeatMapPortal>
-        <EmployeeAssignSheet
-          isOpen={assignSeatId !== null}
-          seat={assignTargetSeat}
-          employees={assignEmployees}
-          seats={draftAppliedSeats}
-          employeeById={employeeById}
-          onSelect={handleAssignSelect}
-          onClear={handleAssignClear}
-          onClose={handleAssignClose}
-          onBulkAssign={handleBulkAssignRequest}
-        />
-        {/* STEP C3: 他所配属者(movers)がいる時だけ出す移動確認。newcomers だけなら確認を挟まない */}
-        {bulkAssign.pendingPlan?.confirmMessage && (
-          <ConfirmDialog
-            ariaLabel='部署一括配置の確認'
-            message={bulkAssign.pendingPlan.confirmMessage}
-            confirmLabel='実行する'
-            onConfirm={bulkAssign.confirmBulkAssign}
-            onCancel={bulkAssign.cancelBulkAssign}
-          />
-        )}
-        {/* 編集中に閉じようとした時の破棄確認。保存せずに閉じる経路はここだけを通る */}
-        {isDiscardConfirmOpen && (
-          <ConfirmDialog
-            ariaLabel='編集内容の破棄確認'
-            message='編集内容を破棄して閉じますか?'
-            confirmLabel='破棄して閉じる'
-            onConfirm={confirmDiscardClose}
-            onCancel={cancelDiscardClose}
-          />
-        )}
-      </SeatMapPortal>
+      {/* STEP C2/§07-2/§07-4/§07-5/§06-3/§07-3: 配属シート+確認ダイアログ5種はOverlayDialogsへ集約
+          (01-authoring §4: indexは組み立てのみ)。SeatMapPortal経由でbody直下へ描く事情も
+          そちらに引き継いだ */}
+      <OverlayDialogs
+        assignSeatId={assignSeatId}
+        assignTargetSeat={assignTargetSeat}
+        assignEmployees={assignEmployees}
+        draftAppliedSeats={draftAppliedSeats}
+        employeeById={employeeById}
+        assignInitialBulkMode={assignInitialBulkMode}
+        onAssignSelect={handleAssignSelect}
+        onAssignSelectRequiringConfirm={handleAssignSelectRequiringConfirm}
+        onAssignClear={handleAssignClear}
+        onAssignClose={handleAssignClose}
+        onBulkAssignRequest={handleBulkAssignRequest}
+        onBulkAssignSelected={handleBulkAssignSelected}
+        assignConfirm={assignConfirm}
+        onConfirmAssignSelect={confirmAssignSelect}
+        onCancelAssignSelect={cancelAssignSelect}
+        bulkAssign={bulkAssign}
+        seatDeleteConfirm={seatDeleteConfirm}
+        onConfirmSeatDelete={confirmSeatDelete}
+        onCancelSeatDelete={cancelSeatDelete}
+        isDiscardConfirmOpen={isDiscardConfirmOpen}
+        onConfirmDiscardClose={confirmDiscardClose}
+        onCancelDiscardClose={cancelDiscardClose}
+        isTeamDeleteConfirmOpen={isTeamDeleteConfirmOpen}
+        teamName={teamName}
+        occupiedCount={occupiedCount}
+        emptySeatCount={teamSeats.length - occupiedCount}
+        onConfirmTeamDelete={confirmTeamDelete}
+        onCancelTeamDelete={cancelTeamDelete}
+      />
       {/* 座席配置ガイド。.panel は指追従の transform を受けるため、fixed 基準のスポットライトが
           その中にあると座標系がずれる。.wrap(fixed・transform なし)直下に置いて基準を分ける */}
       <CoachMarkTour tour={tour} />

@@ -6,12 +6,14 @@ import e from './admin-edit.module.css'
 type Props = {
   onHelp: () => void
   onExit: () => void
+  // ゴースト配置中。true の間だけスクリム(z-index-overlay)より上へ引き上げる
+  isPlacing?: boolean
 }
 
 // ？ は静的な説明ではなくツアーを再生する。既読フラグは無視して何度でも見られる
-export const EditTopControls = ({ onHelp, onExit }: Props) => (
-  <div className={e.editTopControls}>
-    <GuideButton ariaLabel='操作ガイドを見る' onClick={onHelp} />
+export const EditTopControls = ({ onHelp, onExit, isPlacing }: Props) => (
+  <div className={isPlacing ? `${e.editTopControls} ${e.isAbovePlacement}` : e.editTopControls}>
+    <GuideButton ariaLabel='使い方ガイドを見る' onClick={onHelp} />
     <button
       type='button'
       className={`${e.editTopBtn} liquid-glass`}
@@ -21,7 +23,10 @@ export const EditTopControls = ({ onHelp, onExit }: Props) => (
         onExit()
       }}
     >
-      ×
+      <span className='material-symbols-outlined' aria-hidden='true'>
+        close
+      </span>
+      終了
     </button>
   </div>
 )

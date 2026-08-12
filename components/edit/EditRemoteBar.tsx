@@ -13,17 +13,22 @@ export const EditRemoteBar = ({ changedCount, isSaving, onFinish, onCancel }: Pr
 
   return (
     <div className={`${e.editRemoteBar} liquid-glass`}>
-      <span className={e.editRemoteCount}>変更{changedCount}件</span>
+      <span className={e.editRemoteCount} aria-label={`変更 ${changedCount} 件`}>
+        変更{changedCount}件
+      </span>
       <button
         type='button'
         className={e.editRemoteCancel}
+        aria-label='編集をキャンセル'
         onClick={() => {
           triggerHaptic('light')
           onCancel()
         }}
         disabled={isSaving}
       >
-        キャンセル
+        <span className='material-symbols-outlined' aria-hidden='true'>
+          close
+        </span>
       </button>
       <button
         type='button'
@@ -36,7 +41,16 @@ export const EditRemoteBar = ({ changedCount, isSaving, onFinish, onCancel }: Pr
         }}
         disabled={!canComplete || isSaving}
       >
-        {isSaving ? '保存中…' : '完了'}
+        {isSaving ? (
+          '保存中…'
+        ) : (
+          <>
+            <span className='material-symbols-outlined' aria-hidden='true'>
+              check
+            </span>
+            完了
+          </>
+        )}
       </button>
     </div>
   )

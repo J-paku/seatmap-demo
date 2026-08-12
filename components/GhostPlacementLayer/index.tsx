@@ -22,10 +22,14 @@ type Props = {
   placement: GhostPlacement
   onConfirm: () => void
   onCancel: () => void
+  // 移動モードのときだけアクションバー左端に削除ボタンを出す(§04-4)。未指定なら出さない
+  onDelete?: () => void
 }
 
-export const GhostPlacementLayer = ({ request, placement, onConfirm, onCancel }: Props) => {
+export const GhostPlacementLayer = ({ request, placement, onConfirm, onCancel, onDelete }: Props) => {
   const { screenRect, screenGuides, blocked } = placement
+  // target.type==='reposition' が「移動モード」。新規配置ではラベルバッジ・削除ボタンを出さない
+  const mode = request.target.type === 'reposition' ? 'move' : 'create'
 
   // Esc で中止する。キャンバスやパネルの Esc より先に処理したいので捕捉フェーズで受ける
   useEffect(() => {
@@ -49,12 +53,20 @@ export const GhostPlacementLayer = ({ request, placement, onConfirm, onCancel }:
         outline={request.outline}
         blocked={blocked}
         resizable={request.resizable}
+        mode={mode}
         label={request.label}
         onPointerDown={placement.onGhostPointerDown}
         onHandlePointerDown={placement.onHandlePointerDown}
       />
       <GhostHint rect={screenRect} blocked={blocked} />
-      <GhostActionBar label={request.label} blocked={blocked} onConfirm={onConfirm} onCancel={onCancel} />
+      <GhostActionBar
+        label={request.label}
+        blocked={blocked}
+        mode={mode}
+        onConfirm={onConfirm}
+        onCancel={onCancel}
+        onDelete={onDelete}
+      />
     </div>
   )
 }

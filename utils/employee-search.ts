@@ -11,9 +11,16 @@ export const normalizeSearchText = (value: string): string =>
   hiraganaToKatakana(value.normalize('NFKC').toLowerCase()).replace(/\s+/g, '')
 
 const fieldsOf = (employee: Employee): string[] =>
-  [employee.name, employee.nameKana, employee.team, employee.furiganaSei, employee.furiganaMei].filter(
-    (field): field is string => typeof field === 'string' && field.length > 0
-  )
+  [
+    employee.name,
+    employee.nameKana,
+    employee.team,
+    employee.furiganaSei,
+    employee.furiganaMei,
+    // §06-4: 検索は名前・チーム・社員IDの部分一致。ここでの「社員ID」は内部合成キー(id)ではなく
+    // 利用者が知っている4桁社員番号(ownerCode)を指す
+    employee.ownerCode,
+  ].filter((field): field is string => typeof field === 'string' && field.length > 0)
 
 export const matchesEmployeeQuery = (employee: Employee, query: string): boolean => {
   const normalized = normalizeSearchText(query)

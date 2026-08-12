@@ -527,7 +527,7 @@
     "width": 105,
     "height": 75,
     "rotation": 0,
-    "employeeId": "emp-043"
+    "employeeId": "emp-044"
   },
   {
     "id": "dept-planning-002",
@@ -557,52 +557,22 @@
     "width": 105,
     "height": 75,
     "rotation": 0,
-    "employeeId": "emp-041"
-  },
-  {
-    "id": "dept-planning-005",
-    "teamId": "team-05",
-    "x": 542,
-    "y": 914,
-    "width": 105,
-    "height": 75,
-    "rotation": 0,
     "employeeId": "emp-038"
   },
   {
-    "id": "dept-planning-006",
+    "id": "dept-planning-005",
     "teamId": "team-05",
     "x": 50,
     "y": 1009,
     "width": 105,
     "height": 75,
     "rotation": 0,
-    "employeeId": null
+    "employeeId": "emp-043"
   },
   {
-    "id": "dept-planning-007",
+    "id": "dept-planning-006",
     "teamId": "team-05",
     "x": 173,
-    "y": 1009,
-    "width": 105,
-    "height": 75,
-    "rotation": 0,
-    "employeeId": "emp-044"
-  },
-  {
-    "id": "dept-planning-008",
-    "teamId": "team-05",
-    "x": 296,
-    "y": 1009,
-    "width": 105,
-    "height": 75,
-    "rotation": 0,
-    "employeeId": "emp-040"
-  },
-  {
-    "id": "dept-planning-009",
-    "teamId": "team-05",
-    "x": 419,
     "y": 1009,
     "width": 105,
     "height": 75,
@@ -610,13 +580,23 @@
     "employeeId": "emp-042"
   },
   {
-    "id": "dept-planning-010",
+    "id": "dept-planning-007",
     "teamId": "team-05",
-    "x": 542,
+    "x": 296,
     "y": 1009,
     "width": 105,
     "height": 75,
     "rotation": 0,
-    "employeeId": null
+    "employeeId": "emp-041"
+  },
+  {
+    "id": "dept-planning-008",
+    "teamId": "team-05",
+    "x": 419,
+    "y": 1009,
+    "width": 105,
+    "height": 75,
+    "rotation": 0,
+    "employeeId": "emp-040"
   }
 ]

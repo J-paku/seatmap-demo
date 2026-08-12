@@ -12,11 +12,13 @@
 .scrim {
   position: absolute;
   inset: 0;
-  background: var(--color-scrim);
-  animation: scrimIn 160ms ease-out;
+  /* §04-1: rgba(0,0,0,0.35)。--color-scrim(rgba(0,0,0,0.4))を87.5%に希釈すると
+     0.4 × 0.875 = 0.35 で厳密一致する */
+  background: color-mix(in srgb, var(--color-scrim) 87.5%, transparent);
+  animation: fadeIn 0.3s ease-out;
 }
 
-@keyframes scrimIn {
+@keyframes fadeIn {
   from {
     opacity: 0;
   }
@@ -31,22 +33,35 @@
   }
 }
 
-/* 整列ガイドはゴーストより先に描いて下に敷く */
+/* 整列ガイドはゴーストより先に描いて下に敷く。
+   §04-3: 色var(--color-align-guide)(styles/tokens.css 定義済み)・1.2px破線・不透明度0.85 */
 .guide {
   position: absolute;
-  background: var(--color-accent);
+  opacity: 0.85;
 }
 
 .guide.isVertical {
   top: 0;
   bottom: 0;
-  width: 1px;
+  width: 0;
+  border-left: 1.2px dashed var(--color-align-guide);
 }
 
 .guide.isHorizontal {
   left: 0;
   right: 0;
-  height: 1px;
+  height: 0;
+  border-top: 1.2px dashed var(--color-align-guide);
+}
+
+/* §04-3: 端点ドット半径2.5(直径5px)。固定外形のみここに持ち、位置(毎フレーム実測)は
+   GhostAlignmentGuides.tsx 側のインライン style で与える */
+.guideDot {
+  position: absolute;
+  width: 5px;
+  height: 5px;
+  border-radius: 9999px;
+  background: var(--color-align-guide);
 }
 
 .preview {
@@ -56,7 +71,7 @@
   justify-content: center;
   border: 2px solid var(--color-accent);
   border-radius: 6px;
-  background: color-mix(in srgb, var(--color-accent) 14%, transparent);
+  background: color-mix(in srgb, var(--color-accent) 22%, transparent);
   cursor: grab;
   pointer-events: auto;
   touch-action: none;
@@ -68,11 +83,19 @@
 
 .preview.isBlocked {
   border-color: var(--color-danger);
-  background: color-mix(in srgb, var(--color-danger) 16%, transparent);
+  background: color-mix(in srgb, var(--color-danger) 20%, transparent);
 }
 
-.previewLabel {
-  padding: 1px 8px;
+/* §04-2: 移動モードのときだけ枠上部に出す名前バッジ。新規配置では出さない */
+.moveLabel {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  translate: -50% -50%;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 10px;
   border-radius: 999px;
   background: var(--color-surface);
   color: var(--color-text-primary);
@@ -82,7 +105,41 @@
   pointer-events: none;
 }
 
-/* 見た目のハンドルは小さく、タップ領域は24px確保する */
+.moveLabel :global(.material-symbols-outlined) {
+  font-size: 14px;
+}
+
+.preview.isBlocked .moveLabel {
+  color: var(--color-danger);
+}
+
+/* §04-2: 中央ハンドル。掴む場所を示す見た目だけの要素で、ドラッグ自体は .preview が受ける */
+.centerHandle {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  translate: -50% -50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 9999px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-accent);
+  pointer-events: none;
+}
+
+.centerHandle :global(.material-symbols-outlined) {
+  font-size: 20px;
+}
+
+.preview.isBlocked .centerHandle {
+  color: var(--color-danger);
+}
+
+/* タップ領域24pxは維持しつつ、見た目は§04-4: 16px円・accent地・白2px枠にする */
 .handle {
   position: absolute;
   width: 24px;
@@ -94,10 +151,10 @@
 .handle::after {
   content: '';
   position: absolute;
-  inset: 8px;
-  border-radius: 2px;
-  border: 1px solid var(--color-accent);
-  background: var(--color-surface);
+  inset: 4px;
+  border-radius: 9999px;
+  border: 2px solid var(--color-band-highlight);
+  background: var(--color-accent);
 }
 
 .handle.isNw {
@@ -164,11 +221,27 @@
   font-size: 12px;
   white-space: nowrap;
   pointer-events: none;
+  animation: ghostHintPulse 1.6s ease-in-out infinite alternate;
 }
 
 .hint.isBlocked {
   border-color: var(--color-danger);
   color: var(--color-danger);
+}
+
+@keyframes ghostHintPulse {
+  from {
+    scale: 1;
+  }
+  to {
+    scale: 1.06;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hint {
+    animation: none;
+  }
 }
 
 .actionbar {
@@ -196,13 +269,18 @@
   text-overflow: ellipsis;
 }
 
-/* タップ領域44px確保。キャンセル・確定どちらのボタンにも効かせる */
+/* タップ領域44px確保。キャンセル・確定・削除どのボタンにも効かせる */
 .actionbar button {
   min-height: 44px;
   padding: 0 16px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  gap: 4px;
+}
+
+.actionbar button :global(.material-symbols-outlined) {
+  font-size: 18px;
 }
 
 .actionbar button:focus-visible {
@@ -213,4 +291,9 @@
 .actionbarConfirm:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+/* §04-4: キャンセル・削除はアイコンのみなので横paddingを絞る */
+.actionbarIconOnly {
+  padding: 0 12px;
 }

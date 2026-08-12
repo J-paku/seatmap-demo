@@ -56,9 +56,12 @@ export const FacilityBlock = ({ facility, counterScale, onSelect, state, lod = '
         ...(color ? { background: color.bg, borderColor: color.border, color: color.text } : {}),
       }}
     >
-      <span className={styles.facilityName} style={{ fontSize: 15 * counterScale }}>
-        {facility.name}
-      </span>
+      {/* 05-3: ラベル表示トグル。未指定は表示(既定値の穴埋めは lib/layout-persistence が持つ) */}
+      {facility.labelVisible !== false && (
+        <span className={styles.facilityName} style={{ fontSize: 15 * counterScale }}>
+          {facility.name}
+        </span>
+      )}
       {isMeeting && state && (
         <span className={styles.facilityStatus} style={{ fontSize: 10 * counterScale }}>
           {FACILITY_STATUS_LABEL[state.status]}

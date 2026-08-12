@@ -26,7 +26,7 @@ export const EditDock = ({ changeCount, hasChanges, isSaving, onSave, onCancel }
       type='button'
       className={styles.dockSave}
       disabled={!hasChanges}
-      aria-label={isSaving ? '保存中' : changeCount > 0 ? `保存(未保存の変更${changeCount}件)` : '保存'}
+      aria-label='変更を保存'
       onClick={onSave}
     >
       {isSaving && (

@@ -17,11 +17,21 @@ type Props = {
   repositioning: LayoutObjectRef | null
   livePos: LivePosition | null
   onEditPointerDown: (ref: LayoutObjectRef, e: ReactPointerEvent) => void
+  // 05-3: タップ(動かさずに離した押下)で移動ゴーストを開く
+  onEditTap: (ref: LayoutObjectRef) => void
 }
 
 type Box = { ref: LayoutObjectRef; x: number; y: number; width: number; height: number; name: string }
 
-export const EditObjectLayer = ({ facilities, furniture, selected, repositioning, livePos, onEditPointerDown }: Props) => {
+export const EditObjectLayer = ({
+  facilities,
+  furniture,
+  selected,
+  repositioning,
+  livePos,
+  onEditPointerDown,
+  onEditTap,
+}: Props) => {
   const boxes: Box[] = [
     ...facilities.map((f) => ({
       ref: { kind: 'facility' as const, id: f.id },
@@ -62,7 +72,11 @@ export const EditObjectLayer = ({ facilities, furniture, selected, repositioning
               height: box.height,
             }}
             onPointerDown={(e) => onEditPointerDown(box.ref, e)}
-            onClick={(e) => e.stopPropagation()}
+            onClick={(e) => {
+              // 余白クリック(選択解除)へは伝播させない。タップかどうかの判定はフック側が持つ
+              e.stopPropagation()
+              onEditTap(box.ref)
+            }}
           />
         )
       })}

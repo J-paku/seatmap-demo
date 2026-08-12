@@ -5,6 +5,7 @@ import { SeatRotationGrip } from './SeatRotationGrip'
 import { seatDirectionLabel } from '../utils/seat-direction'
 import type { UseSeatDragResult } from '../hooks/use-seat-drag'
 import styles from '../team-overlay-modal.module.css'
+import { useSeatDeleteRequest } from '@/contexts/seat-delete-context'
 import type { Employee, Seat } from '@/types'
 
 // STEP B1: 編集中の座席カード。表示用(SeatCard/ViewSeatCell)とは別コンポーネントにする。
@@ -39,6 +40,8 @@ export const EditSeatCell = ({
 }: Props) => {
   // STEP D2: グリップドラッグ中かどうか。コンパスガイドの表示切り替えにだけ使う
   const [isDragging, setIsDragging] = useState(false)
+  // §06-2: 削除要求ハンドラ。Providerで包まれていない(=編集ツリー外)場合はボタン自体を出さない
+  const requestSeatDelete = useSeatDeleteRequest()
 
   return (
     <>
@@ -77,6 +80,24 @@ export const EditSeatCell = ({
       )}
       {/* STEP D2: コンパスガイドはグリップをドラッグしている間だけ。終わったら消す */}
       {isSelected && isDragging && <SeatCompassGuide />}
+      {/* §06-2: セルの削除。選択有無に関わらず常時出す(ゴミ箱投下と並ぶもう一方の削除経路)。
+          回転グリップ(左上)と反対の右上へ置き、.rotationGripと同じ丸ボタン形状を
+          .seatDeleteGripで流用しつつ位置とアイコン色だけ上書きする */}
+      {requestSeatDelete && (
+        <button
+          type='button'
+          className={`${styles.rotationGrip} ${styles.seatDeleteGrip}`}
+          aria-label='座席を削除'
+          onClick={(e) => {
+            e.stopPropagation()
+            requestSeatDelete(seat.id)
+          }}
+        >
+          <span className='material-symbols-outlined' aria-hidden='true'>
+            delete
+          </span>
+        </button>
+      )}
     </>
   )
 }

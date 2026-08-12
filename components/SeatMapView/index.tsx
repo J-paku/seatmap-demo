@@ -18,17 +18,26 @@ import { EmployeeAssignSheet } from '@/components/EmployeeAssignSheet'
 import { EmployeeDirectory } from '@/components/EmployeeDirectory'
 import { FacilityHoverCard } from '@/components/FacilityHoverCard'
 import type { FacilityHoverPayload } from '@/components/FacilityHoverCard'
+import { FacilityPickerModal } from '@/components/FacilityPickerModal'
 import { FurniturePickerModal } from '@/components/FurniturePickerModal'
 import { GhostPlacementLayer } from '@/components/GhostPlacementLayer'
 import type { GhostRequest } from '@/components/GhostPlacementLayer'
 import { GuideButton } from '@/components/GuideButton'
 import { LayoutSwitcher } from '@/components/LayoutSwitcher'
 import { ObjectCategorySheet } from '@/components/ObjectCategorySheet'
-import { TeamActionSheet } from '@/components/TeamActionSheet'
+import { TeamCategorySheet } from '@/components/TeamCategorySheet'
 import { TeamCreatePopover } from '@/components/TeamCreatePopover'
+import { TeamImportSheet } from '@/components/TeamImportSheet'
 import { CoachMarkTour } from '@/components/CoachMarkTour'
 import { readSeen, useCoachMarkTour } from '@/components/CoachMarkTour/hooks/use-coach-mark-tour'
-import { EDIT_TOUR_BRANCH, EDIT_TOUR_STORAGE_KEY } from '@/components/CoachMarkTour/utils/tour-steps'
+import {
+  EDIT_TOUR_BRANCH,
+  EDIT_TOUR_STORAGE_KEY,
+  FURNITURE_TOUR_STEPS,
+  FURNITURE_TOUR_STORAGE_KEY,
+  TEAM_TOUR_STEPS,
+  TEAM_TOUR_STORAGE_KEY,
+} from '@/components/CoachMarkTour/utils/tour-steps'
 import { ConfirmDialog } from '@/components/edit/ConfirmDialog'
 import { LiveRegion } from '@/components/a11y/components/LiveRegion'
 import { SeatMapCanvas } from '@/components/SeatMapCanvas'
@@ -37,8 +46,10 @@ import { TeamOverlay } from '@/components/TeamOverlay'
 import { EditErrorToast } from '@/components/edit/EditErrorToast'
 import { useDetailPanel } from '@/contexts/detail-panel-context'
 import { useSeatLayout } from '@/hooks/use-mock-data'
+import { isGaroonConnected } from '@/lib/garoon-facilities'
 import { useTheme } from '@/hooks/use-theme'
 import { SELF_EMPLOYEE_ID } from '@/utils/demo-identity'
+import { TOAST_MESSAGES } from '@/utils/toast-messages'
 import { useLayoutEditor } from '@/hooks/use-layout-editor/use-layout-editor'
 import { rectOfRef } from '@/utils/layout/layout-objects'
 import type { Rect } from '@/utils/layout/rect'
@@ -70,11 +81,13 @@ export const SeatMapView = () => {
     canvasRef.current?.showUndoChipAt(rect.x + rect.w / 2, rect.y + rect.h, message, frame)
   }, [])
 
-  // 削除の実行はここに集約する。ダイアログ経由(会議室)も即時(家具)も同じ後始末を通す
+  // 削除の実行はここに集約する。ダイアログ経由(会議室・チーム)も即時(家具)も同じ後始末を通す。
+  // チームだけ発行口が違う(所属座席ごと消えるため object-delete では扱えない)
   const handleDeleteObject = useCallback(
     (ref: LayoutObjectRef) => {
       const rect = effectiveLayout ? rectOfRef(effectiveLayout, ref) : null
-      editor.deleteObject(ref)
+      if (ref.kind === 'team') editor.deleteTeam(ref.id)
+      else editor.deleteObject(ref)
       if (rect) showUndoChipAt(rect, '削除しました', rect)
     },
     [editor, effectiveLayout, showUndoChipAt]
@@ -99,6 +112,34 @@ export const SeatMapView = () => {
     onPlaced: handlePlaced,
     onEnsureEditMode: ensureEditSession,
   })
+
+  // 05-3: セッション中のチーム枠タップ = 移動ゴースト。実体はその場に残り、「配置」で初めて動く
+  // (locked / fixedLayout のチームは startReposition が理由つきで弾く)
+  const handleTeamTap = useCallback(
+    (teamId: string) => placement.startReposition({ kind: 'team', id: teamId }),
+    [placement.startReposition]
+  )
+
+  // 05-4:「大型」= shape:'executive' の一括適用。バーが持つ形状はこれ1つなのでここで固定する
+  const handleSeatEnlarge = useCallback((seatIds: string[]) => editor.reshapeSeats(seatIds, 'executive'), [editor])
+
+  // 05-4: 2席以上の一括削除。件数つきの確認を挟んでから1アクションで消す(undo 1回で戻る)。
+  // 1席のときは既存の単独確認(dialogs.requestSeatDelete)がそのまま受ける
+  const [bulkDeleteSeatIds, setBulkDeleteSeatIds] = useState<string[] | null>(null)
+  const confirmBulkDelete = useCallback(() => {
+    if (bulkDeleteSeatIds) editor.deleteSeats(bulkDeleteSeatIds)
+    setBulkDeleteSeatIds(null)
+  }, [bulkDeleteSeatIds, editor])
+
+  // 04-4: 移動ゴーストの削除ボタン。ゴーストを畳んでから既存の削除経路へ渡す
+  // (会議室は確認ダイアログ・チームは §07-3 のタイプ確認・家具は即時)
+  const ghostDeleteRef = placement.repositioningRef
+  const isGhostDeletable = ghostDeleteRef !== null
+  const handleGhostDelete = useCallback(() => {
+    if (!ghostDeleteRef) return
+    placement.cancel()
+    dialogs.requestObjectDelete(ghostDeleteRef)
+  }, [ghostDeleteRef, placement.cancel, dialogs.requestObjectDelete])
   // 操作ガイド。編集モード初回だけ自動再生し、？ ボタンで何度でも見られる。
   // エンジンは isActive を直接受けないので、活性化(初回自動再生・退出時に畳む)は
   // ここ(呼び出し側)の責務として持つ
@@ -127,6 +168,25 @@ export const SeatMapView = () => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     if (wasEditMode) tour.collapse()
   }, [editor.isEditMode, replayTour, tour.collapse])
+  // §05-7: FABの「チーム」「設備」はそれぞれ独立フロー+独立キーを持つ。どちらもゴーストが
+  // 画面中央に出るのでスポットライトする対象が無く、中央カードのまま3ステップ流すだけになる。
+  // 自動再生の判定は「メニュー項目を選んだ時点」(§01)で行うので、マウント時の autoStart は切る
+  const [teamTourReplayNonce, setTeamTourReplayNonce] = useState(0)
+  const teamTour = useCoachMarkTour({
+    steps: TEAM_TOUR_STEPS,
+    storageKey: TEAM_TOUR_STORAGE_KEY,
+    replayNonce: teamTourReplayNonce,
+    autoStart: false,
+  })
+  const replayTeamTour = useCallback(() => setTeamTourReplayNonce((count) => count + 1), [])
+  const [furnitureTourReplayNonce, setFurnitureTourReplayNonce] = useState(0)
+  const furnitureTour = useCoachMarkTour({
+    steps: FURNITURE_TOUR_STEPS,
+    storageKey: FURNITURE_TOUR_STORAGE_KEY,
+    replayNonce: furnitureTourReplayNonce,
+    autoStart: false,
+  })
+  const replayFurnitureTour = useCallback(() => setFurnitureTourReplayNonce((count) => count + 1), [])
   // メイン(閲覧)画面の使い方ガイド。編集ツアーとは別インスタンス・別 storageKey で、
   // 初回未読なら自動再生(autoStart 既定 true)、以降はヘッダーの使い方ガイドボタンで再生する
   const [mainTourReplayNonce, setMainTourReplayNonce] = useState(0)
@@ -137,6 +197,24 @@ export const SeatMapView = () => {
     centerOnSelector,
   })
   const replayMainTour = useCallback(() => setMainTourReplayNonce((count) => count + 1), [])
+  // §05-7:「?」は今居る導線のガイドを再生する。判断材料は配置フローが運んでいる種別だけで、
+  // 掴み直し(reposition)と未配置(null)はレイアウト編集の導線なので分岐ツアーを出す
+  const handleHelp = useCallback(() => {
+    const targetType = placement.request?.target.type
+    if (targetType === 'add-team') replayTeamTour()
+    else if (targetType === 'add-furniture' || targetType === 'add-facility') replayFurnitureTour()
+    else replayTour()
+  }, [placement.request, replayTeamTour, replayFurnitureTour, replayTour])
+  // §01の「メニュー項目を選んだ時点」。未読ならガイドを1回だけ出してから本来の導線へ進む。
+  // 既読化はツアーを閉じた時にエンジン側が行うので、ここでは書き込まない
+  const handleSelectTeam = useCallback(() => {
+    if (!readSeen(TEAM_TOUR_STORAGE_KEY)) replayTeamTour()
+    placement.selectCategory('team')
+  }, [replayTeamTour, placement.selectCategory])
+  const handleSelectFacility = useCallback(() => {
+    if (!readSeen(FURNITURE_TOUR_STORAGE_KEY)) replayFurnitureTour()
+    placement.openCategory()
+  }, [replayFurnitureTour, placement.openCategory])
   // 配属の結果はライブリージョンとトーストへ同じ文言を流す(実装を二重化しない)
   const assign = useSeatAssign({ editor, employeeById, onDone: (message) => showNotice(message) })
 
@@ -169,11 +247,12 @@ export const SeatMapView = () => {
   const minimap = useMinimapPayload(effectiveLayout, focus.payload?.teamId ?? null)
   // 左下 FAB の可否。条件が増えても組み立てが太らないよう判定はフックへ寄せる
   const isAdminFabVisible = useAdminFabVisibility({
+    isEditSession: editor.isEditMode,
     teamOverlayPayload: focus.payload,
     isDirectoryOpen,
     isPlacementActive: placement.isActive,
     assignSeatId: assign.assignSeatId,
-    tours: [tour, mainTour],
+    tours: [tour, mainTour, teamTour, furnitureTour],
     isLayoutSwitcherOpen,
   })
 
@@ -192,6 +271,16 @@ export const SeatMapView = () => {
         ? effectiveLayout?.seats.find((candidate) => candidate.employeeId === personDetailId) ?? null
         : null,
     [personDetailId, effectiveLayout]
+  )
+
+  // §03-3 配置済み判定の材料。予定システムの施設ID(Facility.facilityId)を持つ分だけが
+  // Garoon マスタと突き合わせられる(レイアウト上の Facility.id とは別物)
+  const placedFacilityIds = useMemo(
+    () =>
+      (effectiveLayout?.facilities ?? [])
+        .map((facility) => facility.facilityId)
+        .filter((facilityId): facilityId is string => facilityId !== undefined),
+    [effectiveLayout]
   )
 
   // カードの「座席へ移動」。畳んでから飛ばす — 逆順だとオーバーレイの上にシートの暗幕が残る
@@ -228,26 +317,30 @@ export const SeatMapView = () => {
           ref={canvasRef}
           layout={effectiveLayout}
           employeeById={employeeById}
-          presenceMap={effectivePresenceMap}
           onSeatSelect={openSeatDetail}
           onFacilitySelect={openFacilityDetail}
           onTeamBoundaryClick={focus.openByBoundary}
           facilityStateById={facilityStateById}
           onFacilityHover={setHoverFacility}
           isEditMode={editor.isEditMode}
-          onSeatMove={editor.moveSeat}
           onTeamMove={editor.moveTeam}
-          onTeamLabelTap={dialogs.requestTeamAction}
+          onTeamTap={handleTeamTap}
           onSeatAssignRequest={assign.openAssign}
-          onSeatChangeTeamRequest={dialogs.requestTeamChange}
           onSeatDeleteRequest={dialogs.requestSeatDelete}
+          onSeatRotateRequest={editor.rotateSeats}
+          onSeatShapeRequest={handleSeatEnlarge}
+          onSeatBulkDeleteRequest={setBulkDeleteSeatIds}
+          onEndSession={placement.isActive ? undefined : save.cancel}
           onObjectMove={editor.moveObject}
           onObjectRepositionRequest={placement.startReposition}
           onObjectDeleteRequest={dialogs.requestObjectDelete}
+          onObjectLockToggle={editor.setObjectLocked}
+          onObjectLabelToggle={editor.setObjectLabelVisible}
           repositioningRef={placement.repositioningRef}
           onUndo={editor.undo}
           canUndo={editor.canUndo}
           onGoToMySeat={editor.isEditMode ? undefined : handleGoToMySeat}
+          onEnterEditSession={editor.isEditMode ? undefined : ensureEditSession}
         />
       )}
       <EmployeeDirectory
@@ -265,9 +358,16 @@ export const SeatMapView = () => {
       {unassignedNotice && <div className={styles.empDirUnassignedToast}>{unassignedNotice}</div>}
       {/* 画面を見ていない人にも同じ文言を渡す。トーストと同一の文字列を使う */}
       <LiveRegion message={unassignedNotice ?? ''} />
+      {/* 05-6: 保存成功トーストは画面中央・5秒・「元に戻す」つき。座席未設定通知(下部固定)とは
+          位置が違うので別クラスを使う */}
       {save.saveToast && (
-        <div className={styles.empDirUnassignedToast} role='status'>
+        <div className={styles.saveToast} role='status'>
           {save.saveToast}
+          {save.canUndoSave && (
+            <button type='button' className={styles.saveToastUndo} onClick={save.undoSave}>
+              {TOAST_MESSAGES.UNDO_ACTION}
+            </button>
+          )}
         </div>
       )}
       {!editor.isEditMode && effectiveLayout && (
@@ -314,7 +414,7 @@ export const SeatMapView = () => {
           changedCount={editor.changedCount}
           isSaving={save.isSaving}
           isPlacing={placement.request !== null}
-          onHelp={replayTour}
+          onHelp={handleHelp}
           onFinish={save.finish}
           onCancel={save.cancel}
         />
@@ -326,14 +426,15 @@ export const SeatMapView = () => {
           中に入れると暗幕がキャンバスの pointerdown を奪い、配置中にパン/ズームできなくなる */}
       {isAdminFabVisible && (
         <AdminAddFab
-          onSelectTeam={() => placement.selectCategory('team')}
-          onSelectFacility={placement.openCategory}
+          onSelectTeam={handleSelectTeam}
+          onSelectFacility={handleSelectFacility}
           onEditLayout={ensureEditSession}
         />
       )}
       <ObjectCategorySheet
         isOpen={placement.isCategoryOpen}
         categories={['furniture', 'facility']}
+        isGaroonConnected={isGaroonConnected()}
         onSelect={placement.selectCategory}
         onClose={placement.cancel}
       />
@@ -342,6 +443,26 @@ export const SeatMapView = () => {
         onSelect={placement.selectFurniture}
         onClose={placement.cancel}
       />
+      {/* §03-3: 施設は Garoon マスタから選んでからゴーストへ進む */}
+      <FacilityPickerModal
+        isOpen={placement.isFacilityPickerOpen}
+        placedFacilityIds={placedFacilityIds}
+        onSelect={placement.selectFacility}
+        onClose={placement.cancel}
+      />
+      <TeamCategorySheet
+        isOpen={placement.isTeamCategoryOpen}
+        onSelectImport={placement.startTeamImport}
+        onSelectCreate={placement.startTeamCreate}
+        onClose={placement.cancel}
+      />
+      {/* §02-3: 取り込みはゴーストを通らず、確定時にスパイラル探索でまとめて置く */}
+      <TeamImportSheet
+        isOpen={placement.isTeamImportOpen}
+        onConfirm={placement.submitTeamImport}
+        onClose={placement.cancel}
+      />
+      {/* §02-2: 名前/色ダイアログはゴーストの「配置」で位置が決まった後に開く */}
       <TeamCreatePopover
         isOpen={placement.isTeamFormOpen}
         onSubmit={placement.submitTeam}
@@ -353,6 +474,7 @@ export const SeatMapView = () => {
           placement={placement.placement}
           onConfirm={placement.confirm}
           onCancel={placement.cancel}
+          onDelete={isGhostDeletable ? handleGhostDelete : undefined}
         />
       )}
 
@@ -360,13 +482,6 @@ export const SeatMapView = () => {
 
       {editor.isEditMode && (
         <>
-          <TeamActionSheet
-            isOpen={dialogs.teamActionTeamId !== null}
-            teamName={dialogs.teamActionTeam?.name ?? ''}
-            seatCount={dialogs.teamActionSeatCount}
-            onSelect={dialogs.chooseTeamAction}
-            onClose={dialogs.closeTeamAction}
-          />
           <EmployeeAssignSheet
             isOpen={assign.assignSeatId !== null}
             seat={assign.assignTargetSeat}
@@ -386,11 +501,27 @@ export const SeatMapView = () => {
               onCancel={assign.cancelAssign}
             />
           )}
+          {/* 07-2 の一括削除確認。タイトル行・アイコンバッジ・× を持つ 07-1 の共通シェルは別担当で、
+              ここは本文と主ボタン文言だけを仕様どおりに渡す */}
+          {bulkDeleteSeatIds && (
+            <ConfirmDialog
+              ariaLabel={`${bulkDeleteSeatIds.length}席を削除しますか？`}
+              message={`選択した${bulkDeleteSeatIds.length}席を削除します。配置済みの社員は解除されます。この操作は保存後に確定されます。`}
+              confirmLabel='削除する'
+              onConfirm={confirmBulkDelete}
+              onCancel={() => setBulkDeleteSeatIds(null)}
+            />
+          )}
         </>
       )}
 
       {editor.isEditMode && <CoachMarkTour tour={tour} />}
       {!editor.isEditMode && <CoachMarkTour tour={mainTour} />}
+      {/* §05-7: この2つは常時マウントする。FAB はセッションの外で押され、
+          選択と同じフレームで ensureEditSession が isEditMode を立てるので、
+          isEditMode ガードを掛けると初回の自動再生とタイミングがずれる */}
+      <CoachMarkTour tour={teamTour} />
+      <CoachMarkTour tour={furnitureTour} />
 
       <EditDialogs editor={editor} dialogs={dialogs} />
 

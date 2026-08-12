@@ -15,7 +15,9 @@ type Props = {
   isEditMode?: boolean
   onBoundaryOpen: (teamId: string, rect: DOMRect) => void
   onLabelEditPointerDown: (teamId: string, e: ReactPointerEvent) => void
-  onLabelTap?: (teamId: string) => void
+  // 05-3: セッション中の枠タップ(移動ゴースト) / 05-1: 閲覧モードの長押し進入
+  onEditTap: (teamId: string) => void
+  onLongPressEditSession?: () => void
 }
 
 export const TeamAreaLayer = ({
@@ -26,7 +28,8 @@ export const TeamAreaLayer = ({
   isEditMode,
   onBoundaryOpen,
   onLabelEditPointerDown,
-  onLabelTap,
+  onEditTap,
+  onLongPressEditSession,
 }: Props) => {
   const teamColorMap = useTeamColorMap()
 
@@ -44,7 +47,8 @@ export const TeamAreaLayer = ({
           onBoundaryOpen={onBoundaryOpen}
           isEditMode={isEditMode}
           onLabelEditPointerDown={onLabelEditPointerDown}
-          onLabelTap={onLabelTap}
+          onEditTap={onEditTap}
+          onLongPressEditSession={onLongPressEditSession}
         />
       ))}
     </>
