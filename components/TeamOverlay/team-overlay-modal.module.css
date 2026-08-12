@@ -587,9 +587,58 @@
   color: var(--color-text-muted);
 }
 
+/* 足した直後の行・列。どこが増えたかを一度だけ点灯で示す。
+   .dropTarget と併用しうるので、こちらは背景を持たず animation だけを足す */
+.isInserted {
+  animation: gridInsertReveal 700ms cubic-bezier(0.22, 1, 0.36, 1);
+  border-radius: 12px;
+}
+
+@keyframes gridInsertReveal {
+  0% {
+    opacity: 0;
+    transform: scale(0.9);
+    background: color-mix(in srgb, var(--color-accent) 28%, transparent);
+  }
+
+  55% {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  100% {
+    opacity: 1;
+    transform: scale(1);
+    background: color-mix(in srgb, var(--color-accent) 0%, transparent);
+  }
+}
+
+/* 動きを減らす設定では拡大・フェードをやめ、色の点灯だけ残す(増えた位置は伝えたい) */
+@media (prefers-reduced-motion: reduce) {
+  .isInserted {
+    animation: gridInsertFlash 700ms ease-out;
+  }
+}
+
+@keyframes gridInsertFlash {
+  0% {
+    background: color-mix(in srgb, var(--color-accent) 28%, transparent);
+  }
+
+  100% {
+    background: color-mix(in srgb, var(--color-accent) 0%, transparent);
+  }
+}
+
 /* グリッド枠(ヒントの配置基準) */
 .gridwrap {
   position: relative;
+}
+
+/* 編集中は行追加ピルを座席の外側へ出す。横方向には足さない —
+   Compact の列幅は「コンテナ幅 / 6列」で決まるので、左右に余白を足すと座席が痩せて氏名が潰れる */
+.gridwrap.hasEdgeAdd {
+  padding: 42px 0;
 }
 
 .grid {
@@ -1300,49 +1349,102 @@
 /* STEP B4: グリッド編集の行・列増減。.gridwrap(position: relative)を基準に
    絶対配置し、内部スクロールに関わらずグリッドの外周に留まる。横スクロールヒント
    (.hint、上下中央固定)と重ならないよう、上下左右いずれも角寄りへ配置する */
+/* 行・列の追加ボタン。枠線ではなく浮き(影)で面から持ち上げ、押下は縮みで返す。
+   26px角では狙いにくかったので、上下は高さ36pxのラベル付きピル、左右は32x64の縦ピルにする */
 .edgeAdd {
   position: absolute;
-  width: 26px;
-  height: 26px;
-  border-radius: 9999px;
-  border: 1px solid var(--color-border);
-  background: var(--color-surface-muted);
-  color: var(--color-accent);
-  cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: var(--glass-shadow-sm);
+  gap: 4px;
+  padding: 0;
+  border: 0;
+  border-radius: 9999px;
+  background: var(--color-surface-elevated);
+  color: var(--color-accent);
+  cursor: pointer;
+  box-shadow: var(--shadow-modal);
+  transition: background 120ms ease, transform 120ms ease;
 }
 
 .edgeAdd:hover {
-  background: var(--color-surface-muted-hover);
+  background: var(--color-surface-muted);
+}
+
+.edgeAdd:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
 }
 
 .edgeAdd :global(.material-symbols-outlined) {
-  font-size: 16px;
+  font-size: 18px;
+}
+
+.edgeAddLabel {
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.edgeAdd.isTop,
+.edgeAdd.isBottom {
+  height: 36px;
+  padding: 0 14px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+/* 押下時の縮みは translateX(-50%) を消さないよう合成して書く */
+.edgeAdd.isTop:active,
+.edgeAdd.isBottom:active {
+  transform: translateX(-50%) scale(0.96);
 }
 
 .edgeAdd.isTop {
-  top: -8px;
-  left: 50%;
-  transform: translateX(-50%);
+  top: 0;
 }
 
 .edgeAdd.isBottom {
-  bottom: -8px;
-  left: 50%;
-  transform: translateX(-50%);
+  bottom: 0;
+}
+
+.edgeAdd.isLeft,
+.edgeAdd.isRight {
+  width: 32px;
+  height: 64px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.edgeAdd.isLeft:active,
+.edgeAdd.isRight:active {
+  transform: translateY(-50%) scale(0.96);
 }
 
 .edgeAdd.isLeft {
-  top: 8px;
-  left: -8px;
+  left: -6px;
 }
 
 .edgeAdd.isRight {
-  top: 8px;
-  right: -8px;
+  right: -6px;
+}
+
+/* 動きを減らす設定では縮まない(位置ずれだけ残ると押せた実感が逆に薄れる) */
+@media (prefers-reduced-motion: reduce) {
+  .edgeAdd {
+    transition: background 120ms ease;
+  }
+
+  .edgeAdd.isTop:active,
+  .edgeAdd.isBottom:active {
+    transform: translateX(-50%);
+  }
+
+  .edgeAdd.isLeft:active,
+  .edgeAdd.isRight:active {
+    transform: translateY(-50%);
+  }
 }
 
 /* 空行・空列のヘッダに出す削除ボタンの受け皿。行ヘッダは縦長セル・列ヘッダは横長セルに
@@ -1353,21 +1455,35 @@
   justify-content: center;
 }
 
+/* 空き行・列の削除。常時 danger 色だと視線を奪うので、平常は無彩色で置き、
+   触れた時だけ危険色へ上げる。28px はヘッダートラック(28px)いっぱいの当たり判定 */
 .edgeRemove {
-  width: 20px;
-  height: 20px;
+  width: 28px;
+  height: 28px;
   border: 0;
-  border-radius: 4px;
+  border-radius: 8px;
   background: transparent;
-  color: var(--color-danger);
+  color: var(--color-text-muted);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: background 120ms ease, color 120ms ease;
 }
 
-.edgeRemove:hover {
+.edgeRemove :global(.material-symbols-outlined) {
+  font-size: 18px;
+}
+
+.edgeRemove:hover,
+.edgeRemove:focus-visible {
   background: var(--color-danger-soft);
+  color: var(--color-danger);
+}
+
+.edgeRemove:focus-visible {
+  outline: 2px solid var(--color-danger);
+  outline-offset: 1px;
 }
 
 .edgeRemove :global(.material-symbols-outlined) {

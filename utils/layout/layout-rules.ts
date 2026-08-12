@@ -48,6 +48,12 @@ const obstacleRects = (layout: SeatLayout, self: LayoutObjectRef | null): Rect[]
   ...rectsOfKinds(layout, ['facility'], self),
 ]
 
+// 置けない理由。「フロア外」と「何かと重なっている」は利用者への見せ方が違う —
+// 前者は見た目上ただの余白なので文言で伝えるしかなく、後者は相手の矩形を強調できる
+export type PlacementBlockReason =
+  | { kind: 'outside-floor' }
+  | { kind: 'overlap'; rects: Rect[] }
+
 // 会議室・家具・チーム枠の新規配置と再配置の可否。フロアの外も置けない場所として扱う。
 //
 // ゴーストの表示判定と発行前の検証が同じ関数を通ることが要点。別々に書くと
@@ -55,8 +61,19 @@ const obstacleRects = (layout: SeatLayout, self: LayoutObjectRef | null): Rect[]
 //
 // 座席がチームエリアの内側に載るのは正常(所属を表す)なので、その判定はここではなく
 // findTeamContaining が担う — 同じ「重なり」でも意味が違うので混ぜない
+export const placementBlockReason = (
+  layout: SeatLayout,
+  self: LayoutObjectRef | null,
+  candidate: Rect
+): PlacementBlockReason | null => {
+  if (outsideViewBox(layout, candidate)) return { kind: 'outside-floor' }
+  const hits = obstacleRects(layout, self).filter((r) => rectsIntersect(r, candidate))
+  return hits.length > 0 ? { kind: 'overlap', rects: hits } : null
+}
+
+// 真偽だけ欲しい発行前検証用。判定本体は placementBlockReason 1つに置く(判定基準は概念あたり1つ)
 export const placementBlocked = (layout: SeatLayout, self: LayoutObjectRef | null, candidate: Rect): boolean =>
-  outsideViewBox(layout, candidate) || obstacleRects(layout, self).some((r) => rectsIntersect(r, candidate))
+  placementBlockReason(layout, self, candidate) !== null
 
 // §05-3: ロック・レイアウト固定で編集を拒む対象かどうか。拒む場合だけ理由文言を返す。
 //

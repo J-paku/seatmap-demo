@@ -86,6 +86,30 @@
   background: color-mix(in srgb, var(--color-danger) 20%, transparent);
 }
 
+/* 配置を妨げている障害物の強調枠。破線しか無い通路など「余白に見える相手」を指すための表示。
+   塗りは薄く(下の実体を隠さない)、枠線で当たり判定の範囲そのものを示す */
+.blockedObstacle {
+  position: fixed;
+  border: 2px solid var(--color-danger);
+  background: color-mix(in srgb, var(--color-danger) 10%, transparent);
+  border-radius: 4px;
+  pointer-events: none;
+}
+
+/* フロア境界。外側は巨大 outline の一様シェードで「フロアではない」を示す。
+   フロア外がブロック理由の間だけ境界線を危険色にする */
+.floorBoundary {
+  position: fixed;
+  border: 2px dashed var(--color-border-strong);
+  outline: 200vmax solid color-mix(in srgb, var(--color-scrim) 35%, transparent);
+  pointer-events: none;
+}
+
+.floorBoundary.isBlocking {
+  border-color: var(--color-danger);
+  border-style: solid;
+}
+
 /* §04-2: 移動モードのときだけ枠上部に出す名前バッジ。新規配置では出さない */
 .moveLabel {
   position: absolute;

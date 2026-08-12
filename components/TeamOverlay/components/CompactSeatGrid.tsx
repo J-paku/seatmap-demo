@@ -14,7 +14,7 @@ import {
 } from '../utils/seat-grid'
 import { formatSeatGridCellAttr } from '../utils/seat-drag-attrs'
 import type { SeatGridProps } from '../type'
-import { useCompensateLeftInsert } from '../hooks/use-compensate-left-insert'
+import { useGridEdgeInsert } from '../hooks/use-grid-edge-insert'
 import { useScrollActivity } from '../hooks/use-scroll-activity'
 import { useScrollHints } from '../hooks/use-scroll-hints'
 import { useSeatHighlightAnimation } from '../hooks/use-seat-highlight-animation'
@@ -95,14 +95,18 @@ export const CompactSeatGrid = ({
   // 「最初の席を追加」に文言を変える
   const isFirstSeatGrid = grid.rows === 1 && grid.cols === 1 && grid.positionedSeats.length === 0
 
-  // 左へ列を足した回数を数え、増分ぶんだけ scrollLeft を補正する。render中にref.currentを
-  // 読まないよう、カウンタ自体はstateで持つ(コミット後の副作用はuseCompensateLeftInsert内のrefが担う)
-  const [leftInsertCount, setLeftInsertCount] = useState(0)
+  // 足した帯までスクロールし、短く点灯させる。
+  // 以前は左挿入で視界を保つ補正(use-compensate-left-insert)を入れていたが、
+  // 「足した列まで移動する」方針にしたので不要になった。両方あると補正が滑らかな移動を打ち消す
+  const { notifyInsert, isInsertedCell } = useGridEdgeInsert(scrollRef)
   const handleAddCol = (edge: 'left' | 'right') => {
-    if (edge === 'left') setLeftInsertCount((count) => count + 1)
     onAddCol(edge)
+    notifyInsert(edge)
   }
-  useCompensateLeftInsert(scrollRef, leftInsertCount, cellWidth + COMPACT_SEAT_GAP_PX)
+  const handleAddRow = (edge: 'top' | 'bottom') => {
+    onAddRow(edge)
+    notifyInsert(edge)
+  }
 
   // ヒントのタップで 1 列ぶんだけ滑らかに送る
   const nudge = (direction: -1 | 1) => {
@@ -110,7 +114,7 @@ export const CompactSeatGrid = ({
   }
 
   return (
-    <div className={styles.gridwrap}>
+    <div className={`${styles.gridwrap}${isEditMode ? ` ${styles.hasEdgeAdd}` : ''}`}>
       <div ref={scrollRef} className={`${styles.grid} ${styles.isCompact}${loading ? ` ${styles.isLoading}` : ''}`} aria-busy={loading}>
         <div
           className={styles.gridInner}
@@ -133,7 +137,9 @@ export const CompactSeatGrid = ({
             return (
               <div
                 key={seat.id}
-                className={isDropTarget ? styles.dropTarget : undefined}
+                className={`${isDropTarget ? styles.dropTarget : ''}${
+                  isInsertedCell(row, col, grid.rows, grid.cols) ? ` ${styles.isInserted}` : ''
+                }`.trim() || undefined}
                 style={{
                   gridRow: row + 1 + rowOffset,
                   gridColumn: col + 1 + colOffset,
@@ -191,7 +197,9 @@ export const CompactSeatGrid = ({
               return (
                 <div
                   key={`empty-${cell.row}-${cell.col}`}
-                  className={isDropTarget ? styles.dropTarget : undefined}
+                  className={`${isDropTarget ? styles.dropTarget : ''}${
+                    isInsertedCell(cell.row, cell.col, grid.rows, grid.cols) ? ` ${styles.isInserted}` : ''
+                  }`.trim() || undefined}
                   style={{
                     gridRow: cell.row + 1 + rowOffset,
                     gridColumn: cell.col + 1 + colOffset,
@@ -215,7 +223,7 @@ export const CompactSeatGrid = ({
       {hasOverflow && <ScrollHint side='left' onNudge={() => nudge(-1)} faded={atStart} />}
       {hasOverflow && <ScrollHint side='right' onNudge={() => nudge(1)} faded={atEnd} />}
       {/* STEP B4: グリッド4辺の＋ボタン。編集中のみ */}
-      {isEditMode && <GridEdgeAddButtons onAddRow={onAddRow} onAddCol={handleAddCol} />}
+      {isEditMode && <GridEdgeAddButtons onAddRow={handleAddRow} onAddCol={handleAddCol} />}
     </div>
   )
 }

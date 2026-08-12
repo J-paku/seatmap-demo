@@ -9,6 +9,7 @@ import { resizeRect } from '@/utils/layout/resize-anchor'
 import type { ResizeHandle } from '@/utils/layout/resize-anchor'
 import { computeResizeSnap, computeSnap, snapThreshold } from '@/utils/layout/snap-guides'
 import type { SnapGuide } from '@/utils/layout/snap-guides'
+import type { PlacementBlockReason } from '@/utils/layout/layout-rules'
 
 // ビューファインダー式ゴーストの配置モデル。
 //
@@ -38,8 +39,10 @@ type Options = {
   minSize?: { width: number; height: number }
   // 吸着相手(viewBox 系)
   siblings: Rect[]
-  // 置けるかどうかの判定。ポリシーは utils/layout/layout-rules 側に置き、ここは呼ぶだけ
-  isBlocked?: (rect: Rect) => boolean
+  // 置けない理由の判定。ポリシーは utils/layout/layout-rules 側に置き、ここは呼ぶだけ
+  blockReason?: (rect: Rect) => PlacementBlockReason | null
+  // フロア(viewBox)実寸。ゴースト層が「フロアの外」を可視化するのに使う
+  floorSize?: { width: number; height: number } | null
 }
 
 export type GhostPlacement = {
@@ -48,6 +51,13 @@ export type GhostPlacement = {
   // ガイド線は画面座標で返す。ゴースト層は position:fixed でキャンバスの変換の外にいるため
   screenGuides: SnapGuide[]
   blocked: boolean
+  // 置けない理由。文言の出し分け(フロア外/重なり)に使う
+  blockReason: PlacementBlockReason | null
+  // 重なっている障害物の画面座標矩形。ゴースト層が強調表示に使う
+  screenBlockedRects: { left: number; top: number; width: number; height: number }[]
+  // フロア全域の画面座標矩形。キャンバスはフロアの外まで見えるため、
+  // 境界を描かないと「余白に見えるがフロア外」を利用者が判別できない
+  screenFloorRect: { left: number; top: number; width: number; height: number } | null
   isDragging: boolean
   onGhostPointerDown: (e: ReactPointerEvent) => void
   onHandlePointerDown: (handle: ResizeHandle, e: ReactPointerEvent) => void
@@ -76,7 +86,8 @@ export const useGhostPlacement = ({
   initialRect = null,
   minSize = { width: GHOST_MIN_SIZE, height: GHOST_MIN_SIZE },
   siblings,
-  isBlocked,
+  blockReason: getBlockReason,
+  floorSize = null,
 }: Options): GhostPlacement => {
   const [transform, setTransform] = useState<Transform>({ scale: 1, tx: 0, ty: 0 })
   // 画面座標のゴースト中心
@@ -344,10 +355,43 @@ export const useGhostPlacement = ({
   // 実測 → setState → 再描画 の1往復が挟まり、ゴーストが1フレーム遅れて出る
   // eslint-disable-next-line react-hooks/refs
   const logicalRect = center ? toLogicalRect(center, logicalSize) : null
-  const blocked = logicalRect && isBlocked ? isBlocked(logicalRect) : false
+  const blockReason = logicalRect && getBlockReason ? getBlockReason(logicalRect) : null
+  const blocked = blockReason !== null
 
-  // §04-1: 表示寸法は実寸×scale をクランプした値。中心は動かさないので、
-  // クランプで変わるのは見た目の大きさだけで、確定する論理矩形には影響しない
+  // viewBox 座標 → 画面座標の写像原点。ref を経由せず
+  // 「ゴースト中心(画面)= 論理矩形中心(viewBox)」の対応から起こす
+  const screenOrigin =
+    center && logicalRect
+      ? {
+          x: center.x - (logicalRect.x + logicalRect.w / 2) * transform.scale,
+          y: center.y - (logicalRect.y + logicalRect.h / 2) * transform.scale,
+        }
+      : null
+
+  // 重なった障害物を画面座標へ移す。ゴースト層の強調表示用
+  const screenBlockedRects =
+    blockReason?.kind === 'overlap' && screenOrigin
+      ? blockReason.rects.map((r) => ({
+          left: screenOrigin.x + r.x * transform.scale,
+          top: screenOrigin.y + r.y * transform.scale,
+          width: r.w * transform.scale,
+          height: r.h * transform.scale,
+        }))
+      : []
+
+  // フロア全域の画面座標矩形(境界の可視化用)
+  const screenFloorRect =
+    floorSize && screenOrigin
+      ? {
+          left: screenOrigin.x,
+          top: screenOrigin.y,
+          width: floorSize.width * transform.scale,
+          height: floorSize.height * transform.scale,
+        }
+      : null
+
+  // 表示寸法は実寸×scale(最小44pxのみ保証)。表示と当たり判定を等尺にする —
+  // 縮小表示は「見た目は重なっていないのに置けない」を生むため上限クランプは廃止した
   const displaySize = clampGhostDisplaySize({
     width: logicalSize.width * transform.scale,
     height: logicalSize.height * transform.scale,
@@ -378,6 +422,9 @@ export const useGhostPlacement = ({
     logicalRect,
     screenGuides: guides,
     blocked,
+    blockReason,
+    screenBlockedRects,
+    screenFloorRect,
     isDragging,
     onGhostPointerDown,
     onHandlePointerDown,

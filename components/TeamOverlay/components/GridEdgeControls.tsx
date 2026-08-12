@@ -18,6 +18,8 @@ type EdgeAddProps = {
   onAddCol: (edge: 'left' | 'right') => void
 }
 
+// 上下(行追加)は何が増えるかを文字で出す。左右(列追加)は列幅を食わないよう縦長のアイコンだけにし、
+// 意味は aria-label と「どの辺に付いているか」で伝える
 export const GridEdgeAddButtons = ({ onAddRow, onAddCol }: EdgeAddProps) => (
   <>
     <button
@@ -29,6 +31,7 @@ export const GridEdgeAddButtons = ({ onAddRow, onAddCol }: EdgeAddProps) => (
       <span className='material-symbols-outlined' aria-hidden='true'>
         add
       </span>
+      <span className={styles.edgeAddLabel}>行を追加</span>
     </button>
     <button
       type='button'
@@ -39,6 +42,7 @@ export const GridEdgeAddButtons = ({ onAddRow, onAddCol }: EdgeAddProps) => (
       <span className='material-symbols-outlined' aria-hidden='true'>
         add
       </span>
+      <span className={styles.edgeAddLabel}>行を追加</span>
     </button>
     <button
       type='button'

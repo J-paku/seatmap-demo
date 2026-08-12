@@ -9,7 +9,7 @@ import type { GaroonFacility } from '@/lib/garoon-facilities'
 import type { UseLayoutEditorApi } from '@/hooks/use-layout-editor/use-layout-editor'
 import { FURNITURE_DEFAULT_SIZE, FURNITURE_KIND_LABEL } from '@/utils/furniture-catalog'
 import { rectOfRef } from '@/utils/layout/layout-objects'
-import { lockedMessage, placementBlocked } from '@/utils/layout/layout-rules'
+import { lockedMessage, placementBlockReason } from '@/utils/layout/layout-rules'
 import type { Rect } from '@/utils/layout/rect'
 import { DEFAULT_SEAT_HEIGHT, DEFAULT_SEAT_WIDTH } from '@/utils/layout/seat-relayout'
 import { NEW_TEAM_AREA_SIZE } from '@/utils/layout/team-create-grid'
@@ -108,8 +108,8 @@ export const useObjectPlacement = (
     [layout, selfRef]
   )
 
-  const isBlocked = useCallback(
-    (rect: Rect) => (layout ? placementBlocked(layout, selfRef, rect) : false),
+  const blockReason = useCallback(
+    (rect: Rect) => (layout ? placementBlockReason(layout, selfRef, rect) : null),
     [layout, selfRef]
   )
 
@@ -120,7 +120,8 @@ export const useObjectPlacement = (
     resizable: request?.resizable ?? false,
     minSize: request?.minSize,
     siblings,
-    isBlocked,
+    blockReason,
+    floorSize: layout?.viewBox ?? null,
   })
 
   // 入口はどれも同じ手順で始める。閲覧モードなら先に編集セッションを起こし、

@@ -2,6 +2,7 @@ import { useRef } from 'react'
 import { EditSeatCell } from './EditSeatCell'
 import { EmptyGridCell } from './EmptyGridCell'
 import { GRID_HEADER_TRACK_PX, GridEdgeAddButtons, GridRemoveHeaders } from './GridEdgeControls'
+import { useGridEdgeInsert } from '../hooks/use-grid-edge-insert'
 import { ScrollHint } from './ScrollHint'
 import { SeatActionOverlay } from './SeatActionOverlay'
 import { SeatCard } from './SeatCard'
@@ -68,6 +69,17 @@ export const DesktopSeatGrid = ({
   // 「最初の席を追加」に文言を変える
   const isFirstSeatGrid = grid.rows === 1 && grid.cols === 1 && grid.positionedSeats.length === 0
 
+  // 足した帯までスクロールし、短く点灯させる
+  const { notifyInsert, isInsertedCell } = useGridEdgeInsert(scrollRef)
+  const handleAddRow = (edge: 'top' | 'bottom') => {
+    onAddRow(edge)
+    notifyInsert(edge)
+  }
+  const handleAddCol = (edge: 'left' | 'right') => {
+    onAddCol(edge)
+    notifyInsert(edge)
+  }
+
   // ヒントのタップで 1 列ぶんだけ滑らかに送る
   const nudge = (direction: -1 | 1) => {
     scrollRef.current?.scrollBy({
@@ -90,7 +102,9 @@ export const DesktopSeatGrid = ({
         cells.push(
           <div
             key={`empty-${row}-${col}`}
-            className={isDropTarget ? styles.dropTarget : undefined}
+            className={`${isDropTarget ? styles.dropTarget : ''}${
+              isInsertedCell(row, col, grid.rows, grid.cols) ? ` ${styles.isInserted}` : ''
+            }`.trim() || undefined}
             style={{
               gridRow: row + 1 + rowOffset,
               gridColumn: col + 1 + colOffset,
@@ -113,7 +127,9 @@ export const DesktopSeatGrid = ({
       cells.push(
         <div
           key={seat.id}
-          className={isDropTarget ? styles.dropTarget : undefined}
+          className={`${isDropTarget ? styles.dropTarget : ''}${
+            isInsertedCell(row, col, grid.rows, grid.cols) ? ` ${styles.isInserted}` : ''
+          }`.trim() || undefined}
           style={{
             gridRow: row + 1 + rowOffset,
             gridColumn: col + 1 + colOffset,
@@ -179,7 +195,7 @@ export const DesktopSeatGrid = ({
   }
 
   return (
-    <div className={styles.gridwrap}>
+    <div className={`${styles.gridwrap}${isEditMode ? ` ${styles.hasEdgeAdd}` : ''}`}>
       <div ref={scrollRef} className={`${styles.grid} ${styles.isDesktop}${loading ? ` ${styles.isLoading}` : ''}`} aria-busy={loading}>
         <div
           className={styles.gridInner}
@@ -200,7 +216,7 @@ export const DesktopSeatGrid = ({
       {hasOverflow && <ScrollHint side='left' onNudge={() => nudge(-1)} faded={atStart} />}
       {hasOverflow && <ScrollHint side='right' onNudge={() => nudge(1)} faded={atEnd} />}
       {/* STEP B4: グリッド4辺の＋ボタン。編集中のみ */}
-      {isEditMode && <GridEdgeAddButtons onAddRow={onAddRow} onAddCol={onAddCol} />}
+      {isEditMode && <GridEdgeAddButtons onAddRow={handleAddRow} onAddCol={handleAddCol} />}
     </div>
   )
 }

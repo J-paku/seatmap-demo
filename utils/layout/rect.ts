@@ -1,11 +1,10 @@
 // 矩形の基本演算。編集モードの当たり判定と配置計算が共通で使う
-import { clamp } from './geometry'
 
 export type Rect = { x: number; y: number; w: number; h: number }
 
-// §04-1: ゴーストの表示寸法の上限・下限(画面px)。
-// 上限は画面を覆い隠さないため、下限はタッチ標的(44px)を割らないため
-const GHOST_DISPLAY_MAX = { width: 200, height: 140 }
+// ゴーストの表示寸法の下限(画面px)。タッチ標的(44px)を割らないため。
+// 上限クランプは廃止した — 表示を実寸より縮めると「見た目は重なっていないのに
+// 判定は重なっている」が起き、置けない理由が利用者から見えなくなる
 const GHOST_DISPLAY_MIN = 44
 
 // 対象オブジェクトの矩形(rotation は判定に加味しない=AABB)
@@ -28,12 +27,11 @@ export const insetRect = (r: Rect, by: number): Rect => ({
   h: Math.max(r.h - by * 2, 0),
 })
 
-// §04-1: ゴーストの表示寸法。実寸×scale を「最大200×140へ縮小・最小44pxへ拡大」に収める。
-// 縦横は独立に丸める(仕様の上限が軸ごとの2値、下限が両軸共通の1値である形をそのまま写す)。
-// 論理矩形(実際に置かれる大きさ)は変えない。ここで決まるのは画面上の見た目だけ
+// ゴーストの表示寸法。実寸×scale をそのまま使い、最小44pxだけ保証する。
+// 表示=当たり判定の等尺が原則(縮めると衝突が見えない)。論理矩形は変えない
 export const clampGhostDisplaySize = (size: { width: number; height: number }) => ({
-  width: clamp(size.width, GHOST_DISPLAY_MIN, GHOST_DISPLAY_MAX.width),
-  height: clamp(size.height, GHOST_DISPLAY_MIN, GHOST_DISPLAY_MAX.height),
+  width: Math.max(size.width, GHOST_DISPLAY_MIN),
+  height: Math.max(size.height, GHOST_DISPLAY_MIN),
 })
 
 // 点(座標)が矩形内部にあるか

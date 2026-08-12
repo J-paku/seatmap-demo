@@ -1,6 +1,8 @@
 import { useEffect } from 'react'
 import { GhostActionBar } from './components/GhostActionBar'
 import { GhostAlignmentGuides } from './components/GhostAlignmentGuides'
+import { GhostBlockedObstacles } from './components/GhostBlockedObstacles'
+import { GhostFloorBoundary } from './components/GhostFloorBoundary'
 import { GhostHint } from './components/GhostHint'
 import { GhostPreview } from './components/GhostPreview'
 import type { GhostRequest } from './type'
@@ -27,7 +29,7 @@ type Props = {
 }
 
 export const GhostPlacementLayer = ({ request, placement, onConfirm, onCancel, onDelete }: Props) => {
-  const { screenRect, screenGuides, blocked } = placement
+  const { screenRect, screenGuides, blocked, blockReason, screenBlockedRects, screenFloorRect } = placement
   // target.type==='reposition' が「移動モード」。新規配置ではラベルバッジ・削除ボタンを出さない
   const mode = request.target.type === 'reposition' ? 'move' : 'create'
 
@@ -47,6 +49,10 @@ export const GhostPlacementLayer = ({ request, placement, onConfirm, onCancel, o
   return (
     <div className={styles.layer}>
       <div className={styles.scrim} />
+      {screenFloorRect && (
+        <GhostFloorBoundary rect={screenFloorRect} isBlocking={blockReason?.kind === 'outside-floor'} />
+      )}
+      <GhostBlockedObstacles rects={screenBlockedRects} />
       <GhostAlignmentGuides guides={screenGuides} />
       <GhostPreview
         rect={screenRect}
@@ -58,7 +64,7 @@ export const GhostPlacementLayer = ({ request, placement, onConfirm, onCancel, o
         onPointerDown={placement.onGhostPointerDown}
         onHandlePointerDown={placement.onHandlePointerDown}
       />
-      <GhostHint rect={screenRect} blocked={blocked} />
+      <GhostHint rect={screenRect} blockReason={blockReason} />
       <GhostActionBar
         label={request.label}
         blocked={blocked}
