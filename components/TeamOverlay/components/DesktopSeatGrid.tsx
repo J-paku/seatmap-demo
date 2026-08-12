@@ -1,7 +1,7 @@
 import { useRef } from 'react'
 import { EditSeatCell } from './EditSeatCell'
 import { EmptyGridCell } from './EmptyGridCell'
-import { GRID_HEADER_TRACK_PX, GridEdgeAddButtons, GridRemoveHeaders } from './GridEdgeControls'
+import { GRID_HEADER_TRACK_PX, GridEdgeAddButtons, GridRemoveHeaders, hasRemovableBand } from './GridEdgeControls'
 import { useGridEdgeInsert } from '../hooks/use-grid-edge-insert'
 import { ScrollHint } from './ScrollHint'
 import { SeatActionOverlay } from './SeatActionOverlay'
@@ -61,7 +61,8 @@ export const DesktopSeatGrid = ({
   const spotlight = highlightSeatId !== null
 
   // 編集中はヘッダー行・列トラック(GRID_HEADER_TRACK_PX)を1本ずつ足すため、既存セルは+1オフセットする
-  const hasGridEdgeControls = isEditMode && editGrid !== null
+  // 空き行・列が無い間はヘッダートラックを作らない(ボタンの出ない空帯で座席が押し出されるため)
+  const hasGridEdgeControls = isEditMode && editGrid !== null && hasRemovableBand(editGrid)
   const rowOffset = hasGridEdgeControls ? 1 : 0
   const colOffset = hasGridEdgeControls ? 1 : 0
 

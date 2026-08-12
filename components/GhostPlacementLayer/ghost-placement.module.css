@@ -272,6 +272,11 @@
   position: absolute;
   bottom: calc(env(safe-area-inset-bottom) + 20px);
   left: 50%;
+  /* left:50% の絶対配置は幅指定が無いと shrink-to-fit 幅が包含ブロックの半分側に
+     押し込まれ、中のボタンまで縮んで「配置」が1文字ずつ縦に折れていた。
+     内容で幅を決め、画面をはみ出さないところで頭打ちにする */
+  width: max-content;
+  max-width: min(96vw, 640px);
   display: flex;
   align-items: center;
   gap: 10px;
@@ -283,24 +288,27 @@
   pointer-events: auto;
 }
 
+/* 対象名は省略しない。「リフレッシュスペ…」では何を置こうとしているのか読めず、
+   置く前の最後の確認という役目を果たさない。入り切らない時は行を増やす側に倒す */
 .actionbarLabel {
-  max-width: 40vw;
-  overflow: hidden;
+  min-width: 0;
   color: var(--color-text-secondary);
   font-size: 12px;
   font-weight: 700;
-  white-space: nowrap;
-  text-overflow: ellipsis;
+  line-height: 1.35;
 }
 
-/* タップ領域44px確保。キャンセル・確定・削除どのボタンにも効かせる */
+/* タップ領域44px確保。キャンセル・確定・削除どのボタンにも効かせる。
+   ボタンは縮ませない・折り返させない(縮むと文字が縦積みになる) */
 .actionbar button {
   min-height: 44px;
   padding: 0 16px;
   display: inline-flex;
+  flex-shrink: 0;
   align-items: center;
   justify-content: center;
   gap: 4px;
+  white-space: nowrap;
 }
 
 .actionbar button :global(.material-symbols-outlined) {

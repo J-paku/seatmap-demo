@@ -13,6 +13,16 @@ import styles from '../team-overlay-modal.module.css'
 // ヘッダー行・列トラックの一辺(px)。呼び出し側のgridTemplateColumns/gridTemplateRowsと1箇所で揃える
 export const GRID_HEADER_TRACK_PX = 28
 
+// 削除ボタンを出す空き行・空き列が1つでもあるか。無ければヘッダートラックは
+// ボタンの無い空帯になり、座席が上と左へ28pxずつ押し出されて見えるので予約しない
+export const hasRemovableBand = (grid: SeatGridDraft): boolean => {
+  const rows = grid.cells.length
+  const cols = grid.cells[0]?.length ?? 0
+  for (let row = 0; row < rows; row += 1) if (isRowEmpty(grid, row)) return true
+  for (let col = 0; col < cols; col += 1) if (isColEmpty(grid, col)) return true
+  return false
+}
+
 type EdgeAddProps = {
   onAddRow: (edge: 'top' | 'bottom') => void
   onAddCol: (edge: 'left' | 'right') => void
