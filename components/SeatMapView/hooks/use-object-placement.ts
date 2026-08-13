@@ -5,7 +5,7 @@ import { siblingRectsForObject } from '@/components/SeatMapCanvas/utils/sibling-
 import { SEATMAP_BG_ID } from '@/components/SheetShell'
 import { useGhostPlacement } from '@/hooks/use-ghost-placement'
 import type { GhostPlacement } from '@/hooks/use-ghost-placement'
-import type { GaroonFacility } from '@/lib/garoon-facilities'
+import type { GaroonFacility } from '@/lib/garoon/facilities'
 import type { UseLayoutEditorApi } from '@/hooks/use-layout-editor/use-layout-editor'
 import { FURNITURE_DEFAULT_SIZE, FURNITURE_KIND_LABEL } from '@/utils/furniture-catalog'
 import { rectOfRef } from '@/utils/layout/layout-objects'

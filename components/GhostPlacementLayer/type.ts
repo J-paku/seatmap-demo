@@ -1,4 +1,4 @@
-import type { GaroonFacility } from '@/lib/garoon-facilities'
+import type { GaroonFacility } from '@/lib/garoon/facilities'
 import type { Rect } from '@/utils/layout/rect'
 import type { FurnitureKind, LayoutObjectRef } from '@/types'
 

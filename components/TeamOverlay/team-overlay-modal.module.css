@@ -587,6 +587,12 @@
   color: var(--color-text-muted);
 }
 
+/* Garoon同期の注記(GaroonSyncNote)。.syncBadge の直下1行。TrashDropZone との間隔は
+   .syncBadge の margin-bottom(8px)に揃える */
+.syncNote {
+  margin-bottom: 8px;
+}
+
 /* 足した直後の行・列。どこが増えたかを一度だけ点灯で示す。
    .dropTarget と併用しうるので、こちらは背景を持たず animation だけを足す */
 .isInserted {

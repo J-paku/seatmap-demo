@@ -180,6 +180,20 @@
   --color-status-vacation: #6b7280;
 }
 
+/* Garoon 表記の単語だけをさりげなく強調するブランド色。バッジ・枠は伴わず文字色のみで使う。
+   light は白系カード地で 4.5:1 以上を確保した濃緑、dark 系は同系統の明るい緑に振る */
+.seat-map-root {
+  --color-garoon-brand: #2e6b4f;
+}
+
+.seat-map-root[data-theme='dracula'] {
+  --color-garoon-brand: #83d9a8;
+}
+
+.seat-map-root[data-theme='kuroxxx'] {
+  --color-garoon-brand: #9bc9a4;
+}
+
 /* ゴースト配置の整列ガイド線色(§04-3)。原本仕様の固定色で全テーマ共通 */
 .seat-map-root {
   --color-align-guide: #e74c3c;

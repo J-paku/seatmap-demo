@@ -5,6 +5,9 @@
 // 直接書くと次の再生成で消える。マスタは生成器の管轄外(Garoon 側の登録簿)なのでここへ置く。
 //
 // DECISION D3: デモは接続済み固定・マスタは目視できる固定配列。
+//
+// このマスタは実際には Garoon REST `GET /api/v1/schedule/facilities` の取得結果に相当する
+// (本デモでは接続を模倣せず、固定配列で代用している)。
 
 export type GaroonFacility = {
   // 予定システムの施設ID。レイアウト上の Facility.id ではなく Facility.facilityId と突き合わせる

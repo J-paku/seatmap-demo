@@ -58,6 +58,16 @@ flowchart LR
 | 本人特定 | Garoon 認証 | 画面右上の役割トグル(閲覧⇄編集) |
 | 電話帳登録 | iOS アプリ(Swift)からワンタップで登録 | ボタンは表示するが、ブラウザ版のため保存はされない |
 
+## データ連携
+
+モックデータだが、取得境界は Garoon API に合わせて設計している(`lib/garoon/`)。
+
+- 予定: REST `GET /api/v1/schedule/events`。対象期間・対象者を絞った問い合わせが基本で、ページングの負担が実用範囲に収まるため
+- 組織: SOAP(Base API)で一括取得。REST の組織APIは1リクエストの件数上限があり全組織取得にページングが要るため、組織のみSOAPを採用
+- 施設: REST(`GET /api/v1/schedule/facilities`。詳細は `lib/garoon/facilities.ts`)
+
+実接続へ切り替える場合は、`lib/garoon/` のモック境界を差し替えるだけで成立する構成にしている。
+
 ## 設計で迷った3点
 
 <details>

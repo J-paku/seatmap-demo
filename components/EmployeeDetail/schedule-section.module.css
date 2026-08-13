@@ -172,6 +172,13 @@
   color: var(--color-text-secondary);
 }
 
+/* Garoon同期の注記(GaroonSyncNote)。.scheduleUpdatedAt の直下に続く1行として右寄せを揃える */
+.scheduleSyncNote {
+  padding-top: 2px;
+  padding-right: 4px;
+  text-align: right;
+}
+
 .scheduleLoading {
   display: flex;
   flex-direction: column;

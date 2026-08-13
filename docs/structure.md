@@ -39,7 +39,7 @@ seatmap-demo/
 │                                use-layout-editor/ 3本(use-edit-session.ts 等)の計21本)
 ├─ lib/                          アプリ外部との接続
 │                                (fetch-mock.ts / mock-loader.ts / layout-persistence.ts / avatar-persistence.ts /
-│                                 garoon-facilities.ts / seat/ 配下のお気に入り永続化)
+│                                 garoon/facilities.ts / seat/ 配下のお気に入り永続化)
 ├─ utils/                        純関数(layout/geometry.ts / layout/seat-shape.ts / layout/team-create-grid.ts /
 │                                 layout/spiral-placement.ts / layout/team-import.ts / avatar/ / gesture/ /
 │                                 presence.ts / employee-search.ts 等)

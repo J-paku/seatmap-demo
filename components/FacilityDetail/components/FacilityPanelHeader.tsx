@@ -1,4 +1,5 @@
 import { useScheduleRefresh } from '@/hooks/use-schedule-refresh'
+import { GaroonSyncNote } from '@/components/GaroonSyncNote'
 import { FACILITY_COLOR, FACILITY_STATUS_LABEL } from '@/utils/facility-status'
 import type { FacilityStatus } from '@/types'
 import styles from '../facility-detail.module.css'
@@ -19,39 +20,43 @@ export const FacilityPanelHeader = ({ facilityName, status, isTodaySelected, onC
   const color = FACILITY_COLOR[status]
 
   return (
-    <div className={styles.facPanelHeader}>
-      <span className={`icon-msr-filled ${styles.facPanelIcon}`} aria-hidden='true'>
-        meeting_room
-      </span>
-      <span className={styles.facPanelName}>{facilityName}</span>
-      <button
-        type='button'
-        className={styles.facRefreshBtn}
-        aria-label='会議室情報を更新'
-        disabled={isRefreshing || cooldown > 0}
-        onClick={refresh}
-      >
-        <span className={`icon-msr-filled ${styles.facRefreshIcon}${isRefreshing ? ` ${styles.isRefreshing}` : ''}`} aria-hidden='true'>
-          refresh
+    <>
+      <div className={styles.facPanelHeader}>
+        <span className={`icon-msr-filled ${styles.facPanelIcon}`} aria-hidden='true'>
+          meeting_room
         </span>
-        {cooldown > 0 && <span className={styles.facRefreshCooldown}>{cooldown}s</span>}
-      </button>
-      <div className={styles.facPanelRight}>
-        {isTodaySelected && (
-          <span className={styles.facBadge} style={{ background: color.bg, color: color.text, borderColor: color.border }}>
-            {FACILITY_STATUS_LABEL[status]}
-          </span>
-        )}
+        <span className={styles.facPanelName}>{facilityName}</span>
         <button
           type='button'
-          className={sheetStyles.close}
-          aria-label='パネルを閉じる'
-          data-sheet-initial-focus
-          onClick={onClose}
+          className={styles.facRefreshBtn}
+          aria-label='会議室情報を更新'
+          disabled={isRefreshing || cooldown > 0}
+          onClick={refresh}
         >
-          ✕
+          <span className={`icon-msr-filled ${styles.facRefreshIcon}${isRefreshing ? ` ${styles.isRefreshing}` : ''}`} aria-hidden='true'>
+            refresh
+          </span>
+          {cooldown > 0 && <span className={styles.facRefreshCooldown}>{cooldown}s</span>}
         </button>
+        <div className={styles.facPanelRight}>
+          {isTodaySelected && (
+            <span className={styles.facBadge} style={{ background: color.bg, color: color.text, borderColor: color.border }}>
+              {FACILITY_STATUS_LABEL[status]}
+            </span>
+          )}
+          <button
+            type='button'
+            className={sheetStyles.close}
+            aria-label='パネルを閉じる'
+            data-sheet-initial-focus
+            onClick={onClose}
+          >
+            ✕
+          </button>
+        </div>
       </div>
-    </div>
+      {/* 更新ボタンの直下1行で、予定データの出所が Garoon であることをさりげなく示す */}
+      <GaroonSyncNote />
+    </>
   )
 }

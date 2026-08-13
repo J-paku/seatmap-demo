@@ -2,6 +2,7 @@ import styles from '../team-overlay-modal.module.css'
 import { useQuantizedClock } from '@/hooks/use-quantized-clock'
 import { jstClockLabel } from '@/utils/format'
 import { triggerHaptic } from '@/utils/haptic'
+import { GaroonSyncNote } from '@/components/GaroonSyncNote'
 
 // 座席配置ヘッダーの直下に出す同期状態バッジ。反映時刻と鮮度、再取得の入口を1行で持つ
 //
@@ -50,41 +51,49 @@ export const ScheduleSyncBadge = ({ isLoading, lastUpdatedMs, cooldown, onRetry,
   const isRetryDisabled = isLoading || cooldown > 0
 
   return (
-    <div className={styles.syncBadge} style={{ paddingLeft: sidePadding, paddingRight: sidePadding }}>
-      <span className={`icon-msr-filled ${styles.syncBadgeIcon}`} aria-hidden='true'>
-        {isLoading ? 'sync' : 'verified'}
-      </span>
-      <span>{isLoading ? '最新スケジュールを取得中' : '最新スケジュールを反映済み'}</span>
-      {!isLoading && lastUpdatedMs !== null && (
-        <span className={styles.syncTime}>
-          {jstClockLabel(lastUpdatedMs)}
-          <span className={`${styles.syncRelative} ${relativeToneClass(lastUpdatedMs, nowMs)}`}>
-            ({relativeLabel(lastUpdatedMs, nowMs)})
+    <>
+      <div className={styles.syncBadge} style={{ paddingLeft: sidePadding, paddingRight: sidePadding }}>
+        <span className={`icon-msr-filled ${styles.syncBadgeIcon}`} aria-hidden='true'>
+          {isLoading ? 'sync' : 'verified'}
+        </span>
+        <span>{isLoading ? '最新スケジュールを取得中' : '最新スケジュールを反映済み'}</span>
+        {!isLoading && lastUpdatedMs !== null && (
+          <span className={styles.syncTime}>
+            {jstClockLabel(lastUpdatedMs)}
+            <span className={`${styles.syncRelative} ${relativeToneClass(lastUpdatedMs, nowMs)}`}>
+              ({relativeLabel(lastUpdatedMs, nowMs)})
+            </span>
+            更新済み
           </span>
-          更新済み
-        </span>
-      )}
-      <button
-        type='button'
-        className={styles.syncRetry}
-        disabled={isRetryDisabled}
-        aria-label={
-          isLoading
-            ? 'スケジュール再取得中'
-            : cooldown > 0
-              ? `スケジュールを再取得 (${cooldown}秒後に再取得可能)`
-              : 'スケジュールを再取得'
-        }
-        onClick={() => {
-          triggerHaptic('light')
-          onRetry()
-        }}
-      >
-        <span className={`icon-msr-filled ${styles.syncRetryIcon}`} aria-hidden='true'>
-          refresh
-        </span>
-        {!isLoading && cooldown > 0 && <span className={styles.syncCooldown}>{cooldown}s</span>}
-      </button>
-    </div>
+        )}
+        <button
+          type='button'
+          className={styles.syncRetry}
+          disabled={isRetryDisabled}
+          aria-label={
+            isLoading
+              ? 'スケジュール再取得中'
+              : cooldown > 0
+                ? `スケジュールを再取得 (${cooldown}秒後に再取得可能)`
+                : 'スケジュールを再取得'
+          }
+          onClick={() => {
+            triggerHaptic('light')
+            onRetry()
+          }}
+        >
+          <span className={`icon-msr-filled ${styles.syncRetryIcon}`} aria-hidden='true'>
+            refresh
+          </span>
+          {!isLoading && cooldown > 0 && <span className={styles.syncCooldown}>{cooldown}s</span>}
+        </button>
+      </div>
+      {/* 同期バッジの直下1行で、予定データの出所が Garoon であることをさりげなく示す。
+          左右の余白はバッジ本体と同じ sidePadding に揃える */}
+      <GaroonSyncNote
+        className={styles.syncNote}
+        style={{ paddingLeft: sidePadding, paddingRight: sidePadding }}
+      />
+    </>
   )
 }

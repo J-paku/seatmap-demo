@@ -1,0 +1,14 @@
+/* Garoon同期の注記。既存の補助キャプション(schedule-section.module.css の .scheduleUpdatedAt 等)と
+   同じ薄いトーンに揃える。配置・余白は呼び出し側が className で追加する */
+.garoonSyncNote {
+  margin: 0;
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--color-text-muted);
+}
+
+/* 「Garoon」の語だけを地色から一段浮かせる。バッジ・枠・アニメーションは持たない */
+.brand {
+  color: var(--color-garoon-brand);
+  font-weight: 500;
+}

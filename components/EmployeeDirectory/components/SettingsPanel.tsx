@@ -6,6 +6,8 @@ import type { ThemeMode } from '@/types'
 import { triggerHaptic } from '@/utils/haptic'
 import { useLayoutSource } from '@/contexts/layout-source-context'
 import { floorNameOf, DEFAULT_FLOOR_ID } from '@/utils/floors'
+import { GAROON_SCHEDULE_EVENTS_PATH } from '@/lib/garoon/schedule'
+import { useScheduleRefresh } from '@/hooks/use-schedule-refresh'
 
 interface SettingsPanelProps {
   onBack: () => void
@@ -28,6 +30,7 @@ export function SettingsPanel({
   onResetLayout,
 }: SettingsPanelProps) {
   const [isRefreshing, setIsRefreshing] = useState(false)
+  const { lastUpdatedLabel } = useScheduleRefresh()
   const { source } = useLayoutSource()
   const isViewingCustomLayout = source.type === 'custom'
   // リセット行のラベルに出す対象フロア名。公式表示中は表示中フロア、カスタム表示中は
@@ -153,6 +156,40 @@ export function SettingsPanel({
           </span>
           <span className='text-sm'>スケジュール更新</span>
         </button>
+
+        {/* 予定連携: Garoon接続状態の表示のみ(操作不可)。title にエンドポイントを持たせ
+            ホバー時だけさりげなく見せる */}
+        <div
+          className='flex w-full items-center gap-3 px-4 py-4'
+          style={{
+            color: 'var(--color-text-primary)',
+            borderBottom: `1px solid var(--color-border)`,
+          }}
+          title={GAROON_SCHEDULE_EVENTS_PATH}
+        >
+          <span
+            className='icon-msr-filled text-lg'
+            aria-hidden='true'
+            style={{ color: 'var(--color-accent)' }}
+          >
+            sync_alt
+          </span>
+          <span className='text-sm flex-1'>予定連携</span>
+          <span className='flex flex-col items-end gap-0.5 text-sm' style={{ color: 'var(--color-text-muted)' }}>
+            <span className='flex items-center gap-1.5'>
+              <span aria-hidden='true' style={{ color: 'var(--color-success)' }}>
+                ●
+              </span>
+              <span style={{ color: 'var(--color-garoon-brand)', fontWeight: 500 }}>Garoon</span>
+              {' 接続済み'}
+            </span>
+            {lastUpdatedLabel && (
+              <span className='text-xs' style={{ color: 'var(--color-text-secondary)' }}>
+                {`最終同期 ${lastUpdatedLabel}`}
+              </span>
+            )}
+          </span>
+        </div>
 
         {/* テーマ */}
         <ThemeSelector themeMode={themeMode} setTheme={setTheme} />

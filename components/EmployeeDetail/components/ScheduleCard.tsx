@@ -1,4 +1,5 @@
 import { ScheduleRow } from './ScheduleRow'
+import { GaroonSyncNote } from '@/components/GaroonSyncNote'
 import type { ScheduleEvent } from '@/types'
 import styles from '../schedule-section.module.css'
 
@@ -89,6 +90,7 @@ export const ScheduleCard = ({
             <p className={styles.scheduleEmpty}>{isTodaySelected ? '今日の予定はありません' : '予定はありません'}</p>
           )}
           {lastUpdatedLabel && <p className={styles.scheduleUpdatedAt}>最終更新 {lastUpdatedLabel}</p>}
+          <GaroonSyncNote className={styles.scheduleSyncNote} />
           {isLoading && (
             <div className={`${styles.scheduleLoading} ${events.length > 0 ? styles.scheduleLoadingOverlay : styles.scheduleLoadingCenter}`}>
               <span className={styles.scheduleSpinner} />
