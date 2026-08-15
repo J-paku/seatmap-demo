@@ -38,10 +38,17 @@
 
 ```mermaid
 flowchart LR
-  C["ブラウザ / iOS アプリ"] --> P["Pleasanter<br>オンプレ・社外公開"]
-  P -->|"サーバースクリプト"| A["Akamai<br>リバースプロキシ"]
-  A -->|"Garoon API"| G["Garoon<br>オンプレ・社内限定"]
+  B["ブラウザ"] --> P["Pleasanter"]
+  I["iOSアプリ"] --> P
+  P -->|"サーバー間API"| A["Akamaiプロキシ"]
+  subgraph Z["社内限定"]
+    G["Garoon"]
+  end
+  A --> G
+  style Z fill:none,stroke-dasharray:6 4
 ```
+
+<sub>* デモはmock JSON</sub>
 
 そこで、両方のネットワークに接続できる Akamai をリバースプロキシとして中継点に置きました。クライアントが見るのは Pleasanter だけです。予定が必要になると Pleasanter のサーバースクリプトが Akamai へリクエストを送り、Akamai が Garoon の API を呼んで結果を返します。社内限定のリソースを社外へ開かずに、外出先からでも予定を参照できます。この経路の設計と実装も担当しました。
 
