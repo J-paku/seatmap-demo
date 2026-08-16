@@ -21,10 +21,13 @@ export function AnnouncementToast({ message, tone, visible }: AnnouncementToastP
   const { icon, color } = TONE[tone]
 
   return (
+    // 読み上げは AnnouncementProvider が隣に描く sr-only の LiveRegion 一本に集約する。
+    // ここにも role='status' / aria-live を付けると、同じ文言を持つライブリージョンが2つ
+    // 同時に更新され、スクリーンリーダーが同じ内容を二度読む。両方とも単体では正しい
+    // マークアップなので axe では検出できない。SeatMapView の座席未設定通知も同じ分担
+    // (視覚トーストは素の要素、読み上げは LiveRegion)になっている
     <div
-      role='status'
-      aria-live='polite'
-      aria-atomic='true'
+      aria-hidden='true'
       className={[
         'fixed left-1/2 -translate-x-1/2 flex justify-center',
         // 上部固定。完了通知を中央の「元に戻す」トーストと分離して重なりを回避
