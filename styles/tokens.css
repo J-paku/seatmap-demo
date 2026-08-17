@@ -259,8 +259,9 @@
   /* 全シート共通幅。従来の width + max-width の2宣言を1本に畳んだもの(値は等価) */
   --sheet-width: min(100% - 24px, 448px);
   --sheet-radius: 16px;
-  /* 単独で開くシート(社員詳細)の高さ */
-  --sheet-height-base: min(88dvh, calc(100dvh - 2 * var(--sheet-safe-inset)));
+  /* 単独で開くシート(社員詳細)の高さ。モバイルはボトムシート(下端吸着)なので
+     上側の safe-inset だけ空ければよく、中央モーダル時代の 2倍クランプより高くできる */
+  --sheet-height-base: min(94dvh, calc(100dvh - var(--sheet-safe-inset)));
   /* 施設詳細は今回の対象外なので従来値のまま移設するだけ */
   --sheet-height-facility: min(84dvh, calc(100dvh - 2 * var(--sheet-safe-inset)));
   /* 積んだシートが伸び切った時でも親シートを必ず覗かせる帯(片側) */

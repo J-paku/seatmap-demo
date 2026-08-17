@@ -36,6 +36,22 @@
   height: var(--sheet-height-base);
 }
 
+/* モバイルの社員詳細だけはボトムシート(全幅・下端吸着)。上の中央モーダル化の例外だが、
+   位置決めは inset+margin のみで行い transform は使わないので下スワイプ閉じと両立する */
+@media (max-width: 639px) {
+  .employee {
+    inset: auto 0 0 0;
+    margin: 0;
+    width: 100%;
+    border-radius: var(--sheet-radius) var(--sheet-radius) 0 0;
+    animation: slideUp 0.25s ease-out;
+  }
+  /* 下端吸着なのでホームインジケータ帯ぶんだけ本文下余白を足す */
+  .employee .scroll {
+    padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+  }
+}
+
 .facility {
   max-height: var(--sheet-height-facility);
 }
