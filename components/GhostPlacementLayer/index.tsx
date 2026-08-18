@@ -28,7 +28,7 @@ type Props = {
 }
 
 export const GhostPlacementLayer = ({ request, placement, onConfirm, onCancel, onDelete }: Props) => {
-  const { screenRect, screenGuides, blocked, screenBlockedRects } = placement
+  const { screenRect, screenGuides, blocked, screenBlockedRects, isDragging, resizingHandle } = placement
   // target.type==='reposition' が「移動モード」。新規配置ではラベルバッジ・削除ボタンを出さない
   const mode = request.target.type === 'reposition' ? 'move' : 'create'
 
@@ -55,6 +55,8 @@ export const GhostPlacementLayer = ({ request, placement, onConfirm, onCancel, o
         outline={request.outline}
         blocked={blocked}
         resizable={request.resizable}
+        isDragging={isDragging}
+        resizingHandle={resizingHandle}
         mode={mode}
         label={request.label}
         onPointerDown={placement.onGhostPointerDown}

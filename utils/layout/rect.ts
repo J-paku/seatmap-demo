@@ -1,4 +1,5 @@
 // 矩形の基本演算。編集モードの当たり判定と配置計算が共通で使う
+import { clamp } from './geometry'
 
 export type Rect = { x: number; y: number; w: number; h: number }
 
@@ -46,11 +47,29 @@ export const insetRect = (r: Rect, by: number): Rect => ({
   h: Math.max(r.h - by * 2, 0),
 })
 
-// ゴーストの表示寸法。実寸×scale をそのまま使い、最小44pxだけ保証する。
-// 表示=当たり判定の等尺が原則(縮めると衝突が見えない)。論理矩形は変えない
-export const clampGhostDisplaySize = (size: { width: number; height: number }) => ({
-  width: Math.max(size.width, GHOST_DISPLAY_MIN),
-  height: Math.max(size.height, GHOST_DISPLAY_MIN),
+// ゴーストの表示寸法。実寸×scale(=フットプリント)をそのまま使い、短辺が 44px を割るときだけ
+// 両軸へ同じ倍率を掛けて持ち上げる。軸ごとに別々へ引き上げると縦横比が壊れ、
+// 描かれた箱が実物と別の形になる。上限クランプは設けない —
+// 表示を実寸より縮めると「見た目は重なっていないのに置けない」が起き、理由が見えなくなる
+export const ghostDisplaySize = (footprint: { width: number; height: number }) => {
+  const shorter = Math.min(footprint.width, footprint.height)
+  // 面積が無い矩形には保つべき縦横比が無い。0除算を作らないための退避
+  if (shorter <= 0) return { width: GHOST_DISPLAY_MIN, height: GHOST_DISPLAY_MIN }
+  const grow = Math.max(1, GHOST_DISPLAY_MIN / shorter)
+  return { width: footprint.width * grow, height: footprint.height * grow }
+}
+
+// ゴースト中心をキャンバス矩形の内側へ収める。半径はフットプリントの半分そのままで、
+// キャンバス寸法で頭打ちにしない — フットプリントがキャンバスより大きいと下限が上限を
+// 追い越し、clamp の Math.min 側が勝って「右辺・下辺が端に貼り付いて止まる」に落ちる。
+// 中央へ寄せ直す動きは入れない(掴んだ位置から勝手に離れる)
+export const clampGhostCenter = (
+  center: { x: number; y: number },
+  canvas: { left: number; top: number; right: number; bottom: number },
+  footprint: { width: number; height: number }
+) => ({
+  x: clamp(center.x, canvas.left + footprint.width / 2, canvas.right - footprint.width / 2),
+  y: clamp(center.y, canvas.top + footprint.height / 2, canvas.bottom - footprint.height / 2),
 })
 
 // 点(座標)が矩形内部にあるか

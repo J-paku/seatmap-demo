@@ -6,6 +6,7 @@ import { SEATMAP_BG_ID } from '@/components/SheetShell'
 import { useGhostPlacement } from '@/hooks/use-ghost-placement'
 import type { GhostPlacement } from '@/hooks/use-ghost-placement'
 import type { GaroonFacility } from '@/lib/garoon/facilities'
+import { MSG_OVERLAP } from '@/hooks/use-layout-editor/use-layout-editor'
 import type { UseLayoutEditorApi } from '@/hooks/use-layout-editor/use-layout-editor'
 import { FURNITURE_DEFAULT_SIZE, FURNITURE_KIND_LABEL } from '@/utils/furniture-catalog'
 import { rectOfRef } from '@/utils/layout/layout-objects'
@@ -299,6 +300,12 @@ export const useObjectPlacement = (
     if (!request) return
     const rect = placement.commit()
     if (!rect) return
+    // 描画時の判定と指を離す瞬間の間に地図が動くと、commit() の再吸着で矩形がずれる。
+    // 誰も判定していない矩形を発行しないよう、発行の直前に同じ規則へもう一度通す
+    if (blockReason(rect)) {
+      editor.showError(MSG_OVERLAP)
+      return
+    }
     const { target } = request
     // §02-2: チームは「配置」で位置だけを確定し、生成はダイアログの「作成」まで待つ
     if (target.type === 'add-team') {
@@ -321,7 +328,7 @@ export const useObjectPlacement = (
     if (!ok) return
     setFlow({ step: 'idle' })
     onPlaced?.(rect, target.type)
-  }, [request, placement, editor, onPlaced])
+  }, [request, placement, editor, onPlaced, blockReason])
 
   return useMemo(
     () => ({

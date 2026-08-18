@@ -4,7 +4,8 @@ import {
   rectOf,
   rectsIntersect,
   insetRect,
-  clampGhostDisplaySize,
+  ghostDisplaySize,
+  clampGhostCenter,
   rotatedRectOf,
   pointInRect,
   clampRectToViewBox,
@@ -132,21 +133,65 @@ describe('insetRect', () => {
   })
 })
 
-describe('clampGhostDisplaySize', () => {
-  it('最小値(44px)を下回るサイズは44pxへ引き上げる', () => {
-    expect(clampGhostDisplaySize({ width: 20, height: 30 })).toEqual({ width: 44, height: 44 })
+describe('ghostDisplaySize', () => {
+  it('短辺が44px以上ならフットプリントをそのまま使う', () => {
+    expect(ghostDisplaySize({ width: 200, height: 150 })).toEqual({ width: 200, height: 150 })
   })
 
-  it('最小値ちょうどは無変化', () => {
-    expect(clampGhostDisplaySize({ width: 44, height: 44 })).toEqual({ width: 44, height: 44 })
+  it('短辺ちょうど44pxは無変化', () => {
+    expect(ghostDisplaySize({ width: 44, height: 44 })).toEqual({ width: 44, height: 44 })
   })
 
-  it('上限クランプは無いため大きいサイズはそのまま通す', () => {
-    expect(clampGhostDisplaySize({ width: 500, height: 800 })).toEqual({ width: 500, height: 800 })
+  it('横長は短辺基準の倍率を両軸へ等比で当てる', () => {
+    const size = ghostDisplaySize({ width: 100, height: 10 })
+    expect(size.width).toBeCloseTo(440, 3)
+    expect(size.height).toBeCloseTo(44, 3)
   })
 
-  it('片方だけ最小値未満のときはその軸だけ引き上げる', () => {
-    expect(clampGhostDisplaySize({ width: 10, height: 100 })).toEqual({ width: 44, height: 100 })
+  it('縦長でも同じ倍率が両軸へ掛かる', () => {
+    const size = ghostDisplaySize({ width: 10, height: 100 })
+    expect(size.width).toBeCloseTo(44, 3)
+    expect(size.height).toBeCloseTo(440, 3)
+  })
+
+  it('倍率は短辺で決まる(20×30 → 44×66)', () => {
+    const size = ghostDisplaySize({ width: 20, height: 30 })
+    expect(size.width).toBeCloseTo(44, 3)
+    expect(size.height).toBeCloseTo(66, 3)
+  })
+
+  it('小数倍率でも縦横比を保つ(42×30 → 61.6×44)', () => {
+    const size = ghostDisplaySize({ width: 42, height: 30 })
+    expect(size.width).toBeCloseTo(61.6, 3)
+    expect(size.height).toBeCloseTo(44, 3)
+  })
+
+  it('面積0は保つべき縦横比が無いので44px角へ退避する', () => {
+    expect(ghostDisplaySize({ width: 0, height: 0 })).toEqual({ width: 44, height: 44 })
+  })
+})
+
+describe('clampGhostCenter', () => {
+  const canvas = { left: 0, top: 0, right: 1000, bottom: 800 }
+
+  it('内側なら無変化', () => {
+    expect(clampGhostCenter({ x: 500, y: 400 }, canvas, { width: 200, height: 100 })).toEqual({ x: 500, y: 400 })
+  })
+
+  it('左上では辺がキャンバス端に接する位置で止まる', () => {
+    expect(clampGhostCenter({ x: 10, y: 10 }, canvas, { width: 200, height: 100 })).toEqual({ x: 100, y: 50 })
+  })
+
+  it('右下でも辺が端に接する位置で止まる', () => {
+    expect(clampGhostCenter({ x: 5000, y: 5000 }, canvas, { width: 200, height: 100 })).toEqual({ x: 900, y: 750 })
+  })
+
+  it('幅がキャンバスを超えると右辺が右端に貼り付く(中央へ寄せ直さない)', () => {
+    expect(clampGhostCenter({ x: 500, y: 400 }, canvas, { width: 2000, height: 100 })).toEqual({ x: 0, y: 400 })
+  })
+
+  it('幅超過時はどこを指しても同じ場所で止まる', () => {
+    expect(clampGhostCenter({ x: 900, y: 400 }, canvas, { width: 2000, height: 100 })).toEqual({ x: 0, y: 400 })
   })
 })
 

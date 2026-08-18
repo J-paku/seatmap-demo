@@ -1,6 +1,6 @@
 {
   "$schema": "https://unpkg.com/knip@5/schema.json",
-  "entry": ["pages/**/*.{ts,tsx}", "scripts/generate-mocks.mjs", "scripts/verify-s1.js", "scripts/verify-schedule-facility.mjs", "scripts/run-all-checks.mjs", "scripts/verify-edit-anchors.js", "scripts/verify-offscreen-indicator.mjs", "scripts/verify-ghost.js", "scripts/run-ghost-checks.mjs"],
+  "entry": ["pages/**/*.{ts,tsx}", "scripts/generate-mocks.mjs", "scripts/verify-s1.js", "scripts/verify-schedule-facility.mjs", "scripts/run-all-checks.mjs", "scripts/verify-edit-anchors.js", "scripts/verify-offscreen-indicator.mjs", "scripts/verify-ghost.js", "scripts/verify-ghost-state.js", "scripts/run-ghost-checks.mjs"],
   "project": ["**/*.{ts,tsx,mjs,js}"],
   "ignoreDependencies": ["tailwindcss"],
   "ignore": ["lib/garoon/org.ts"]

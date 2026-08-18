@@ -9,31 +9,40 @@ export const RESIZE_HANDLES: readonly ResizeHandle[] = ['nw', 'n', 'ne', 'e', 's
 
 export type ResizeLimits = { minW: number; minH: number; max: number }
 
-// dx / dy は掴んでからの移動量。非制御軸は現状を維持する。
+// 掴んだハンドルの対辺をアンカーとして固定し、アンカーからポインタまでの「絶対距離」を
+// 制御軸の寸法にする。差分加算ではないので、掴んだ瞬間の指と辺のズレは最初の1移動で吸収され、
+// アンカーを跨いで引くと箱は反対側へ回り込まず同じ側で鏡像に伸び直す。
+// 座標系は論理(viewBox)で受ける — ジェスチャー中にピンチが入ってもアンカーの論理位置は動かない。
 // 最小値を軸ごとに持つのは、会議室が座席1つ分(105×75)を下回らないようにするため
-export const resizeRect = (
+export const resizeRectToPointer = (
   rect: Rect,
   handle: ResizeHandle,
-  dx: number,
-  dy: number,
+  pointer: { x: number; y: number },
   limits: ResizeLimits
 ): Rect => {
   const { minW, minH, max } = limits
   let { x, y, w, h } = rect
 
   if (handle.includes('e')) {
-    w = clamp(rect.w + dx, minW, max)
+    // 西辺がアンカー。東へ引いても西へ跨いでも、幅はアンカーからの距離そのもの
+    const ax = rect.x
+    w = clamp(Math.abs(pointer.x - ax), minW, max)
+    x = ax
   } else if (handle.includes('w')) {
-    w = clamp(rect.w - dx, minW, max)
-    // 右エッジをアンカーにするので、幅が縮んだぶんだけ左へ戻す
-    x = rect.x + rect.w - w
+    // 東辺がアンカー。原点はアンカーから幅ぶん戻した位置
+    const ax = rect.x + rect.w
+    w = clamp(Math.abs(ax - pointer.x), minW, max)
+    x = ax - w
   }
 
   if (handle.includes('s')) {
-    h = clamp(rect.h + dy, minH, max)
+    const ay = rect.y
+    h = clamp(Math.abs(pointer.y - ay), minH, max)
+    y = ay
   } else if (handle.includes('n')) {
-    h = clamp(rect.h - dy, minH, max)
-    y = rect.y + rect.h - h
+    const ay = rect.y + rect.h
+    h = clamp(Math.abs(ay - pointer.y), minH, max)
+    y = ay - h
   }
 
   return { x, y, w, h }

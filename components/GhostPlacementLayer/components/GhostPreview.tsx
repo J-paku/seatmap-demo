@@ -22,6 +22,10 @@ type Props = {
   outline: 'solid' | 'dashed'
   blocked: boolean
   resizable: boolean
+  // 枠を掴んで移動している間だけ true
+  isDragging: boolean
+  // リサイズ中に掴んでいるハンドル。掴んだ1つだけを強調するために要る
+  resizingHandle: ResizeHandle | null
   // 移動モード('reposition')のときだけ枠上部にラベルバッジを出す(§04-2)
   mode: 'create' | 'move'
   label: string
@@ -34,16 +38,20 @@ export const GhostPreview = ({
   outline,
   blocked,
   resizable,
+  isDragging,
+  resizingHandle,
   mode,
   label,
   onPointerDown,
   onHandlePointerDown,
 }: Props) => (
   <div
-    className={`${styles.preview}${outline === 'dashed' ? ` ${styles.isDashed}` : ''}${blocked ? ` ${styles.isBlocked}` : ''}`}
+    className={`${styles.preview}${outline === 'dashed' ? ` ${styles.isDashed}` : ''}${blocked ? ` ${styles.isBlocked}` : ''}${isDragging ? ` ${styles.isDragging}` : ''}`}
     style={rect}
     onPointerDown={onPointerDown}
     role='presentation'
+    data-ghost='frame'
+    data-ghost-state={isDragging ? 'dragging' : resizingHandle ? 'resizing' : 'idle'}
   >
     {mode === 'move' && (
       <span className={styles.moveLabel}>
@@ -65,7 +73,7 @@ export const GhostPreview = ({
       RESIZE_HANDLES.map((handle) => (
         <span
           key={handle}
-          className={`${styles.handle} ${HANDLE_CLASS[handle]}`}
+          className={`${styles.handle} ${HANDLE_CLASS[handle]}${resizingHandle === handle ? ` ${styles.isActive}` : ''}`}
           onPointerDown={(e) => onHandlePointerDown(handle, e)}
           role='presentation'
           aria-label='サイズを変更'

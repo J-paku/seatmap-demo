@@ -60,7 +60,7 @@ export type UseLayoutEditorApi = {
 }
 
 const MSG_FACILITY = '設備と重なるため配置できません'
-const MSG_OVERLAP = 'ここには配置できません'
+export const MSG_OVERLAP = 'ここには配置できません'
 const MSG_SAVING = '保存中は操作できません'
 
 export const useLayoutEditor = (sourceLayout: SeatLayout | undefined): UseLayoutEditorApi => {

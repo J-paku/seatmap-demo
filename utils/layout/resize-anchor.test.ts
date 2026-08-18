@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { resizeRect, RESIZE_HANDLES } from './resize-anchor'
+import { resizeRectToPointer, RESIZE_HANDLES } from './resize-anchor'
 import type { Rect } from './rect'
 import type { ResizeLimits } from './resize-anchor'
 
@@ -9,70 +9,69 @@ describe('RESIZE_HANDLES', () => {
   })
 })
 
-describe('resizeRect', () => {
+describe('resizeRectToPointer', () => {
   const rect: Rect = { x: 100, y: 100, w: 200, h: 150 }
-  const limits: ResizeLimits = { minW: 50, minH: 50, max: 500 }
+  const limits: ResizeLimits = { minW: 40, minH: 40, max: 2500 }
 
-  it('dx=0,dy=0 なら矩形は無変化(恒等)', () => {
-    expect(resizeRect(rect, 'se', 0, 0, limits)).toEqual(rect)
+  it('"e" 東辺の真上を指すと無変化', () => {
+    expect(resizeRectToPointer(rect, 'e', { x: 300, y: 0 }, limits)).toEqual({ x: 100, y: 100, w: 200, h: 150 })
   })
 
-  it('"e" は幅だけ dx 分伸縮し x は不変。dy は無視される', () => {
-    expect(resizeRect(rect, 'e', 30, 999, limits)).toEqual({ x: 100, y: 100, w: 230, h: 150 })
+  it('"e" 幅はアンカー(西辺)からの距離になる', () => {
+    expect(resizeRectToPointer(rect, 'e', { x: 400, y: 0 }, limits)).toEqual({ x: 100, y: 100, w: 300, h: 150 })
   })
 
-  it('"w" は幅を dx 分縮小し、右エッジ固定のため x が移動する', () => {
-    // w = clamp(200-30,50,500) = 170, x = 100+200-170 = 130
-    expect(resizeRect(rect, 'w', 30, 0, limits)).toEqual({ x: 130, y: 100, w: 170, h: 150 })
+  it('"e" アンカー側へ寄せると縮む', () => {
+    expect(resizeRectToPointer(rect, 'e', { x: 150, y: 0 }, limits)).toEqual({ x: 100, y: 100, w: 50, h: 150 })
   })
 
-  it('"w" は幅が minW を割ると minW にクランプされる', () => {
-    // w = clamp(200-190=10,50,500) = 50, x = 100+200-50 = 250
-    expect(resizeRect(rect, 'w', 190, 0, limits)).toEqual({ x: 250, y: 100, w: 50, h: 150 })
+  it('"e" minW で止まる', () => {
+    expect(resizeRectToPointer(rect, 'e', { x: 120, y: 0 }, limits)).toEqual({ x: 100, y: 100, w: 40, h: 150 })
   })
 
-  it('"e" は幅が max を超えると max にクランプされる', () => {
-    // w = clamp(200+400=600,50,500) = 500, x は不変
-    expect(resizeRect(rect, 'e', 400, 0, limits)).toEqual({ x: 100, y: 100, w: 500, h: 150 })
+  it('"e" アンカーを跨ぐと反対側へ回り込まず同じ側で鏡像に伸び直す', () => {
+    expect(resizeRectToPointer(rect, 'e', { x: 0, y: 0 }, limits)).toEqual({ x: 100, y: 100, w: 100, h: 150 })
   })
 
-  it('"s" は高さだけ dy 分伸縮し y は不変', () => {
-    expect(resizeRect(rect, 's', 0, 40, limits)).toEqual({ x: 100, y: 100, w: 200, h: 190 })
+  it('"e" max で止まる', () => {
+    expect(resizeRectToPointer(rect, 'e', { x: 5000, y: 0 }, limits)).toEqual({ x: 100, y: 100, w: 2500, h: 150 })
   })
 
-  it('"n" は高さを dy 分縮小し、下エッジ固定のため y が移動する', () => {
-    // h = clamp(150-40,50,500) = 110, y = 100+150-110 = 140
-    expect(resizeRect(rect, 'n', 0, 40, limits)).toEqual({ x: 100, y: 140, w: 200, h: 110 })
+  it('"w" 西辺の真上を指すと無変化', () => {
+    expect(resizeRectToPointer(rect, 'w', { x: 100, y: 0 }, limits)).toEqual({ x: 100, y: 100, w: 200, h: 150 })
   })
 
-  it('"n" は高さが minH を割ると minH にクランプされる', () => {
-    // h = clamp(150-140=10,50,500) = 50, y = 100+150-50 = 200
-    expect(resizeRect(rect, 'n', 0, 140, limits)).toEqual({ x: 100, y: 200, w: 200, h: 50 })
+  it('"w" は東辺(300)を固定したまま原点が動く', () => {
+    const result = resizeRectToPointer(rect, 'w', { x: 200, y: 0 }, limits)
+    expect(result).toEqual({ x: 200, y: 100, w: 100, h: 150 })
+    expect(result.x + result.w).toBe(300)
   })
 
-  it('"ne" は e(幅)とn(高さ)を同時に適用する', () => {
-    // w = clamp(230,...) = 230(xは不変), h = clamp(110,...) = 110, y = 140
-    expect(resizeRect(rect, 'ne', 30, 40, limits)).toEqual({ x: 100, y: 140, w: 230, h: 110 })
+  it('"w" minW で止まっても東辺は300のまま', () => {
+    const result = resizeRectToPointer(rect, 'w', { x: 340, y: 0 }, limits)
+    expect(result).toEqual({ x: 260, y: 100, w: 40, h: 150 })
+    expect(result.x + result.w).toBe(300)
   })
 
-  it('"nw" は w(幅)とn(高さ)を同時に適用する', () => {
-    // w = 170,x=130 / h=110,y=140
-    expect(resizeRect(rect, 'nw', 30, 40, limits)).toEqual({ x: 130, y: 140, w: 170, h: 110 })
+  it('"n" 北辺の真上を指すと無変化', () => {
+    expect(resizeRectToPointer(rect, 'n', { x: 0, y: 100 }, limits)).toEqual({ x: 100, y: 100, w: 200, h: 150 })
   })
 
-  it('"se" は e(幅)とs(高さ)を同時に適用する', () => {
-    // w=230(xは不変) / h=190(yは不変)
-    expect(resizeRect(rect, 'se', 30, 40, limits)).toEqual({ x: 100, y: 100, w: 230, h: 190 })
+  it('"n" minH で止まっても南辺は250のまま', () => {
+    const result = resizeRectToPointer(rect, 'n', { x: 0, y: 220 }, limits)
+    expect(result).toEqual({ x: 100, y: 210, w: 200, h: 40 })
+    expect(result.y + result.h).toBe(250)
   })
 
-  it('"sw" は w(幅)とs(高さ)を同時に適用する', () => {
-    // w=170,x=130 / h=190(yは不変)
-    expect(resizeRect(rect, 'sw', 30, 40, limits)).toEqual({ x: 130, y: 100, w: 170, h: 190 })
+  it('"s" 高さはアンカー(北辺)からの距離になる', () => {
+    expect(resizeRectToPointer(rect, 's', { x: 0, y: 400 }, limits)).toEqual({ x: 100, y: 100, w: 200, h: 300 })
   })
 
-  it('非制御軸(n/sを持たないハンドルのy)は元の値を保つ', () => {
-    const result = resizeRect(rect, 'w', 10, 500, limits)
-    expect(result.y).toBe(rect.y)
-    expect(result.h).toBe(rect.h)
+  it('"se" は2軸を同時に解く', () => {
+    expect(resizeRectToPointer(rect, 'se', { x: 400, y: 400 }, limits)).toEqual({ x: 100, y: 100, w: 300, h: 300 })
+  })
+
+  it('"nw" は2軸とも下限で止まる', () => {
+    expect(resizeRectToPointer(rect, 'nw', { x: 280, y: 240 }, limits)).toEqual({ x: 260, y: 210, w: 40, h: 40 })
   })
 })

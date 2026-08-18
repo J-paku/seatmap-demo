@@ -31,6 +31,10 @@
   .scrim {
     animation: none;
   }
+
+  .preview {
+    transition: none;
+  }
 }
 
 /* 整列ガイドはゴーストより先に描いて下に敷く。
@@ -69,12 +73,25 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  /* 枠まわりの色は1つの変数から取る。blocked ではこの変数だけを差し替えるので、
+     .isBlocked.isDragging のような組み合わせ規則を書かずに済む */
+  --ghost-theme: var(--color-accent);
   border: 2px solid var(--color-accent);
   border-radius: 6px;
   background: color-mix(in srgb, var(--color-accent) 22%, transparent);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--ghost-theme) 25%, transparent);
+  transition: box-shadow 0.2s ease-out;
   cursor: grab;
   pointer-events: auto;
   touch-action: none;
+}
+
+/* 掴んでいる間の手応え。リングを 2px → 3px、不透明度 25% → 40% へ上げ、
+   影の遷移を切って指との遅れを無くす。色は blocked かどうかで --ghost-theme が切り替わる */
+.preview.isDragging {
+  cursor: grabbing;
+  box-shadow: var(--glass-shadow), 0 0 0 3px color-mix(in srgb, var(--ghost-theme) 40%, transparent);
+  transition: none;
 }
 
 .preview.isDashed {
@@ -82,6 +99,7 @@
 }
 
 .preview.isBlocked {
+  --ghost-theme: var(--color-danger);
   border-color: var(--color-danger);
   background: color-mix(in srgb, var(--color-danger) 20%, transparent);
 }
@@ -165,6 +183,12 @@
   border-radius: 9999px;
   border: 2px solid var(--color-band-highlight);
   background: var(--color-accent);
+}
+
+/* 掴んでいるリサイズハンドルだけを強調する。8つ全部を光らせると、
+   どれを掴んでいるのか分からない */
+.handle.isActive::after {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-accent) 30%, transparent), var(--glass-shadow-sm);
 }
 
 .handle.isNw {
