@@ -133,8 +133,11 @@ export const SeatMapView = () => {
       if (ref.kind === 'team') editor.deleteTeam(ref.id)
       else editor.deleteObject(ref)
       if (rect) showUndoChipAt(rect, '削除しました', rect)
+      // 削除が成立した時だけゴーストを畳む。確認を開いた時点では畳まない —
+      // 確認をやめた利用者が、動かした位置のゴーストへそのまま戻れるようにする
+      if (placement.isActive) placement.cancel()
     },
-    [editor, effectiveLayout, showUndoChipAt]
+    [editor, effectiveLayout, showUndoChipAt, placement.isActive, placement.cancel]
   )
 
   const dialogs = useEditDialogs(editor, employeeById, { onDeleteObject: handleDeleteObject })
@@ -173,11 +176,14 @@ export const SeatMapView = () => {
   // (会議室は確認ダイアログ・チームは §07-3 のタイプ確認・家具は即時)
   const ghostDeleteRef = placement.repositioningRef
   const isGhostDeletable = ghostDeleteRef !== null
+  // 削除確認が開いている間 = 削除処理中とみなす。新しい state を作らずダイアログの開閉から導く —
+  // 導ければ、閉じ忘れでフラグが立ちっぱなしになる経路が生まれない
+  const isGhostDeleting = dialogs.deleteObjectTarget !== null || dialogs.deleteTeamTarget !== null
   const handleGhostDelete = useCallback(() => {
     if (!ghostDeleteRef) return
-    placement.cancel()
+    // ここでセッションを畳まない。畳むのは handleDeleteObject の中、削除が成立した後だけ
     dialogs.requestObjectDelete(ghostDeleteRef)
-  }, [ghostDeleteRef, placement.cancel, dialogs.requestObjectDelete])
+  }, [ghostDeleteRef, dialogs.requestObjectDelete])
   // 操作ガイド。編集モード初回だけ自動再生し、？ ボタンで何度でも見られる。
   // エンジンは isActive を直接受けないので、活性化(初回自動再生・退出時に畳む)は
   // ここ(呼び出し側)の責務として持つ
@@ -507,6 +513,7 @@ export const SeatMapView = () => {
         <GhostPlacementLayer
           request={placement.request}
           placement={placement.placement}
+          isDeleting={isGhostDeleting}
           onConfirm={placement.confirm}
           onCancel={placement.cancel}
           onDelete={isGhostDeletable ? handleGhostDelete : undefined}

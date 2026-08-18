@@ -161,7 +161,7 @@ const reachGhostPlacement = async (page) => {
   await page.getByRole('menuitem', { name: 'チーム', exact: true }).click()
   await page.getByRole('dialog', { name: 'チームを追加' }).waitFor({ state: 'visible', timeout: 8000 })
   await page.locator('button:has-text("新規作成")').click()
-  await page.waitForSelector('[role="img"][aria-label="配置プレビュー（ドラッグで移動）"]', { timeout: 8000 })
+  await page.waitForSelector('[data-ghost="frame"]', { timeout: 8000 })
 }
 
 const reachOverlayView = async (page) => {

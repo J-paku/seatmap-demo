@@ -15,6 +15,7 @@ export const GhostBlockedObstacles = ({ rects }: Props) => (
         key={index}
         className={styles.blockedObstacle}
         style={{ left: r.left, top: r.top, width: r.width, height: r.height }}
+        data-ghost='obstacle'
         aria-hidden='true'
       />
     ))}

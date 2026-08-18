@@ -41,7 +41,9 @@
 
   // ---- 1. 画面状態の判定(DOM フックのみで判定する) ----
   const editBadge = document.querySelector('[data-edit-mode-badge="true"]')
-  const ghostCenter = document.querySelector('[role="img"][aria-label="配置プレビュー（ドラッグで移動）"]')
+  // 配置中かどうかはレイヤーの DOM フックで判定する。レイヤーはセッション開始から終了まで
+  // 存在するので、キャンバス矩形の実測が終わる前の1フレームでも判定がぶれない
+  const ghostLayer = document.querySelector('[data-ghost="layer"]')
   const dialogs = [...document.querySelectorAll('[role="dialog"][aria-modal="true"]')]
   const employeeSheet = dialogs.find((d) => d.getAttribute('aria-label') === '社員検索')
   // チームオーバーレイの aria-label は `${teamName} 座席配置`。社員検索シートの aria-label(社員検索)
@@ -51,7 +53,7 @@
 
   let state
   if (employeeSheet) state = 'employee-search'
-  else if (ghostCenter) state = 'ghost-placement'
+  else if (ghostLayer) state = 'ghost-placement'
   else if (overlayDialog && editDock) state = 'overlay-edit'
   else if (overlayDialog) state = 'overlay-view'
   else if (editBadge) state = 'edit-session'
@@ -91,25 +93,17 @@
     ck('セッションリモコンが不在(配置中はアクションバーへ入れ替わる、§05-2)', absent('編集を完了'))
     ck('+FABが不在', absent('追加メニューを開く'))
 
-    // §04-4: リサイズ可能条件(kind==='furniture' && furnitureKind==='facility' && mode==='move')を
-    // 満たすゴーストだけ、装飾のみの空 <span> ハンドルが8個現れる(components/GhostPlacementLayer/
-    // components/GhostPreview.tsx)。aria-label 自体がまだ実装に無いため文言では判定できず、
-    // 「中央ハンドルの兄弟にあるテキストなし・子要素なしの span」という構造で先にリサイズ可能状態かを
-    // 判定してから、その上でアンカーの有無を問う
-    const ghostRoot = ghostCenter.parentElement
-    const handleSpans = ghostRoot
-      ? [...ghostRoot.children].filter(
-          (el) => el.tagName === 'SPAN' && el !== ghostCenter && el.textContent.trim() === '' && el.children.length === 0,
-        )
-      : []
-    if (handleSpans.length > 0) {
+    // §04-4: リサイズ可能条件を満たすゴーストだけ、8個のリサイズハンドルが現れる。
+    // 「中央ハンドルの兄弟にある空の span」という構造推定はしない — 読み上げ名が枠へ移った今、
+    // その推定は常に0件へ落ちて検査が静かに素通りする
+    const resizeHandles = [...document.querySelectorAll('[data-ghost="resize-handle"]')]
+    if (resizeHandles.length > 0) {
       ck(
-        `リサイズハンドル(サイズを変更)が${handleSpans.length}個に付与`,
-        handleSpans.every((el) => el.getAttribute('aria-label') === 'サイズを変更'),
-        '§08-4 未実装: GhostPreview のリサイズハンドル(span.handle)に aria-label が無い',
+        `リサイズハンドルが8個・全てに aria-label='サイズを変更'`,
+        resizeHandles.length === 8 && resizeHandles.every((el) => el.getAttribute('aria-label') === 'サイズを変更'),
       )
     } else {
-      sk('リサイズハンドル(サイズを変更)', 'このゴーストはリサイズ不可(施設の移動モードではない)ため対象外')
+      sk('リサイズハンドル(サイズを変更)', 'このゴーストはリサイズ不可、または重なり中で非表示')
     }
   }
 

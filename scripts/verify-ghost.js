@@ -200,12 +200,14 @@
   if (labelled.length === 1) {
     ck('アンカーが枠自身または層の内側にある', labelled[0] === frame || layer.contains(labelled[0]))
   }
-  // run-all-checks.mjs のゴースト到達判定はこのセレクタを待つ。role を変えるなら
-  // 同じ変更の中でランナーの waitForSelector も直す必要がある(直さないと全状態が到達失敗になる)
+  // run-all-checks.mjs のゴースト到達判定はこのセレクタを待つ。宣言済み仕様の矛盾#1は
+  // 「読み上げ名はポインタを受ける枠が持ち、role は img にしない(子孫が支援技術から消えるため)」
+  // 側で決着させ、ランナーの waitForSelector を同じ変更で [data-ghost="frame"] へ移した。
+  // 判定の意図(ランナーの到達セレクタが生きているか)と件数は変えていない
   ck(
-    'run-all-checks.mjs の到達セレクタ([role="img"]付き)が生きている',
-    q(`[role="img"][aria-label="${GHOST_LABEL}"]`).length === 1,
-    'role を変更したなら run-all-checks.mjs の reachGhostPlacement も同時に直すこと'
+    'run-all-checks.mjs の到達セレクタ([data-ghost="frame"])が生きている',
+    q('[data-ghost="frame"]').length === 1,
+    'このセレクタを変えるなら run-all-checks.mjs の reachGhostPlacement も同時に直すこと'
   )
 
   // ---- 4. 幾何: 画面寸法 = 論理寸法 × 現在倍率 ----
@@ -441,6 +443,16 @@
     const axis = el.getAttribute('data-guide-axis')
     return axis === 'vertical' ? r.left + r.width / 2 : r.top + r.height / 2
   }
+  // ガイドが「嘘をついていないか」の許容差。掴んでいる間は吸着が中心へ適用済みなので
+  // ガイドは枠の線と一致する。手を離している間のガイドは「確定したらここへ吸着する」の予告で、
+  // 中心は動かさない仕様(§04-3 の訂正)なので枠の線とは吸着しきい値ぶん離れうる。
+  // しきい値は snapThreshold と同じ式を画面座標で組み直したもの(緩めた閾値ではない)
+  const guideTolOf = (frameRect) => {
+    const grabbed = frame.getAttribute('data-ghost-state') !== 'idle' || frame.getAttribute('data-dragging') === 'true'
+    if (grabbed) return TOL_GUIDE
+    return Math.max(28, Math.min(frameRect.width, frameRect.height) * 0.15) + TOL_GUIDE
+  }
+
   const checkGuides = (label, frameRect) => {
     const guides = q('[data-ghost="guide"]')
     if (expectGuides !== null) {
@@ -464,17 +476,18 @@
       return g.getAttribute('data-guide-axis') === 'vertical' ? r.height > r.width : r.width > r.height
     })
     const opaque = guides.every((g) => getComputedStyle(g).opacity === '1')
+    const tol = guideTolOf(frameRect)
     const strays = guides.filter((g) => {
       const axis = g.getAttribute('data-guide-axis')
       const candidates = axis === 'vertical' ? lines.vertical : lines.horizontal
-      return !candidates.some((line) => near(guidePos(g), line, TOL_GUIDE))
+      return !candidates.some((line) => near(guidePos(g), line, tol))
     })
     // 4条件を1件にまとめるのは、局面によって出たり出なかったりする判定の名前を1つに保つため。
     // 内訳は detail に必ず残す(どれが落ちたか分からない集約にはしない)
     ck(
       'ガイド線の形状検査',
       axisOk && shapeOk && opaque && strays.length === 0,
-      `${label}: ${guides.length}本 axis=${axisOk} 形状=${shapeOk} 不透明=${opaque} 枠の線と不一致=${strays.length}本`
+      `${label}: ${guides.length}本 axis=${axisOk} 形状=${shapeOk} 不透明=${opaque} 枠の線と不一致=${strays.length}本 (許容差 ${tol.toFixed(1)}px)`
     )
     return guides
   }

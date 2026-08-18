@@ -394,6 +394,11 @@ const scenarioReposition = async (page) => {
       ok: !!during && !!beforeRect && Math.abs(during.x - beforeRect.x) <= 1 && Math.abs(during.y - beforeRect.y) <= 1,
       detail: `${JSON.stringify(beforeRect)} → ${JSON.stringify(during)}`,
     })
+    // 空き位置へ運んだ直後だけ「リサイズ可能で重なっていない」局面になる。
+    // ここで注入しないと、リサイズハンドルの属性検査がどの局面でも実測されず skip のまま残る
+    reports.push(
+      await inject(page, { phase: 'move/空き位置(リサイズ可能)', mode: 'open', expectBlocked: false, probes: false })
+    )
     await clickGhostConfirm(page)
     await waitGhostGone(page)
     const afterRect = await rectOfRef()

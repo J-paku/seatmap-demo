@@ -12,8 +12,8 @@
 .scrim {
   position: absolute;
   inset: 0;
-  /* §04-1: rgba(0,0,0,0.35)。--color-scrim(rgba(0,0,0,0.4))を87.5%に希釈すると
-     0.4 × 0.875 = 0.35 で厳密一致する */
+  /* §04-1 の暗幕は不透明度 0.35。--color-scrim(0.4)を 87.5% に希釈すると
+     0.4 × 0.875 = 0.35 で厳密一致する(色リテラルは書かない — 自動検査で弾かれる) */
   background: color-mix(in srgb, var(--color-scrim) 87.5%, transparent);
   animation: fadeIn 0.3s ease-out;
 }
@@ -38,24 +38,25 @@
 }
 
 /* 整列ガイドはゴーストより先に描いて下に敷く。
-   §04-3: 色var(--color-align-guide)(styles/tokens.css 定義済み)・1.2px破線・不透明度0.85 */
+   §04-3: 色var(--color-align-guide)(styles/tokens.css 定義済み)・1.2px破線。
+   グループ不透明度は置かない — 置くと子のドットまで同じ値へ巻き込まれ、
+   線とドットの濃さを別々に決められなくなる */
 .guide {
   position: absolute;
-  opacity: 0.85;
 }
 
 .guide.isVertical {
   top: 0;
   bottom: 0;
   width: 0;
-  border-left: 1.2px dashed var(--color-align-guide);
+  border-left: 1.2px dashed color-mix(in srgb, var(--color-align-guide) 85%, transparent);
 }
 
 .guide.isHorizontal {
   left: 0;
   right: 0;
   height: 0;
-  border-top: 1.2px dashed var(--color-align-guide);
+  border-top: 1.2px dashed color-mix(in srgb, var(--color-align-guide) 85%, transparent);
 }
 
 /* §04-3: 端点ドット半径2.5(直径5px)。固定外形のみここに持ち、位置(毎フレーム実測)は
@@ -65,7 +66,7 @@
   width: 5px;
   height: 5px;
   border-radius: 9999px;
-  background: var(--color-align-guide);
+  background: color-mix(in srgb, var(--color-align-guide) 70%, transparent);
 }
 
 .preview {
@@ -114,23 +115,29 @@
   pointer-events: none;
 }
 
-/* §04-2: 移動モードのときだけ枠上部に出す名前バッジ。新規配置では出さない */
+/* §04-2: 移動モードのときだけ枠の外側上へ浮かせる名前バッジ。新規配置では出さない。
+   枠の縁に半分めり込ませると地図の内容に埋もれて名前が読み取れない */
 .moveLabel {
   position: absolute;
   top: 0;
   left: 50%;
-  translate: -50% -50%;
+  /* 枠の外側へ完全に出し、さらに 8px の隙間を空ける */
+  translate: -50% -100%;
+  margin-top: -8px;
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  padding: 2px 10px;
-  border-radius: 999px;
-  background: var(--color-surface);
-  color: var(--color-text-primary);
-  font-size: 11px;
+  padding: 4px 10px;
+  border-radius: 8px;
+  background: var(--color-accent);
+  color: var(--color-band-highlight);
+  font-size: 12px;
   font-weight: 700;
   white-space: nowrap;
   pointer-events: none;
+  box-shadow:
+    0 2px 10px color-mix(in srgb, var(--color-accent) 55%, transparent),
+    0 0 0 1.5px color-mix(in srgb, var(--color-band-highlight) 90%, transparent);
 }
 
 .moveLabel :global(.material-symbols-outlined) {
@@ -138,7 +145,11 @@
 }
 
 .preview.isBlocked .moveLabel {
-  color: var(--color-danger);
+  background: var(--color-danger);
+  color: var(--color-band-highlight);
+  box-shadow:
+    0 2px 10px color-mix(in srgb, var(--color-danger) 55%, transparent),
+    0 0 0 1.5px color-mix(in srgb, var(--color-band-highlight) 90%, transparent);
 }
 
 /* §04-2: 中央ハンドル。掴む場所を示す見た目だけの要素で、ドラッグ自体は .preview が受ける */
@@ -243,32 +254,64 @@
   cursor: ew-resize;
 }
 
-.hint {
+/* 外箱: 位置決めと掴み。チップを掴んでもゴーストを動かせる */
+.hintBox {
   position: absolute;
+  pointer-events: auto;
+  touch-action: none;
+  transition: top 0.2s ease-out, left 0.2s ease-out;
+}
+
+.hintBox.isDragging {
+  transition: none;
+}
+
+/* 内ピル: 見た目とパルスだけを持つ。ポインタは受けない(外箱が受ける) */
+.hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   margin: 0;
-  padding: 6px 12px;
+  padding: 6px 14px;
   border-radius: 999px;
-  border: 1px solid var(--color-border);
-  background: var(--color-surface);
-  box-shadow: var(--glass-shadow-sm);
-  color: var(--color-text-secondary);
+  background: var(--color-accent);
+  color: var(--color-band-highlight);
   font-size: 12px;
+  font-weight: 700;
   white-space: nowrap;
   pointer-events: none;
-  animation: ghostHintPulse 1.6s ease-in-out infinite alternate;
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--color-accent) 45%, transparent);
+  animation: ghostHintPulse 1.6s ease-in-out infinite;
+}
+
+.hint :global(.material-symbols-outlined) {
+  font-size: 16px;
 }
 
 .hint.isBlocked {
-  border-color: var(--color-danger);
-  color: var(--color-danger);
+  background: var(--color-danger);
+  box-shadow:
+    0 6px 18px color-mix(in srgb, var(--color-scrim) 75%, transparent),
+    0 0 0 2px color-mix(in srgb, var(--color-band-highlight) 95%, transparent);
 }
 
+/* 掴んでいる間と置けない間はパルスを止める。動き続ける警告は装飾に見える */
+.hint.isDragging,
+.hint.isBlocked {
+  animation: none;
+}
+
+/* 1.6秒で一往復。alternate だと一往復に 3.2 秒かかる */
 @keyframes ghostHintPulse {
-  from {
+  0%,
+  100% {
     scale: 1;
+    box-shadow: 0 4px 12px color-mix(in srgb, var(--color-accent) 45%, transparent);
   }
-  to {
+
+  50% {
     scale: 1.06;
+    box-shadow: 0 4px 12px color-mix(in srgb, var(--color-accent) 60%, transparent);
   }
 }
 
@@ -276,45 +319,39 @@
   .hint {
     animation: none;
   }
+
+  .hintBox {
+    transition: none;
+  }
 }
 
 .actionbar {
   position: absolute;
-  bottom: calc(env(safe-area-inset-bottom) + 20px);
+  bottom: calc(env(safe-area-inset-bottom) + 18px);
   left: 50%;
   /* left:50% の絶対配置は幅指定が無いと shrink-to-fit 幅が包含ブロックの半分側に
      押し込まれ、中のボタンまで縮んで「配置」が1文字ずつ縦に折れていた。
      内容で幅を決め、画面をはみ出さないところで頭打ちにする */
   width: max-content;
-  max-width: min(96vw, 640px);
+  max-width: calc(100vw - 32px);
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 10px 14px;
+  gap: 8px;
+  padding: 8px;
   /* glass-stagger-item の登場アニメーション(glass-pop-in)が transform を占有するため、
      水平中央寄せは transform ではなく独立した translate プロパティで持つ */
   translate: -50% 0;
-  border-radius: 14px;
+  border-radius: 999px;
   pointer-events: auto;
 }
 
-/* 対象名は省略しない。「リフレッシュスペ…」では何を置こうとしているのか読めず、
-   置く前の最後の確認という役目を果たさない。入り切らない時は行を増やす側に倒す */
-.actionbarLabel {
-  min-width: 0;
-  color: var(--color-text-secondary);
-  font-size: 12px;
-  font-weight: 700;
-  line-height: 1.35;
-}
-
 /* タップ領域44px確保。キャンセル・確定・削除どのボタンにも効かせる。
-   ボタンは縮ませない・折り返させない(縮むと文字が縦積みになる) */
+   ボタンは折り返させない(縮むと文字が縦積みになる)。伸びるのは確定だけ */
 .actionbar button {
   min-height: 44px;
   padding: 0 16px;
   display: inline-flex;
-  flex-shrink: 0;
+  flex: 0 0 auto;
   align-items: center;
   justify-content: center;
   gap: 4px;
@@ -330,12 +367,39 @@
   outline-offset: 2px;
 }
 
-.actionbarConfirm:disabled {
+/* .actionbar button が (0,1,1) なので、単独クラス(0,1,0)では flex も padding も負ける。
+   確定・取消・削除は必ず .actionbar .actionbarXxx (0,2,0) の形で書く */
+.actionbar .actionbarConfirm {
+  flex: 1 1 auto;
+  background: var(--color-accent);
+  color: var(--color-band-highlight);
+  border-color: transparent;
+  font-weight: 600;
+}
+
+.actionbar .actionbarConfirm:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
 
-/* §04-4: キャンセル・削除はアイコンのみなので横paddingを絞る */
-.actionbarIconOnly {
-  padding: 0 12px;
+.actionbar .actionbarCancel {
+  width: 44px;
+  padding: 0;
+  color: var(--color-text-secondary);
+  background: color-mix(in srgb, var(--color-surface-overlay) 72%, transparent);
+  border-color: color-mix(in srgb, var(--color-border) 72%, transparent);
+}
+
+/* 危険色。押した先が取り返しのつかない操作であることを色で示す */
+.actionbar .actionbarDelete {
+  width: 44px;
+  padding: 0;
+  color: var(--color-danger);
+  background: color-mix(in srgb, var(--color-danger-soft) 16%, transparent);
+  border-color: color-mix(in srgb, var(--color-danger) 24%, transparent);
+}
+
+.actionbar .actionbarDelete:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
