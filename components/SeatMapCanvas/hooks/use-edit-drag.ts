@@ -22,6 +22,9 @@ type Options = {
   layout: SeatLayout
   isEditMode: boolean
   onSeatEditSelect?: (seatId: string | null) => void
+  // 選択件数だけは親(左下FABの表示判定)も要る。単独選択しか返さない onSeatEditSelect では
+  // 2席以上を表せないので件数専用の口を持つ
+  onSeatSelectionChange?: (count: number) => void
   // 05-3: タップ(動かさずに離した押下)で移動ゴーストを開く。実体はその場に残る
   onTeamTap?: (teamId: string) => void
   onObjectTap?: (ref: LayoutObjectRef) => void
@@ -53,6 +56,7 @@ export const useEditDrag = ({
   layout,
   isEditMode,
   onSeatEditSelect,
+  onSeatSelectionChange,
   onTeamTap,
   onObjectTap,
   onEndSession,
@@ -104,6 +108,13 @@ export const useEditDrag = ({
     },
     [isEditMode, applySeatSelection, undoChip]
   )
+
+  // 選択・解除・編集モードOFFの後始末はすべて editSelectedSeatIds を経由するので、
+  // 長さを見れば漏れなく拾える(applySeatSelection の中で通知すると、後始末の直接代入が漏れる)
+  const selectedSeatCount = editSelectedSeatIds.length
+  useEffect(() => {
+    onSeatSelectionChange?.(selectedSeatCount)
+  }, [selectedSeatCount, onSeatSelectionChange])
 
   const clearSelection = useCallback(() => {
     applySeatSelection([])

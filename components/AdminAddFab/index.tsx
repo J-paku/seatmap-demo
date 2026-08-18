@@ -35,10 +35,11 @@ export const AdminAddFab = ({ onSelectTeam, onSelectFacility, onEditLayout }: Pr
   ]
 
   return (
-    <div className={styles.adminFabWrap}>
+    <div className={styles.adminFabWrap} data-fab-open={isMenuOpen ? 'true' : 'false'}>
       {isMenuOpen && (
         <div
           className={styles.adminFabBackdrop}
+          data-fab-backdrop='true'
           aria-hidden='true'
           onClick={closeMenu}
           onWheel={closeMenu}
@@ -47,12 +48,19 @@ export const AdminAddFab = ({ onSelectTeam, onSelectFacility, onEditLayout }: Pr
       )}
 
       {isMenuOpen && (
-        <div ref={menuRef} className={`${styles.adminFabMenu} liquid-glass`} role='menu' onKeyDown={onMenuKeyDown}>
+        <div
+          ref={menuRef}
+          className={`${styles.adminFabMenu} liquid-glass`}
+          role='menu'
+          data-fab-menu='true'
+          onKeyDown={onMenuKeyDown}
+        >
           {items.map((item, index) => (
             <button
               key={item.key}
               type='button'
               role='menuitem'
+              data-fab-item={item.key}
               className={`${styles.adminFabRow} glass-dial-row glass-stagger-item`}
               style={{ '--glass-stagger-i': items.length - 1 - index } as CSSProperties}
               onClick={item.disabled ? undefined : item.onClick}
@@ -73,6 +81,7 @@ export const AdminAddFab = ({ onSelectTeam, onSelectFacility, onEditLayout }: Pr
         type='button'
         className={`${styles.adminFabBtn} glass-fab-accent${isMenuOpen ? ` ${styles.isOpen}` : ''}`}
         data-coach='admin-fab'
+        aria-haspopup='menu'
         aria-expanded={isMenuOpen}
         aria-label={isMenuOpen ? '追加メニューを閉じる' : '追加メニューを開く'}
         onPointerDown={fabHandlers.onPointerDown}

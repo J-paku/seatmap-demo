@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import styles from './facility-picker-modal.module.css'
 import { FocusTrap } from '@/components/a11y/components/FocusTrap'
 import { useBodyScrollLock } from '@/hooks/use-body-scroll-lock'
@@ -30,8 +30,17 @@ type Props = {
 
 export const FacilityPickerModal = ({ isOpen, placedFacilityIds, onSelect, onClose }: Props) => {
   const [query, setQuery] = useState('')
+  const searchInputRef = useRef<HTMLInputElement>(null)
 
   useBodyScrollLock(isOpen)
+
+  // 押すとボタン自身が消えるので、焦点を入力欄へ戻さないと <body> へ落ちる。
+  // シートは閉じない — 消すのは検索語だけ
+  const handleClearQuery = useCallback(() => {
+    triggerHaptic('light')
+    setQuery('')
+    searchInputRef.current?.focus()
+  }, [])
 
   // 閉じ経路(×・背景・Escape・選択)を1本に束ねる。ここで検索語を捨てるので次に開いた時に残らない
   const close = useCallback(() => {
@@ -86,13 +95,31 @@ export const FacilityPickerModal = ({ isOpen, placedFacilityIds, onSelect, onClo
           <p className={styles.note}>Garoon登録済みの施設を配置します</p>
           <div className={styles.searchRow}>
             <input
+              ref={searchInputRef}
               type='search'
               className={styles.search}
               placeholder='施設名で検索...'
               aria-label='施設名で検索'
               value={query}
               onChange={(e) => setQuery(e.target.value)}
+              // isOpen が false のとき null を返す構造なので、開くたびにマウントし直されて毎回効く。
+              // このモーダルのフォーカストラップは Tab 循環しか行わず初期フォーカスを設定しないため、
+              // これが無いと焦点は <body> に落ち、モバイルではキーボードも上がらない
+              autoFocus
             />
+            {query.length > 0 && (
+              <button
+                type='button'
+                className={styles.searchClear}
+                data-facility-search-clear='true'
+                aria-label='検索条件をクリア'
+                onClick={handleClearQuery}
+              >
+                <span className='icon-msr-thin' aria-hidden='true'>
+                  close
+                </span>
+              </button>
+            )}
           </div>
           <div className={styles.list}>
             {sorted.length === 0 && <p className={styles.empty}>施設が登録されていません</p>}

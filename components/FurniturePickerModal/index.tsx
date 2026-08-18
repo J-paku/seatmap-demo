@@ -26,6 +26,7 @@ export const FurniturePickerModal = ({ isOpen, onSelect, onClose }: Props) => {
       isOpen={isOpen}
       title='家具を選択'
       note='選択すると画面中央に配置されます'
+      material='glass'
       onClose={onClose}
     >
       {FURNITURE_LIBRARY_GROUPS.map((group) => (

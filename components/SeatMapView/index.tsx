@@ -29,7 +29,7 @@ import { TeamCategorySheet } from '@/components/TeamCategorySheet'
 import { TeamCreatePopover } from '@/components/TeamCreatePopover'
 import { TeamImportSheet } from '@/components/TeamImportSheet'
 import { CoachMarkTour } from '@/components/CoachMarkTour'
-import { readSeen, useCoachMarkTour } from '@/components/CoachMarkTour/hooks/use-coach-mark-tour'
+import { isTourPlaying, readSeen, useCoachMarkTour } from '@/components/CoachMarkTour/hooks/use-coach-mark-tour'
 import {
   EDIT_TOUR_BRANCH,
   EDIT_TOUR_STORAGE_KEY,
@@ -198,13 +198,20 @@ export const SeatMapView = () => {
   })
   const replayTour = useCallback(() => setTourReplayNonce((count) => count + 1), [])
   const wasEditModeRef = useRef(editor.isEditMode)
+  // FABの「チーム」「設備」は自分のガイドを予約する。同じ操作で編集セッションも起きるため、
+  // この遷移1回ぶんだけ編集ガイドの自動再生を止める。既読化はしないので、
+  // あとから「レイアウトを編集」や長押しで入り直せば編集ガイドは通常どおり出る
+  const suppressEditTourOnceRef = useRef(false)
   useEffect(() => {
     const wasEditMode = wasEditModeRef.current
     wasEditModeRef.current = editor.isEditMode
     if (editor.isEditMode) {
-      // 編集モードへ初めて入った時だけ、未読なら自動再生する
+      const suppressed = suppressEditTourOnceRef.current
+      suppressEditTourOnceRef.current = false
+      // 編集モードへ初めて入った時だけ、未読なら自動再生する。
+      // ただしFAB導線が自分のガイドを出す遷移では出さない(暗幕が2枚になる)
       // eslint-disable-next-line react-hooks/set-state-in-effect
-      if (!wasEditMode && !readSeen(EDIT_TOUR_STORAGE_KEY)) replayTour()
+      if (!wasEditMode && !suppressed && !readSeen(EDIT_TOUR_STORAGE_KEY)) replayTour()
       return
     }
     // 編集モードを抜けたらツアーも畳む。画面都合の折りたたみなので既読化はしない(collapse)。
@@ -212,6 +219,11 @@ export const SeatMapView = () => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     if (wasEditMode) tour.collapse()
   }, [editor.isEditMode, replayTour, tour.collapse])
+  // 抑止の目印は「直前の1コミット」だけ有効。編集セッションが起きなかった場合はここで捨てる。
+  // 持ち越すと、あとで正当に編集モードへ入った時のガイドまで止めてしまう
+  useEffect(() => {
+    suppressEditTourOnceRef.current = false
+  })
   // §05-7: FABの「チーム」「設備」はそれぞれ独立フロー+独立キーを持つ。どちらもゴーストが
   // 画面中央に出るのでスポットライトする対象が無く、中央カードのまま3ステップ流すだけになる。
   // 自動再生の判定は「メニュー項目を選んだ時点」(§01)で行うので、マウント時の autoStart は切る
@@ -252,13 +264,21 @@ export const SeatMapView = () => {
   // §01の「メニュー項目を選んだ時点」。未読ならガイドを1回だけ出してから本来の導線へ進む。
   // 既読化はツアーを閉じた時にエンジン側が行うので、ここでは書き込まない
   const handleSelectTeam = useCallback(() => {
-    if (!readSeen(TEAM_TOUR_STORAGE_KEY)) replayTeamTour()
+    if (!readSeen(TEAM_TOUR_STORAGE_KEY)) {
+      // 閲覧モードから押した時だけ編集セッションへの遷移が起きる。既に編集中なら遷移が無く、
+      // 目印を立てると後の遷移まで持ち越してしまうので立てない
+      if (!editor.isEditMode) suppressEditTourOnceRef.current = true
+      replayTeamTour()
+    }
     placement.selectCategory('team')
-  }, [replayTeamTour, placement.selectCategory])
+  }, [replayTeamTour, placement.selectCategory, editor.isEditMode])
   const handleSelectFacility = useCallback(() => {
-    if (!readSeen(FURNITURE_TOUR_STORAGE_KEY)) replayFurnitureTour()
+    if (!readSeen(FURNITURE_TOUR_STORAGE_KEY)) {
+      if (!editor.isEditMode) suppressEditTourOnceRef.current = true
+      replayFurnitureTour()
+    }
     placement.openCategory()
-  }, [replayFurnitureTour, placement.openCategory])
+  }, [replayFurnitureTour, placement.openCategory, editor.isEditMode])
   // 配属の結果はライブリージョンとトーストへ同じ文言を流す(実装を二重化しない)
   const assign = useSeatAssign({ editor, employeeById, onDone: (message) => showNotice(message) })
 
@@ -268,6 +288,9 @@ export const SeatMapView = () => {
   const [unassignedNotice, setUnassignedNotice] = useState<string | null>(null)
   // レイアウト切り替えアイランドの展開状態。開いている間は左下FABを隠す
   const [isLayoutSwitcherOpen, setIsLayoutSwitcherOpen] = useState(false)
+  // 編集セッション中に選ばれている座席数。1席以上でFABを隠す(一括操作バーと重なるため)。
+  // useState のセッタは参照が安定なので、memo 済みキャンバスの再描画は増えない
+  const [selectedSeatCount, setSelectedSeatCount] = useState(0)
 
   // 連続で通知すると、前回のタイマーが後から発火して新しい文言を消してしまう。
   // 立て続けの配属操作では毎回起きるので、出す前に前のタイマーを畳む
@@ -296,6 +319,8 @@ export const SeatMapView = () => {
     isPlacementActive: placement.isActive,
     assignSeatId: assign.assignSeatId,
     tours: [tour, mainTour, teamTour, furnitureTour],
+    // 閲覧モードでは常に0として扱う二重の保険
+    selectedSeatCount: editor.isEditMode ? selectedSeatCount : 0,
     isLayoutSwitcherOpen,
   })
 
@@ -344,6 +369,9 @@ export const SeatMapView = () => {
     focus.focusSeat(seat)
   }, [effectiveLayout, focus.focusSeat, showNotice])
 
+  // フロー導線(チーム/家具)のガイドが再生中か。編集・メインの層を描くかの判定に使う
+  const isFlowTourPlaying = isTourPlaying(teamTour) || isTourPlaying(furnitureTour)
+
   return (
     <div className={styles.seatMapPage}>
       {!editor.isEditMode && (
@@ -367,6 +395,7 @@ export const SeatMapView = () => {
           onFacilityHover={setHoverFacility}
           isEditMode={editor.isEditMode}
           onTeamTap={handleTeamTap}
+          onSeatSelectionChange={setSelectedSeatCount}
           onSeatAssignRequest={assign.openAssign}
           onSeatDeleteRequest={dialogs.requestSeatDelete}
           onSeatRotateRequest={editor.rotateSeats}
@@ -557,8 +586,9 @@ export const SeatMapView = () => {
         </>
       )}
 
-      {editor.isEditMode && <CoachMarkTour tour={tour} />}
-      {!editor.isEditMode && <CoachMarkTour tour={mainTour} />}
+      {/* 暗幕が2枚重なると操作不能になる。フロー導線のガイドが再生中は編集/メインの層を描かない */}
+      {editor.isEditMode && !isFlowTourPlaying && <CoachMarkTour tour={tour} />}
+      {!editor.isEditMode && !isFlowTourPlaying && <CoachMarkTour tour={mainTour} />}
       {/* §05-7: この2つは常時マウントする。FAB はセッションの外で押され、
           選択と同じフレームで ensureEditSession が isEditMode を立てるので、
           isEditMode ガードを掛けると初回の自動再生とタイミングがずれる */}

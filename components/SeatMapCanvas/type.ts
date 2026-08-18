@@ -19,6 +19,9 @@ export type SeatMapCanvasProps = {
   // 07: 編集モード中のみ有効。未指定(閲覧モード)では以下の分岐へ一切到達しない
   isEditMode?: boolean
   onSeatEditSelect?: (seatId: string | null) => void
+  // 05-4: 選択中の座席数。単独選択しか返さない onSeatEditSelect では件数を表せないため別口にする。
+  // 呼び出し側はこれを見て左下FABを隠す(一括操作バーが下部中央へ落ちるとFABと重なる)
+  onSeatSelectionChange?: (count: number) => void
   // 05-3: セッション中のチーム枠タップ。呼び出し側は移動ゴーストを開く
   onTeamTap?: (teamId: string) => void
   onSeatAssignRequest?: (seatId: string) => void

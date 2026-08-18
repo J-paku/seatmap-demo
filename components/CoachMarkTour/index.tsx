@@ -23,7 +23,7 @@ export const CoachMarkTour = ({ tour }: Props) => {
     // onClick を付けないだけで、.layer の pointer-events: auto がクリックを受け止めて
     // 背後の要素へ通さない(ブロックのみ)
     return (
-      <div className={styles.layer} role='dialog' aria-modal='true' aria-label='操作ガイド'>
+      <div className={styles.layer} role='dialog' aria-modal='true' aria-label='操作ガイド' data-coach-tour='true'>
         <div className={styles.scrim} />
         <div className={`${styles.card} ${styles.isCentered}`}>
           <p className={styles.question}>{branch.title}</p>
@@ -65,6 +65,7 @@ export const CoachMarkTour = ({ tour }: Props) => {
       role='dialog'
       aria-modal='true'
       aria-label='操作ガイド'
+      data-coach-tour='true'
       onClick={handleFinishOrNext}
     >
       {rect ? (

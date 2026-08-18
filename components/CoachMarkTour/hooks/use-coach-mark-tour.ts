@@ -37,6 +37,11 @@ export type CoachMarkTourState = {
   collapse: () => void
 }
 
+// 「再生中」= 分岐カードが立っているか、ステップが立っている状態。
+// 表示判定(FABの可否・ツアー層の重複防止)が同じ式を2箇所で持たないようここに置く
+export const isTourPlaying = (tour: Pick<CoachMarkTourState, 'isBranching' | 'step'>): boolean =>
+  tour.isBranching || tour.step !== null
+
 // 既読判定。SSR では常に既読扱いにして自動表示を止める。localStorage 参照が例外を投げる
 // 環境では未読扱いにして再生は続ける。値は旧表記 'true' も既読とみなす(null でなければ既読)
 export const readSeen = (storageKey: string): boolean => {

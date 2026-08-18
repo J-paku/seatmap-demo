@@ -1,5 +1,6 @@
 import { Fragment } from 'react'
 import { PickerSheet } from '@/components/PickerSheet'
+import { triggerHaptic } from '@/utils/haptic'
 import styles from '../object-picker.module.css'
 
 // 何を置くかの大分類。チームは PHASE D で先頭に足す想定
@@ -43,7 +44,11 @@ export const ObjectCategorySheet = ({ isOpen, categories, isGaroonConnected, onS
               type='button'
               className={styles.objCatCard}
               disabled={isDisabled}
-              onClick={() => onSelect(card.category)}
+              onClick={() => {
+                // 1段目が無反応・2段目が強反応という食い違いを無くす(家具タイルと同じ medium)
+                triggerHaptic('medium')
+                onSelect(card.category)
+              }}
             >
               <span className={`icon-msr-thin ${styles.objCatIcon}`} aria-hidden='true'>
                 {card.icon}

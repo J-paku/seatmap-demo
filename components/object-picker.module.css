@@ -47,13 +47,59 @@
   flex-direction: column;
 }
 
+/* つまみ = 高さ48pxのタップ領域(button)。見た目のバー40x4pxは擬似要素で描く。
+   共通シェルの持ち手なので、タップで閉じ、下スワイプの起点にもなる */
 .pickerGrip {
+  position: relative;
   display: block;
+  width: 100%;
+  height: 48px;
+  flex: none;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  touch-action: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.pickerGrip::before {
+  position: absolute;
+  top: 22px;
+  left: 50%;
   width: 40px;
   height: 4px;
-  margin: 8px auto 0;
   border-radius: 999px;
   background: var(--color-border-strong);
+  content: '';
+  transform: translateX(-50%);
+}
+
+.pickerGrip:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: -2px;
+}
+
+/* つまみが48pxを占める分、その下の見出しは上余白を持たない。
+   チーム作成ダイアログはつまみを display:none にしているので対象外にする */
+.pickerPanel.isCompact .pickerInner:not(:has([data-team-create-panel])) .pickerHead {
+  padding-top: 0;
+}
+
+/* 家具ピッカーだけがガラス材。FABのスピードダイヤルと同じレシピにして、
+   シートがFABから立ち上がった時に同じ素材に見えるようにする */
+.pickerPanel.isGlass {
+  border: 1px solid var(--glass-border);
+  background: var(--glass-bg);
+  backdrop-filter: blur(28px) saturate(170%);
+  box-shadow: var(--glass-shadow);
+}
+
+/* backdrop-filter 非対応環境では不透明へ落とす。無いと文字が背景に沈む */
+@supports not (backdrop-filter: blur(1px)) {
+  .pickerPanel.isGlass {
+    background: var(--glass-bg-opaque);
+  }
 }
 
 .pickerHead {

@@ -1,3 +1,4 @@
+import { isTourPlaying } from '@/components/CoachMarkTour/hooks/use-coach-mark-tour'
 import type { CoachMarkTourState } from '@/components/CoachMarkTour/hooks/use-coach-mark-tour'
 import { useDetailPanel } from '@/contexts/detail-panel-context'
 import type { TeamOverlayPayload } from '@/types'
@@ -23,6 +24,9 @@ type Params = {
   assignSeatId: string | null
   // 同時に存在しうる全ツアーインスタンス。1つでも再生中なら FAB を隠す
   tours: readonly TourState[]
+  // 編集セッション中に選ばれている座席数。1席以上でFABを隠す —
+  // 一括操作バーが下部中央へ落ちるとFABと重なり、覆われた部分が押せなくなる
+  selectedSeatCount: number
   // レイアウト切り替えアイランドを展開している間
   isLayoutSwitcherOpen: boolean
 }
@@ -33,13 +37,14 @@ export const useAdminFabVisibility = ({
   isPlacementActive,
   assignSeatId,
   tours,
+  selectedSeatCount,
   isLayoutSwitcherOpen,
 }: Params): boolean => {
   const { seatDetailId, personDetailId, facilityDetailId, scheduleDetailId } = useDetailPanel()
 
   const isDetailOpen =
     seatDetailId !== null || personDetailId !== null || facilityDetailId !== null || scheduleDetailId !== null
-  const isTourPlaying = tours.some((t) => t.isBranching || t.step !== null)
+  const hasPlayingTour = tours.some(isTourPlaying)
 
   return !(
     isDetailOpen ||
@@ -47,7 +52,8 @@ export const useAdminFabVisibility = ({
     isDirectoryOpen ||
     isPlacementActive ||
     assignSeatId !== null ||
-    isTourPlaying ||
+    hasPlayingTour ||
+    selectedSeatCount >= 1 ||
     isLayoutSwitcherOpen
   )
 }
