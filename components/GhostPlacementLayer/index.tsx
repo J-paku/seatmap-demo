@@ -6,7 +6,7 @@ import { GhostHint } from './components/GhostHint'
 import { GhostPreview } from './components/GhostPreview'
 import type { GhostRequest } from './type'
 import styles from './ghost-placement.module.css'
-import type { GhostPlacement } from '@/hooks/use-ghost-placement'
+import type { GhostPlacement } from '@/hooks/use-ghost-placement/use-ghost-placement'
 
 // ビューファインダー式ゴーストの表示層。
 //

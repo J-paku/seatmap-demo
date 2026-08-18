@@ -2,6 +2,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { AppHeader } from './components/AppHeader'
 import { EditDialogs } from './components/EditDialogs'
 import { EditModeLayer } from './components/EditModeLayer'
+import { PlacementSheets } from './components/PlacementSheets'
+import { SeatAssignDialogs } from './components/SeatAssignDialogs'
 import { useAdminFabVisibility } from './hooks/use-admin-fab-visibility'
 import { useEditDialogs } from './hooks/use-edit-dialogs'
 import { useLayoutSave } from './hooks/use-layout-save'
@@ -9,36 +11,19 @@ import { useMinimapPayload } from './hooks/use-minimap-payload'
 import { useObjectPlacement } from './hooks/use-object-placement'
 import { useSeatAssign } from './hooks/use-seat-assign'
 import { useSeatMapData } from './hooks/use-seat-map-data'
+import { useSeatMapTours } from './hooks/use-seat-map-tours'
 import { useTeamSeatFocus } from './hooks/use-team-seat-focus'
 import type { FocusFailure } from './hooks/use-team-seat-focus'
-import { MAIN_TOUR_STEPS, MAIN_TOUR_STORAGE_KEY } from './utils/main-tour-steps'
+import { useTransientNotice } from './hooks/use-transient-notice'
 import { AdminAddFab } from '@/components/AdminAddFab'
 import { DetailPanels } from '@/components/DetailPanels'
-import { EmployeeAssignSheet } from '@/components/EmployeeAssignSheet'
 import { EmployeeDirectory } from '@/components/EmployeeDirectory'
 import { FacilityHoverCard } from '@/components/FacilityHoverCard'
 import type { FacilityHoverPayload } from '@/components/FacilityHoverCard'
-import { FacilityPickerModal } from '@/components/FacilityPickerModal'
-import { FurniturePickerModal } from '@/components/FurniturePickerModal'
-import { GhostPlacementLayer } from '@/components/GhostPlacementLayer'
 import type { GhostRequest } from '@/components/GhostPlacementLayer'
 import { GuideButton } from '@/components/GuideButton'
 import { LayoutSwitcher } from '@/components/LayoutSwitcher'
-import { ObjectCategorySheet } from '@/components/ObjectCategorySheet'
-import { TeamCategorySheet } from '@/components/TeamCategorySheet'
-import { TeamCreatePopover } from '@/components/TeamCreatePopover'
-import { TeamImportSheet } from '@/components/TeamImportSheet'
 import { CoachMarkTour } from '@/components/CoachMarkTour'
-import { isTourPlaying, readSeen, useCoachMarkTour } from '@/components/CoachMarkTour/hooks/use-coach-mark-tour'
-import {
-  EDIT_TOUR_BRANCH,
-  EDIT_TOUR_STORAGE_KEY,
-  FURNITURE_TOUR_STEPS,
-  FURNITURE_TOUR_STORAGE_KEY,
-  TEAM_TOUR_STEPS,
-  TEAM_TOUR_STORAGE_KEY,
-} from '@/components/CoachMarkTour/utils/tour-steps'
-import { ConfirmDialog } from '@/components/edit/ConfirmDialog'
 import { LiveRegion } from '@/components/a11y/components/LiveRegion'
 import { SeatMapCanvas } from '@/components/SeatMapCanvas'
 import type { SeatMapCanvasHandle } from '@/components/SeatMapCanvas'
@@ -47,7 +32,6 @@ import { TeamOverlay } from '@/components/TeamOverlay'
 import { EditErrorToast } from '@/components/edit/EditErrorToast'
 import { useDetailPanel } from '@/contexts/detail-panel-context'
 import { useSeatLayout } from '@/hooks/use-mock-data'
-import { isGaroonConnected } from '@/lib/garoon/facilities'
 import { useTheme } from '@/hooks/use-theme'
 import { SELF_EMPLOYEE_ID } from '@/utils/demo-identity'
 import { TOAST_MESSAGES } from '@/utils/toast-messages'
@@ -57,10 +41,8 @@ import type { Rect } from '@/utils/layout/rect'
 import type { Employee, LayoutObjectRef } from '@/types'
 import styles from '@/components/seatmap.module.css'
 
-// 座席マップ画面の組み立て。データ合成・保存・ダイアログ状態はそれぞれのフックが持つ
-
-// 座席未設定(防御分岐)の通知を出しておく時間
-const NOTICE_MS = 2400
+// 座席マップ画面の組み立て。データ合成・保存・ダイアログ状態・操作ガイドはそれぞれのフックが持ち、
+// ここは配線と面の並べ方だけを持つ
 
 export const SeatMapView = () => {
   const { openSeatDetail, openPersonDetail, openFacilityDetail, personDetailId, closeAll } = useDetailPanel()
@@ -70,6 +52,8 @@ export const SeatMapView = () => {
 
   // 07: 編集モード(ワーキングコピー+undoスタック+アクション発行)
   const editor = useLayoutEditor(layout)
+  // 05: 座席未設定(防御分岐)などの一時通知
+  const { notice: unassignedNotice, showNotice } = useTransientNotice()
   const { ready, employeeById, effectiveLayout, effectivePresenceMap, facilityStateById } = useSeatMapData(editor)
   // 移植版サイドバーは社員配列を直接受け取る
   const directoryEmployees = useMemo(() => [...employeeById.values()], [employeeById])
@@ -184,122 +168,32 @@ export const SeatMapView = () => {
     // ここでセッションを畳まない。畳むのは handleDeleteObject の中、削除が成立した後だけ
     dialogs.requestObjectDelete(ghostDeleteRef)
   }, [ghostDeleteRef, dialogs.requestObjectDelete])
-  // 操作ガイド。編集モード初回だけ自動再生し、？ ボタンで何度でも見られる。
-  // エンジンは isActive を直接受けないので、活性化(初回自動再生・退出時に畳む)は
-  // ここ(呼び出し側)の責務として持つ
+  // 操作ガイド4本(編集・メイン・チーム・家具)の活性化はフックへ寄せる。
+  // 出し分けが画面の組み立てに散ると「どのガイドがいつ出るか」が読めなくなる
   const centerOnSelector = useCallback((selector: string) => canvasRef.current?.centerOnSelector(selector), [])
-  const [tourReplayNonce, setTourReplayNonce] = useState(0)
-  const tour = useCoachMarkTour({
-    branch: EDIT_TOUR_BRANCH,
-    storageKey: EDIT_TOUR_STORAGE_KEY,
-    replayNonce: tourReplayNonce,
-    autoStart: false,
+  const tours = useSeatMapTours({
+    isEditMode: editor.isEditMode,
     centerOnSelector,
+    placementTargetType: placement.request?.target.type,
   })
-  const replayTour = useCallback(() => setTourReplayNonce((count) => count + 1), [])
-  const wasEditModeRef = useRef(editor.isEditMode)
-  // FABの「チーム」「設備」は自分のガイドを予約する。同じ操作で編集セッションも起きるため、
-  // この遷移1回ぶんだけ編集ガイドの自動再生を止める。既読化はしないので、
-  // あとから「レイアウトを編集」や長押しで入り直せば編集ガイドは通常どおり出る
-  const suppressEditTourOnceRef = useRef(false)
-  useEffect(() => {
-    const wasEditMode = wasEditModeRef.current
-    wasEditModeRef.current = editor.isEditMode
-    if (editor.isEditMode) {
-      const suppressed = suppressEditTourOnceRef.current
-      suppressEditTourOnceRef.current = false
-      // 編集モードへ初めて入った時だけ、未読なら自動再生する。
-      // ただしFAB導線が自分のガイドを出す遷移では出さない(暗幕が2枚になる)
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      if (!wasEditMode && !suppressed && !readSeen(EDIT_TOUR_STORAGE_KEY)) replayTour()
-      return
-    }
-    // 編集モードを抜けたらツアーも畳む。画面都合の折りたたみなので既読化はしない(collapse)。
-    // 一度も操作していないツアーを close で既読化すると、次に編集モードへ入っても自動再生されなくなる
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    if (wasEditMode) tour.collapse()
-  }, [editor.isEditMode, replayTour, tour.collapse])
-  // 抑止の目印は「直前の1コミット」だけ有効。編集セッションが起きなかった場合はここで捨てる。
-  // 持ち越すと、あとで正当に編集モードへ入った時のガイドまで止めてしまう
-  useEffect(() => {
-    suppressEditTourOnceRef.current = false
-  })
-  // §05-7: FABの「チーム」「設備」はそれぞれ独立フロー+独立キーを持つ。どちらもゴーストが
-  // 画面中央に出るのでスポットライトする対象が無く、中央カードのまま3ステップ流すだけになる。
-  // 自動再生の判定は「メニュー項目を選んだ時点」(§01)で行うので、マウント時の autoStart は切る
-  const [teamTourReplayNonce, setTeamTourReplayNonce] = useState(0)
-  const teamTour = useCoachMarkTour({
-    steps: TEAM_TOUR_STEPS,
-    storageKey: TEAM_TOUR_STORAGE_KEY,
-    replayNonce: teamTourReplayNonce,
-    autoStart: false,
-  })
-  const replayTeamTour = useCallback(() => setTeamTourReplayNonce((count) => count + 1), [])
-  const [furnitureTourReplayNonce, setFurnitureTourReplayNonce] = useState(0)
-  const furnitureTour = useCoachMarkTour({
-    steps: FURNITURE_TOUR_STEPS,
-    storageKey: FURNITURE_TOUR_STORAGE_KEY,
-    replayNonce: furnitureTourReplayNonce,
-    autoStart: false,
-  })
-  const replayFurnitureTour = useCallback(() => setFurnitureTourReplayNonce((count) => count + 1), [])
-  // メイン(閲覧)画面の使い方ガイド。編集ツアーとは別インスタンス・別 storageKey で、
-  // 初回未読なら自動再生(autoStart 既定 true)、以降はヘッダーの使い方ガイドボタンで再生する
-  const [mainTourReplayNonce, setMainTourReplayNonce] = useState(0)
-  const mainTour = useCoachMarkTour({
-    steps: MAIN_TOUR_STEPS,
-    storageKey: MAIN_TOUR_STORAGE_KEY,
-    replayNonce: mainTourReplayNonce,
-    centerOnSelector,
-  })
-  const replayMainTour = useCallback(() => setMainTourReplayNonce((count) => count + 1), [])
-  // §05-7:「?」は今居る導線のガイドを再生する。判断材料は配置フローが運んでいる種別だけで、
-  // 掴み直し(reposition)と未配置(null)はレイアウト編集の導線なので分岐ツアーを出す
-  const handleHelp = useCallback(() => {
-    const targetType = placement.request?.target.type
-    if (targetType === 'add-team') replayTeamTour()
-    else if (targetType === 'add-furniture' || targetType === 'add-facility') replayFurnitureTour()
-    else replayTour()
-  }, [placement.request, replayTeamTour, replayFurnitureTour, replayTour])
-  // §01の「メニュー項目を選んだ時点」。未読ならガイドを1回だけ出してから本来の導線へ進む。
-  // 既読化はツアーを閉じた時にエンジン側が行うので、ここでは書き込まない
   const handleSelectTeam = useCallback(() => {
-    if (!readSeen(TEAM_TOUR_STORAGE_KEY)) {
-      // 閲覧モードから押した時だけ編集セッションへの遷移が起きる。既に編集中なら遷移が無く、
-      // 目印を立てると後の遷移まで持ち越してしまうので立てない
-      if (!editor.isEditMode) suppressEditTourOnceRef.current = true
-      replayTeamTour()
-    }
+    tours.beginTeamFlow()
     placement.selectCategory('team')
-  }, [replayTeamTour, placement.selectCategory, editor.isEditMode])
+  }, [tours.beginTeamFlow, placement.selectCategory])
   const handleSelectFacility = useCallback(() => {
-    if (!readSeen(FURNITURE_TOUR_STORAGE_KEY)) {
-      if (!editor.isEditMode) suppressEditTourOnceRef.current = true
-      replayFurnitureTour()
-    }
+    tours.beginFacilityFlow()
     placement.openCategory()
-  }, [replayFurnitureTour, placement.openCategory, editor.isEditMode])
+  }, [tours.beginFacilityFlow, placement.openCategory])
   // 配属の結果はライブリージョンとトーストへ同じ文言を流す(実装を二重化しない)
   const assign = useSeatAssign({ editor, employeeById, onDone: (message) => showNotice(message) })
 
   const [isDirectoryOpen, setIsDirectoryOpen] = useState(false)
   const [hoverFacility, setHoverFacility] = useState<FacilityHoverPayload | null>(null)
-  // 05: 座席未設定(防御分岐)時の一時通知文言
-  const [unassignedNotice, setUnassignedNotice] = useState<string | null>(null)
   // レイアウト切り替えアイランドの展開状態。開いている間は左下FABを隠す
   const [isLayoutSwitcherOpen, setIsLayoutSwitcherOpen] = useState(false)
   // 編集セッション中に選ばれている座席数。1席以上でFABを隠す(一括操作バーと重なるため)。
   // useState のセッタは参照が安定なので、memo 済みキャンバスの再描画は増えない
   const [selectedSeatCount, setSelectedSeatCount] = useState(0)
-
-  // 連続で通知すると、前回のタイマーが後から発火して新しい文言を消してしまう。
-  // 立て続けの配属操作では毎回起きるので、出す前に前のタイマーを畳む
-  const noticeTimerRef = useRef(0)
-  const showNotice = useCallback((message: string) => {
-    window.clearTimeout(noticeTimerRef.current)
-    setUnassignedNotice(message)
-    noticeTimerRef.current = window.setTimeout(() => setUnassignedNotice(null), NOTICE_MS)
-  }, [])
 
   const handleFocusFailure = useCallback(
     (reason: FocusFailure) => {
@@ -318,7 +212,7 @@ export const SeatMapView = () => {
     isDirectoryOpen,
     isPlacementActive: placement.isActive,
     assignSeatId: assign.assignSeatId,
-    tours: [tour, mainTour, teamTour, furnitureTour],
+    tours: tours.tours,
     // 閲覧モードでは常に0として扱う二重の保険
     selectedSeatCount: editor.isEditMode ? selectedSeatCount : 0,
     isLayoutSwitcherOpen,
@@ -369,9 +263,6 @@ export const SeatMapView = () => {
     focus.focusSeat(seat)
   }, [effectiveLayout, focus.focusSeat, showNotice])
 
-  // フロー導線(チーム/家具)のガイドが再生中か。編集・メインの層を描くかの判定に使う
-  const isFlowTourPlaying = isTourPlaying(teamTour) || isTourPlaying(furnitureTour)
-
   return (
     <div className={styles.seatMapPage}>
       {!editor.isEditMode && (
@@ -381,7 +272,7 @@ export const SeatMapView = () => {
       {!editor.isEditMode && <LayoutSwitcher onExpandedChange={setIsLayoutSwitcherOpen} />}
       {/* 使い方ガイドの入口。アイランドと同じ行に並べたいので、ヘッダーではなくここで描く */}
       {!editor.isEditMode && (
-        <GuideButton ariaLabel='使い方ガイド' onClick={replayMainTour} className={styles.mapGuideButton} />
+        <GuideButton ariaLabel='使い方ガイド' onClick={tours.replayMainTour} className={styles.mapGuideButton} />
       )}
       {ready && effectiveLayout && (
         <SeatMapCanvas
@@ -484,7 +375,7 @@ export const SeatMapView = () => {
           changedCount={editor.changedCount}
           isSaving={save.isSaving}
           isPlacing={placement.request !== null}
-          onHelp={handleHelp}
+          onHelp={tours.handleHelp}
           onFinish={handleSessionFinish}
           onCancel={handleSessionCancel}
         />
@@ -501,99 +392,35 @@ export const SeatMapView = () => {
           onEditLayout={ensureEditSession}
         />
       )}
-      <ObjectCategorySheet
-        isOpen={placement.isCategoryOpen}
-        categories={['furniture', 'facility']}
-        isGaroonConnected={isGaroonConnected()}
-        onSelect={placement.selectCategory}
-        onClose={placement.cancel}
-      />
-      <FurniturePickerModal
-        isOpen={placement.isFurniturePickerOpen}
-        onSelect={placement.selectFurniture}
-        onClose={placement.cancel}
-      />
-      {/* §03-3: 施設は Garoon マスタから選んでからゴーストへ進む */}
-      <FacilityPickerModal
-        isOpen={placement.isFacilityPickerOpen}
+      <PlacementSheets
+        placement={placement}
         placedFacilityIds={placedFacilityIds}
-        onSelect={placement.selectFacility}
-        onClose={placement.cancel}
+        isGhostDeleting={isGhostDeleting}
+        onGhostDelete={isGhostDeletable ? handleGhostDelete : undefined}
       />
-      <TeamCategorySheet
-        isOpen={placement.isTeamCategoryOpen}
-        onSelectImport={placement.startTeamImport}
-        onSelectCreate={placement.startTeamCreate}
-        onClose={placement.cancel}
-      />
-      {/* §02-3: 取り込みはゴーストを通らず、確定時にスパイラル探索でまとめて置く */}
-      <TeamImportSheet
-        isOpen={placement.isTeamImportOpen}
-        onConfirm={placement.submitTeamImport}
-        onClose={placement.cancel}
-      />
-      {/* §02-2: 名前/色ダイアログはゴーストの「配置」で位置が決まった後に開く */}
-      <TeamCreatePopover
-        isOpen={placement.isTeamFormOpen}
-        onSubmit={placement.submitTeam}
-        onClose={placement.cancel}
-      />
-      {placement.request && (
-        <GhostPlacementLayer
-          request={placement.request}
-          placement={placement.placement}
-          isDeleting={isGhostDeleting}
-          onConfirm={placement.confirm}
-          onCancel={placement.cancel}
-          onDelete={isGhostDeletable ? handleGhostDelete : undefined}
-        />
-      )}
 
       {editor.errorToast && <EditErrorToast key={editor.errorToast.id} message={editor.errorToast.message} />}
 
       {editor.isEditMode && (
-        <>
-          <EmployeeAssignSheet
-            isOpen={assign.assignSeatId !== null}
-            seat={assign.assignTargetSeat}
-            employees={directoryEmployees}
-            seats={effectiveLayout?.seats ?? []}
-            employeeById={employeeById}
-            onSelect={assign.requestAssign}
-            onClear={() => assign.requestAssign(null)}
-            onClose={assign.closeAssign}
-          />
-          {assign.pendingPlan?.confirmMessage && (
-            <ConfirmDialog
-              ariaLabel='配属の確認'
-              message={assign.pendingPlan.confirmMessage}
-              confirmLabel='実行する'
-              onConfirm={assign.confirmAssign}
-              onCancel={assign.cancelAssign}
-            />
-          )}
-          {/* 07-2 の一括削除確認。タイトル行・アイコンバッジ・× を持つ 07-1 の共通シェルは別担当で、
-              ここは本文と主ボタン文言だけを仕様どおりに渡す */}
-          {bulkDeleteSeatIds && (
-            <ConfirmDialog
-              ariaLabel={`${bulkDeleteSeatIds.length}席を削除しますか？`}
-              message={`選択した${bulkDeleteSeatIds.length}席を削除します。配置済みの社員は解除されます。この操作は保存後に確定されます。`}
-              confirmLabel='削除する'
-              onConfirm={confirmBulkDelete}
-              onCancel={() => setBulkDeleteSeatIds(null)}
-            />
-          )}
-        </>
+        <SeatAssignDialogs
+          assign={assign}
+          employees={directoryEmployees}
+          seats={effectiveLayout?.seats ?? []}
+          employeeById={employeeById}
+          bulkDeleteSeatIds={bulkDeleteSeatIds}
+          onConfirmBulkDelete={confirmBulkDelete}
+          onCancelBulkDelete={() => setBulkDeleteSeatIds(null)}
+        />
       )}
 
       {/* 暗幕が2枚重なると操作不能になる。フロー導線のガイドが再生中は編集/メインの層を描かない */}
-      {editor.isEditMode && !isFlowTourPlaying && <CoachMarkTour tour={tour} />}
-      {!editor.isEditMode && !isFlowTourPlaying && <CoachMarkTour tour={mainTour} />}
+      {editor.isEditMode && !tours.isFlowTourPlaying && <CoachMarkTour tour={tours.editTour} />}
+      {!editor.isEditMode && !tours.isFlowTourPlaying && <CoachMarkTour tour={tours.mainTour} />}
       {/* §05-7: この2つは常時マウントする。FAB はセッションの外で押され、
           選択と同じフレームで ensureEditSession が isEditMode を立てるので、
           isEditMode ガードを掛けると初回の自動再生とタイミングがずれる */}
-      <CoachMarkTour tour={teamTour} />
-      <CoachMarkTour tour={furnitureTour} />
+      <CoachMarkTour tour={tours.teamTour} />
+      <CoachMarkTour tour={tours.furnitureTour} />
 
       <EditDialogs editor={editor} dialogs={dialogs} />
 

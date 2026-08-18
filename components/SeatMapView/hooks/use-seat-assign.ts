@@ -16,7 +16,7 @@ type AssignPlan = {
   resultMessage: string
 }
 
-type SeatAssign = {
+export type SeatAssign = {
   assignSeatId: string | null
   assignTargetSeat: Seat | null
   pendingPlan: AssignPlan | null
