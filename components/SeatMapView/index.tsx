@@ -42,6 +42,7 @@ import { ConfirmDialog } from '@/components/edit/ConfirmDialog'
 import { LiveRegion } from '@/components/a11y/components/LiveRegion'
 import { SeatMapCanvas } from '@/components/SeatMapCanvas'
 import type { SeatMapCanvasHandle } from '@/components/SeatMapCanvas'
+import type { RecentPlacement } from '@/components/SeatMapCanvas/type'
 import { TeamOverlay } from '@/components/TeamOverlay'
 import { EditErrorToast } from '@/components/edit/EditErrorToast'
 import { useDetailPanel } from '@/contexts/detail-panel-context'
@@ -76,10 +77,53 @@ export const SeatMapView = () => {
   const canvasRef = useRef<SeatMapCanvasHandle>(null)
 
   // 追加・削除の直後は対象の直下へ「元に戻す」チップを出す。
-  // どちらも undo スタックに載るので、ドラッグ移動と同じ導線で取り消せるようにする
-  const showUndoChipAt = useCallback((rect: Rect, message: string, frame: Rect | null = null) => {
-    canvasRef.current?.showUndoChipAt(rect.x + rect.w / 2, rect.y + rect.h, message, frame)
-  }, [])
+  // 座標は論理(viewBox)のまま渡す — 画面座標への投影はチップ側が毎フレーム行い、
+  // 表示中にパン・ズームしても対象の下辺に貼り付いたまま追従する
+  const showUndoChipAt = useCallback(
+    (rect: Rect, message: string, frame: Rect | null = null, recent: RecentPlacement | null = null) => {
+      canvasRef.current?.showUndoChipAt({
+        anchor: { x: rect.x + rect.w / 2, y: rect.y + rect.h },
+        message,
+        frame,
+        recent,
+      })
+    },
+    []
+  )
+
+  // 強調するのは会議室・家具だけ。チーム枠は面が広く、破線の枠とチップで十分に見つかる
+  const recentOf = (target: GhostRequest['target'], rect: Rect): RecentPlacement | null => {
+    if (target.type === 'add-facility') return { kind: 'facility', rect }
+    if (target.type === 'add-furniture') return { kind: 'furniture', rect }
+    if (target.type === 'reposition' && (target.ref.kind === 'facility' || target.ref.kind === 'furniture')) {
+      return { kind: target.ref.kind, rect }
+    }
+    return null
+  }
+
+  // 閲覧モードのまま置き始めた時だけ編集セッションを起こす。既に編集中なら何もしない
+  // (enterEditMode はワーキングコピーと undo スタックを作り直すので、二度呼ぶと編集内容が消える)
+  const ensureEditSession = useCallback(() => {
+    if (!editor.isEditMode) editor.enterEditMode()
+  }, [editor])
+
+  // 配置と掴み直しで文言を変える。対象の種別は配置フロー側だけが知っている
+  const handlePlaced = useCallback(
+    (rect: Rect, target: GhostRequest['target']) => {
+      showUndoChipAt(
+        rect,
+        target.type === 'reposition' ? '移動しました' : '配置しました',
+        null,
+        recentOf(target, rect)
+      )
+    },
+    [showUndoChipAt]
+  )
+
+  const placement = useObjectPlacement(editor, {
+    onPlaced: handlePlaced,
+    onEnsureEditMode: ensureEditSession,
+  })
 
   // 削除の実行はここに集約する。ダイアログ経由(会議室・チーム)も即時(家具)も同じ後始末を通す。
   // チームだけ発行口が違う(所属座席ごと消えるため object-delete では扱えない)
@@ -93,25 +137,7 @@ export const SeatMapView = () => {
     [editor, effectiveLayout, showUndoChipAt]
   )
 
-  // 閲覧モードのまま置き始めた時だけ編集セッションを起こす。既に編集中なら何もしない
-  // (enterEditMode はワーキングコピーと undo スタックを作り直すので、二度呼ぶと編集内容が消える)
-  const ensureEditSession = useCallback(() => {
-    if (!editor.isEditMode) editor.enterEditMode()
-  }, [editor])
-
-  // 配置と掴み直しで文言を変える。対象の種別は配置フロー側だけが知っている
-  const handlePlaced = useCallback(
-    (rect: Rect, targetType: GhostRequest['target']['type']) => {
-      showUndoChipAt(rect, targetType === 'reposition' ? '移動しました' : '配置しました')
-    },
-    [showUndoChipAt]
-  )
-
   const dialogs = useEditDialogs(editor, employeeById, { onDeleteObject: handleDeleteObject })
-  const placement = useObjectPlacement(editor, {
-    onPlaced: handlePlaced,
-    onEnsureEditMode: ensureEditSession,
-  })
 
   // 05-3: セッション中のチーム枠タップ = 移動ゴースト。実体はその場に残り、「配置」で初めて動く
   // (locked / fixedLayout のチームは startReposition が理由つきで弾く)
@@ -130,6 +156,18 @@ export const SeatMapView = () => {
     if (bulkDeleteSeatIds) editor.deleteSeats(bulkDeleteSeatIds)
     setBulkDeleteSeatIds(null)
   }, [bulkDeleteSeatIds, editor])
+
+  // 配置フローはセッションの内側にある。ゴーストを畳まずにセッションだけ閉じると、
+  // 読み取り専用の地図の上に暗幕とゴーストだけが残り、× 以外の逃げ道が無くなる
+  const handleSessionCancel = useCallback(() => {
+    placement.cancel()
+    save.cancel()
+  }, [placement.cancel, save.cancel])
+
+  const handleSessionFinish = useCallback(() => {
+    placement.cancel()
+    save.finish()
+  }, [placement.cancel, save.finish])
 
   // 04-4: 移動ゴーストの削除ボタン。ゴーストを畳んでから既存の削除経路へ渡す
   // (会議室は確認ダイアログ・チームは §07-3 のタイプ確認・家具は即時)
@@ -322,7 +360,6 @@ export const SeatMapView = () => {
           facilityStateById={facilityStateById}
           onFacilityHover={setHoverFacility}
           isEditMode={editor.isEditMode}
-          onTeamMove={editor.moveTeam}
           onTeamTap={handleTeamTap}
           onSeatAssignRequest={assign.openAssign}
           onSeatDeleteRequest={dialogs.requestSeatDelete}
@@ -330,7 +367,6 @@ export const SeatMapView = () => {
           onSeatShapeRequest={handleSeatEnlarge}
           onSeatBulkDeleteRequest={setBulkDeleteSeatIds}
           onEndSession={placement.isActive ? undefined : save.cancel}
-          onObjectMove={editor.moveObject}
           onObjectRepositionRequest={placement.startReposition}
           onObjectDeleteRequest={dialogs.requestObjectDelete}
           onObjectLockToggle={editor.setObjectLocked}
@@ -414,8 +450,8 @@ export const SeatMapView = () => {
           isSaving={save.isSaving}
           isPlacing={placement.request !== null}
           onHelp={handleHelp}
-          onFinish={save.finish}
-          onCancel={save.cancel}
+          onFinish={handleSessionFinish}
+          onCancel={handleSessionCancel}
         />
       )}
 

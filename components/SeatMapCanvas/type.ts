@@ -18,7 +18,6 @@ export type SeatMapCanvasProps = {
   onFacilityHover?: (payload: FacilityHoverPayload | null) => void
   // 07: 編集モード中のみ有効。未指定(閲覧モード)では以下の分岐へ一切到達しない
   isEditMode?: boolean
-  onTeamMove?: (teamId: string, x: number, y: number) => void
   onSeatEditSelect?: (seatId: string | null) => void
   // 05-3: セッション中のチーム枠タップ。呼び出し側は移動ゴーストを開く
   onTeamTap?: (teamId: string) => void
@@ -32,8 +31,6 @@ export type SeatMapCanvasProps = {
   // Escape 2段目のセッション終了(仕様 05-3)。ゴースト配置中は渡さないこと —
   // 渡すと Escape が配置キャンセルではなくセッション破棄になる(仕様 04-1 違反)
   onEndSession?: () => void
-  // 会議室・家具の編集。閲覧モードでは undefined のままでこの経路へ到達しない
-  onObjectMove?: (ref: LayoutObjectRef, x: number, y: number) => void
   // 05-3: 家具・会議室タップの行き先。移動ゴーストを開く(タップ即1段階)
   onObjectRepositionRequest?: (ref: LayoutObjectRef) => void
   onObjectDeleteRequest?: (ref: LayoutObjectRef) => void
@@ -58,12 +55,31 @@ export type SeatMapCanvasHandle = {
   measureTeamRect: (idPrefix: string) => DOMRect | null
   // ゴーストで新規配置したあと、置いた場所へ「元に戻す」チップを出す。
   // 配置フローはキャンバスの外(SeatMapView)にあるので、変換を持つこちら側へ依頼する
-  showUndoChipAt: (logicalX: number, logicalY: number, message: string, frame?: Rect | null) => void
+  showUndoChipAt: (request: UndoChipRequest) => void
   // コーチマークの対象が画面外のとき、その要素をキャンバス中央へ寄せる
   centerOnSelector: (selector: string) => void
 }
 
 export type Rect = { x: number; y: number; w: number; h: number }
+
+// 07: 「元に戻す」チップ1回分の要求。座標はすべて viewBox 単位で受け取り、
+// 画面座標への投影はチップ側が毎フレーム行う(パン・ズームへ追従させるため)
+export type UndoChipRequest = {
+  // 対象の下辺中央
+  anchor: { x: number; y: number }
+  // 「配置しました」「移動しました」「削除しました」
+  message: string
+  // 削除時のみ: 消えた位置に残す残像フレーム
+  frame: Rect | null
+  // 直前に置いた・動かした対象。チップと同じ寿命で強調する(チーム枠は対象外)
+  recent: RecentPlacement | null
+}
+
+// 投影済みの表示位置。非表示なら null
+export type UndoChipView = { chip: { x: number; y: number }; frame: Rect | null }
+
+// 直前に置いた・動かした対象。チップと同じ寿命で強調する(チーム枠は対象外)
+export type RecentPlacement = { kind: 'facility' | 'furniture'; rect: Rect }
 
 // rAF ループで進行中の演出
 export type Anim =
@@ -72,33 +88,11 @@ export type Anim =
   | { kind: 'lerp'; targetLevel: number; ax: number; ay: number; alx: number; aly: number }
   | { kind: 'bounce'; limit: number; ax: number; ay: number; alx: number; aly: number }
 
-// 07: 編集モード中のドラッグ状態(チームラベル/設備共用)。view モードでは常に不使用
-type EditDragBase = {
-  pointerId: number
-  startScreenX: number
-  startScreenY: number
-  // 掴んだ点と矩形原点の論理座標差。画面端自動パンで変換が毎フレーム動くため、
-  // 画面差分の積み上げではなく毎回絶対座標から引き直して指の真下に保つ
-  grabDx: number
-  grabDy: number
-  // 最後に観測したポインタ位置。自動パン中は pointermove が来ないフレームでも
-  // この位置から論理座標を引き直す
-  lastClientX: number
-  lastClientY: number
-  liveX: number
-  liveY: number
-  moved: boolean
-}
-
+// 押下の追跡。ドラッグ移動は廃した(移動導線はタップ → ゴースト → 配置の1本)ので、
+// 記録するのは「動かさずに離したか = タップだったか」を決めるためだけ。
 // 座席のドラッグ移動はここに無い。座席はキャンバスに描かれない(CLAUDE.md 不変ルール1)ため、
 // 座席位置の編集はチームオーバーレイのグリッド(編集4)が持つ
-export type EditDrag =
-  | { kind: 'none' }
-  | (EditDragBase & { kind: 'team'; teamId: string })
-  | (EditDragBase & { kind: 'object'; ref: LayoutObjectRef })
-
-// ドラッグ中のみ描画へ反映する座標(確定は pointerup 時に親へ1回だけ通知)
-export type LivePosition = { id: string; x: number; y: number }
+export type PressState = { pointerId: number; startX: number; startY: number; moved: boolean }
 
 // パン・ズームの変換モデルが公開するAPI(useViewport の戻り値)
 export type Viewport = {

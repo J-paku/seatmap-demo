@@ -8,13 +8,12 @@ import { useEditDrag } from './hooks/use-edit-drag'
 import { useOffscreenTeamIndicator } from './hooks/use-offscreen-team-indicator'
 import { useViewport } from './hooks/use-viewport'
 import { useZoomControls } from './hooks/use-zoom-controls'
-import type { LivePosition, SeatMapCanvasHandle, SeatMapCanvasProps } from './type'
+import type { SeatMapCanvasHandle, SeatMapCanvasProps } from './type'
 import { FacilityBlock } from '@/components/FacilityBlock'
 import { FurnitureBlock } from '@/components/FurnitureBlock'
 import { SeatMirrorLayer } from '@/components/SeatMirrorLayer'
 import { SEATMAP_BG_ID } from '@/components/SheetShell'
 import { ZoomControls } from '@/components/ZoomControls'
-import { AlignmentGuides } from '@/components/edit/AlignmentGuides'
 import { ObjectActionBar } from '@/components/edit/ObjectActionBar'
 import { SeatActionBar } from '@/components/edit/SeatActionBar'
 import { UndoChip } from '@/components/edit/UndoChip'
@@ -23,10 +22,6 @@ import { useGlobalAnnouncement } from '@/contexts/announcement-context'
 import { isOccupiedSeat } from '@/utils/seat-occupancy'
 import { resolveTeamColor } from '@/utils/team-colors'
 import styles from '@/components/seatmap.module.css'
-
-// ドラッグ中の対象だけ live 座標へ差し替える。実体を動かすことで座席と同じ手触りにする
-const livePosOf = <T extends { id: string; x: number; y: number }>(item: T, live: LivePosition | null): T =>
-  live && live.id === item.id ? { ...item, x: live.x, y: live.y } : item
 
 // 02/11: 座席マップのキャンバス。パンズーム・チームアイランド・施設・編集ドラッグを束ねる。
 // 11: チーム箱は team.area(サーバ座標)をそのまま描画する。座席からの逆算(旧 deriveTeamArea)は
@@ -44,12 +39,10 @@ export const SeatMapCanvas = memo(forwardRef<SeatMapCanvasHandle, SeatMapCanvasP
     facilityStateById,
     onFacilityHover,
     isEditMode = false,
-    onTeamMove,
     onSeatEditSelect,
     onTeamTap,
     onSeatAssignRequest,
     onSeatDeleteRequest,
-    onObjectMove,
     onObjectRepositionRequest,
     onObjectDeleteRequest,
     onObjectLockToggle,
@@ -74,9 +67,7 @@ export const SeatMapCanvas = memo(forwardRef<SeatMapCanvasHandle, SeatMapCanvasP
     viewport,
     layout,
     isEditMode,
-    onTeamMove,
     onSeatEditSelect,
-    onObjectMove,
     onTeamTap,
     onObjectTap: onObjectRepositionRequest,
     onEndSession,
@@ -133,8 +124,8 @@ export const SeatMapCanvas = memo(forwardRef<SeatMapCanvasHandle, SeatMapCanvasP
 
   useImperativeHandle(
     ref,
-    () => ({ measureTeamRect, showUndoChipAt: edit.showUndoChipAt, centerOnSelector }),
-    [measureTeamRect, edit.showUndoChipAt, centerOnSelector]
+    () => ({ measureTeamRect, showUndoChipAt: edit.undoChip.showAt, centerOnSelector }),
+    [measureTeamRect, edit.undoChip.showAt, centerOnSelector]
   )
 
   // 07: 空き領域クリックで座席の編集選択を解除(各要素側は stopPropagation 済み)
@@ -191,7 +182,6 @@ export const SeatMapCanvas = memo(forwardRef<SeatMapCanvasHandle, SeatMapCanvasP
           teams={layout.teams}
           assignedCountByTeam={view.assignedCountByTeam}
           lod={view.lod}
-          liveTeamPos={edit.liveTeamPos}
           isEditMode={isEditMode}
           onBoundaryOpen={view.handleTeamBoundaryOpen}
           onLabelEditPointerDown={edit.onTeamLabelEditPointerDown}
@@ -201,7 +191,7 @@ export const SeatMapCanvas = memo(forwardRef<SeatMapCanvasHandle, SeatMapCanvasP
         {layout.facilities.map((f) => (
           <FacilityBlock
             key={f.id}
-            facility={livePosOf(f, edit.liveObjectPos)}
+            facility={f}
             counterScale={view.counterScale}
             onSelect={(facilityId) => {
               // 編集モードでは詳細パネルを開かない。選択は上の EditObjectLayer が受ける
@@ -215,7 +205,7 @@ export const SeatMapCanvas = memo(forwardRef<SeatMapCanvasHandle, SeatMapCanvasP
         {layout.furniture.map((f) => (
           <FurnitureBlock
             key={f.id}
-            furniture={livePosOf(f, edit.liveObjectPos)}
+            furniture={f}
             counterScale={view.counterScale}
             onLongPressEditSession={isEditMode ? undefined : onEnterEditSession}
           />
@@ -226,16 +216,9 @@ export const SeatMapCanvas = memo(forwardRef<SeatMapCanvasHandle, SeatMapCanvasP
             furniture={layout.furniture}
             selected={edit.editSelectedObject}
             repositioning={repositioningRef}
-            livePos={edit.liveObjectPos}
+            recent={canUndo ? edit.undoChip.recent : null}
             onEditPointerDown={edit.onObjectEditPointerDown}
             onEditTap={edit.onObjectEditTap}
-          />
-        )}
-        {isEditMode && edit.snapGuides.length > 0 && (
-          <AlignmentGuides
-            guides={edit.snapGuides}
-            viewBoxW={layout.viewBox.width}
-            viewBoxH={layout.viewBox.height}
           />
         )}
       </div>
@@ -290,15 +273,15 @@ export const SeatMapCanvas = memo(forwardRef<SeatMapCanvasHandle, SeatMapCanvasP
           onDelete={() => onObjectDeleteRequest?.(selectedObject)}
         />
       )}
-      {isEditMode && edit.undoChipPos && canUndo && (
+      {isEditMode && edit.undoChip.view && canUndo && (
         <UndoChip
-          x={edit.undoChipPos.x}
-          y={edit.undoChipPos.y}
-          message={edit.undoChipMessage}
-          frame={edit.undoChipFrame}
+          x={edit.undoChip.view.chip.x}
+          y={edit.undoChip.view.chip.y}
+          message={edit.undoChip.message}
+          frame={edit.undoChip.view.frame}
           onUndo={() => {
             onUndo?.()
-            edit.dismissUndoChip()
+            edit.undoChip.dismiss()
           }}
         />
       )}

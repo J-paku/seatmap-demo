@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest'
 import {
   findOverlappingSeat,
   findTeamContaining,
+  lockedForMoveMessage,
   lockedMessage,
   placementBlocked,
   placementBlockReason,
@@ -257,5 +258,35 @@ describe('lockedMessage', () => {
 
   it('seat kind は常に null を返す(座席はロックを持たない)', () => {
     expect(lockedMessage(emptyLayout, { kind: 'seat', id: 'seat-x' }, '移動')).toBeNull()
+  })
+})
+
+describe('lockedForMoveMessage', () => {
+  it('fixedLayout だけのチームは移動できる(null)', () => {
+    const layout: SeatLayout = {
+      ...emptyLayout,
+      teams: [team({ id: 'team-01', name: '営業部', fixedLayout: { rows: 2, cols: 4 } })],
+    }
+    expect(lockedForMoveMessage(layout, { kind: 'team', id: 'team-01' })).toBeNull()
+  })
+
+  it('locked のチームは移動を拒む', () => {
+    const layout: SeatLayout = { ...emptyLayout, teams: [team({ id: 'team-01', name: '営業部', locked: true })] }
+    expect(lockedForMoveMessage(layout, { kind: 'team', id: 'team-01' })).toBe('「営業部」はロック中のため移動できません')
+  })
+
+  it('locked の会議室も同じ骨格の文言を返す', () => {
+    const layout: SeatLayout = {
+      ...emptyLayout,
+      facilities: [facility({ id: 'fac-01', name: '会議室A', locked: true })],
+    }
+    expect(lockedForMoveMessage(layout, { kind: 'facility', id: 'fac-01' })).toBe(
+      '「会議室A」はロック中のため移動できません'
+    )
+  })
+
+  it('ロックを持たない家具は移動できる(null)', () => {
+    const layout: SeatLayout = { ...emptyLayout, furniture: [furniture({ id: 'furn-001', name: 'ソファ' })] }
+    expect(lockedForMoveMessage(layout, { kind: 'furniture', id: 'furn-001' })).toBeNull()
   })
 })

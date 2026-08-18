@@ -1,30 +1,28 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { PointerEvent as ReactPointerEvent } from 'react'
 import { useUndoChip } from './use-undo-chip'
-import { siblingRectsForObject, siblingRectsForTeam } from '../utils/sibling-rects'
-import type { EditDrag, LivePosition, Rect, Viewport } from '../type'
-import { useEdgeAutoPan } from '@/hooks/use-edge-auto-pan'
-import { computeSnap, snapThreshold } from '@/utils/layout/snap-guides'
-import type { SnapGuide } from '@/utils/layout/snap-guides'
-import { rectOfRef } from '@/utils/layout/layout-objects'
+import type { PressState, UndoChipRequest, UndoChipView, RecentPlacement, Viewport } from '../type'
 import type { LayoutObjectRef, SeatLayout } from '@/types'
 
-// 07: 編集モードのチーム枠・設備のドラッグ移動と、座席の複数選択。閲覧モードではこのロジックへ到達しない。
+// 07: 編集モードのチーム枠・設備のタップ判定と、座席の複数選択。閲覧モードではこのロジックへ到達しない。
+//
+// 実体を指で直接動かす経路は持たない。移動導線はタップ → ゴースト → 配置の1本だけで、
+// キャンバスは移動系の props を一切受け取らない — ドラッグ移動は「確定するまで実体は動かない」
+// というゴーストの存在意義を正面から破り、置きたい場所を指が覆う問題も戻してしまう。
+// 押下の追跡は残すが、それは「指が滑っただけの押下でゴーストを開かない」ためだけに使う。
+//
 // 座席そのものはキャンバスに描かれない(CLAUDE.md 不変ルール1・仕様 00-2)。座席位置の編集は
 // チームオーバーレイのグリッド(編集4)が担い、ここが持つのは「どの座席を選んでいるか」だけ
 
-// ドラッグとみなす最小移動量
+// ドラッグとみなす最小移動量(ゴースト側の DRAG_CONFIRM_PX と同値)
 const DRAG_THRESHOLD_PX = 3
 
 type Options = {
   viewport: Viewport
   layout: SeatLayout
   isEditMode: boolean
-  onTeamMove?: (teamId: string, x: number, y: number) => void
   onSeatEditSelect?: (seatId: string | null) => void
-  onObjectMove?: (ref: LayoutObjectRef, x: number, y: number) => void
-  // 05-3: タップ(動かさずに離した押下)で移動ゴーストを開く。実体はその場に残る。
-  // ドラッグで動かし切った直後の click では発火しない — 同じ操作でゴーストまで開くと二重になる
+  // 05-3: タップ(動かさずに離した押下)で移動ゴーストを開く。実体はその場に残る
   onTeamTap?: (teamId: string) => void
   onObjectTap?: (ref: LayoutObjectRef) => void
   // Escape の2段目。セッション終了=ステージング破棄(確認なし・仕様 05-3)
@@ -32,15 +30,15 @@ type Options = {
 }
 
 type EditDragState = {
-  liveTeamPos: LivePosition | null
-  liveObjectPos: LivePosition | null
-  snapGuides: SnapGuide[]
   editSelectedSeatIds: string[]
   editSelectedObject: LayoutObjectRef | null
-  undoChipPos: { x: number; y: number } | null
-  undoChipMessage: string
-  undoChipFrame: Rect | null
-  showUndoChipAt: (logicalX: number, logicalY: number, message: string, frame?: Rect | null) => void
+  undoChip: {
+    view: UndoChipView | null
+    message: string
+    recent: RecentPlacement | null
+    showAt: (request: UndoChipRequest) => void
+    dismiss: () => void
+  }
   selectSeat: (seatId: string, toggle: boolean) => void
   onTeamLabelEditPointerDown: (teamId: string, e: ReactPointerEvent) => void
   onObjectEditPointerDown: (ref: LayoutObjectRef, e: ReactPointerEvent) => void
@@ -48,25 +46,20 @@ type EditDragState = {
   onTeamEditTap: (teamId: string) => void
   onObjectEditTap: (ref: LayoutObjectRef) => void
   clearSelection: () => void
-  dismissUndoChip: () => void
 }
 
 export const useEditDrag = ({
   viewport,
   layout,
   isEditMode,
-  onTeamMove,
   onSeatEditSelect,
-  onObjectMove,
   onTeamTap,
   onObjectTap,
   onEndSession,
 }: Options): EditDragState => {
-  const { transformRef, rect } = viewport
-  const editDragRef = useRef<EditDrag>({ kind: 'none' })
+  const { transformRef } = viewport
+  const pressRef = useRef<PressState | null>(null)
   const undoChip = useUndoChip(transformRef)
-  // 画面端自動パン。掴んだまま端へ寄せると地図側が滑り、行き先が画面外へ広がる
-  const edgePan = useEdgeAutoPan()
   // ドラッグで動かした直後にブラウザが送る click を1回だけ握り潰すための目印。
   // 読み取りと消費を1関数へ閉じるのは FAB の長押し(consumeFired)と同じ理由 —
   // 呼び出し側へ ref を渡すと外から書き換える形になり React Compiler の検査に反する
@@ -78,10 +71,6 @@ export const useEditDrag = ({
     return true
   }
 
-  // ライブ座標(ドラッグ中のみ描画反映。確定はpointerup時に親へ1回通知)
-  const [liveTeamPos, setLiveTeamPos] = useState<LivePosition | null>(null)
-  const [liveObjectPos, setLiveObjectPos] = useState<LivePosition | null>(null)
-  const [snapGuides, setSnapGuides] = useState<SnapGuide[]>([])
   // 05-3: 編集セッション中に選択された座席(複数可)。フローティングアクションバーの対象
   const [editSelectedSeatIds, setEditSelectedSeatIds] = useState<string[]>([])
   // キー操作は最新の選択を同期的に読む必要があるため、state と同じ値を ref にも持つ
@@ -132,82 +121,36 @@ export const useEditDrag = ({
     return true
   }, [layout.seats, applySeatSelection])
 
-  // ポインタの論理座標(viewBox 系)。画面差分の積み上げではなく毎回ここから引き直すことで、
-  // 画面端自動パンで変換が動いている間も掴んだ矩形が指の真下に残る
-  const pointerLogical = useCallback(
-    (clientX: number, clientY: number) => {
-      const r = rect()
-      if (!r) return null
-      const t = transformRef.current
-      return { x: (clientX - r.left - t.translateX) / t.scale, y: (clientY - r.top - t.translateY) / t.scale }
-    },
-    [rect, transformRef]
-  )
+  // 押下の記録。論理座標も対象矩形も要らない — 判定に使うのは移動量だけ
+  const beginPress = useCallback((e: ReactPointerEvent) => {
+    suppressTapRef.current = false
+    pressRef.current = { pointerId: e.pointerId, startX: e.clientX, startY: e.clientY, moved: false }
+    ;(e.target as HTMLElement).setPointerCapture(e.pointerId)
+  }, [])
 
   const onTeamLabelEditPointerDown = useCallback(
     (teamId: string, e: ReactPointerEvent) => {
       if (!isEditMode) return
       e.stopPropagation()
-      const team = layout.teams.find((t) => t.id === teamId)
-      if (!team) return
-      const p = pointerLogical(e.clientX, e.clientY)
-      if (!p) return
-      suppressTapRef.current = false
+      if (!layout.teams.some((t) => t.id === teamId)) return
       applySeatSelection([])
       setEditSelectedObject(null)
       undoChip.dismiss()
-      // 2本目の指がドラッグ状態を上書きしても、1本目が起こしたパンループを残さない
-      edgePan.stop()
-      editDragRef.current = {
-        kind: 'team',
-        teamId,
-        pointerId: e.pointerId,
-        startScreenX: e.clientX,
-        startScreenY: e.clientY,
-        grabDx: p.x - team.area.x,
-        grabDy: p.y - team.area.y,
-        lastClientX: e.clientX,
-        lastClientY: e.clientY,
-        liveX: team.area.x,
-        liveY: team.area.y,
-        moved: false,
-      }
-      ;(e.target as HTMLElement).setPointerCapture(e.pointerId)
+      beginPress(e)
     },
-    [isEditMode, layout.teams, applySeatSelection, undoChip, pointerLogical, edgePan]
+    [isEditMode, layout.teams, applySeatSelection, undoChip, beginPress]
   )
 
   const onObjectEditPointerDown = useCallback(
     (ref: LayoutObjectRef, e: ReactPointerEvent) => {
       if (!isEditMode) return
       e.stopPropagation()
-      const objRect = rectOfRef(layout, ref)
-      if (!objRect) return
-      const p = pointerLogical(e.clientX, e.clientY)
-      if (!p) return
-      suppressTapRef.current = false
       setEditSelectedObject(ref)
       applySeatSelection([])
       undoChip.dismiss()
-      // 2本目の指がドラッグ状態を上書きしても、1本目が起こしたパンループを残さない
-      edgePan.stop()
-      editDragRef.current = {
-        kind: 'object',
-        ref,
-        pointerId: e.pointerId,
-        startScreenX: e.clientX,
-        startScreenY: e.clientY,
-        grabDx: p.x - objRect.x,
-        grabDy: p.y - objRect.y,
-        lastClientX: e.clientX,
-        lastClientY: e.clientY,
-        liveX: objRect.x,
-        liveY: objRect.y,
-        moved: false,
-      }
-      ;(e.target as HTMLElement).setPointerCapture(e.pointerId)
+      beginPress(e)
     },
-    [isEditMode, layout, applySeatSelection, undoChip, pointerLogical, edgePan]
+    [isEditMode, applySeatSelection, undoChip, beginPress]
   )
 
   // 05-3: チーム枠タップ = 移動ゴースト。ラベルを掴んで動かした後の click はここで捨てる。
@@ -235,80 +178,24 @@ export const useEditDrag = ({
     [isEditMode, onObjectTap]
   )
 
-  // 編集ドラッグの document 追従(pointerId ベース)
+  // 押下追跡。ここで editor へは何も発行しない — 移動の発行はゴーストの「配置」だけが持つ
   useEffect(() => {
     if (!isEditMode) return
 
-    // 掴んだ矩形をポインタの真下へ引き直す。pointermove と自動パンの両方から毎フレーム呼ばれる
-    const follow = (clientX: number, clientY: number) => {
-      const drag = editDragRef.current
-      if (drag.kind === 'none') return
-      const p = pointerLogical(clientX, clientY)
-      if (!p) return
-      const scale = transformRef.current.scale
-      const rawX = p.x - drag.grabDx
-      const rawY = p.y - drag.grabDy
-
-      if (drag.kind === 'object') {
-        const rect = rectOfRef(layout, drag.ref)
-        if (!rect) return
-        const candidate: Rect = { x: rawX, y: rawY, w: rect.w, h: rect.h }
-        const snap = computeSnap(candidate, siblingRectsForObject(layout, drag.ref), snapThreshold(candidate, scale))
-        drag.liveX = snap.x
-        drag.liveY = snap.y
-        setLiveObjectPos({ id: drag.ref.id, x: snap.x, y: snap.y })
-        setSnapGuides(snap.guides)
-      } else if (drag.kind === 'team') {
-        const team = layout.teams.find((t) => t.id === drag.teamId)
-        if (!team) return
-        const candidate: Rect = { x: rawX, y: rawY, w: team.area.w, h: team.area.h }
-        const snap = computeSnap(candidate, siblingRectsForTeam(layout, drag.teamId), snapThreshold(candidate, scale))
-        drag.liveX = snap.x
-        drag.liveY = snap.y
-        setLiveTeamPos({ id: drag.teamId, x: snap.x, y: snap.y })
-        setSnapGuides(snap.guides)
-      }
-    }
-
     const onMove = (e: PointerEvent) => {
-      const drag = editDragRef.current
-      if (drag.kind === 'none' || drag.pointerId !== e.pointerId) return
-      if (!drag.moved && Math.hypot(e.clientX - drag.startScreenX, e.clientY - drag.startScreenY) > DRAG_THRESHOLD_PX) {
-        drag.moved = true
-      }
-      drag.lastClientX = e.clientX
-      drag.lastClientY = e.clientY
-      follow(e.clientX, e.clientY)
-      // 自動パンはドラッグが確定してから。端の近くで掴んだだけのタップでパンさせない
-      if (drag.moved) {
-        edgePan.update(e.clientX, e.clientY, rect(), () => {
-          const d = editDragRef.current
-          if (d.kind !== 'none') follow(d.lastClientX, d.lastClientY)
-        })
+      const press = pressRef.current
+      if (!press || press.pointerId !== e.pointerId) return
+      if (!press.moved && Math.hypot(e.clientX - press.startX, e.clientY - press.startY) > DRAG_THRESHOLD_PX) {
+        press.moved = true
       }
     }
 
     const onUp = (e: PointerEvent) => {
-      const drag = editDragRef.current
-      if (drag.kind === 'none' || drag.pointerId !== e.pointerId) return
-      editDragRef.current = { kind: 'none' }
-      edgePan.stop()
+      const press = pressRef.current
+      if (!press || press.pointerId !== e.pointerId) return
       // 動かして離した = ドラッグ確定。この直後に来る click はタップではないので捨てる
-      suppressTapRef.current = drag.moved
-      setSnapGuides([])
-      if (drag.kind === 'object') {
-        setLiveObjectPos(null)
-        if (drag.moved) {
-          onObjectMove?.(drag.ref, drag.liveX, drag.liveY)
-          undoChip.showAt(drag.liveX, drag.liveY, '移動しました')
-        }
-      } else if (drag.kind === 'team') {
-        setLiveTeamPos(null)
-        if (drag.moved) {
-          onTeamMove?.(drag.teamId, drag.liveX, drag.liveY)
-          undoChip.showAt(drag.liveX, drag.liveY, '移動しました')
-        }
-      }
+      suppressTapRef.current = press.moved
+      pressRef.current = null
     }
 
     window.addEventListener('pointermove', onMove)
@@ -319,7 +206,7 @@ export const useEditDrag = ({
       window.removeEventListener('pointerup', onUp)
       window.removeEventListener('pointercancel', onUp)
     }
-  }, [isEditMode, layout, transformRef, onTeamMove, onObjectMove, undoChip, pointerLogical, rect, edgePan])
+  }, [isEditMode])
 
   // 05-3 のキー操作。Escape は1回の押下で ①選択解除 ②セッション終了(ステージング破棄)の
   // 両方を発火させる — 確認は挟まない
@@ -346,31 +233,19 @@ export const useEditDrag = ({
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setEditSelectedSeatIds([])
     setEditSelectedObject(null)
-    setLiveTeamPos(null)
-    setLiveObjectPos(null)
-    setSnapGuides([])
     undoChip.dismiss()
-    editDragRef.current = { kind: 'none' }
-    // ドラッグ中にセッションが終わった場合、パンループだけ生き残らせない
-    edgePan.stop()
-  }, [isEditMode, undoChip, edgePan])
+    pressRef.current = null
+  }, [isEditMode, undoChip])
 
   return {
-    liveTeamPos,
-    liveObjectPos,
-    snapGuides,
     editSelectedSeatIds,
     editSelectedObject,
-    undoChipPos: undoChip.pos,
-    undoChipMessage: undoChip.message,
-    undoChipFrame: undoChip.frame,
-    showUndoChipAt: undoChip.showAt,
+    undoChip,
     selectSeat,
     onTeamLabelEditPointerDown,
     onObjectEditPointerDown,
     onTeamEditTap,
     onObjectEditTap,
     clearSelection,
-    dismissUndoChip: undoChip.dismiss,
   }
 }

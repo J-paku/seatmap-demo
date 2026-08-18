@@ -36,8 +36,6 @@ type Options = {
   active: boolean
   // viewBox 実寸。再配置のときは現在サイズを渡す
   size: { width: number; height: number }
-  // 再配置のとき現在の論理矩形。新規配置では省く
-  initialRect?: Rect | null
   resizable: boolean
   // 最小寸法の上書き(会議室は座席1つ分 105×75 を下回らせない)
   minSize?: { width: number; height: number }
@@ -88,7 +86,6 @@ type DragState =
 export const useGhostPlacement = ({
   active,
   size,
-  initialRect = null,
   minSize = { width: GHOST_MIN_SIZE, height: GHOST_MIN_SIZE },
   siblings,
   blockReason: getBlockReason,
@@ -242,14 +239,15 @@ export const useGhostPlacement = ({
     // サイズ上書きはここでリセットする(前回のリサイズ結果を引きずらない)
     sizeRef.current = size
     setLogicalSize(size)
-    const initial = initialRect
-      ? toScreenCenter(initialRect)
-      : {
-          x: canvasRectRef.current.left + canvasRectRef.current.width / 2,
-          y: canvasRectRef.current.top + canvasRectRef.current.height / 2,
-        }
-    setCenter(initial)
-  }, [active, size, initialRect, toScreenCenter, edgePan])
+    // 新規配置か掴み直しかに関わらず、初期中心は常にキャンバス矩形の中心。
+    // 実体の真上に湧かせると一拍のあいだどちらが実体か判別できず、
+    // 「地図の側を動かして狙いを合わせる」という操作モデルが移動では成立しなくなる。
+    // ここでクランプは掛けない — 素のキャンバス中心をそのまま置く
+    setCenter({
+      x: canvasRectRef.current.left + canvasRectRef.current.width / 2,
+      y: canvasRectRef.current.top + canvasRectRef.current.height / 2,
+    })
+  }, [active, size, edgePan])
 
   // キャンバスの transform を監視する。変換が変わったときにやってよいのは、
   // キャンバス矩形の実測とガイドの引き直しだけ

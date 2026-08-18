@@ -90,3 +90,27 @@ export const lockedMessage = (layout: SeatLayout, ref: LayoutObjectRef, action: 
   // 座席のロックは持たない(Seat に locked が無い)。ここで嘘の許可を返さないよう明示する
   return null
 }
+
+// §05-3 の移動専用ロック判定。チームだけ fixedLayout を見ない —
+// レイアウト固定が縛るのは枠の内側の座席グリッドであって、島を床のどこへ置くかではない
+// (team-move は枠と所属座席を同じ差分で平行移動するのでグリッドの形は保たれる)。
+// 会議室・家具も条件は locked だけなので、文言の骨格をここで揃える
+export const lockedForMoveMessage = (layout: SeatLayout, ref: LayoutObjectRef): string | null => {
+  const suffix = (label: string): string => `「${label}」はロック中のため移動できません`
+  if (ref.kind === 'team') {
+    const team = layout.teams.find((t) => t.id === ref.id)
+    if (!team) return null
+    return team.locked ? suffix(team.name) : null
+  }
+  if (ref.kind === 'facility') {
+    const facility = layout.facilities.find((f) => f.id === ref.id)
+    if (!facility) return null
+    return facility.locked ? suffix(facility.name) : null
+  }
+  if (ref.kind === 'furniture') {
+    const item = layout.furniture.find((f) => f.id === ref.id)
+    if (!item) return null
+    return item.locked ? suffix(item.name || '家具') : null
+  }
+  return null
+}

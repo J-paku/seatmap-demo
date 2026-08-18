@@ -6,8 +6,14 @@ import { useErrorToast } from './use-error-toast'
 import type { ErrorToastState } from './use-error-toast'
 import type { GaroonFacility } from '@/lib/garoon/facilities'
 import type { Rect } from '@/utils/layout/rect'
-import { findOverlappingSeat, findTeamContaining, lockedMessage, placementBlocked, seatOverlapsFixture } from '@/utils/layout/layout-rules'
-import { rectOfRef } from '@/utils/layout/layout-objects'
+import {
+  findOverlappingSeat,
+  findTeamContaining,
+  lockedForMoveMessage,
+  lockedMessage,
+  placementBlocked,
+  seatOverlapsFixture,
+} from '@/utils/layout/layout-rules'
 import type { EditableObjectKind } from '@/utils/layout/layout-actions'
 import type { FurnitureKind, LayoutObjectRef, Seat, SeatLayout, Team } from '@/types'
 
@@ -46,7 +52,6 @@ export type UseLayoutEditorApi = {
   addFurniture: (furnitureKind: FurnitureKind, rect: Rect) => boolean
   // §03-3: Garoon マスタから選んだ1件を置く。省略時は未連携の会議室として採番する
   addFacility: (rect: Rect, facility?: GaroonFacility) => boolean
-  moveObject: (ref: LayoutObjectRef, x: number, y: number) => void
   resizeObject: (ref: LayoutObjectRef, rect: Rect) => boolean
   deleteObject: (ref: LayoutObjectRef) => void
   // §05-3: 会議室・家具のロック/ラベル表示トグル
@@ -171,7 +176,7 @@ export const useLayoutEditor = (sourceLayout: SeatLayout | undefined): UseLayout
       if (!team) return false
       // §05-3: 入口(ゴースト)でも同じ判定を通しているが、発行口でも必ず見る。
       // 二重ガードにしないと、入口を増やしたときにロックを素通りする経路が生まれる
-      const locked = lockedMessage(layout, { kind: 'team', id: teamId }, '移動')
+      const locked = lockedForMoveMessage(layout, { kind: 'team', id: teamId })
       if (locked) {
         showError(locked)
         return false
@@ -253,33 +258,11 @@ export const useLayoutEditor = (sourceLayout: SeatLayout | undefined): UseLayout
     [guardPlacement, stage]
   )
 
-  // 会議室・家具の移動。ゴースト配置と同じ placementBlocked を通し、自分自身だけ障害物から外す
-  const moveObject = useCallback(
-    (ref: LayoutObjectRef, x: number, y: number) => {
-      const layout = editingLayout
-      if (!layout) return
-      const rect = rectOfRef(layout, ref)
-      if (!rect) return
-      const locked = lockedMessage(layout, ref, '移動')
-      if (locked) {
-        showError(locked)
-        return
-      }
-      const candidate: Rect = { x, y, w: rect.w, h: rect.h }
-      if (placementBlocked(layout, ref, candidate)) {
-        showError(MSG_OVERLAP)
-        return
-      }
-      stage({ type: 'object-move', kind: ref.kind as EditableObjectKind, id: ref.id, x, y })
-    },
-    [editingLayout, stage, showError]
-  )
-
   const resizeObject = useCallback(
     (ref: LayoutObjectRef, rect: Rect): boolean => {
       const layout = editingLayout
       if (!layout) return false
-      const locked = lockedMessage(layout, ref, '移動')
+      const locked = lockedForMoveMessage(layout, ref)
       if (locked) {
         showError(locked)
         return false
@@ -391,7 +374,6 @@ export const useLayoutEditor = (sourceLayout: SeatLayout | undefined): UseLayout
       deleteTeam,
       addFurniture,
       addFacility,
-      moveObject,
       resizeObject,
       deleteObject,
       setObjectLocked,
@@ -425,7 +407,6 @@ export const useLayoutEditor = (sourceLayout: SeatLayout | undefined): UseLayout
       deleteTeam,
       addFurniture,
       addFacility,
-      moveObject,
       resizeObject,
       deleteObject,
       setObjectLocked,

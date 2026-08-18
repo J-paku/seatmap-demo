@@ -627,3 +627,25 @@
 .editObjectHit.isRepositioning {
   background: color-mix(in srgb, var(--color-surface) 62%, transparent);
 }
+
+/* 直前に配置・移動した対象の目印。角丸だけ種別で変わるのでインラインで受ける */
+.editObjectRecent {
+  position: absolute;
+  box-sizing: border-box;
+  border: 3px solid var(--color-success);
+  background: color-mix(in srgb, var(--color-success) 22%, transparent);
+  pointer-events: none;
+  animation: editRecentPulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes editRecentPulse {
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .editObjectRecent {
+    animation: none;
+  }
+}

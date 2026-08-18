@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { GhostRequest } from '@/components/GhostPlacementLayer'
 import type { ObjectCategory } from '@/components/ObjectCategorySheet'
 import { siblingRectsForObject } from '@/components/SeatMapCanvas/utils/sibling-rects'
@@ -10,7 +10,7 @@ import { MSG_OVERLAP } from '@/hooks/use-layout-editor/use-layout-editor'
 import type { UseLayoutEditorApi } from '@/hooks/use-layout-editor/use-layout-editor'
 import { FURNITURE_DEFAULT_SIZE, FURNITURE_KIND_LABEL } from '@/utils/furniture-catalog'
 import { rectOfRef } from '@/utils/layout/layout-objects'
-import { lockedMessage, placementBlockReason } from '@/utils/layout/layout-rules'
+import { lockedForMoveMessage, placementBlockReason } from '@/utils/layout/layout-rules'
 import { GHOST_MIN_SIZE } from '@/utils/layout/rect'
 import type { Rect } from '@/utils/layout/rect'
 import { DEFAULT_SEAT_HEIGHT, DEFAULT_SEAT_WIDTH } from '@/utils/layout/seat-relayout'
@@ -90,7 +90,7 @@ export type ObjectPlacement = {
 
 type Options = {
   // 配置が成立したことの通知。呼び出し側が「元に戻す」チップを出すのに使う
-  onPlaced?: (rect: Rect, targetType: GhostRequest['target']['type']) => void
+  onPlaced?: (rect: Rect, target: GhostRequest['target']) => void
   // 閲覧モードから置き始めた時に編集セッションを起こす。冪等であることは呼び出し側が保証する
   onEnsureEditMode: () => void
 }
@@ -117,7 +117,6 @@ export const useObjectPlacement = (
   const placement = useGhostPlacement({
     active: request !== null,
     size: request?.size ?? IDLE_SIZE,
-    initialRect: request?.initialRect ?? null,
     resizable: request?.resizable ?? false,
     minSize: request?.minSize,
     siblings,
@@ -131,20 +130,24 @@ export const useObjectPlacement = (
     setFlow({ step: 'category' })
   }, [onEnsureEditMode])
 
+  // セッションへ入るのは「配置対象が決まった時点」に統一する。分類を選んだだけでは入らない —
+  // チームの2択シートの後ろで画面が編集モードへ切り替わると、シートを閉じた後に
+  // 頼んだ覚えのない編集セッションだけが残る
   const selectCategory = useCallback(
     (category: ObjectCategory) => {
-      onEnsureEditMode()
       if (category === 'furniture') {
+        onEnsureEditMode()
         setFlow({ step: 'furniture-picker' })
         return
       }
       if (category === 'team') {
-        // §02-1: チームは「既存から取り込み / 新規作成」の2択を挟む
+        // §02-1: チームは「既存から取り込み / 新規作成」の2択を挟む。ここでは入らない
         setFlow({ step: 'team-category' })
         return
       }
       if (category === 'facility') {
         // §03-3: どの施設かはピッカーで決める。ここではゴーストを開かない
+        onEnsureEditMode()
         setFlow({ step: 'facility-picker' })
       }
     },
@@ -162,7 +165,6 @@ export const useObjectPlacement = (
           label: facility.name,
           size: FACILITY_DEFAULT_SIZE,
           minSize: FACILITY_MIN_SIZE,
-          initialRect: null,
           // §04-4: リサイズできるのは施設の移動モードだけ。新規作成では既定サイズのまま置く
           resizable: false,
           outline: 'solid',
@@ -183,7 +185,6 @@ export const useObjectPlacement = (
           label: FURNITURE_KIND_LABEL[kind],
           size: FURNITURE_DEFAULT_SIZE[kind],
           minSize: FURNITURE_MIN_SIZE,
-          initialRect: null,
           // §04-4: 家具はリサイズ対象外(施設の移動モードのみ)
           resizable: false,
           outline: 'solid',
@@ -206,7 +207,6 @@ export const useObjectPlacement = (
         // チームの枠は 2行4列の座席で決まるので、ゴーストでは引き伸ばさせない(破線・リサイズ不可)
         size: NEW_TEAM_AREA_SIZE,
         minSize: NEW_TEAM_AREA_SIZE,
-        initialRect: null,
         resizable: false,
         outline: 'dashed',
         selfRef: null,
@@ -244,7 +244,7 @@ export const useObjectPlacement = (
       const { rect } = flow
       if (!editor.addTeam(name, color, rect)) return
       setFlow({ step: 'idle' })
-      onPlaced?.(rect, 'add-team')
+      onPlaced?.(rect, { type: 'add-team', name, color })
     },
     [flow, editor, onPlaced]
   )
@@ -256,9 +256,10 @@ export const useObjectPlacement = (
       if (!layout) return
       const rect = rectOfRef(layout, ref)
       if (!rect) return
-      // §05-3: locked / fixedLayout は移動そのものを開始させない。
+      // §05-3: ロック中の対象は移動そのものを開始させない(レイアウト固定は移動を妨げない —
+      // 固定が縛るのは枠の内側の座席グリッドで、島を床のどこへ置くかではない)。
       // 黙って無視すると「タップが効かない」としか見えないので必ず理由を通知する
-      const locked = lockedMessage(layout, ref, '移動')
+      const locked = lockedForMoveMessage(layout, ref)
       if (locked) {
         editor.showError(locked)
         return
@@ -281,7 +282,6 @@ export const useObjectPlacement = (
               : ref.kind === 'team'
                 ? { width: rect.w, height: rect.h }
                 : FURNITURE_MIN_SIZE,
-          initialRect: rect,
           // §04-4 のリサイズ可能条件。原典は kind==='furniture' && furnitureKind==='facility' だが、
           // このリポジトリは会議室を別型 Facility で持つ(DECISION D1)ため「施設の移動モード」で判定する。
           // チーム枠のリサイズはハンドルドラッグ(枠に対する操作)で行う仕様なのでゴーストでは広げない
@@ -293,6 +293,17 @@ export const useObjectPlacement = (
     },
     [layout, editor]
   )
+
+  // 編集セッションが閉じたら配置フローも畳む。セッションの外にゴーストだけを生き残らせない。
+  // 本線は呼び出し側(終了・キャンセル操作の包み込み)で、こちらは口が増えたときの網
+  const wasEditModeRef = useRef(editor.isEditMode)
+  useEffect(() => {
+    const wasEditMode = wasEditModeRef.current
+    wasEditModeRef.current = editor.isEditMode
+    // 立ち下がり(true → false)だけを見る。立ち上がりで畳むと、startTeamCreate が
+    // onEnsureEditMode() の直後に placing を立てる導線が自分で自分を消す
+    if (wasEditMode && !editor.isEditMode) setFlow({ step: 'idle' })
+  }, [editor.isEditMode])
 
   const cancel = useCallback(() => setFlow({ step: 'idle' }), [])
 
@@ -327,7 +338,7 @@ export const useObjectPlacement = (
             : false
     if (!ok) return
     setFlow({ step: 'idle' })
-    onPlaced?.(rect, target.type)
+    onPlaced?.(rect, target)
   }, [request, placement, editor, onPlaced, blockReason])
 
   return useMemo(

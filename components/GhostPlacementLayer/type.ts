@@ -1,5 +1,4 @@
 import type { GaroonFacility } from '@/lib/garoon/facilities'
-import type { Rect } from '@/utils/layout/rect'
 import type { FurnitureKind, LayoutObjectRef } from '@/types'
 
 // 何を置こうとしているか。配置の入口(FAB・再配置ボタン)がこれを組み立て、
@@ -20,8 +19,6 @@ export type GhostRequest = {
   size: { width: number; height: number }
   // リサイズの下限。会議室は座席1つ分を下回らせない
   minSize: { width: number; height: number }
-  // 再配置のときの現在位置。新規配置では null
-  initialRect: Rect | null
   resizable: boolean
   // チームは破線、家具・会議室は実線
   outline: 'solid' | 'dashed'
