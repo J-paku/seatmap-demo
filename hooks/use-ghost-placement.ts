@@ -166,8 +166,8 @@ export const useGhostPlacement = ({
     const toY = (v: number) => canvas.top + t.ty + v * t.scale
     return gs.map((g) =>
       g.axis === 'vertical'
-        ? { axis: 'vertical', pos: toX(g.pos), start: toY(g.start), end: toY(g.end) }
-        : { axis: 'horizontal', pos: toY(g.pos), start: toX(g.start), end: toX(g.end) }
+        ? { ...g, pos: toX(g.pos), start: toY(g.start), end: toY(g.end), extend: g.extend * t.scale }
+        : { ...g, pos: toY(g.pos), start: toX(g.start), end: toX(g.end), extend: g.extend * t.scale }
     )
   }, [])
 

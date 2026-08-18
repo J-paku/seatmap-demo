@@ -7,7 +7,7 @@
 //
 // ここが答えるのは「どこに何があるか」だけ。ぶつかった時に何が起きるか(座席同士は入れ替え、
 // 会議室とは拒否、チームエリア内は所属変更)はポリシーなので layout-rules 側に残す
-import { rectOf } from './rect'
+import { rectOf, rotatedRectOf } from './rect'
 import type { Rect } from './rect'
 import type { LayoutObjectKind, LayoutObjectRef, SeatLayout, Team } from '@/types'
 
@@ -24,7 +24,9 @@ const entriesOfKind = (layout: SeatLayout, kind: LayoutObjectKind): LayoutObject
     case 'facility':
       return layout.facilities.map((f) => ({ id: f.id, rect: rectOf(f) }))
     case 'furniture':
-      return layout.furniture.map((f) => ({ id: f.id, rect: rectOf(f) }))
+      // 家具だけが rotation を持つ。座席は保存時に幅高さの交換を済ませており、
+      // 会議室(Facility)は rotation フィールドを持たないので、どちらもここへ載せない
+      return layout.furniture.map((f) => ({ id: f.id, rect: rotatedRectOf(f) }))
     default: {
       // 種別を足してここに case を書き忘れると、この代入がコンパイルエラーになる
       const exhaustive: never = kind

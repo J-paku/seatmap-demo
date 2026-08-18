@@ -110,6 +110,21 @@ describe('rectsOfKinds', () => {
   })
 })
 
+describe('回転込みの矩形(家具ブランチのみ)', () => {
+  it('90度回転の家具は中心を保って幅高さを交換した矩形になる', () => {
+    const layout: SeatLayout = {
+      ...emptyLayout,
+      furniture: [furniture({ x: 100, y: 100, width: 200, height: 20, rotation: 90 })],
+    }
+    expect(rectsOfKinds(layout, ['furniture'])).toEqual([{ x: 190, y: 10, w: 20, h: 200 }])
+  })
+
+  it('会議室は rotation を持たないので素の箱のまま(回転経路へ載せない判断の固定)', () => {
+    const layout: SeatLayout = { ...emptyLayout, facilities: [facility()] }
+    expect(rectOfRef(layout, { kind: 'facility', id: 'fac-01' })).toEqual({ x: 50, y: 60, w: 120, h: 90 })
+  })
+})
+
 describe('rectOfRef', () => {
   it('存在するidの矩形を返す', () => {
     const layout: SeatLayout = { ...emptyLayout, furniture: [furniture({ id: 'furn-005', x: 9, y: 8, width: 7, height: 6 })] }

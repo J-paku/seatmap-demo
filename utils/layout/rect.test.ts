@@ -5,6 +5,7 @@ import {
   rectsIntersect,
   insetRect,
   clampGhostDisplaySize,
+  rotatedRectOf,
   pointInRect,
   clampRectToViewBox,
   boundingBoxOf,
@@ -22,6 +23,59 @@ describe('rectOf', () => {
 
   it('負の座標もそのまま通す', () => {
     expect(rectOf({ x: -5, y: -8, width: 10, height: 10 })).toEqual({ x: -5, y: -8, w: 10, h: 10 })
+  })
+})
+
+describe('rotatedRectOf', () => {
+  it('90度は中心を保って幅高さを交換する', () => {
+    expect(rotatedRectOf({ x: 100, y: 100, width: 200, height: 20, rotation: 90 })).toEqual({
+      x: 190,
+      y: 10,
+      w: 20,
+      h: 200,
+    })
+  })
+
+  it('270度も90度と同じ結果になる', () => {
+    expect(rotatedRectOf({ x: 100, y: 100, width: 200, height: 20, rotation: 270 })).toEqual({
+      x: 190,
+      y: 10,
+      w: 20,
+      h: 200,
+    })
+  })
+
+  it('180度は素の箱', () => {
+    expect(rotatedRectOf({ x: 100, y: 100, width: 200, height: 20, rotation: 180 })).toEqual({
+      x: 100,
+      y: 100,
+      w: 200,
+      h: 20,
+    })
+  })
+
+  it('0度は素の箱', () => {
+    expect(rotatedRectOf({ x: 100, y: 100, width: 200, height: 20, rotation: 0 })).toEqual({
+      x: 100,
+      y: 100,
+      w: 200,
+      h: 20,
+    })
+  })
+
+  it('rotation 未指定は素の箱', () => {
+    expect(rotatedRectOf({ x: 100, y: 100, width: 200, height: 20 })).toEqual({
+      x: 100,
+      y: 100,
+      w: 200,
+      h: 20,
+    })
+  })
+
+  it('90度の結果は入力の中心を保存する', () => {
+    const r = rotatedRectOf({ x: 100, y: 100, width: 200, height: 20, rotation: 90 })
+    expect(r.x + r.w / 2).toBe(200)
+    expect(r.y + r.h / 2).toBe(110)
   })
 })
 

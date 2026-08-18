@@ -10,13 +10,29 @@ const GHOST_DISPLAY_MIN = 44
 // 実物由来のゴースト最小辺(viewBox 単位)。配置・リサイズの下限が共有する
 export const GHOST_MIN_SIZE = 40
 
-// 対象オブジェクトの矩形(rotation は判定に加味しない=AABB)
+// 回転を見ない素のAABB。回転を持つ対象は rotatedRectOf を使う
 export const rectOf = (o: { x: number; y: number; width: number; height: number }): Rect => ({
   x: o.x,
   y: o.y,
   w: o.width,
   h: o.height,
 })
+
+// 回転込みの矩形。90/270 は中心を保ったまま w/h を交換する(0/180 と未指定は素の箱)。
+// 衝突判定と吸着候補が同じ1本を通ることが要点 — 別々に持つと、片方だけ回転を
+// 見落としても型では落ちず、ガイドだけが実物から離れた場所に出る
+export const rotatedRectOf = (o: {
+  x: number
+  y: number
+  width: number
+  height: number
+  rotation?: 0 | 90 | 180 | 270
+}): Rect => {
+  if (o.rotation !== 90 && o.rotation !== 270) return rectOf(o)
+  const cx = o.x + o.width / 2
+  const cy = o.y + o.height / 2
+  return { x: cx - o.height / 2, y: cy - o.width / 2, w: o.height, h: o.width }
+}
 
 // 2矩形の交差判定(接触=非交差)
 export const rectsIntersect = (a: Rect, b: Rect): boolean =>

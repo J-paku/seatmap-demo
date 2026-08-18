@@ -36,15 +36,19 @@ describe('computeSnap', () => {
     expect(result).toEqual({ x: 10, y: 10, guides: [] })
   })
 
-  it('しきい値内のエッジに吸着し、ガイド線を返す', () => {
+  it('しきい値内のエッジに吸着し、揃った線ぶんのガイドを返す', () => {
     const dragging: Rect = { x: 10, y: 0, w: 50, h: 50 }
     const sibling: Rect = { x: 15, y: 100, w: 50, h: 50 }
     const result = computeSnap(dragging, [sibling], 10)
-    // x: dragLines[10,35,60] のうち sibling線[15,40,65]と最も近いのは (15,10) の距離5
+    // x線は ドラッグ 10/35/60、相手 15/40/65。左辺↔左辺・右辺↔右辺・中心↔中心が全て +5 で同率
     expect(result.x).toBe(15)
     // y方向は距離が全てしきい値超なので無変化
     expect(result.y).toBe(0)
-    expect(result.guides).toEqual([{ axis: 'vertical', pos: 15, start: 0, end: 150 }])
+    expect(result.guides).toEqual([
+      { axis: 'vertical', pos: 15, start: -10, end: 160, type: 'edge', extend: 10 },
+      { axis: 'vertical', pos: 65, start: -10, end: 160, type: 'edge', extend: 10 },
+      { axis: 'vertical', pos: 40, start: -10, end: 160, type: 'center', extend: 10 },
+    ])
   })
 
   it('しきい値外なら吸着せず座標もガイドも無変化', () => {
@@ -54,19 +58,53 @@ describe('computeSnap', () => {
     expect(result).toEqual({ x: 10, y: 0, guides: [] })
   })
 
-  it('複数siblingsの中から最も近い候補を選ぶ(出会う順序に依存しない)', () => {
+  it('同率窓の外の相手はガイドに混ぜない(順序に依存しない)', () => {
     const dragging: Rect = { x: 0, y: 0, w: 20, h: 20 }
-    const farther: Rect = { x: 12, y: 500, w: 20, h: 20 }
-    const closer: Rect = { x: 10.5, y: 500, w: 20, h: 20 }
-    const result = computeSnap(dragging, [farther, closer], 5)
-    // x: dragLines[0,10,20] に対し closer の中心線10.5が距離0.5で最短
-    expect(result.x).toBe(0.5)
+    const near: Rect = { x: 3, y: 500, w: 20, h: 20 }
+    const far: Rect = { x: 4.5, y: 500, w: 20, h: 20 }
+    const result = computeSnap(dragging, [near, far], 5)
+    expect(result.x).toBe(3)
     expect(result.y).toBe(0)
-    expect(result.guides).toEqual([{ axis: 'vertical', pos: 10.5, start: 0, end: 520 }])
+    // far の候補は |diff| = 4.5 で最小3との差が1.5。同率窓1の外なので1本も出ない
+    expect(result.guides).toEqual([
+      { axis: 'vertical', pos: 3, start: -10, end: 530, type: 'edge', extend: 10 },
+      { axis: 'vertical', pos: 23, start: -10, end: 530, type: 'edge', extend: 10 },
+      { axis: 'vertical', pos: 13, start: -10, end: 530, type: 'center', extend: 10 },
+    ])
 
-    // siblings の順序を入れ替えても同じ結果になる
-    const reordered = computeSnap(dragging, [closer, farther], 5)
-    expect(reordered).toEqual(result)
+    // siblings の順序を入れ替えても結果は完全一致する
+    expect(computeSnap(dragging, [far, near], 5)).toEqual(result)
+  })
+
+  it('辺と中心線の交差ペアを作らない', () => {
+    const dragging: Rect = { x: 190, y: 0, w: 60, h: 60 }
+    const sibling: Rect = { x: 100, y: 0, w: 200, h: 100 }
+    const result = computeSnap(dragging, [sibling], 20)
+    // 成立するのは中心↔中心(|200-220| = 20)だけ。左辺190↔相手中心200 を拾う総当たり実装なら 200 になる
+    expect(result.x).toBe(170)
+    // y は 上辺↔上辺の0が最小。中心↔中心の20は同率窓の外で落ちる
+    expect(result.y).toBe(0)
+    expect(result.guides).toEqual([
+      { axis: 'vertical', pos: 200, start: -10, end: 110, type: 'center', extend: 10 },
+      { axis: 'horizontal', pos: 0, start: 90, end: 310, type: 'edge', extend: 10 },
+    ])
+  })
+
+  it('同じ位置に揃う複数の相手を1本へ畳む(順序に依存しない)', () => {
+    const dragging: Rect = { x: 104, y: 600, w: 80, h: 60 }
+    const upper: Rect = { x: 100, y: 0, w: 80, h: 60 }
+    const lower: Rect = { x: 100, y: 300, w: 80, h: 60 }
+    const result = computeSnap(dragging, [upper, lower], 20)
+    expect(result.x).toBe(100)
+    expect(result.y).toBe(600)
+    expect(result.guides).toEqual([
+      { axis: 'vertical', pos: 100, start: -10, end: 670, type: 'edge', extend: 10 },
+      { axis: 'vertical', pos: 180, start: -10, end: 670, type: 'edge', extend: 10 },
+      { axis: 'vertical', pos: 140, start: -10, end: 670, type: 'center', extend: 10 },
+    ])
+    expect(result.guides).toHaveLength(3)
+
+    expect(computeSnap(dragging, [lower, upper], 20)).toEqual(result)
   })
 })
 
@@ -82,7 +120,9 @@ describe('computeResizeSnap', () => {
       max: 2000,
     })
     expect(result.rect).toEqual({ x: 0, y: 0, w: 60, h: 50 })
-    expect(result.guides).toEqual([{ axis: 'vertical', pos: 60, start: 0, end: 160 }])
+    expect(result.guides).toEqual([
+      { axis: 'vertical', pos: 60, start: -10, end: 170, type: 'edge', extend: 10 },
+    ])
   })
 
   it('ハンドル "nw" は x始点・y始点の両方が吸着し、対辺(右・下)は固定される', () => {
@@ -94,18 +134,33 @@ describe('computeResizeSnap', () => {
     expect(result.rect.x + result.rect.w).toBe(60)
     expect(result.rect.y + result.rect.h).toBe(60)
     expect(result.guides).toEqual([
-      { axis: 'vertical', pos: 8, start: 5, end: 60 },
-      { axis: 'horizontal', pos: 11, start: 3, end: 60 },
+      { axis: 'vertical', pos: 8, start: -5, end: 70, type: 'center', extend: 10 },
+      { axis: 'horizontal', pos: 11, start: -7, end: 70, type: 'center', extend: 10 },
     ])
   })
 
-  it('吸着で最小寸法(minW)を割らせない(§04-3のクランプ保証)', () => {
+  it('最小寸法を割る候補は棄却する(クランプで丸めない)', () => {
     const resized: Rect = { x: 0, y: 0, w: 20, h: 20 }
     const sibling: Rect = { x: 15, y: 100, w: 0, h: 0 }
     const result = computeResizeSnap(resized, [sibling], 20, 'w', limits)
-    // 素の吸着なら w=5 になるはずだが minW=10 でクランプされる
-    expect(result.rect).toEqual({ x: 10, y: 0, w: 10, h: 20 })
-    expect(result.guides).toEqual([{ axis: 'vertical', pos: 15, start: 0, end: 100 }])
+    // アンカーは x=20。候補位置15なら寸法は 20-15 = 5 で minW=10 を割るため候補ごと捨てる
+    expect(result.rect).toEqual({ x: 0, y: 0, w: 20, h: 20 })
+    expect(result.guides).toEqual([])
+  })
+
+  it('会議室の最小寸法では棄却され、家具の最小寸法なら成立する', () => {
+    const resized: Rect = { x: 0, y: 0, w: 120, h: 100 }
+    const sibling: Rect = { x: 100, y: 300, w: 0, h: 0 }
+    // アンカーは x=0、動く辺は x=120、候補位置は100 → 吸着後の寸法は100
+    const facility = computeResizeSnap(resized, [sibling], 25, 'e', { minW: 105, minH: 75, max: 2500 })
+    expect(facility.rect).toEqual({ x: 0, y: 0, w: 120, h: 100 })
+    expect(facility.guides).toEqual([])
+
+    const furniture = computeResizeSnap(resized, [sibling], 25, 'e', { minW: 40, minH: 40, max: 2500 })
+    expect(furniture.rect).toEqual({ x: 0, y: 0, w: 100, h: 100 })
+    expect(furniture.guides).toEqual([
+      { axis: 'vertical', pos: 100, start: -10, end: 310, type: 'edge', extend: 10 },
+    ])
   })
 
   it('しきい値外なら対辺・制御辺とも無変化でガイドも空', () => {
