@@ -21,6 +21,13 @@ const Document = () => (
         rel='stylesheet'
         href='https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=block'
       />
+      {/* アクセス解析(GoatCounter)。Cookie を使わず IP と User-Agent のハッシュで
+          8時間セッションを判定する。localhost は count.js 側で除外されるため dev では飛ばない */}
+      <script
+        data-goatcounter='https://tottannim-seatmap.goatcounter.com/count'
+        async
+        src='https://gc.zgo.at/count.js'
+      />
     </Head>
     <body>
       <Main />
