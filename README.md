@@ -180,6 +180,8 @@ npm run build                    # 静的export(out/ を生成)
 GITHUB_PAGES=true npm run build  # Pages 向け basePath 付きビルド
 ```
 
+アクセス解析(GoatCounter)は `NEXT_PUBLIC_GOATCOUNTER_URL`(例: `https://<code>.goatcounter.com/count`)を設定したビルドでだけ有効になります。配信ワークフローはリポジトリの Actions 変数 `GOATCOUNTER_URL` からこれを渡し、未設定なら計測スクリプトは出力されません。
+
 ```text
 pages/       ルーティングエントリ。ページ単位の組み立てのみ
 components/  UIコンポーネント(マップ・各種パネル・編集UI)

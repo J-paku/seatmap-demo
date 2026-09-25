@@ -1,5 +1,7 @@
 import { Html, Head, Main, NextScript } from 'next/document'
 
+const GOATCOUNTER_URL = process.env.NEXT_PUBLIC_GOATCOUNTER_URL
+
 const Document = () => (
   <Html lang='ja'>
     <Head>
@@ -22,12 +24,12 @@ const Document = () => (
         href='https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=block'
       />
       {/* アクセス解析(GoatCounter)。Cookie を使わず IP と User-Agent のハッシュで
-          8時間セッションを判定する。localhost は count.js 側で除外されるため dev では飛ばない */}
-      <script
-        data-goatcounter='https://tottannim-seatmap.goatcounter.com/count'
-        async
-        src='https://gc.zgo.at/count.js'
-      />
+          8時間セッションを判定する。localhost は count.js 側で除外されるため dev では飛ばない。
+          送信先は NEXT_PUBLIC_GOATCOUNTER_URL から読む(配信ワークフローが Actions 変数から渡す)。
+          未設定のビルド(フォークやローカル)ではスクリプト自体を出さない */}
+      {GOATCOUNTER_URL ? (
+        <script data-goatcounter={GOATCOUNTER_URL} async src='https://gc.zgo.at/count.js' />
+      ) : null}
     </Head>
     <body>
       <Main />

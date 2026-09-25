@@ -33,6 +33,7 @@ jobs:
       - name: Build static export
         env:
           GITHUB_PAGES: 'true'
+          NEXT_PUBLIC_GOATCOUNTER_URL: ${{ vars.GOATCOUNTER_URL }}
         run: npm run build
 
       - name: Checkout gh-pages
