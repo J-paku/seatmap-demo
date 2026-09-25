@@ -32,7 +32,7 @@ components/SeatMapView/index.tsx          画面ルート。組み立てのみ
 `@/components/FacilityBlock` `@/components/FurnitureBlock` `@/components/SeatMirrorLayer`
 `@/components/ZoomControls` `@/components/MySeatButton`(`SeatMapView` 側でマウント)。
 
-各フックの詳細な責務分割は `docs/authoring.md` 1章の構成図、分割基準は `~/.claude/rules/01-authoring.md`
+各フックの詳細な責務分割は `docs/authoring.md` 1章の構成図、分割基準は `docs/conventions/01-authoring.md`
 3〜4章を参照。本書はこの木が「どう繋がっているか」だけを持つ。
 
 ## 2. データフロー

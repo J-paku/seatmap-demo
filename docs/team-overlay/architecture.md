@@ -170,7 +170,7 @@ props (areas, furniture, currentArea, viewBox)
 2 は 1 が呼んだ `setState` がまだ反映されていない同じイベント内で走るため、古い `highlightSeatId` を
 見て再度同じ判定をする)。どちらも同じ基準を使っており今のところ矛盾は無く、`onClearHighlight` 自体
 も冪等なので実害は無い。ただし判定基準そのものは2箇所に存在するため、将来どちらか一方だけを変更すると
-`~/.claude/rules/03-pitfalls.md` 4番「同一概念の二重判定基準」と同型の不整合を起こし得る。座席セルを
+`docs/conventions/03-pitfalls.md` 4番「同一概念の二重判定基準」と同型の不整合を起こし得る。座席セルを
 経由しないクリック(空白領域・ヘッダー・ミニマップ等)は 2 のみが働く。
 
 7節の Desktop 空席修正(`.team-ovl-card.is-empty { pointer-events: none }`)は、この2つの判定のうち

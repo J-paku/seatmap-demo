@@ -1,6 +1,6 @@
 # authoring.md — コードの書き方・割り方の規則(seatmap-demo 固有)
 
-技術非依存の分割基準の考え方・入口の作り方の原則は `~/.claude/rules/01-authoring.md` を参照。
+技術非依存の分割基準の考え方・入口の作り方の原則は `docs/conventions/01-authoring.md` を参照。
 本書はこのスタック(Next.js Pages Router + React)でのフック/コンポーネントの実装規則・分割パターン・
 コードスタイルだけを持つ。**フックやコンポーネントを実装・分割する時に読む。**
 置き場所の判断は `docs/structure.md`、CSS・色の書き分けは `docs/styling.md` を参照。
@@ -28,7 +28,7 @@
 
 ## 3. SRP 分割パターン
 
-分割の判断基準(行数ではなく責務の数)は `~/.claude/rules/01-authoring.md` 3.、
+分割の判断基準(行数ではなく責務の数)は `docs/conventions/01-authoring.md` 3.、
 入口の作り方の原則とその理由は同 4.。**本節はこのリポジトリでの実例と適用結果だけを持つ。**
 
 ### 3.1 共通手順
@@ -128,7 +128,7 @@ import { useLayoutHistory } from '@/hooks/use-layout-editor/use-layout-history'
 ```
 
 `index.ts` を禁じる理由(指すべき「その1つ」が無い / grep が切れる / 部分利用が潰れる)は
-`~/.claude/rules/01-authoring.md` 4. を参照。ここでは結論だけ持つ。
+`docs/conventions/01-authoring.md` 4. を参照。ここでは結論だけ持つ。
 
 命名は `[hook-file-naming]` の対象のまま。**フォルダ名・フォルダ内の全ファイルとも kebab-case +
 `use-` 接頭辞**にする(`hooks/layout-editor/` のように接頭辞を落とさない)。

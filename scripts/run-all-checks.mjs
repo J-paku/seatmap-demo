@@ -16,7 +16,7 @@
 //
 // 対象は dev(3000)ではなく静的配信(4173、`npm run build` の out/ を配信)を既定にする。
 // この repo は /mnt/c 上で inotify が効かず、dev は古いバンドルを配り続けることがある
-// (docs/seat-map/testing.md 4章、~/.claude/rules/03-pitfalls.md 9番)。
+// (docs/seat-map/testing.md 4章、docs/conventions/03-pitfalls.md 9番)。
 
 import { createRequire } from 'node:module'
 import { fileURLToPath } from 'node:url'

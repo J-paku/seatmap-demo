@@ -2,7 +2,7 @@
 
 検証スクリプトは `~/dev/.seatmap-port/`(このリポジトリの外、未コミット)に常設。Playwright
 (`playwright-core`)で実ブラウザを操作する。**dev サーバーではなくビルド成果物への配信に対して実行
-する**(`~/.claude/rules/03-pitfalls.md` 9番、`docs/pitfalls.md` 3番 — WSL の `/mnt/c` では dev サーバー
+する**(`docs/conventions/03-pitfalls.md` 9番、`docs/pitfalls.md` 3番 — WSL の `/mnt/c` では dev サーバー
 のファイル監視が取りこぼし、古いバンドルを配り続けることがあるため)。
 
 実行例: `node check-scrollhint.mjs <baseUrl>`

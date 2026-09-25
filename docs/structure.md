@@ -1,6 +1,6 @@
 # structure.md — 置き場所の判断規則(seatmap-demo 固有)
 
-技術非依存の配置判断フローチャート・分割基準の考え方は `~/.claude/rules/01-authoring.md` を参照。
+技術非依存の配置判断フローチャート・分割基準の考え方は `docs/conventions/01-authoring.md` を参照。
 本書はこのスタック(Next.js Pages Router + React)での実際の配置(実例)だけを持つ。
 **新しいファイルを作る前に必ず読む。**
 
@@ -54,7 +54,7 @@ seatmap-demo/
 
 ## 2. `lib` / `utils` の境目 — このリポジトリの実例
 
-判定基準そのものは `~/.claude/rules/01-authoring.md` を参照(「アプリの外に出るか」)。以下は本リポジトリでの適用結果。
+判定基準そのものは `docs/conventions/01-authoring.md` を参照(「アプリの外に出るか」)。以下は本リポジトリでの適用結果。
 
 | 置き場 | ファイル | 理由 |
 |--------|----------|------|

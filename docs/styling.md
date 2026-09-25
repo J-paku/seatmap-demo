@@ -114,4 +114,4 @@ CSS に色リテラル(`#rrggbb` / `rgba()`)を書かない。**`styles/tokens.c
 
 **セレクタが見つからない時に静かに通過する書き方をしない。** 要素不在は必ず FAIL に落とす。
 新しく書いた検証は**一度わざと落として検出力を確かめてから**採用する
-(`~/.claude/rules/02-verifying.md` 6.)。
+(`docs/conventions/02-verifying.md` 6.)。

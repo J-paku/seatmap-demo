@@ -176,12 +176,12 @@ BASE_URL=https://<user>.github.io/<repo>/ node scripts/run-all-checks.mjs
 | スクリプト | 検証内容 | 本ドメインとの関係 |
 |---|---|---|
 | `check-legacy-layout.mjs` | `furniture` キーを持たない旧形式の保存レイアウトを実際に `localStorage` へ書いてから新コードで読ませ、`[data-team-id]` `[data-facility="true"]` `[data-canvas-transform-layer="true"]` が生きていること、チーム箱を開けることを見る | `lib/layout-persistence.ts` の `furniture ?? []` 既定値埋めが実際に効くかの実測。新しいブラウザでは再現しない経路をあえて踏む(`check-legacy-layout.mjs:1-2` のコメント、`docs/pitfalls.md` 2番と同系統) |
-| `measure-reset.mjs` | ズームボタンの「リセット」ボタンの `font-size`/`white-space`/文字幅/行数をフォントサイズ別に実測 | `spec.md` 2章のズームボタン。CSS 特異度の衝突(既存 `.zoom-controls button` 規則が新規クラスの `font-size` だけ勝つ)を「症状」ではなく computed 値で判定する目的。過去に発生した具体事故は `~/.claude/rules/03-pitfalls.md` 6番参照 |
+| `measure-reset.mjs` | ズームボタンの「リセット」ボタンの `font-size`/`white-space`/文字幅/行数をフォントサイズ別に実測 | `spec.md` 2章のズームボタン。CSS 特異度の衝突(既存 `.zoom-controls button` 規則が新規クラスの `font-size` だけ勝つ)を「症状」ではなく computed 値で判定する目的。過去に発生した具体事故は `docs/conventions/03-pitfalls.md` 6番参照 |
 | `check-hit.mjs` | `.my-seat-button` クリック前後でキャンバスの `transform` が変化しないこと(`transformBefore === transformAfter`)、リセットボタンの折り返し実測 | 「自分の席」ボタン(`MySeatButton`)がキャンバス操作コマンドを一切呼ばないという境界部分の実測。同スクリプトは HIT 表示・スポットライトも見ているが、そちらは **チームオーバーレイ側の検証範囲**(`docs/team-overlay/` 参照) |
 
 上記いずれも本リポジトリにコミットされたテストではなく、セッションごとに作られる検証ハーネス。
 再実行したい場合はスクリプト内の対象 URL(`process.argv[2]` 等)と DOM セレクタが現在のコードと
-一致しているか先に確認すること(`~/.claude/rules/02-verifying.md` 6章「検証対象確認」)。
+一致しているか先に確認すること(`docs/conventions/02-verifying.md` 6章「検証対象確認」)。
 
 ## 5. 実行環境の注意
 
@@ -189,10 +189,10 @@ BASE_URL=https://<user>.github.io/<repo>/ node scripts/run-all-checks.mjs
   完了(`CLAUDE.md` 完了条件)。ローカル `PASS` だけで完了と言わない
 - ローカルで確かめる際は dev サーバーではなくビルド成果物(`npm run build` の静的出力)に対して
   実行する。`/mnt/c` 配下では Turbopack のファイル監視が取りこぼし、ソースを戻しても古いバンドルが
-  配られ続けたまま検証が「落ちないテスト」になった実例がある(`~/.claude/rules/03-pitfalls.md` 9番)
+  配られ続けたまま検証が「落ちないテスト」になった実例がある(`docs/conventions/03-pitfalls.md` 9番)
 - 新しく検証コード(Playwright スクリプト等)を書いたときは、修正を一時的に外す/期待値を反転させる
   などで意図的に一度 `FAIL` させ、検出力があることを確認してから採用する
-  (`~/.claude/rules/02-verifying.md` 9章、`check-hit-clear.mjs` の `FALSIFY` 環境変数がこの実例)
+  (`docs/conventions/02-verifying.md` 9章、`check-hit-clear.mjs` の `FALSIFY` 環境変数がこの実例)
 
 ## 未検証・要確認
 
