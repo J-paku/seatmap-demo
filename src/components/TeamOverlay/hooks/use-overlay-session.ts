@@ -1,14 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
 import type { RefObject } from 'react'
+import { CLICK_LOCK_MS, LOAD_JITTER_MS, LOAD_MIN_MS } from '../utils/overlay-session-timing'
 import { useScheduleRefresh } from '@/hooks/use-schedule-refresh'
 
 // オーバーレイを開いた直後のふるまい(ローディング擬似・クリックロック・スクロール位置戻し)と、
 // 同期バッジが出すスケジュール取得状態。PC / モバイルで分岐しない共通処理
-
-// 350ms は誤タップ防止で操作を受け付けない
-const CLICK_LOCK_MS = 350
-const LOAD_MIN_MS = 300
-const LOAD_JITTER_MS = 300
 
 type OverlaySession = {
   loading: boolean

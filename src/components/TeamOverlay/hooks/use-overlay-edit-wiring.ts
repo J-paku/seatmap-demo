@@ -9,6 +9,7 @@ import type { UseOverlaySeatDeleteResult } from './use-overlay-seat-delete'
 import { useOverlaySessionExit } from './use-overlay-session-exit'
 import type { UseOverlaySessionExitResult } from './use-overlay-session-exit'
 import type { UseSeatSelectionResult } from './use-seat-selection'
+import { SEAT_ADD_HIGHLIGHT_MS } from '../utils/seat-add-highlight'
 import type { SeatGrid } from '../type'
 import { useSeatLayout } from '@/hooks/use-mock-data'
 import type { GridCell } from '@/utils/layout/seat-grid-draft'
@@ -19,11 +20,7 @@ import type { Employee, Seat, TeamOverlayPayload } from '@/types'
 // (選択のトグル・席追加とその直後のハイライト・フリーアドレス設定)だけで、
 // 配属・座席削除・セッションの終了はそれぞれ専用のフックへ分けてある(index.tsxは組み立てだけ)
 
-// STEP B5: 追加直後の席をハイライト(選択状態を流用)しておく時間。この間に別のセル/席を
-// 選択し直した場合はハイライトを奪わない(下のuseEffectがisSeatSelectedの変化で再評価する)
-const SEAT_ADD_HIGHLIGHT_MS = 1800
-
-export type { AssignConfirmContent } from './use-overlay-assign'
+export type { AssignConfirmContent } from '../utils/assign-confirm-content'
 export type { SeatDeleteConfirmContent } from './use-overlay-seat-delete'
 
 export type UseOverlayEditWiringParams = {
