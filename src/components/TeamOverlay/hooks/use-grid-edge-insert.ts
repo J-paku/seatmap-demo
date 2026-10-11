@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import type { RefObject } from 'react'
+import { REVEAL_MS } from '../utils/reveal-grid-insert'
 
 // 行・列を足すと、増えた帯はスクロールの外側に生まれることがある(特に左右)。
 // 足した直後にその帯までスクロールし、短い点灯で「どこが増えたか」を示す。
@@ -9,9 +10,6 @@ import type { RefObject } from 'react'
 // 直後に別の追加や削除が入った時に古い位置を指したままになる)
 
 type GridEdge = 'top' | 'bottom' | 'left' | 'right'
-
-// 点灯の長さ。CSS の gridInsertReveal と揃える
-const REVEAL_MS = 700
 
 type GridEdgeInsert = {
   // 点灯中の帯。null は点灯なし

@@ -1,8 +1,5 @@
 import { useCallback, useSyncExternalStore } from 'react'
-
-// TeamOverlay の唯一の分岐スイッチ。pointerType やタッチ有無は見ず幅だけで決めるため、
-// ウィンドウを狭めた PC も完全にモバイル表示になる
-const COMPACT_MOBILE_QUERY = '(max-width: 760px)'
+import { COMPACT_MOBILE_QUERY } from '../utils/match-compact-mobile'
 
 // matchMedia は React の外にある状態なので useSyncExternalStore で購読する。
 // 以前は useState + useEffect で「初回は必ず PC 形状 → マウント後に実幅へ差し替え」だったため、
