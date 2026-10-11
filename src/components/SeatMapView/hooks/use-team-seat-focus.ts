@@ -2,13 +2,11 @@
 // ディレクトリ検索と「自分の席」ボタンの唯一の入口であり、分岐は呼び出し側だけに置く(引数は Seat 1つ)
 import { useCallback, useMemo, useState } from 'react'
 import type { RefObject } from 'react'
+import type { FocusFailure } from '../type'
 import type { SeatMapCanvasHandle } from '@/components/SeatMapCanvas'
 import { useTeamColorMap } from '@/hooks/use-team-color-map'
 import type { Seat, SeatLayout, TeamOverlayPayload } from '@/types'
 import { buildTeamOverlayPayload } from '@/utils/team-overlay-payload'
-
-// 座席は解決できたがチーム箱を測れなかった場合の理由。呼び出し側が通知文言を決める
-export type FocusFailure = 'no-seat' | 'no-team'
 
 type Options = {
   layout: SeatLayout | null | undefined

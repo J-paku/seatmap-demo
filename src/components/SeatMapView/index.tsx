@@ -13,8 +13,14 @@ import { useSeatAssign } from './hooks/use-seat-assign'
 import { useSeatMapData } from './hooks/use-seat-map-data'
 import { useSeatMapTours } from './hooks/use-seat-map-tours'
 import { useTeamSeatFocus } from './hooks/use-team-seat-focus'
-import type { FocusFailure } from './hooks/use-team-seat-focus'
 import { useTransientNotice } from './hooks/use-transient-notice'
+import type { FocusFailure } from './type'
+import { placedMessageOf, recentOf, undoChipRequestOf } from './utils/build-undo-chip'
+import { facilityDeletedMessage, focusFailureMessage } from './utils/compose-notice-message'
+import { seatOfEmployee } from './utils/find-employee-seat'
+import { findHoverFacility } from './utils/find-hover-facility'
+import { canDeleteGhost, isDeleteConfirmOpen } from './utils/judge-ghost-delete'
+import { placedFacilityIdsOf } from './utils/list-placed-facilities'
 import { AdminAddFab } from '@/components/AdminAddFab'
 import { DetailPanels } from '@/components/DetailPanels'
 import { EmployeeDirectory } from '@/components/EmployeeDirectory'
@@ -72,28 +78,10 @@ export const SeatMapView = () => {
       frame: Rect | null = null,
       recent: RecentPlacement | null = null
     ) => {
-      canvasRef.current?.showUndoChipAt({
-        anchor: { x: rect.x + rect.w / 2, y: rect.y + rect.h },
-        message,
-        frame,
-        recent,
-      })
+      canvasRef.current?.showUndoChipAt(undoChipRequestOf(rect, message, frame, recent))
     },
     []
   )
-
-  // 強調するのは会議室・家具だけ。チーム枠は面が広く、破線の枠とチップで十分に見つかる
-  const recentOf = (target: GhostRequest['target'], rect: Rect): RecentPlacement | null => {
-    if (target.type === 'add-facility') return { kind: 'facility', rect }
-    if (target.type === 'add-furniture') return { kind: 'furniture', rect }
-    if (
-      target.type === 'reposition' &&
-      (target.ref.kind === 'facility' || target.ref.kind === 'furniture')
-    ) {
-      return { kind: target.ref.kind, rect }
-    }
-    return null
-  }
 
   // 閲覧モードのまま置き始めた時だけ編集セッションを起こす。既に編集中なら何もしない
   // (enterEditMode はワーキングコピーと undo スタックを作り直すので、二度呼ぶと編集内容が消える)
@@ -104,12 +92,7 @@ export const SeatMapView = () => {
   // 配置と掴み直しで文言を変える。対象の種別は配置フロー側だけが知っている
   const handlePlaced = useCallback(
     (rect: Rect, target: GhostRequest['target']) => {
-      showUndoChipAt(
-        rect,
-        target.type === 'reposition' ? '移動しました' : '配置しました',
-        null,
-        recentOf(target, rect)
-      )
+      showUndoChipAt(rect, placedMessageOf(target), null, recentOf(target, rect))
     },
     [showUndoChipAt]
   )
@@ -172,10 +155,10 @@ export const SeatMapView = () => {
   // 04-4: 移動ゴーストの削除ボタン。ゴーストを畳んでから既存の削除経路へ渡す
   // (会議室は確認ダイアログ・チームは §07-3 のタイプ確認・家具は即時)
   const ghostDeleteRef = placement.repositioningRef
-  const isGhostDeletable = ghostDeleteRef !== null
+  const isGhostDeletable = canDeleteGhost(ghostDeleteRef)
   // 削除確認が開いている間 = 削除処理中とみなす。新しい state を作らずダイアログの開閉から導く —
   // 導ければ、閉じ忘れでフラグが立ちっぱなしになる経路が生まれない
-  const isGhostDeleting = dialogs.deleteObjectTarget !== null || dialogs.deleteTeamTarget !== null
+  const isGhostDeleting = isDeleteConfirmOpen(dialogs.deleteObjectTarget, dialogs.deleteTeamTarget)
   const handleGhostDelete = useCallback(() => {
     if (!ghostDeleteRef) return
     // ここでセッションを畳まない。畳むのは handleDeleteObject の中、削除が成立した後だけ
@@ -213,7 +196,7 @@ export const SeatMapView = () => {
 
   const handleFocusFailure = useCallback(
     (reason: FocusFailure) => {
-      showNotice(reason === 'no-seat' ? '座席未設定' : '座席の所属チームが不明です')
+      showNotice(focusFailureMessage(reason))
     },
     [showNotice]
   )
@@ -248,23 +231,13 @@ export const SeatMapView = () => {
 
   // 人物詳細を開いている社員の席。引けない社員にはCTAを出さず「座席未設定」を見せる
   const personSeat = useMemo(
-    () =>
-      personDetailId
-        ? (effectiveLayout?.seats.find(candidate => candidate.employeeId === personDetailId) ??
-          null)
-        : null,
+    () => seatOfEmployee(effectiveLayout, personDetailId),
     [personDetailId, effectiveLayout]
   )
 
   // §03-3 配置済み判定の材料。予定システムの施設ID(Facility.facilityId)を持つ分だけが
   // Garoon マスタと突き合わせられる(レイアウト上の Facility.id とは別物)
-  const placedFacilityIds = useMemo(
-    () =>
-      (effectiveLayout?.facilities ?? [])
-        .map(facility => facility.facilityId)
-        .filter((facilityId): facilityId is string => facilityId !== undefined),
-    [effectiveLayout]
-  )
+  const placedFacilityIds = useMemo(() => placedFacilityIdsOf(effectiveLayout), [effectiveLayout])
 
   // カードの「座席へ移動」。畳んでから飛ばす — 逆順だとオーバーレイの上にシートの暗幕が残る
   const handleGoToSeat = useCallback(() => {
@@ -276,7 +249,7 @@ export const SeatMapView = () => {
 
   // 「自分の席」ボタン。検索と同じ focusSeat を通し、分岐はここ(席の引き当て)だけに持つ
   const handleGoToMySeat = useCallback(() => {
-    const seat = effectiveLayout?.seats.find(candidate => candidate.employeeId === SELF_EMPLOYEE_ID)
+    const seat = seatOfEmployee(effectiveLayout, SELF_EMPLOYEE_ID)
     if (!seat) {
       showNotice('座席未設定')
       return
@@ -379,12 +352,15 @@ export const SeatMapView = () => {
         hoverFacility &&
         effectiveLayout &&
         (() => {
-          const facility = effectiveLayout.facilities.find(x => x.id === hoverFacility.facilityId)
-          const state = facilityStateById.get(hoverFacility.facilityId)
-          return facility && state ? (
+          const found = findHoverFacility(
+            effectiveLayout.facilities,
+            facilityStateById,
+            hoverFacility.facilityId
+          )
+          return found ? (
             <FacilityHoverCard
-              facility={facility}
-              state={state}
+              facility={found.facility}
+              state={found.state}
               empById={employeeById}
               rect={hoverFacility.rect}
             />
@@ -392,7 +368,7 @@ export const SeatMapView = () => {
         })()}
       {!editor.isEditMode && (
         <DetailPanels
-          onFacilityDeleted={name => showNotice(`「${name}」を削除しました`)}
+          onFacilityDeleted={name => showNotice(facilityDeletedMessage(name))}
           onGoToSeat={personSeat ? handleGoToSeat : undefined}
           showSeatUnsetNotice={personDetailId !== null && !personSeat}
         />
