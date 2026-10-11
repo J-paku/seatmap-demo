@@ -63,7 +63,7 @@ export const EditDialogs = ({ editor, dialogs }: Props) => {
           teams={editor.editingLayout.teams}
           currentTeamId={dialogs.teamChangeTargetSeat.teamId}
           colorOf={(teamId, teamName) => resolveTeamColor(teamColorMap, teamId, teamName)}
-          onSelect={(teamId) => {
+          onSelect={teamId => {
             editor.assignSeat(dialogs.teamChangeSeatId as string, teamId)
             dialogs.closeTeamChange()
           }}

@@ -30,7 +30,11 @@ export const stepAnim = (anim: Anim, t: Transform, minScale: number): AnimStep |
     const vy = anim.vy * FRICTION
     const stopped = Math.hypot(vx, vy) < STOP_SPEED
     return {
-      transform: { scale: t.scale, translateX: t.translateX + anim.vx, translateY: t.translateY + anim.vy },
+      transform: {
+        scale: t.scale,
+        translateX: t.translateX + anim.vx,
+        translateY: t.translateY + anim.vy,
+      },
       overscroll: false,
       nextAnim: stopped ? { kind: 'none' } : { kind: 'inertia', vx, vy, frame },
       commitSnap: stopped || frame % SNAP_INTERVAL === 0,
@@ -43,7 +47,11 @@ export const stepAnim = (anim: Anim, t: Transform, minScale: number): AnimStep |
     const scale = clamp(levelToScale(nextLevel), minScale, MAX_SCALE)
     const done = Math.abs(anim.targetLevel - scaleToLevel(scale)) < LERP_EPSILON
     return {
-      transform: { scale, translateX: anim.ax - anim.alx * scale, translateY: anim.ay - anim.aly * scale },
+      transform: {
+        scale,
+        translateX: anim.ax - anim.alx * scale,
+        translateY: anim.ay - anim.aly * scale,
+      },
       overscroll: false,
       nextAnim: done ? { kind: 'none' } : anim,
       commitSnap: done,

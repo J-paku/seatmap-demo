@@ -48,7 +48,7 @@ export const EditObjectLayer = ({
   onEditTap,
 }: Props) => {
   const boxes: Box[] = [
-    ...facilities.map((f) => ({
+    ...facilities.map(f => ({
       ref: { kind: 'facility' as const, id: f.id },
       x: f.x,
       y: f.y,
@@ -57,7 +57,7 @@ export const EditObjectLayer = ({
       name: f.name,
       radius: 11,
     })),
-    ...furniture.map((f) => ({
+    ...furniture.map(f => ({
       ref: { kind: 'furniture' as const, id: f.id },
       x: f.x,
       y: f.y,
@@ -76,13 +76,16 @@ export const EditObjectLayer = ({
     box.y === recent.rect.y &&
     box.width === recent.rect.w &&
     box.height === recent.rect.h
-  const recentIndex = recent ? boxes.reduce((found, box, i) => (isRecentBox(box) ? i : found), -1) : -1
+  const recentIndex = recent
+    ? boxes.reduce((found, box, i) => (isRecentBox(box) ? i : found), -1)
+    : -1
 
   return (
     <>
       {boxes.map((box, index) => {
         const isSelected = selected?.kind === box.ref.kind && selected.id === box.ref.id
-        const isRepositioning = repositioning?.kind === box.ref.kind && repositioning.id === box.ref.id
+        const isRepositioning =
+          repositioning?.kind === box.ref.kind && repositioning.id === box.ref.id
         return (
           <Fragment key={`${box.ref.kind}:${box.ref.id}`}>
             {index === recentIndex && (
@@ -110,8 +113,8 @@ export const EditObjectLayer = ({
                 width: box.width,
                 height: box.height,
               }}
-              onPointerDown={(ev) => onEditPointerDown(box.ref, ev)}
-              onClick={(ev) => {
+              onPointerDown={ev => onEditPointerDown(box.ref, ev)}
+              onClick={ev => {
                 // 余白クリック(選択解除)へは伝播させない。タップかどうかの判定はフック側が持つ
                 ev.stopPropagation()
                 onEditTap(box.ref)

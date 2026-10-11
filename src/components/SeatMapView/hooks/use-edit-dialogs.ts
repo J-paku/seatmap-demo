@@ -45,7 +45,7 @@ export const useEditDialogs = (
   // 着席中は確認ダイアログを経由し、空席は即時削除(seat-delete発行)
   const requestSeatDelete = useCallback(
     (seatId: string) => {
-      const seat = editor.editingLayout?.seats.find((s) => s.id === seatId)
+      const seat = editor.editingLayout?.seats.find(s => s.id === seatId)
       if (seat && isOccupiedSeat(seat, employeeById)) setDeleteConfirmSeatId(seatId)
       else editor.deleteSeat(seatId)
     },
@@ -75,12 +75,15 @@ export const useEditDialogs = (
     setDeleteTeamId(null)
   }, [deleteTeamId, onDeleteObject])
 
-  const deleteTargetSeat = editor.editingLayout?.seats.find((s) => s.id === deleteConfirmSeatId) ?? null
+  const deleteTargetSeat =
+    editor.editingLayout?.seats.find(s => s.id === deleteConfirmSeatId) ?? null
   // §07-3 本文の「配置済み {occupied}席・空席 {empty}席」。着席判定は seat-occupancy に一本化する
   const deleteTeamSeats = deleteTeamId
-    ? editor.editingLayout?.seats.filter((s) => s.teamId === deleteTeamId) ?? []
+    ? (editor.editingLayout?.seats.filter(s => s.teamId === deleteTeamId) ?? [])
     : []
-  const deleteTeamOccupiedCount = deleteTeamSeats.filter((s) => isOccupiedSeat(s, employeeById)).length
+  const deleteTeamOccupiedCount = deleteTeamSeats.filter(s =>
+    isOccupiedSeat(s, employeeById)
+  ).length
 
   const closeObjectDelete = useCallback(() => setDeleteObjectId(null), [])
   const closeTeamDelete = useCallback(() => setDeleteTeamId(null), [])
@@ -92,12 +95,14 @@ export const useEditDialogs = (
     () => ({
       deleteConfirmSeatId,
       deleteTargetEmployeeName: deleteTargetSeat?.employeeId
-        ? employeeById.get(deleteTargetSeat.employeeId)?.name ?? null
+        ? (employeeById.get(deleteTargetSeat.employeeId)?.name ?? null)
         : null,
       teamChangeSeatId,
-      teamChangeTargetSeat: editor.editingLayout?.seats.find((s) => s.id === teamChangeSeatId) ?? null,
-      deleteObjectTarget: editor.editingLayout?.facilities.find((f) => f.id === deleteObjectId) ?? null,
-      deleteTeamTarget: editor.editingLayout?.teams.find((t) => t.id === deleteTeamId) ?? null,
+      teamChangeTargetSeat:
+        editor.editingLayout?.seats.find(s => s.id === teamChangeSeatId) ?? null,
+      deleteObjectTarget:
+        editor.editingLayout?.facilities.find(f => f.id === deleteObjectId) ?? null,
+      deleteTeamTarget: editor.editingLayout?.teams.find(t => t.id === deleteTeamId) ?? null,
       deleteTeamOccupiedCount,
       deleteTeamEmptyCount: deleteTeamSeats.length - deleteTeamOccupiedCount,
       requestSeatDelete,

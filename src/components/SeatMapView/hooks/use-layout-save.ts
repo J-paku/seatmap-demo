@@ -20,7 +20,7 @@ const TOAST_MS = 5000
 // hooks/use-mock-data.ts の VALID_EMPLOYEE_IDS と同じ EMPLOYEES から作る(同一ソースからの
 // 同一導出なので判定基準の重複には当たらない)。「元に戻す」は読み直した版をそのまま書き戻すため、
 // 空集合などで誤魔化すと宙ぶらりん社員idの穴埋めが狂う
-const VALID_EMPLOYEE_IDS: ReadonlySet<string> = new Set(EMPLOYEES.map((employee) => employee.id))
+const VALID_EMPLOYEE_IDS: ReadonlySet<string> = new Set(EMPLOYEES.map(employee => employee.id))
 
 type LayoutSave = {
   isSaving: boolean
@@ -136,7 +136,11 @@ export const useLayoutSave = (editor: LayoutEditor): LayoutSave => {
         const currentStored = readCurrentStored()
         const expectedUpdatedTime = lastSavedUpdatedTimeRef.current
         // 自分がこの保存を書き込んでから、別タブがさらに上書きしていないかを照合する
-        if (currentStored && expectedUpdatedTime !== null && currentStored.updatedTime !== expectedUpdatedTime) {
+        if (
+          currentStored &&
+          expectedUpdatedTime !== null &&
+          currentStored.updatedTime !== expectedUpdatedTime
+        ) {
           editor.showError(TOAST_MESSAGES.CONFLICT_UPDATE)
           return
         }

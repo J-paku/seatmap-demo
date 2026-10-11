@@ -99,7 +99,7 @@ export const useEditDrag = ({
       const current = selectedSeatIdsRef.current
       const next = toggle
         ? current.includes(seatId)
-          ? current.filter((id) => id !== seatId)
+          ? current.filter(id => id !== seatId)
           : [...current, seatId]
         : [seatId]
       applySeatSelection(next)
@@ -126,16 +126,21 @@ export const useEditDrag = ({
   const selectContextTeamSeats = useCallback(() => {
     const current = selectedSeatIdsRef.current
     const anchorId = current[current.length - 1]
-    const anchor = anchorId ? layout.seats.find((s) => s.id === anchorId) : undefined
+    const anchor = anchorId ? layout.seats.find(s => s.id === anchorId) : undefined
     if (!anchor) return false
-    applySeatSelection(layout.seats.filter((s) => s.teamId === anchor.teamId).map((s) => s.id))
+    applySeatSelection(layout.seats.filter(s => s.teamId === anchor.teamId).map(s => s.id))
     return true
   }, [layout.seats, applySeatSelection])
 
   // 押下の記録。論理座標も対象矩形も要らない — 判定に使うのは移動量だけ
   const beginPress = useCallback((e: ReactPointerEvent) => {
     suppressTapRef.current = false
-    pressRef.current = { pointerId: e.pointerId, startX: e.clientX, startY: e.clientY, moved: false }
+    pressRef.current = {
+      pointerId: e.pointerId,
+      startX: e.clientX,
+      startY: e.clientY,
+      moved: false,
+    }
     ;(e.target as HTMLElement).setPointerCapture(e.pointerId)
   }, [])
 
@@ -143,7 +148,7 @@ export const useEditDrag = ({
     (teamId: string, e: ReactPointerEvent) => {
       if (!isEditMode) return
       e.stopPropagation()
-      if (!layout.teams.some((t) => t.id === teamId)) return
+      if (!layout.teams.some(t => t.id === teamId)) return
       applySeatSelection([])
       setEditSelectedObject(null)
       undoChip.dismiss()
@@ -196,7 +201,10 @@ export const useEditDrag = ({
     const onMove = (e: PointerEvent) => {
       const press = pressRef.current
       if (!press || press.pointerId !== e.pointerId) return
-      if (!press.moved && Math.hypot(e.clientX - press.startX, e.clientY - press.startY) > DRAG_THRESHOLD_PX) {
+      if (
+        !press.moved &&
+        Math.hypot(e.clientX - press.startX, e.clientY - press.startY) > DRAG_THRESHOLD_PX
+      ) {
         press.moved = true
       }
     }

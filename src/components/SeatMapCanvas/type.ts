@@ -113,6 +113,11 @@ export type Viewport = {
   cancelAnim: () => void
   startLoop: () => void
   lerpZoom: (deltaLevel: number, anchorX: number, anchorY: number) => void
-  immediateZoom: (deltaLevel: number, anchorX: number, anchorY: number, overscroll?: boolean) => void
+  immediateZoom: (
+    deltaLevel: number,
+    anchorX: number,
+    anchorY: number,
+    overscroll?: boolean
+  ) => void
   animateTo: (target: Transform, onDone?: () => void) => void
 }

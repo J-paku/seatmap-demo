@@ -77,7 +77,7 @@ export const useCanvasViewModel = ({
   const selectedObjectAttrs = useMemo((): SelectedObjectAttrs | null => {
     if (!isEditMode || !editSelectedObject) return null
     if (editSelectedObject.kind === 'facility') {
-      const facility = layout.facilities.find((f) => f.id === editSelectedObject.id)
+      const facility = layout.facilities.find(f => f.id === editSelectedObject.id)
       if (!facility) return null
       return {
         name: facility.name,
@@ -87,7 +87,7 @@ export const useCanvasViewModel = ({
       }
     }
     if (editSelectedObject.kind === 'furniture') {
-      const item = layout.furniture.find((f) => f.id === editSelectedObject.id)
+      const item = layout.furniture.find(f => f.id === editSelectedObject.id)
       if (!item) return null
       return {
         name: item.name || FURNITURE_KIND_LABEL[item.kind],

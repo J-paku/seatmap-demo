@@ -21,8 +21,18 @@ type PinchZoom = {
 }
 
 export const usePinchZoom = (viewport: Viewport): PinchZoom => {
-  const { transformRef, minScaleRef, animRef, applyTransform, commitSnap, startLoop, lerpZoom } = viewport
-  const pinch = useRef({ active: false, startDist: 0, startScale: 1, startTime: 0, alx: 0, aly: 0, midX: 0, midY: 0 })
+  const { transformRef, minScaleRef, animRef, applyTransform, commitSnap, startLoop, lerpZoom } =
+    viewport
+  const pinch = useRef({
+    active: false,
+    startDist: 0,
+    startScale: 1,
+    startTime: 0,
+    alx: 0,
+    aly: 0,
+    midX: 0,
+    midY: 0,
+  })
 
   return {
     isActive: () => pinch.current.active,
@@ -49,7 +59,11 @@ export const usePinchZoom = (viewport: Viewport): PinchZoom => {
       pinch.current.midX = midX
       pinch.current.midY = midY
       applyTransform(
-        { scale: s, translateX: midX - pinch.current.alx * s, translateY: midY - pinch.current.aly * s },
+        {
+          scale: s,
+          translateX: midX - pinch.current.alx * s,
+          translateY: midY - pinch.current.aly * s,
+        },
         true
       )
     },
@@ -59,7 +73,10 @@ export const usePinchZoom = (viewport: Viewport): PinchZoom => {
       const { startTime, startScale, midX, midY, alx, aly } = pinch.current
       pinch.current.active = false
       // 2本指タップ: 接触≤250ms かつ log2 変動≤0.07 → −1レベル
-      if (Date.now() - startTime <= TAP_MS && Math.abs(scaleToLevel(t.scale) - scaleToLevel(startScale)) <= TAP_LEVEL) {
+      if (
+        Date.now() - startTime <= TAP_MS &&
+        Math.abs(scaleToLevel(t.scale) - scaleToLevel(startScale)) <= TAP_LEVEL
+      ) {
         lerpZoom(-1, midX, midY)
         return
       }

@@ -3,7 +3,10 @@
 export type Point = { x: number; y: number }
 
 // 2点の中点と距離
-export const pinchGeometry = (a: Point, b: Point): { midX: number; midY: number; dist: number } => ({
+export const pinchGeometry = (
+  a: Point,
+  b: Point
+): { midX: number; midY: number; dist: number } => ({
   midX: (a.x + b.x) / 2,
   midY: (a.y + b.y) / 2,
   dist: Math.hypot(a.x - b.x, a.y - b.y),

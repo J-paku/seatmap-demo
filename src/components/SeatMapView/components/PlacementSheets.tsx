@@ -24,7 +24,12 @@ type Props = {
   onGhostDelete?: () => void
 }
 
-export const PlacementSheets = ({ placement, placedFacilityIds, isGhostDeleting, onGhostDelete }: Props) => (
+export const PlacementSheets = ({
+  placement,
+  placedFacilityIds,
+  isGhostDeleting,
+  onGhostDelete,
+}: Props) => (
   <>
     <ObjectCategorySheet
       isOpen={placement.isCategoryOpen}
@@ -58,7 +63,11 @@ export const PlacementSheets = ({ placement, placedFacilityIds, isGhostDeleting,
       onClose={placement.cancel}
     />
     {/* §02-2: 名前/色ダイアログはゴーストの「配置」で位置が決まった後に開く */}
-    <TeamCreatePopover isOpen={placement.isTeamFormOpen} onSubmit={placement.submitTeam} onClose={placement.cancel} />
+    <TeamCreatePopover
+      isOpen={placement.isTeamFormOpen}
+      onSubmit={placement.submitTeam}
+      onClose={placement.cancel}
+    />
     {placement.request && (
       <GhostPlacementLayer
         request={placement.request}

@@ -48,7 +48,10 @@ const isSameView = (a: UndoChipView | null, b: UndoChipView): boolean =>
   (a.frame === null) === (b.frame === null) &&
   (a.frame === null ||
     b.frame === null ||
-    (a.frame.x === b.frame.x && a.frame.y === b.frame.y && a.frame.w === b.frame.w && a.frame.h === b.frame.h))
+    (a.frame.x === b.frame.x &&
+      a.frame.y === b.frame.y &&
+      a.frame.w === b.frame.w &&
+      a.frame.h === b.frame.h))
 
 export const useUndoChip = (transformRef: RefObject<Transform>): UndoChip => {
   const [req, setReq] = useState<UndoChipRequest | null>(null)
@@ -84,7 +87,7 @@ export const useUndoChip = (transformRef: RefObject<Transform>): UndoChip => {
     let raf = 0
     const tick = () => {
       const next = project(req, transformRef.current)
-      setView((prev) => (isSameView(prev, next) ? prev : next))
+      setView(prev => (isSameView(prev, next) ? prev : next))
       raf = requestAnimationFrame(tick)
     }
     raf = requestAnimationFrame(tick)

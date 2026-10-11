@@ -1,6 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { MAIN_TOUR_STEPS, MAIN_TOUR_STORAGE_KEY } from '../utils/main-tour-steps'
-import { isTourPlaying, readSeen, useCoachMarkTour } from '@/components/CoachMarkTour/hooks/use-coach-mark-tour'
+import {
+  isTourPlaying,
+  readSeen,
+  useCoachMarkTour,
+} from '@/components/CoachMarkTour/hooks/use-coach-mark-tour'
 import type { CoachMarkTourState } from '@/components/CoachMarkTour/hooks/use-coach-mark-tour'
 import {
   EDIT_TOUR_BRANCH,
@@ -43,7 +47,11 @@ export type SeatMapTours = {
   beginFacilityFlow: () => void
 }
 
-export const useSeatMapTours = ({ isEditMode, centerOnSelector, placementTargetType }: Options): SeatMapTours => {
+export const useSeatMapTours = ({
+  isEditMode,
+  centerOnSelector,
+  placementTargetType,
+}: Options): SeatMapTours => {
   // 編集セッションのガイド。編集モード初回だけ自動再生し、? ボタンで何度でも見られる
   const [editNonce, setEditNonce] = useState(0)
   const editTour = useCoachMarkTour({
@@ -53,7 +61,7 @@ export const useSeatMapTours = ({ isEditMode, centerOnSelector, placementTargetT
     autoStart: false,
     centerOnSelector,
   })
-  const replayEditTour = useCallback(() => setEditNonce((count) => count + 1), [])
+  const replayEditTour = useCallback(() => setEditNonce(count => count + 1), [])
 
   // §05-7: FABの「チーム」「設備」はそれぞれ独立フロー+独立キーを持つ。どちらもゴーストが
   // 画面中央に出るのでスポットライトする対象が無く、中央カードのまま3ステップ流すだけになる。
@@ -65,7 +73,7 @@ export const useSeatMapTours = ({ isEditMode, centerOnSelector, placementTargetT
     replayNonce: teamNonce,
     autoStart: false,
   })
-  const replayTeamTour = useCallback(() => setTeamNonce((count) => count + 1), [])
+  const replayTeamTour = useCallback(() => setTeamNonce(count => count + 1), [])
 
   const [furnitureNonce, setFurnitureNonce] = useState(0)
   const furnitureTour = useCoachMarkTour({
@@ -74,7 +82,7 @@ export const useSeatMapTours = ({ isEditMode, centerOnSelector, placementTargetT
     replayNonce: furnitureNonce,
     autoStart: false,
   })
-  const replayFurnitureTour = useCallback(() => setFurnitureNonce((count) => count + 1), [])
+  const replayFurnitureTour = useCallback(() => setFurnitureNonce(count => count + 1), [])
 
   // メイン(閲覧)画面の使い方ガイド。編集ツアーとは別インスタンス・別 storageKey で、
   // 初回未読なら自動再生(autoStart 既定 true)、以降はヘッダーの使い方ガイドボタンで再生する
@@ -85,7 +93,7 @@ export const useSeatMapTours = ({ isEditMode, centerOnSelector, placementTargetT
     replayNonce: mainNonce,
     centerOnSelector,
   })
-  const replayMainTour = useCallback(() => setMainNonce((count) => count + 1), [])
+  const replayMainTour = useCallback(() => setMainNonce(count => count + 1), [])
 
   const wasEditModeRef = useRef(isEditMode)
   // FABの「チーム」「設備」は自分のガイドを予約する。同じ操作で編集セッションも起きるため、
@@ -121,7 +129,8 @@ export const useSeatMapTours = ({ isEditMode, centerOnSelector, placementTargetT
   // レイアウト編集の導線なので分岐ツアーを出す
   const handleHelp = useCallback(() => {
     if (placementTargetType === 'add-team') replayTeamTour()
-    else if (placementTargetType === 'add-furniture' || placementTargetType === 'add-facility') replayFurnitureTour()
+    else if (placementTargetType === 'add-furniture' || placementTargetType === 'add-facility')
+      replayFurnitureTour()
     else replayEditTour()
   }, [placementTargetType, replayTeamTour, replayFurnitureTour, replayEditTour])
 

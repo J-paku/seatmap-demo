@@ -33,7 +33,7 @@ export const TeamAreaLayer = ({
 
   return (
     <>
-      {teams.map((team) => (
+      {teams.map(team => (
         <TeamArea
           key={team.id}
           team={team}

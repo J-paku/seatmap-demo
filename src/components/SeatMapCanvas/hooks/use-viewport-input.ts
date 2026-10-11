@@ -27,7 +27,12 @@ type Options = {
   applyTransform: (t: Transform, allowOverscroll?: boolean) => void
   commitSnap: () => void
   lerpZoom: (deltaLevel: number, anchorX: number, anchorY: number) => void
-  immediateZoom: (deltaLevel: number, anchorX: number, anchorY: number, overscroll?: boolean) => void
+  immediateZoom: (
+    deltaLevel: number,
+    anchorX: number,
+    anchorY: number,
+    overscroll?: boolean
+  ) => void
 }
 
 export const useViewportInput = ({
@@ -63,7 +68,10 @@ export const useViewportInput = ({
       const t = transformRef.current
       // 平行移動のみの1歩。scale は現在値をそのまま通す(クランプすると、進行中の
       // ピンチのオーバースクロール scale と毎フレーム拮抗してジッタになる)
-      applyTransform({ scale: t.scale, translateX: t.translateX + dx, translateY: t.translateY + dy }, true)
+      applyTransform(
+        { scale: t.scale, translateX: t.translateX + dx, translateY: t.translateY + dy },
+        true
+      )
     }
     const onEnd = () => commitSnap()
     window.addEventListener(EDGE_PAN_EVENT, onPan)

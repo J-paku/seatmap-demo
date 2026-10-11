@@ -1,5 +1,9 @@
 import { useRef } from 'react'
-import type { MouseEvent as ReactMouseEvent, PointerEvent as ReactPointerEvent, RefObject } from 'react'
+import type {
+  MouseEvent as ReactMouseEvent,
+  PointerEvent as ReactPointerEvent,
+  RefObject,
+} from 'react'
 import { usePinchZoom } from './use-pinch-zoom'
 import { averageVelocity, movedBeyond } from '../utils/gesture-math'
 import { isModalOpen } from '../utils/canvas-metrics'
@@ -29,12 +33,30 @@ type CanvasPointer = {
 }
 
 export const useCanvasPointer = (viewport: Viewport): CanvasPointer => {
-  const { containerRef, transformRef, minScaleRef, animRef, rect, applyTransform, commitSnap, cancelAnim, startLoop, lerpZoom } =
-    viewport
+  const {
+    containerRef,
+    transformRef,
+    minScaleRef,
+    animRef,
+    rect,
+    applyTransform,
+    commitSnap,
+    cancelAnim,
+    startLoop,
+    lerpZoom,
+  } = viewport
   const pinch = usePinchZoom(viewport)
 
   const pointersRef = useRef<Map<number, { x: number; y: number }>>(new Map())
-  const panRef = useRef({ active: false, id: -1, lastX: 0, lastY: 0, startX: 0, startY: 0, moved: false })
+  const panRef = useRef({
+    active: false,
+    id: -1,
+    lastX: 0,
+    lastY: 0,
+    startX: 0,
+    startY: 0,
+    moved: false,
+  })
   const velRef = useRef<Array<{ x: number; y: number; t: number }>>([])
   const lastTapRef = useRef({ t: 0, x: 0, y: 0 })
   const suppressClickRef = useRef(false)
@@ -55,7 +77,15 @@ export const useCanvasPointer = (viewport: Viewport): CanvasPointer => {
       const pts = [...pointersRef.current.values()]
       pinch.begin(pts[0], pts[1])
     } else if (pointersRef.current.size === 1) {
-      panRef.current = { active: true, id: e.pointerId, lastX: x, lastY: y, startX: x, startY: y, moved: false }
+      panRef.current = {
+        active: true,
+        id: e.pointerId,
+        lastX: x,
+        lastY: y,
+        startX: x,
+        startY: y,
+        moved: false,
+      }
       velRef.current = []
     }
   }
@@ -80,7 +110,13 @@ export const useCanvasPointer = (viewport: Viewport): CanvasPointer => {
       const dx = x - panRef.current.lastX
       const dy = y - panRef.current.lastY
       if (!panRef.current.moved) {
-        if (movedBeyond({ x: panRef.current.startX, y: panRef.current.startY }, { x, y }, TAP_DISTANCE_THRESHOLD)) {
+        if (
+          movedBeyond(
+            { x: panRef.current.startX, y: panRef.current.startY },
+            { x, y },
+            TAP_DISTANCE_THRESHOLD
+          )
+        ) {
           panRef.current.moved = true
           isPanningRef.current = true
           // ドラッグ確定時のみ capture: タップは click を実要素へ届けるため遅延取得
@@ -89,7 +125,11 @@ export const useCanvasPointer = (viewport: Viewport): CanvasPointer => {
       }
       if (panRef.current.moved) {
         const t = transformRef.current
-        applyTransform({ scale: t.scale, translateX: t.translateX + dx, translateY: t.translateY + dy })
+        applyTransform({
+          scale: t.scale,
+          translateX: t.translateX + dx,
+          translateY: t.translateY + dy,
+        })
         velRef.current.push({ x: dx, y: dy, t: Date.now() })
         if (velRef.current.length > 6) velRef.current.shift()
       }

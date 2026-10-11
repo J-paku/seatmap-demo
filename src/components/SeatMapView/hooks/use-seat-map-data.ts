@@ -34,15 +34,12 @@ export const useSeatMapData = (editor: LayoutEditor): SeatMapData => {
   const nowMs = useQuantizedClock(isTodaySelected)
 
   // アバターの上書きは AvatarsContext(ownerCode キー)が持つため、ここでは素の社員を配るだけ
-  const employeeById = useMemo(
-    () => new Map((employees ?? []).map((e) => [e.id, e])),
-    [employees]
-  )
+  const employeeById = useMemo(() => new Map((employees ?? []).map(e => [e.id, e])), [employees])
 
   // debouncedDate 当日分のイベントに絞ってから在席判定
   const schedulesForDate = useMemo(() => {
     const key = jstDateKey(debouncedDate)
-    return (schedules ?? []).filter((s) => jstKeyFromIso(s.start) === key)
+    return (schedules ?? []).filter(s => jstKeyFromIso(s.start) === key)
   }, [schedules, debouncedDate])
 
   // 07: 編集モード中は在席状態の再計算を停止(baseline時点のスナップショットで固定)
@@ -67,7 +64,7 @@ export const useSeatMapData = (editor: LayoutEditor): SeatMapData => {
 
   // 07: 表示ソース切り替え(編集中はeditingLayout・それ以外は通常ロード分)
   const effectiveLayout = useMemo(
-    () => (editor.isEditMode ? editor.editingLayout ?? layout : layout),
+    () => (editor.isEditMode ? (editor.editingLayout ?? layout) : layout),
     [editor.isEditMode, editor.editingLayout, layout]
   )
 
@@ -84,7 +81,9 @@ export const useSeatMapData = (editor: LayoutEditor): SeatMapData => {
     for (const f of effectiveLayout.facilities) {
       map.set(
         f.id,
-        isTodaySelected ? deriveFacilityState(f, meetings, nowMin) : { status: f.facilityId ? 'available' : 'unlinked' }
+        isTodaySelected
+          ? deriveFacilityState(f, meetings, nowMin)
+          : { status: f.facilityId ? 'available' : 'unlinked' }
       )
     }
     return map

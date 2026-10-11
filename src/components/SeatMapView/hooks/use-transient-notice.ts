@@ -8,7 +8,10 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 // 通知を出しておく時間
 const NOTICE_MS = 2400
 
-export const useTransientNotice = (): { notice: string | null; showNotice: (message: string) => void } => {
+export const useTransientNotice = (): {
+  notice: string | null
+  showNotice: (message: string) => void
+} => {
   const [notice, setNotice] = useState<string | null>(null)
   const timerRef = useRef(0)
 

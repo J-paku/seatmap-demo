@@ -30,5 +30,8 @@ export const useZoomControls = (viewport: Viewport): ZoomControls => {
     animateTo(computeCompact(r.width, r.height))
   }, [rect, cancelAnim, animateTo])
 
-  return useMemo(() => ({ zoomIn: () => zoomBy(1), zoomOut: () => zoomBy(-1), reset }), [zoomBy, reset])
+  return useMemo(
+    () => ({ zoomIn: () => zoomBy(1), zoomOut: () => zoomBy(-1), reset }),
+    [zoomBy, reset]
+  )
 }

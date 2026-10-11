@@ -43,7 +43,10 @@ export const useAdminFabVisibility = ({
   const { seatDetailId, personDetailId, facilityDetailId, scheduleDetailId } = useDetailPanel()
 
   const isDetailOpen =
-    seatDetailId !== null || personDetailId !== null || facilityDetailId !== null || scheduleDetailId !== null
+    seatDetailId !== null ||
+    personDetailId !== null ||
+    facilityDetailId !== null ||
+    scheduleDetailId !== null
   const hasPlayingTour = tours.some(isTourPlaying)
 
   return !(

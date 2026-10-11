@@ -39,7 +39,7 @@ export const useOffscreenTeamIndicator = (
   useEffect(() => {
     const el = containerRef.current
     if (!el) return
-    const obs = new ResizeObserver((entries) => {
+    const obs = new ResizeObserver(entries => {
       const r = entries[0].contentRect
       setContainerSize({ w: r.width, h: r.height })
     })
@@ -100,7 +100,7 @@ export const useOffscreenTeamIndicator = (
     // アンカー = 最近傍チーム内でビューポート中心に最も近い座席(無ければエリア中心)。
     // 所属判定の正本は seat.teamId(idPrefix 判定は禁止 — types/index.ts の注記)
     const anchorSeat = seats
-      .filter((seat) => seat.teamId === found.id)
+      .filter(seat => seat.teamId === found.id)
       .reduce<Seat | null>((closest, seat) => {
         if (!closest) return seat
         const seatDist =

@@ -36,7 +36,9 @@
   box-shadow:
     0 0 0 2px var(--color-surface-elevated),
     var(--shadow-modal);
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
 }
 .isVertical {
   flex-direction: column;

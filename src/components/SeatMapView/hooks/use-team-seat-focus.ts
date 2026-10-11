@@ -38,8 +38,8 @@ export const useTeamSeatFocus = ({ layout, canvasRef, onFailure }: Options): Tea
         return
       }
       // 所属判定は seat.teamId 一本。TeamOverlay 側の絞り込みと同じ基準を使う
-      const team = layout.teams.find((candidate) => candidate.id === seat.teamId)
-      const rect = team ? canvasRef.current?.measureTeamRect(team.idPrefix) ?? null : null
+      const team = layout.teams.find(candidate => candidate.id === seat.teamId)
+      const rect = team ? (canvasRef.current?.measureTeamRect(team.idPrefix) ?? null) : null
       if (!team || !rect) {
         onFailure('no-team')
         return

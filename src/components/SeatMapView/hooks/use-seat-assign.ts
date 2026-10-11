@@ -42,16 +42,18 @@ export const useSeatAssign = ({ editor, employeeById, onDone }: Options): SeatAs
   const seats = editor.editingLayout?.seats
 
   const assignTargetSeat = useMemo(
-    () => seats?.find((s) => s.id === assignSeatId) ?? null,
+    () => seats?.find(s => s.id === assignSeatId) ?? null,
     [seats, assignSeatId]
   )
 
   const buildPlan = useCallback(
     (seatId: string, employeeId: string | null): AssignPlan | null => {
-      const target = seats?.find((s) => s.id === seatId)
+      const target = seats?.find(s => s.id === seatId)
       if (!target) return null
       const displaced = target.employeeId
-      const from = employeeId ? seats?.find((s) => s.employeeId === employeeId && s.id !== seatId) ?? null : null
+      const from = employeeId
+        ? (seats?.find(s => s.employeeId === employeeId && s.id !== seatId) ?? null)
+        : null
       const person = nameOf(employeeById, employeeId)
 
       // 空席にする
@@ -59,7 +61,9 @@ export const useSeatAssign = ({ editor, employeeById, onDone }: Options): SeatAs
         return {
           seatId,
           employeeId: null,
-          confirmMessage: displaced ? `${nameOf(employeeById, displaced)}さんの配属を解除しますか？` : null,
+          confirmMessage: displaced
+            ? `${nameOf(employeeById, displaced)}さんの配属を解除しますか？`
+            : null,
           resultMessage: `${seatId}を空席にしました`,
         }
       }
@@ -91,7 +95,12 @@ export const useSeatAssign = ({ editor, employeeById, onDone }: Options): SeatAs
         }
       }
       // 空席 + 未配置の社員 → 確認なしで即時
-      return { seatId, employeeId, confirmMessage: null, resultMessage: `${person}を${seatId}に配属しました` }
+      return {
+        seatId,
+        employeeId,
+        confirmMessage: null,
+        resultMessage: `${person}を${seatId}に配属しました`,
+      }
     },
     [seats, employeeById]
   )
@@ -136,6 +145,15 @@ export const useSeatAssign = ({ editor, employeeById, onDone }: Options): SeatAs
       confirmAssign,
       cancelAssign,
     }),
-    [assignSeatId, assignTargetSeat, pendingPlan, openAssign, closeAssign, requestAssign, confirmAssign, cancelAssign]
+    [
+      assignSeatId,
+      assignTargetSeat,
+      pendingPlan,
+      openAssign,
+      closeAssign,
+      requestAssign,
+      confirmAssign,
+      cancelAssign,
+    ]
   )
 }

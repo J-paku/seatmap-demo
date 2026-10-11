@@ -14,14 +14,26 @@ type Props = {
   onCancel: () => void
 }
 
-export const EditModeLayer = ({ changedCount, isSaving, isPlacing, onHelp, onFinish, onCancel }: Props) => (
+export const EditModeLayer = ({
+  changedCount,
+  isSaving,
+  isPlacing,
+  onHelp,
+  onFinish,
+  onCancel,
+}: Props) => (
   <>
     <EditingOverlay />
     <EditTopControls onHelp={onHelp} onExit={onCancel} isPlacing={isPlacing} />
     {/* 配置中はリモコンバーを出さない。画面下端で2本のバーが重なるうえ、
         配置を決めていない途中で「完了」を押させる意味も無い */}
     {!isPlacing && (
-      <EditRemoteBar changedCount={changedCount} isSaving={isSaving} onFinish={onFinish} onCancel={onCancel} />
+      <EditRemoteBar
+        changedCount={changedCount}
+        isSaving={isSaving}
+        onFinish={onFinish}
+        onCancel={onCancel}
+      />
     )}
   </>
 )

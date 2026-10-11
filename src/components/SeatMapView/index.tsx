@@ -45,7 +45,8 @@ import styles from '@/components/seatmap.module.css'
 // ここは配線と面の並べ方だけを持つ
 
 export const SeatMapView = () => {
-  const { openSeatDetail, openPersonDetail, openFacilityDetail, personDetailId, closeAll } = useDetailPanel()
+  const { openSeatDetail, openPersonDetail, openFacilityDetail, personDetailId, closeAll } =
+    useDetailPanel()
   const { layout } = useSeatLayout()
   const { themeMode, setTheme } = useTheme()
   // アバター編集モーダルは移植版 EmployeeDirectory が内包する(設定パネル・フッターのアバターから開く)
@@ -54,7 +55,8 @@ export const SeatMapView = () => {
   const editor = useLayoutEditor(layout)
   // 05: 座席未設定(防御分岐)などの一時通知
   const { notice: unassignedNotice, showNotice } = useTransientNotice()
-  const { ready, employeeById, effectiveLayout, effectivePresenceMap, facilityStateById } = useSeatMapData(editor)
+  const { ready, employeeById, effectiveLayout, effectivePresenceMap, facilityStateById } =
+    useSeatMapData(editor)
   // 移植版サイドバーは社員配列を直接受け取る
   const directoryEmployees = useMemo(() => [...employeeById.values()], [employeeById])
   const save = useLayoutSave(editor)
@@ -64,7 +66,12 @@ export const SeatMapView = () => {
   // 座標は論理(viewBox)のまま渡す — 画面座標への投影はチップ側が毎フレーム行い、
   // 表示中にパン・ズームしても対象の下辺に貼り付いたまま追従する
   const showUndoChipAt = useCallback(
-    (rect: Rect, message: string, frame: Rect | null = null, recent: RecentPlacement | null = null) => {
+    (
+      rect: Rect,
+      message: string,
+      frame: Rect | null = null,
+      recent: RecentPlacement | null = null
+    ) => {
       canvasRef.current?.showUndoChipAt({
         anchor: { x: rect.x + rect.w / 2, y: rect.y + rect.h },
         message,
@@ -79,7 +86,10 @@ export const SeatMapView = () => {
   const recentOf = (target: GhostRequest['target'], rect: Rect): RecentPlacement | null => {
     if (target.type === 'add-facility') return { kind: 'facility', rect }
     if (target.type === 'add-furniture') return { kind: 'furniture', rect }
-    if (target.type === 'reposition' && (target.ref.kind === 'facility' || target.ref.kind === 'furniture')) {
+    if (
+      target.type === 'reposition' &&
+      (target.ref.kind === 'facility' || target.ref.kind === 'furniture')
+    ) {
       return { kind: target.ref.kind, rect }
     }
     return null
@@ -134,7 +144,10 @@ export const SeatMapView = () => {
   )
 
   // 05-4:「大型」= shape:'executive' の一括適用。バーが持つ形状はこれ1つなのでここで固定する
-  const handleSeatEnlarge = useCallback((seatIds: string[]) => editor.reshapeSeats(seatIds, 'executive'), [editor])
+  const handleSeatEnlarge = useCallback(
+    (seatIds: string[]) => editor.reshapeSeats(seatIds, 'executive'),
+    [editor]
+  )
 
   // 05-4: 2席以上の一括削除。件数つきの確認を挟んでから1アクションで消す(undo 1回で戻る)。
   // 1席のときは既存の単独確認(dialogs.requestSeatDelete)がそのまま受ける
@@ -170,7 +183,10 @@ export const SeatMapView = () => {
   }, [ghostDeleteRef, dialogs.requestObjectDelete])
   // 操作ガイド4本(編集・メイン・チーム・家具)の活性化はフックへ寄せる。
   // 出し分けが画面の組み立てに散ると「どのガイドがいつ出るか」が読めなくなる
-  const centerOnSelector = useCallback((selector: string) => canvasRef.current?.centerOnSelector(selector), [])
+  const centerOnSelector = useCallback(
+    (selector: string) => canvasRef.current?.centerOnSelector(selector),
+    []
+  )
   const tours = useSeatMapTours({
     isEditMode: editor.isEditMode,
     centerOnSelector,
@@ -185,7 +201,7 @@ export const SeatMapView = () => {
     placement.openCategory()
   }, [tours.beginFacilityFlow, placement.openCategory])
   // 配属の結果はライブリージョンとトーストへ同じ文言を流す(実装を二重化しない)
-  const assign = useSeatAssign({ editor, employeeById, onDone: (message) => showNotice(message) })
+  const assign = useSeatAssign({ editor, employeeById, onDone: message => showNotice(message) })
 
   const [isDirectoryOpen, setIsDirectoryOpen] = useState(false)
   const [hoverFacility, setHoverFacility] = useState<FacilityHoverPayload | null>(null)
@@ -203,7 +219,11 @@ export const SeatMapView = () => {
   )
 
   // 10: チームバウンダリのタップ、および検索・自分の席からのヒット表示を束ねる
-  const focus = useTeamSeatFocus({ layout: effectiveLayout, canvasRef, onFailure: handleFocusFailure })
+  const focus = useTeamSeatFocus({
+    layout: effectiveLayout,
+    canvasRef,
+    onFailure: handleFocusFailure,
+  })
   // オーバーレイ内ミニマップ用のフロア情報(開いているチームが決まってから組み立てる)
   const minimap = useMinimapPayload(effectiveLayout, focus.payload?.teamId ?? null)
   // 左下 FAB の可否。条件が増えても組み立てが太らないよう判定はフックへ寄せる
@@ -230,7 +250,8 @@ export const SeatMapView = () => {
   const personSeat = useMemo(
     () =>
       personDetailId
-        ? effectiveLayout?.seats.find((candidate) => candidate.employeeId === personDetailId) ?? null
+        ? (effectiveLayout?.seats.find(candidate => candidate.employeeId === personDetailId) ??
+          null)
         : null,
     [personDetailId, effectiveLayout]
   )
@@ -240,7 +261,7 @@ export const SeatMapView = () => {
   const placedFacilityIds = useMemo(
     () =>
       (effectiveLayout?.facilities ?? [])
-        .map((facility) => facility.facilityId)
+        .map(facility => facility.facilityId)
         .filter((facilityId): facilityId is string => facilityId !== undefined),
     [effectiveLayout]
   )
@@ -255,7 +276,7 @@ export const SeatMapView = () => {
 
   // 「自分の席」ボタン。検索と同じ focusSeat を通し、分岐はここ(席の引き当て)だけに持つ
   const handleGoToMySeat = useCallback(() => {
-    const seat = effectiveLayout?.seats.find((candidate) => candidate.employeeId === SELF_EMPLOYEE_ID)
+    const seat = effectiveLayout?.seats.find(candidate => candidate.employeeId === SELF_EMPLOYEE_ID)
     if (!seat) {
       showNotice('座席未設定')
       return
@@ -266,13 +287,20 @@ export const SeatMapView = () => {
   return (
     <div className={styles.seatMapPage}>
       {!editor.isEditMode && (
-        <AppHeader onOpenDirectory={() => setIsDirectoryOpen(true)} isDirectoryOpen={isDirectoryOpen} />
+        <AppHeader
+          onOpenDirectory={() => setIsDirectoryOpen(true)}
+          isDirectoryOpen={isDirectoryOpen}
+        />
       )}
       {/* 編集中は土台(公式/カスタム)を差し替えさせない。差し替えるとワーキングコピーが宙に浮く */}
       {!editor.isEditMode && <LayoutSwitcher onExpandedChange={setIsLayoutSwitcherOpen} />}
       {/* 使い方ガイドの入口。アイランドと同じ行に並べたいので、ヘッダーではなくここで描く */}
       {!editor.isEditMode && (
-        <GuideButton ariaLabel='使い方ガイド' onClick={tours.replayMainTour} className={styles.mapGuideButton} />
+        <GuideButton
+          ariaLabel='使い方ガイド'
+          onClick={tours.replayMainTour}
+          className={styles.mapGuideButton}
+        />
       )}
       {ready && effectiveLayout && (
         <SeatMapCanvas
@@ -351,7 +379,7 @@ export const SeatMapView = () => {
         hoverFacility &&
         effectiveLayout &&
         (() => {
-          const facility = effectiveLayout.facilities.find((x) => x.id === hoverFacility.facilityId)
+          const facility = effectiveLayout.facilities.find(x => x.id === hoverFacility.facilityId)
           const state = facilityStateById.get(hoverFacility.facilityId)
           return facility && state ? (
             <FacilityHoverCard
@@ -364,7 +392,7 @@ export const SeatMapView = () => {
         })()}
       {!editor.isEditMode && (
         <DetailPanels
-          onFacilityDeleted={(name) => showNotice(`「${name}」を削除しました`)}
+          onFacilityDeleted={name => showNotice(`「${name}」を削除しました`)}
           onGoToSeat={personSeat ? handleGoToSeat : undefined}
           showSeatUnsetNotice={personDetailId !== null && !personSeat}
         />
@@ -399,7 +427,9 @@ export const SeatMapView = () => {
         onGhostDelete={isGhostDeletable ? handleGhostDelete : undefined}
       />
 
-      {editor.errorToast && <EditErrorToast key={editor.errorToast.id} message={editor.errorToast.message} />}
+      {editor.errorToast && (
+        <EditErrorToast key={editor.errorToast.id} message={editor.errorToast.message} />
+      )}
 
       {editor.isEditMode && (
         <SeatAssignDialogs
@@ -423,7 +453,6 @@ export const SeatMapView = () => {
       <CoachMarkTour tour={tours.furnitureTour} />
 
       <EditDialogs editor={editor} dialogs={dialogs} />
-
     </div>
   )
 }

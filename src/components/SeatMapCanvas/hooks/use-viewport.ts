@@ -18,7 +18,6 @@ import type { Transform } from '@/utils/layout/geometry'
 // パン・ズームの変換そのものを持つ。DOM へ直接 transform を当て、再レンダーは
 // ジェスチャー終了時の scaleSnap 更新だけに絞る
 
-
 // アニメーション付きで移動したあと transition を外すまでの時間
 const TRANSITION_MS = 300
 
@@ -34,7 +33,11 @@ export const useViewport = (): Viewport => {
 
   // LOD/カウンタ補正用スナップショット(ジェスチャ終了時のみ更新)。
   // レンダー中に transformRef を読まずに済ませるため変換一式で持つ
-  const [transformSnap, setTransformSnap] = useState<Transform>({ scale: 0.5, translateX: 0, translateY: 0 })
+  const [transformSnap, setTransformSnap] = useState<Transform>({
+    scale: 0.5,
+    translateX: 0,
+    translateY: 0,
+  })
 
   const rect = useCallback(() => {
     if (!rectRef.current && containerRef.current) {
@@ -157,7 +160,18 @@ export const useViewport = (): Viewport => {
   }, [applyTransform])
 
   // 入力(リサイズ・キーボード・ホイール・画面端自動パン)は useViewportInput が変換モデルへ繋ぐ
-  useViewportInput({ containerRef, rectRef, transformRef, animRef, rect, cancelAnim, applyTransform, commitSnap, lerpZoom, immediateZoom })
+  useViewportInput({
+    containerRef,
+    rectRef,
+    transformRef,
+    animRef,
+    rect,
+    cancelAnim,
+    applyTransform,
+    commitSnap,
+    lerpZoom,
+    immediateZoom,
+  })
 
   useEffect(() => () => cancelAnim(), [cancelAnim])
 

@@ -231,7 +231,9 @@ export const useObjectPlacement = (
       setFlow({ step: 'idle' })
       // 3段とも尽きた分だけ警告する。0件でも取り込み自体は成立するので閉じ方は変えない
       if (plan.unplacedCount > 0) {
-        editor.showError(`空き領域が足りないため${plan.unplacedCount}件のチームを配置できませんでした`)
+        editor.showError(
+          `空き領域が足りないため${plan.unplacedCount}件のチームを配置できませんでした`
+        )
       }
     },
     [editor]
@@ -266,10 +268,10 @@ export const useObjectPlacement = (
       }
       const name =
         ref.kind === 'team'
-          ? layout.teams.find((t) => t.id === ref.id)?.name ?? 'チーム'
+          ? (layout.teams.find(t => t.id === ref.id)?.name ?? 'チーム')
           : ref.kind === 'facility'
-            ? layout.facilities.find((f) => f.id === ref.id)?.name ?? '会議室'
-            : layout.furniture.find((f) => f.id === ref.id)?.name || '家具'
+            ? (layout.facilities.find(f => f.id === ref.id)?.name ?? '会議室')
+            : layout.furniture.find(f => f.id === ref.id)?.name || '家具'
       setFlow({
         step: 'placing',
         request: {
