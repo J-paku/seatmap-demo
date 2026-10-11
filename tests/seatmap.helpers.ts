@@ -67,7 +67,11 @@ export const test = base.extend<{ pageErrors: string[] }>({
   // 渡す関数は Playwright の慣例では use と呼ぶが、React の Hook 規則(rules-of-hooks)に
   // 誤って拾われるので別名にする。位置で受け取る引数なので名前を変えても働きは同じ
   context: async ({ context }, provide) => {
-    await context.route(isGoatCounter, route => route.abort())
+    // abort で塞ぐと、計測タグ入りの配信版で count.js の読み込み失敗が console.error に出て
+    // ページ内エラーの判定を落とす。外へは出さないまま空の応答を返して塞ぐ
+    await context.route(isGoatCounter, route =>
+      route.fulfill({ status: 200, contentType: 'text/javascript', body: '' })
+    )
     await context.addInitScript(
       ({ keys, auth }) => {
         try {

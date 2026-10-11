@@ -10,11 +10,12 @@
     "typecheck": "tsc --noEmit",
     "knip": "knip",
     "test": "vitest run",
-    "format": "prettier --write \"src/**/*.{ts,tsx,css}\" \"scripts/**/*.{mjs,js}\"",
-    "format:check": "prettier --check \"src/**/*.{ts,tsx,css}\" \"scripts/**/*.{mjs,js}\"",
+    "format": "prettier --write \"src/**/*.{ts,tsx,css}\" \"scripts/**/*.{mjs,js}\" \"tests/**/*.ts\"",
+    "format:check": "prettier --check \"src/**/*.{ts,tsx,css}\" \"scripts/**/*.{mjs,js}\" \"tests/**/*.ts\"",
     "test:coverage": "vitest run --coverage",
     "test:mutation": "stryker run",
-    "test:boundary": "node scripts/check-test-boundary.mjs"
+    "test:boundary": "node scripts/check-test-boundary.mjs",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "next": "16.2.12",
