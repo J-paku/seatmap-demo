@@ -23,12 +23,10 @@ export const subscribeSessionAuth = (listener: () => void): (() => void) => {
 // getSnapshot は同じ状態なら同じ参照を返さないと再描画が止まらない。そのため
 // パースした結果ではなく保存された生文字列(プリミティブ)をそのまま返す
 export const getSessionAuthSnapshot = (): string | null => {
-  if (typeof window === 'undefined') return null
-
   try {
     return window.sessionStorage.getItem(SESSION_AUTH_KEY)
   } catch {
-    // プライベートモード等で読めない環境では未ログインとして続行する
+    // プライベートモード等で読めない環境・SSR(window が無い)では未ログインとして続行する
     return null
   }
 }

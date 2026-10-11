@@ -49,12 +49,11 @@ const officialLayoutKey = (floorId: FloorId): string =>
 // (新しいブラウザでは決して再現しない)。
 //
 // 有効な社員id集合を引数で受けるのは、ここから社員データ(lib/mock-loader.ts)を import すると
-// 循環参照になるため(mock-loader 側が既にこのファイルを import している)
+// 循環参照になるため(mock-loader 側が既にこのファイルを import している)。
+// 空席(null)は 'null' として引くが、どちらの枝へ倒れても employeeId は null のままなので場合分けしない
 const pruneDanglingEmployeeIds = (seats: Seat[], validEmployeeIds: ReadonlySet<string>): Seat[] =>
   seats.map(seat =>
-    seat.employeeId !== null && !validEmployeeIds.has(seat.employeeId)
-      ? { ...seat, employeeId: null }
-      : seat
+    validEmployeeIds.has(String(seat.employeeId)) ? seat : { ...seat, employeeId: null }
   )
 
 // 配列でない古い/壊れた保存分でも落ちないよう、配列と確認できた時だけ写す
@@ -164,12 +163,12 @@ export const loadLayoutMetas = (): LayoutMeta[] => {
   if (!raw) return []
   try {
     const parsed = JSON.parse(raw) as LayoutMeta[]
-    if (!Array.isArray(parsed)) throw new Error('layouts is not an array')
-    return parsed
+    if (Array.isArray(parsed)) return parsed
   } catch {
-    window.localStorage.removeItem(LAYOUT_METAS_KEY)
-    return []
+    // パース失敗も配列でない値と同じく、下でキーごと削除する
   }
+  window.localStorage.removeItem(LAYOUT_METAS_KEY)
+  return []
 }
 
 // メタ一覧をJSONで保存する

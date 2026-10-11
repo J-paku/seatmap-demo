@@ -2,7 +2,7 @@
 // mock-loader は readCache/writeCache/touchLayoutMetaUpdatedAt で window.localStorage に
 // 実際に触れる(layout-persistence 経由)。node 環境では window が無く早期returnするだけの
 // 分岐しか通らないため、happy-dom で実際の永続化挙動を検証する。
-import { describe, it, expect, beforeAll, afterEach, vi } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import employeesJson from '@mocks/employees.json'
 import avatarsJson from '@mocks/avatars.json'
 import teamsJson from '@mocks/teams.json'
@@ -26,17 +26,24 @@ import type { ScheduleEvent } from '@/types'
 // 制御しないと anchoring のテストが実行環境の実日付に依存してしまう
 const FIXED_NOW = new Date('2026-08-16T12:00:00+09:00').getTime()
 
-// 動的 import 前にモジュール型だけ宣言しておく(値は beforeAll で FIXED_NOW 固定後に代入する)
+// 動的 import 前にモジュール型だけ宣言しておく(値は beforeEach で FIXED_NOW 固定後に代入する)
 let mod: typeof import('./mock-loader')
 
-beforeAll(async () => {
+// 種データの組み立ては読み込み時に走る。beforeAll で1度だけ読むと、そこで投げた時に
+// どのテストも失敗せず走らないまま終わるので、テストごとに覚えを捨てて読み直し、
+// 読み込みの失敗を個々のテストの失敗として受ける
+beforeEach(async () => {
+  vi.resetModules()
   vi.setSystemTime(FIXED_NOW)
   mod = await import('./mock-loader')
 })
 
 afterEach(() => {
+  // window を外したテストの後でも片付けが届くよう、先に元へ戻す
+  vi.unstubAllGlobals()
   window.localStorage.clear()
   vi.restoreAllMocks()
+  vi.useRealTimers()
 })
 
 describe('EMPLOYEES / ALL_TEAMS / ALL_FACILITIES / FACILITY_MEETINGS (単純パススルー)', () => {
@@ -181,6 +188,17 @@ describe('readCache / writeCache', () => {
     expect(mod.readCache('rc-legacy', 'fp-x')).toBeUndefined()
   })
 
+  it('保存値がJSONのnullでも例外を投げずキャッシュミス扱いになる', () => {
+    window.localStorage.setItem('seatmap::rc-null', 'null')
+    expect(mod.readCache('rc-null', 'fp-x')).toBeUndefined()
+  })
+
+  it('window の無い環境(SSR)では read はミス、write は何もせず例外を投げない', () => {
+    vi.stubGlobal('window', undefined)
+    expect(mod.readCache('rc-ssr', 'fp-x')).toBeUndefined()
+    expect(() => mod.writeCache('rc-ssr', { v: 1 }, 'fp-x')).not.toThrow()
+  })
+
   it('localStorage.setItem が例外を投げても writeCache は例外を伝播しない(容量超過などを無視)', () => {
     vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
       throw new DOMException('quota exceeded')
@@ -201,6 +219,23 @@ describe('fetchWithRetry', () => {
     const elapsed = performance.now() - start
     // responseDelay() は 200〜500ms。実行環境のスケジューリング揺らぎを見込み下限は緩める
     expect(elapsed).toBeGreaterThanOrEqual(150)
+  })
+
+  // 遅れは 200ms に 0〜300ms 未満の乱数ぶんを足した長さ。乱数を両端に固定して確かめる
+  it.each([
+    [0, 200],
+    [0.999, 499],
+  ])('乱数が %s なら %sms 後に解決する', async (random, delayMs) => {
+    vi.useFakeTimers()
+    vi.spyOn(Math, 'random').mockReturnValue(random)
+    const settled = vi.fn()
+
+    void mod.fetchWithRetry('x').then(settled)
+    await vi.advanceTimersByTimeAsync(delayMs - 1)
+    expect(settled).not.toHaveBeenCalled()
+
+    await vi.advanceTimersByTimeAsync(1)
+    expect(settled).toHaveBeenCalledWith('x')
   })
 })
 

@@ -6,9 +6,9 @@ const FAVORITE_DEPARTMENTS_STORAGE_KEY = 'seatmap-demo:favorite-departments'
 // LocalStorage からお気に入り部署名集合を読み込む（失敗時は空集合）
 export function readFavoriteDepartments(): Set<string> {
   try {
-    const stored = localStorage.getItem(FAVORITE_DEPARTMENTS_STORAGE_KEY)
-    if (!stored) return new Set()
-    const parsed = JSON.parse(stored) as string[]
+    // 未保存(getItem が null)は文字列 'null' になり、JSON の null から空集合ができる
+    const stored = String(localStorage.getItem(FAVORITE_DEPARTMENTS_STORAGE_KEY))
+    const parsed = JSON.parse(stored) as string[] | null
     return new Set(parsed)
   } catch {
     // 読み込み・パース失敗時は空集合のまま

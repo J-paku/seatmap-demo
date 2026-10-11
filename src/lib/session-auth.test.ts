@@ -23,6 +23,7 @@ describe('session-auth', () => {
     // テストごとに登録した購読を必ず解除して次のテストへ漏れさせない
     unsubscribers.splice(0).forEach(unsubscribe => unsubscribe())
     vi.restoreAllMocks()
+    vi.unstubAllGlobals()
   })
 
   describe('SSRスナップショット', () => {
@@ -107,6 +108,23 @@ describe('session-auth', () => {
       })
 
       expect(getSessionAuthSnapshot()).toBeNull()
+    })
+  })
+
+  describe('window の無い環境(SSR)', () => {
+    it('getSessionAuthSnapshot は null を返す(未ログイン扱い)', () => {
+      vi.stubGlobal('window', undefined)
+
+      expect(getSessionAuthSnapshot()).toBeNull()
+    })
+
+    it('writeSessionAuth は何も書かず、購読者へも通知しない', () => {
+      const listener = vi.fn()
+      unsubscribers.push(subscribeSessionAuth(listener))
+      vi.stubGlobal('window', undefined)
+
+      expect(() => writeSessionAuth('user-1')).not.toThrow()
+      expect(listener).not.toHaveBeenCalled()
     })
   })
 })

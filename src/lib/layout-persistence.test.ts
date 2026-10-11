@@ -1,5 +1,5 @@
 // @vitest-environment happy-dom
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { DEFAULT_FLOOR_ID } from '@/utils/floors'
 import type { Facility, Furniture, LayoutMeta, Seat, SeatLayout, Team } from '@/types'
 import {
@@ -88,6 +88,10 @@ describe('layout-persistence', () => {
     window.localStorage.clear()
   })
 
+  afterEach(() => {
+    vi.unstubAllGlobals()
+  })
+
   describe('空状態', () => {
     it('loadStoredLayout はキー未設定時 null を返す', () => {
       expect(loadStoredLayout(DEFAULT_FLOOR_ID, new Set())).toBeNull()
@@ -103,6 +107,28 @@ describe('layout-persistence', () => {
 
     it('loadDefaultLayoutId はキー未設定時 null を返す', () => {
       expect(loadDefaultLayoutId()).toBeNull()
+    })
+
+    // 空文字は「未保存」と同じ扱いで、壊れた保存分としては消さない
+    it.each([
+      ['loadStoredLayout', LAYOUT_STORAGE_KEY, () => loadStoredLayout(DEFAULT_FLOOR_ID, new Set())],
+      [
+        'loadCustomLayout',
+        customLayoutKey('custom-1'),
+        () => loadCustomLayout('custom-1', new Set()),
+      ],
+    ])('%s は空文字の保存値に null を返し、キーを残す', (_label, key, load) => {
+      window.localStorage.setItem(key, '')
+
+      expect(load()).toBeNull()
+      expect(window.localStorage.getItem(key)).toBe('')
+    })
+
+    it('loadLayoutMetas は空文字の保存値に空配列を返し、キーを残す', () => {
+      window.localStorage.setItem(LAYOUT_METAS_KEY, '')
+
+      expect(loadLayoutMetas()).toEqual([])
+      expect(window.localStorage.getItem(LAYOUT_METAS_KEY)).toBe('')
     })
   })
 
@@ -185,6 +211,33 @@ describe('layout-persistence', () => {
       expect(result?.seats[1].employeeId).toBeNull()
     })
 
+    it('空席(employeeIdがnull)の座席はnullのまま残る', () => {
+      const layout = { ...oldRawLayout, seats: [{ ...oldRawLayout.seats[0], employeeId: null }] }
+      window.localStorage.setItem(LAYOUT_STORAGE_KEY, JSON.stringify(layout))
+
+      const result = loadStoredLayout(DEFAULT_FLOOR_ID, new Set(['emp-1']))
+
+      expect(result?.seats[0]).toMatchObject({ id: 'seat-001', employeeId: null })
+    })
+
+    it('家具は欠けた欄だけ既定値で埋め、保存済みの値は残す', () => {
+      const layout = {
+        ...oldRawLayout,
+        furniture: [
+          { id: 'furn-1', kind: 'table', name: '', x: 10, y: 10, width: 50, height: 50 },
+          { ...furniture1, id: 'furn-2', rotation: 90, labelVisible: false, locked: true },
+        ],
+      }
+      window.localStorage.setItem(LAYOUT_STORAGE_KEY, JSON.stringify(layout))
+
+      const result = loadStoredLayout(DEFAULT_FLOOR_ID, new Set())
+
+      expect(result?.furniture).toEqual([
+        furniture1,
+        { ...furniture1, id: 'furn-2', rotation: 90, labelVisible: false, locked: true },
+      ])
+    })
+
     it('カスタムレイアウトも同じ移行ロジックを通る', () => {
       window.localStorage.setItem(customLayoutKey('custom-1'), JSON.stringify(oldRawLayout))
 
@@ -203,6 +256,20 @@ describe('layout-persistence', () => {
 
       expect(result).not.toBeNull()
       expect(result?.seats).toBe('not-an-array')
+    })
+
+    it('配列でない壊れたteams・facilitiesフィールドも写さずそのまま通す', () => {
+      const brokenLayout = {
+        ...oldRawLayout,
+        teams: 'broken-teams',
+        facilities: 'broken-facilities',
+      }
+      window.localStorage.setItem(LAYOUT_STORAGE_KEY, JSON.stringify(brokenLayout))
+
+      const result = loadStoredLayout(DEFAULT_FLOOR_ID, new Set())
+
+      expect(result?.teams).toBe('broken-teams')
+      expect(result?.facilities).toBe('broken-facilities')
     })
   })
 
@@ -364,12 +431,43 @@ describe('layout-persistence', () => {
       expect(loadDefaultLayoutId()).toBe('custom-1')
     })
 
+    it('idはJSONにせず生の文字列のまま専用キーへ保存する', () => {
+      saveDefaultLayoutId('custom-1')
+
+      expect(window.localStorage.getItem(DEFAULT_LAYOUT_ID_KEY)).toBe('custom-1')
+    })
+
     it('nullを渡すとキーを削除して既定へ戻す', () => {
       saveDefaultLayoutId('custom-1')
       saveDefaultLayoutId(null)
 
       expect(loadDefaultLayoutId()).toBeNull()
       expect(window.localStorage.getItem(DEFAULT_LAYOUT_ID_KEY)).toBeNull()
+    })
+  })
+
+  describe('window の無い環境(SSR)', () => {
+    it('読み込みは null・空配列を返す', () => {
+      vi.stubGlobal('window', undefined)
+
+      expect(loadStoredLayout(DEFAULT_FLOOR_ID, new Set())).toBeNull()
+      expect(loadCustomLayout('custom-1', new Set())).toBeNull()
+      expect(loadLayoutMetas()).toEqual([])
+      expect(loadDefaultLayoutId()).toBeNull()
+    })
+
+    it.each([
+      ['saveStoredLayout', () => saveStoredLayout(DEFAULT_FLOOR_ID, makeLayout(DEFAULT_FLOOR_ID))],
+      ['clearStoredLayout', () => clearStoredLayout(DEFAULT_FLOOR_ID)],
+      ['saveLayoutMetas', () => saveLayoutMetas([])],
+      ['saveCustomLayout', () => saveCustomLayout('custom-1', makeLayout(DEFAULT_FLOOR_ID))],
+      ['deleteCustomLayout', () => deleteCustomLayout('custom-1')],
+      ['saveDefaultLayoutId(id)', () => saveDefaultLayoutId('custom-1')],
+      ['saveDefaultLayoutId(null)', () => saveDefaultLayoutId(null)],
+    ])('%s は何もせず例外を投げない', (_label, write) => {
+      vi.stubGlobal('window', undefined)
+
+      expect(write).not.toThrow()
     })
   })
 })

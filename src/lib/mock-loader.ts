@@ -47,12 +47,9 @@ const toSeats = (raw: RawSeat[]): Seat[] =>
   raw.map(s => ({ ...s, rotation: s.rotation as Seat['rotation'] }))
 const toFacilities = (raw: RawFacility[]): Facility[] =>
   raw.map(f => ({ ...f, kind: f.kind as Facility['kind'] }))
-// 家具の種データ。初期は空で、編集モードで置いたぶんは保存レイアウト側に載る
-const toFurniture = (raw: RawFurniture[]): Furniture[] =>
-  raw.map(f => ({
-    ...f,
-    kind: f.kind as Furniture['kind'],
-  }))
+// 家具の種データ。初期は空で、編集モードで置いたぶんは保存レイアウト側に載る。
+// kind の絞り込みは型だけの話で値は変わらないので、写さずに型を付け替える
+const toFurniture = (raw: RawFurniture[]): Furniture[] => raw as Furniture[]
 
 // フロアごとの種データ。Record<FloorId, ...> なので types の FLOORS へ足したフロアの
 // 登録漏れは型エラーになる(一覧とデータが片方だけ増える経路を塞ぐ)
@@ -119,30 +116,25 @@ type CacheEnvelope<T> = {
   data: T
 }
 
-const isCacheEnvelope = <T>(value: unknown): value is CacheEnvelope<T> =>
-  typeof value === 'object' &&
-  value !== null &&
-  'fingerprint' in value &&
-  'data' in value &&
-  typeof (value as { fingerprint: unknown }).fingerprint === 'string'
-
+// 封筒の形は確かめず、指紋の一致だけを見る。旧形式(配列そのまま)は fingerprint を持たず、
+// 指紋不一致(シード更新)と同じく一致しないのでキャッシュミスになる。
+// 未保存(getItem が null)は文字列 'null' になり、JSON の null の属性参照が例外を投げる。
+// SSR(window が無い)・ストレージアクセス不可も参照の時点で例外になり、どれも catch がミスに丸める
 export const readCache = <T>(name: string, fingerprint: string): T | undefined => {
   try {
-    if (typeof window === 'undefined') return undefined
-    const raw = window.localStorage.getItem(CACHE_PREFIX + name)
-    if (!raw) return undefined
-    const parsed: unknown = JSON.parse(raw)
-    // 旧形式(配列そのまま)や指紋不一致(シード更新)はキャッシュミス扱い
-    if (!isCacheEnvelope<T>(parsed) || parsed.fingerprint !== fingerprint) return undefined
-    return parsed.data
+    const parsed = JSON.parse(
+      String(window.localStorage.getItem(CACHE_PREFIX + name))
+    ) as CacheEnvelope<T>
+    if (parsed.fingerprint === fingerprint) return parsed.data
   } catch {
-    return undefined
+    // 壊れた値・読めない環境はキャッシュミス
   }
+  return undefined
 }
 
+// SSR(window が無い)も容量超過と同じく、参照の例外を catch が握りつぶす
 export const writeCache = <T>(name: string, data: T, fingerprint: string): void => {
   try {
-    if (typeof window === 'undefined') return
     const envelope: CacheEnvelope<T> = { fingerprint, data }
     window.localStorage.setItem(CACHE_PREFIX + name, JSON.stringify(envelope))
   } catch {
