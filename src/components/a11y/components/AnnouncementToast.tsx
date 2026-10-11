@@ -1,6 +1,6 @@
 // アナウンスメント用トースト表示コンポーネント(状態管理は use-announcement-provider 側)
 import type { CSSProperties } from 'react'
-import type { ToastTone } from '@/hooks/use-announcement-provider'
+import type { ToastTone } from '@/utils/normalize-announcement'
 import styles from '../announcement-toast.module.css'
 
 interface AnnouncementToastProps {

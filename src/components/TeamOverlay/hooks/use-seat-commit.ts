@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react'
-import type { SeatDraftState } from './use-seat-draft-state'
+import type { SeatDraftState } from '../type'
 import { EMPTY_COMMIT_RESULT, normalizeDraftIntoLayout } from '../utils/commit-seat-draft'
 import type { SeatCommitResult } from '../utils/commit-seat-draft'
 import type { SeatGridDraft } from '@/utils/layout/seat-grid-draft'

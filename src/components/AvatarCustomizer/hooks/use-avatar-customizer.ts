@@ -13,9 +13,6 @@ import {
 import { useAiPrompt } from './use-ai-prompt'
 import { useAiImport } from './use-ai-import'
 
-// QuickStartSection など消費側の import 経路維持のため再 export
-export type { QuickStartKind }
-
 interface UseAvatarCustomizerArgs {
   initialConfig?: PixelAvatarConfig | null
   onSave: (config: PixelAvatarConfig) => void

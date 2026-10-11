@@ -1,8 +1,7 @@
 import { useMemo } from 'react'
 import { buildSeatGrid } from '../utils/seat-grid'
 import { buildEditingSeatGrid } from '../utils/build-editing-grid'
-import type { SeatDraftState } from './use-seat-draft-state'
-import type { SeatGrid } from '../type'
+import type { SeatDraftState, SeatGrid } from '../type'
 import type { SeatGridDraft } from '@/utils/layout/seat-grid-draft'
 import type { Seat } from '@/types'
 

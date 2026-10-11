@@ -3,7 +3,7 @@ import type { GridCell, SeatGridDraft } from '@/utils/layout/seat-grid-draft'
 // useOverlayEditMode(座席編集モードの出入口)が使う、編集開始時のグリッドとの比べ方
 
 // 2つのグリッドが同じ内容か。行・列の本数と各セルの中身(席id/空)が全て一致すれば同じとみなす。
-// 保存要否の判定にしか使わないためこのフックの内部に閉じる
+// 保存要否の判定(use-overlay-edit-mode の isGridChanged)にしか使わない
 export const isSameSeatGridDraft = (a: SeatGridDraft, b: SeatGridDraft): boolean => {
   if (a.originX !== b.originX || a.originY !== b.originY) return false
   if (a.colPitch !== b.colPitch || a.rowPitch !== b.rowPitch) return false

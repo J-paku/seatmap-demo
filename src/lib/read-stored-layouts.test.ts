@@ -64,3 +64,20 @@ describe('getStoredLayouts', () => {
     expect(second).toEqual({ layoutMetas: [metaA], defaultLayoutId: null })
   })
 })
+
+describe('getServerStoredLayouts', () => {
+  it('静的書き出しHTMLと同じ「カスタム0件・デフォルト未設定」を返す', () => {
+    expect(mod.getServerStoredLayouts()).toEqual({ layoutMetas: [], defaultLayoutId: null })
+  })
+
+  it('保存内容があっても読まず、空のままを返す', () => {
+    saveLayoutMetas([metaA])
+    saveDefaultLayoutId('a')
+
+    expect(mod.getServerStoredLayouts()).toEqual({ layoutMetas: [], defaultLayoutId: null })
+  })
+
+  it('呼ぶたびに同じ参照を返す(useSyncExternalStore のサーバースナップショットの要件)', () => {
+    expect(mod.getServerStoredLayouts()).toBe(mod.getServerStoredLayouts())
+  })
+})

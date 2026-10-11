@@ -1,4 +1,4 @@
-import type { CoachMarkTourState } from './hooks/use-coach-mark-tour'
+import type { CoachMarkTourState } from './type'
 import { triggerHaptic } from '@/utils/haptic'
 import { getCardPlacementStyle } from './utils/card-placement'
 import styles from './coach-mark.module.css'

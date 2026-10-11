@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react'
-import type { SeatDraftState } from './use-seat-draft-state'
+import type { SeatDraftState } from '../type'
 import type { UseOverlayEditModeResult } from './use-overlay-edit-mode'
 import {
   addRow as addGridRow,

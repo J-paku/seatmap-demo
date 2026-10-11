@@ -4,8 +4,8 @@
 // ここでは「まだ確定していない」と分かる接頭辞だけを持つ
 export const DRAFT_SEAT_ID_PREFIX = 'seat-draft-'
 
-// 2つのid集合が同じ内容か(順序は問わない)。§06-3のgrid移動席数の差し引きゼロ判定にしか
-// 使わないためこのファイル内に閉じる
+// 2つのid集合が同じ内容か(順序は問わない)。§06-3のgrid移動席数の差し引きゼロ判定
+// (use-seat-draft-state の syncMovedSeatIds)にしか使わない
 export const isSameIdSet = (a: Set<string>, b: Set<string>): boolean => {
   if (a.size !== b.size) return false
   for (const id of a) {

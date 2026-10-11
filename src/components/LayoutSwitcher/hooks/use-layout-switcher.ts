@@ -7,7 +7,11 @@ import {
   saveDefaultLayoutId,
   saveLayoutMetas,
 } from '@/lib/layout-persistence'
-import { getStoredLayouts, readStoredLayouts } from '@/lib/read-stored-layouts'
+import {
+  getServerStoredLayouts,
+  getStoredLayouts,
+  readStoredLayouts,
+} from '@/lib/read-stored-layouts'
 import type { StoredLayouts } from '@/lib/read-stored-layouts'
 import { createEmptyLayout, createLayoutId } from '@/utils/layout/layout-id'
 import { useLayoutSource } from '@/contexts/layout-source-context'
@@ -15,7 +19,6 @@ import { useGlobalAnnouncement } from '@/contexts/announcement-context'
 import { floorNameOf } from '@/utils/floors'
 import { subscribeNever } from '@/utils/subscribe-never'
 import type { LayoutMeta } from '@/types'
-import { getServerStoredLayouts } from '../utils/subscribe-stored-layouts'
 
 export type UseLayoutSwitcherResult = {
   isOpen: boolean

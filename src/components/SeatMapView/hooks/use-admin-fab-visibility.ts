@@ -1,5 +1,5 @@
-import { isTourPlaying } from '@/components/CoachMarkTour/hooks/use-coach-mark-tour'
-import type { CoachMarkTourState } from '@/components/CoachMarkTour/hooks/use-coach-mark-tour'
+import { isTourPlaying } from '@/components/CoachMarkTour/utils/is-tour-playing'
+import type { CoachMarkTourState } from '@/components/CoachMarkTour/type'
 import { useDetailPanel } from '@/contexts/detail-panel-context'
 import type { TeamOverlayPayload } from '@/types'
 

@@ -1,8 +1,6 @@
 import type { UseBulkAssignResult } from '../hooks/use-bulk-assign'
-import type {
-  AssignConfirmContent,
-  SeatDeleteConfirmContent,
-} from '../hooks/use-overlay-edit-wiring'
+import type { SeatDeleteConfirmContent } from '../hooks/use-overlay-seat-delete'
+import type { AssignConfirmContent } from '../utils/assign-confirm-content'
 import { buildTeamDeleteConfirmMessage, ConfirmDialog } from '@/components/edit/ConfirmDialog'
 import { DeleteConfirmDialog } from '@/components/edit/DeleteConfirmDialog'
 import { EmployeeAssignSheet } from '@/components/EmployeeAssignSheet'

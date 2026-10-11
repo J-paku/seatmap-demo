@@ -4,9 +4,6 @@ import type { SetStateAction } from 'react'
 import { TOAST_HIDE_DELAY, normalizeAnnouncement } from '@/utils/normalize-announcement'
 import type { ToastTone } from '@/utils/normalize-announcement'
 
-// トーストの色味の型は AnnouncementToast がこのフックから読むので、移した先から通す
-export type { ToastTone }
-
 export interface AnnouncementContextValue {
   message: string
   setMessage: (value: SetStateAction<string>) => void

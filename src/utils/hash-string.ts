@@ -1,4 +1,5 @@
-// 軽量文字列ハッシュ(暗号強度は不要)。キャッシュ指紋とアバター既定プリセットの2箇所から使う
+// 軽量文字列ハッシュ(暗号強度は不要)。キャッシュ指紋(lib/mock-loader)・アバター既定プリセット
+// (utils/avatar/default-preset)・会議室×日付の種(utils/seed-facility-day)の3箇所から使う
 export const hashStringToInt = (value: string): number => {
   let hash = 0
   for (let i = 0; i < value.length; i += 1) {

@@ -17,7 +17,7 @@ import { useSeatDrag } from './hooks/use-seat-drag'
 import { useSeatLayoutCompose } from './hooks/use-seat-layout-compose'
 import { useSeatSelection } from './hooks/use-seat-selection'
 import { anchorTransformOrigin } from './utils/anchor-origin'
-import { SEAT_GRID_CELL_ATTR } from './utils/seat-drag-attrs'
+import { resolveSeatIdFromElement, SEAT_GRID_CELL_ATTR } from './utils/seat-drag-attrs'
 import { COMPACT_SIDE_PADDING_PX } from './utils/seat-grid'
 import { SEAT_LAYOUT_TOUR_STEPS, SEAT_LAYOUT_TOUR_STORAGE_KEY } from './utils/tour-steps'
 import type { TeamOverlayProps } from './type'
@@ -207,8 +207,9 @@ export const TeamOverlay = ({
           // ミニマップ等)をクリックした時に消えなかったのが元の不具合。ヒット席自身の
           // クリックだけは社員詳細を開く経路と競合するため除外する
           if (highlightSeatId) {
-            const seatEl = (e.target as HTMLElement).closest<HTMLElement>('[data-seat-id]')
-            if (seatEl?.dataset.seatId !== highlightSeatId) onClearHighlight?.()
+            if (resolveSeatIdFromElement(e.target as HTMLElement) !== highlightSeatId) {
+              onClearHighlight?.()
+            }
           }
           // 編集中はセル(席・空セルどちらも data-seat-grid-cell を持つ)以外のタップで選択解除する。
           // グリッド余白・オーバーレイ余白のどちらもこの1箇所で拾える

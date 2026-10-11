@@ -6,7 +6,7 @@ import {
   resolveCellFromElement,
   resolveIsOverTrashZone,
   resolveSeatIdFromElement,
-} from '../utils/resolve-seat-drag'
+} from '../utils/seat-drag-attrs'
 import { safeSetPointerCapture } from '@/utils/gesture/pointer-capture'
 import { suppressGhostClick } from '@/utils/gesture/suppress-ghost-click'
 import type { GridCell } from '@/utils/layout/seat-grid-draft'

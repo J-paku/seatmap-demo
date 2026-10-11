@@ -7,8 +7,8 @@ import {
 } from '@/utils/avatar/matrices/compose'
 import { buildKuroxxxRects, KUROXXX_GRID_SIZE } from '@/utils/avatar/kuroxxx-easter-egg'
 import type { PartsAvatarConfig, PixelAvatarConfig, PixelsAvatarConfig } from '@/types'
-import { buildRectsForPixels, buildRectsFromMatrix } from '../utils/build-pixel-rects'
-import type { PixelRect } from '../utils/build-pixel-rects'
+import { buildRectsForPixels, buildRectsFromMatrix } from '@/utils/avatar/build-pixel-rects'
+import type { PixelRect } from '@/utils/avatar/build-pixel-rects'
 
 interface UsePixelAvatarArgs {
   config?: PixelAvatarConfig | null

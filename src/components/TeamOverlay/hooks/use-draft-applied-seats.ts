@@ -1,5 +1,5 @@
 import { useEffect, useMemo } from 'react'
-import type { SeatDraftState } from './use-seat-draft-state'
+import type { SeatDraftState } from '../type'
 import type { Seat } from '@/types'
 
 // STEP C4: 検索シート・一括配置へ渡す「全座席」を下書き反映済みにする。base(保存済み)配列の

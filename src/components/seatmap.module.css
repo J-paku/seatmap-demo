@@ -322,7 +322,8 @@
 }
 
 /* 07-6: レイアウト編集セッションの保存成功トースト(仕様: 画面中央・5秒・「元に戻す」アクション付き)。
-   表示時間(5秒)は components/SeatMapView/hooks/use-layout-save.ts の TOAST_MS が管理する。
+   表示時間(5秒)は components/SeatMapView/utils/save-layout-constants.ts の TOAST_MS が管理する
+   (use-layout-save.ts がそれを読んで消す)。
    .empDirUnassignedToast と同じ見た目のトーストだが、位置(画面中央)が違うため独立クラスにする
    — 共用すると座席未設定通知(bottom固定)まで中央へ動いてしまう */
 .saveToast {

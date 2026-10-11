@@ -21,9 +21,6 @@ import type { Employee, Seat, TeamOverlayPayload } from '@/types'
 // (選択のトグル・席追加とその直後のハイライト・フリーアドレス設定)だけで、
 // 配属・座席削除・セッションの終了はそれぞれ専用のフックへ分けてある(index.tsxは組み立てだけ)
 
-export type { AssignConfirmContent } from '../utils/assign-confirm-content'
-export type { SeatDeleteConfirmContent } from './use-overlay-seat-delete'
-
 export type UseOverlayEditWiringParams = {
   payload: TeamOverlayPayload | null
   seats: Seat[]

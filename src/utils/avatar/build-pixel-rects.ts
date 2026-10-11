@@ -1,7 +1,4 @@
-import {
-  composePixelsAvatarMatrix,
-  resolvePixelColorForFree,
-} from '@/utils/avatar/matrices/compose'
+import { composePixelsAvatarMatrix, resolvePixelColorForFree } from './matrices/compose'
 import type { PixelsAvatarConfig } from '@/types'
 
 export interface PixelRect {

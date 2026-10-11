@@ -1,15 +1,10 @@
-// 隠しキャラ降臨イースターエッグ専用 — 16x16 ドット絵と rect 生成。通常の 8x8 パーツ経路とは完全に分離する
+// 隠しキャラ降臨イースターエッグ専用 — 16x16 ドット絵と rect 生成。ドット絵は通常の 8x8 パーツ経路とは
+// 完全に分離する (rect へのまとめ方だけ build-pixel-rects を共有する)
 // 隠しコマンド成立で hair をこの隠しキャラへ切り替え → usePixelAvatar がこの 16x16 を描画する
 // 著作権配慮でファイル名・識別子はキャラ名を伏せる (コードネーム kuroxxx)。色・ドットは固定 (palette 非依存)
+import { buildRectsFromMatrix, type PixelRect } from './build-pixel-rects'
 
 export const KUROXXX_GRID_SIZE = 16
-
-interface KuroxxxRect {
-  x: number
-  y: number
-  w: number
-  color: string
-}
 
 // 1文字 → HEX 色。'.' は透明 (legend 未定義扱い)
 const KUROXXX_LEGEND: Record<string, string> = {
@@ -42,15 +37,12 @@ const KUROXXX_ROWS: readonly string[] = [
   '...KKK....KKK...',
 ]
 
-// 同じ文字が横に続く区間 (1 文字以上) を 1 つずつ取り出す
-const SAME_CHAR_RUN = /(.)\1*/g
-
-// 横方向の同色連続を 1 rect にまとめて返す (透明セルで区切る)
-// legend は文字ごとに色が異なるので、同じ文字の連続 = 同じ色の連続になる
-export const buildKuroxxxRects = (): KuroxxxRect[] =>
-  KUROXXX_ROWS.flatMap((row, y) =>
-    Array.from(row.matchAll(SAME_CHAR_RUN)).flatMap(run => {
-      const color = KUROXXX_LEGEND[run[1]]
-      return color ? [{ x: run.index, y, w: run[0].length, color }] : []
-    })
+// 横方向の同色連続を 1 rect にまとめて返す (透明セルで区切る)。まとめ方は通常のアバターと同じ
+// buildRectsFromMatrix を使う。各セルを legend の色 (無ければ透明の null) に置き換えてから渡す。
+// legend は文字ごとに色が異なるので、同じ色の連続 = 同じ文字の連続になる
+export const buildKuroxxxRects = (): PixelRect[] =>
+  buildRectsFromMatrix(
+    KUROXXX_ROWS.map(row => Array.from(row, char => KUROXXX_LEGEND[char] ?? null)),
+    KUROXXX_GRID_SIZE,
+    color => color
   )

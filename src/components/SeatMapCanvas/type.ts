@@ -63,7 +63,7 @@ export type SeatMapCanvasHandle = {
   centerOnSelector: (selector: string) => void
 }
 
-export type Rect = { x: number; y: number; w: number; h: number }
+type Rect = { x: number; y: number; w: number; h: number }
 
 // 07: 「元に戻す」チップ1回分の要求。座標はすべて viewBox 単位で受け取り、
 // 画面座標への投影はチップ側が毎フレーム行う(パン・ズームへ追従させるため)

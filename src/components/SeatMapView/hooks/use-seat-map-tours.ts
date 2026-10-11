@@ -1,11 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { MAIN_TOUR_STEPS, MAIN_TOUR_STORAGE_KEY } from '../utils/main-tour-steps'
-import {
-  isTourPlaying,
-  readSeen,
-  useCoachMarkTour,
-} from '@/components/CoachMarkTour/hooks/use-coach-mark-tour'
-import type { CoachMarkTourState } from '@/components/CoachMarkTour/hooks/use-coach-mark-tour'
+import { useCoachMarkTour } from '@/components/CoachMarkTour/hooks/use-coach-mark-tour'
+import type { CoachMarkTourState } from '@/components/CoachMarkTour/type'
+import { isTourPlaying } from '@/components/CoachMarkTour/utils/is-tour-playing'
+import { readSeen } from '@/lib/persist-tour-seen'
 import {
   EDIT_TOUR_BRANCH,
   EDIT_TOUR_STORAGE_KEY,

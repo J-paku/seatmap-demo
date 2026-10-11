@@ -4,8 +4,8 @@ import type { MinimapArea, MinimapFurniture } from '@/types'
 import { clamp } from '@/utils/layout/geometry'
 import { boundingWindow, centerOf, cropWindow } from '../utils/compute-minimap-bounds'
 
-// ミニマップの「どこを切り取って見せるか」と「現在地が窓のどこか」を決める計算。
-// 純粋計算のみで副作用を持たない
+// ミニマップの「どこを切り取って見せるか」と「現在地が窓のどこか」を決める。
+// 窓の計算そのものは utils/compute-minimap-bounds にあり、ここは useMemo でつなぐだけ(副作用は持たない)
 
 type Options = {
   areas: MinimapArea[]

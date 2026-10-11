@@ -1,4 +1,4 @@
-import type { SeatDraftState } from '../hooks/use-seat-draft-state'
+import type { SeatDraftState } from '../type'
 import { serializeSeatGrid } from '@/utils/layout/seat-grid-draft'
 import type { SeatGridDraft } from '@/utils/layout/seat-grid-draft'
 import { applyLayoutAction } from '@/utils/layout/layout-actions'
@@ -127,7 +127,8 @@ export const normalizeDraftIntoLayout = (
 }
 
 // 保存の結果。§06-5 のデデュプ警告は「誰が畳まれたか」を呼び出し側の文言組み立てへ渡すだけにし、
-// このフックからは通知(announce/トースト)を一切出さない(通知経路を1画面に2つ作らないため)
+// 保存するフック(use-seat-commit)からは通知(announce/トースト)を一切出さない
+// (通知経路を1画面に2つ作らないため)
 export type SeatCommitResult = {
   dedupedEmployeeIds: string[]
 }

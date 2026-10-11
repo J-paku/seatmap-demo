@@ -1,6 +1,5 @@
 import { gridCellKey } from './seat-grid'
-import type { SeatDraftState } from '../hooks/use-seat-draft-state'
-import type { SeatGrid } from '../type'
+import type { SeatDraftState, SeatGrid } from '../type'
 import type { GridCell, SeatGridDraft } from '@/utils/layout/seat-grid-draft'
 import type { Seat } from '@/types'
 

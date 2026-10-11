@@ -1,6 +1,6 @@
 import type { Lod } from '../type'
 
-// パルス演出時間(通常/reduced-motion)
+// キャンバスの入力を止めるか(モーダル表示中か)と、拡大率に応じた描き込みの段階(LOD)の判定
 
 // モーダル表示中はキャンバス操作を無効化
 export const isModalOpen = (): boolean =>

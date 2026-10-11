@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useSeatDraftState } from './use-seat-draft-state'
-import type { SeatDraftState } from './use-seat-draft-state'
+import type { SeatDraftState } from '../type'
 import { computeMovedSeatIds, isSameSeatGridDraft } from '../utils/edit-grid-diff'
 import {
   addCol,

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { EMPTY_COMMIT_RESULT, normalizeDraftIntoLayout } from './commit-seat-draft'
-import type { SeatDraftState } from '../hooks/use-seat-draft-state'
+import type { SeatDraftState } from '../type'
 import type { SeatGridDraft } from '@/utils/layout/seat-grid-draft'
 import type { Seat, SeatLayout, Team } from '@/types'
 

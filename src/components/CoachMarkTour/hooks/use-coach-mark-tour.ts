@@ -1,10 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { markSeen, readSeen } from '@/lib/persist-tour-seen'
 import type { TourBranch, TourStep } from '../utils/tour-steps'
-
-// 移す前の import 先を使い続けている呼び出し側(SeatMapView の hooks)のために再公開する
-export { isTourPlaying } from '../utils/is-tour-playing'
-export { readSeen } from '@/lib/persist-tour-seen'
+import type { CoachMarkTourState } from '../type'
 
 // コーチマークの汎用進行エンジン。分岐の有無・自動再生の可否・再生トリガーは呼び出し側が渡す。
 // ステップの中身(文言・セレクタ)は一切知らず、渡された対象をそのまま表示するだけ
@@ -22,24 +19,6 @@ export type UseCoachMarkTourParams = {
   autoStart?: boolean
   // 対象を画面中央へ寄せる手段(持たない画面は省略可)
   centerOnSelector?: (selector: string) => void
-}
-
-export type CoachMarkTourState = {
-  isOpen: boolean
-  isBranching: boolean
-  branch: TourBranch | undefined
-  step: TourStep | null
-  stepIndex: number
-  stepCount: number
-  targetRect: DOMRect | null
-  chooseBranch: (optionIndex: number) => void
-  next: () => void
-  prev: () => void
-  // 既読化して閉じる(スキップ・とじる・最終ステップ共通)。ユーザーが明示的に閉じた時に使う
-  close: () => void
-  // 既読化せずに閉じる。編集モード退出など画面都合で畳む場合に使う。
-  // 一度も操作していないツアーを既読扱いにしないため、次に活性化条件を満たせば再び自動再生される
-  collapse: () => void
 }
 
 export const useCoachMarkTour = ({

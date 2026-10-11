@@ -3,7 +3,8 @@ import { useMemo } from 'react'
 import { PIXEL_AVATAR_PRESETS } from '@/utils/avatar/pixel-avatar-presets'
 import { OptionRow } from '../components/OptionRow'
 import { MiniPreview } from '../components/MiniPreview'
-import { useAvatarCustomizer, type QuickStartKind } from '../hooks/use-avatar-customizer'
+import { useAvatarCustomizer } from '../hooks/use-avatar-customizer'
+import type { QuickStartKind } from '@/utils/avatar/avatar-customizer-options'
 import type { AccessoryId, FaceId, HairId, OutfitId, PixelAvatarPresetId } from '@/types'
 
 interface QuickStartSectionProps {
