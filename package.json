@@ -11,7 +11,10 @@
     "knip": "knip",
     "test": "vitest run",
     "format": "prettier --write \"src/**/*.{ts,tsx,css}\" \"scripts/**/*.{mjs,js}\"",
-    "format:check": "prettier --check \"src/**/*.{ts,tsx,css}\" \"scripts/**/*.{mjs,js}\""
+    "format:check": "prettier --check \"src/**/*.{ts,tsx,css}\" \"scripts/**/*.{mjs,js}\"",
+    "test:coverage": "vitest run --coverage",
+    "test:mutation": "stryker run",
+    "test:boundary": "node scripts/check-test-boundary.mjs"
   },
   "dependencies": {
     "next": "16.2.12",
@@ -20,15 +23,21 @@
     "swr": "^2.4.2"
   },
   "devDependencies": {
+    "@playwright/test": "^1.64.0",
+    "@stryker-mutator/core": "^10.0.0",
+    "@stryker-mutator/vitest-runner": "^10.0.0",
     "@tailwindcss/postcss": "^4.3.3",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@vitest/coverage-v8": "^4.1.11",
     "eslint": "^9",
     "eslint-config-next": "16.2.12",
     "happy-dom": "^20.11.2",
     "knip": "^6.32.0",
+    "playwright": "^1.64.0",
     "prettier": "^3.9.10",
+    "serve": "^14.2.6",
     "tailwindcss": "^4.3.3",
     "typescript": "^5",
     "vitest": "^4.1.10"

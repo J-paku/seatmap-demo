@@ -12,6 +12,11 @@
 
 # testing
 /coverage
+/reports
+/.stryker-tmp
+/test-results
+/playwright-report
+/.lighthouseci
 
 # next.js
 /.next/
