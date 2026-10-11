@@ -57,7 +57,10 @@ const emptyLayout: SeatLayout = {
 
 describe('rectsOfKinds', () => {
   it('単一種別の矩形を rect 形式(x,y,w,h)へ変換して返す', () => {
-    const layout: SeatLayout = { ...emptyLayout, seats: [seat({ x: 1, y: 2, width: 3, height: 4 })] }
+    const layout: SeatLayout = {
+      ...emptyLayout,
+      seats: [seat({ x: 1, y: 2, width: 3, height: 4 })],
+    }
     const rects = rectsOfKinds(layout, ['seat'])
     expect(rects).toEqual([{ x: 1, y: 2, w: 3, h: 4 }])
   })
@@ -121,13 +124,21 @@ describe('回転込みの矩形(家具ブランチのみ)', () => {
 
   it('会議室は rotation を持たないので素の箱のまま(回転経路へ載せない判断の固定)', () => {
     const layout: SeatLayout = { ...emptyLayout, facilities: [facility()] }
-    expect(rectOfRef(layout, { kind: 'facility', id: 'fac-01' })).toEqual({ x: 50, y: 60, w: 120, h: 90 })
+    expect(rectOfRef(layout, { kind: 'facility', id: 'fac-01' })).toEqual({
+      x: 50,
+      y: 60,
+      w: 120,
+      h: 90,
+    })
   })
 })
 
 describe('rectOfRef', () => {
   it('存在するidの矩形を返す', () => {
-    const layout: SeatLayout = { ...emptyLayout, furniture: [furniture({ id: 'furn-005', x: 9, y: 8, width: 7, height: 6 })] }
+    const layout: SeatLayout = {
+      ...emptyLayout,
+      furniture: [furniture({ id: 'furn-005', x: 9, y: 8, width: 7, height: 6 })],
+    }
     const rect = rectOfRef(layout, { kind: 'furniture', id: 'furn-005' })
     expect(rect).toEqual({ x: 9, y: 8, w: 7, h: 6 })
   })

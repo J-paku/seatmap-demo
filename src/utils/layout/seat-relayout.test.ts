@@ -32,7 +32,7 @@ describe('sortSeatsForRelayout', () => {
       seat({ id: 'b', x: 10, y: 0 }),
     ]
     const sorted = sortSeatsForRelayout(seats)
-    expect(sorted.map((s) => s.id)).toEqual(['b', 'a', 'c'])
+    expect(sorted.map(s => s.id)).toEqual(['b', 'a', 'c'])
   })
 
   it('元の配列を変更しない(イミュータブル)', () => {
@@ -54,10 +54,21 @@ describe('relayoutSeatsInGrid', () => {
     const result = relayoutSeatsInGrid(seats, area, 2)
     const originX = area.x + RELAYOUT_PADDING
     const originY = area.y + RELAYOUT_PADDING
-    expect(result[0]).toMatchObject({ x: originX, y: originY, width: DEFAULT_SEAT_WIDTH, height: DEFAULT_SEAT_HEIGHT })
-    expect(result[1]).toMatchObject({ x: originX + (DEFAULT_SEAT_WIDTH + RELAYOUT_COL_GAP), y: originY })
+    expect(result[0]).toMatchObject({
+      x: originX,
+      y: originY,
+      width: DEFAULT_SEAT_WIDTH,
+      height: DEFAULT_SEAT_HEIGHT,
+    })
+    expect(result[1]).toMatchObject({
+      x: originX + (DEFAULT_SEAT_WIDTH + RELAYOUT_COL_GAP),
+      y: originY,
+    })
     // 3件目はcols=2なので折り返して2行目の先頭
-    expect(result[2]).toMatchObject({ x: originX, y: originY + (DEFAULT_SEAT_HEIGHT + RELAYOUT_ROW_GAP) })
+    expect(result[2]).toMatchObject({
+      x: originX,
+      y: originY + (DEFAULT_SEAT_HEIGHT + RELAYOUT_ROW_GAP),
+    })
   })
 
   it('入力の座席サイズに関わらず既定サイズへ強制する', () => {

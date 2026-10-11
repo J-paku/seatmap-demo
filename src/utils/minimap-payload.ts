@@ -22,7 +22,8 @@ export type MinimapPayload = {
 }
 
 // 通路は名前を持たない薄い構造物。それ以外(meeting/booth/common)は名前つきの箱として描く
-const kindOfFacility = (facility: Facility): MinimapKind => (facility.kind === 'aisle' ? 'aisle' : 'facility')
+const kindOfFacility = (facility: Facility): MinimapKind =>
+  facility.kind === 'aisle' ? 'aisle' : 'facility'
 
 const toArea = (team: Team, colorMap: Map<string, TeamColorEntry>): MinimapArea => ({
   idPrefix: team.idPrefix,
@@ -60,8 +61,8 @@ export const buildMinimapPayload = (
   colorMap: Map<string, TeamColorEntry>,
   currentTeamId: string | null
 ): MinimapPayload => {
-  const areas = layout.teams.map((team) => toArea(team, colorMap))
-  const current = layout.teams.find((team) => team.id === currentTeamId)
+  const areas = layout.teams.map(team => toArea(team, colorMap))
+  const current = layout.teams.find(team => team.id === currentTeamId)
   return {
     areas,
     furniture: [...layout.facilities.map(toFurniture), ...layout.furniture.map(fromFurniture)],

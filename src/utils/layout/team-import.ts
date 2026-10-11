@@ -59,9 +59,13 @@ const reprefixSeatId = (sourceSeatId: string, idPrefix: string): string =>
   `${idPrefix}-${sourceSeatId.slice(sourceSeatId.lastIndexOf('-') + 1)}`
 
 // 取り込み1件ぶんの座席複製。枠の移動量だけ平行移動し、所属は新しいチームidへ差し替える
-const cloneSeats = (source: TeamImportSource, team: Team, delta: { x: number; y: number }): Seat[] => {
+const cloneSeats = (
+  source: TeamImportSource,
+  team: Team,
+  delta: { x: number; y: number }
+): Seat[] => {
   const usedIds = new Set<string>()
-  return source.seats.map((seat) => {
+  return source.seats.map(seat => {
     let id = reprefixSeatId(seat.id, team.idPrefix)
     // 元の座席IDの連番部が重複していた場合の逃げ道。接頭辞は未使用の値なので
     // 既存レイアウトとは衝突しないが、複製元の中で衝突すると席が1つ消える
@@ -89,9 +93,9 @@ export const buildTeamImportPlan = (
   sources: TeamImportSource[],
   anchor: { x: number; y: number }
 ): TeamImportPlan => {
-  const takenPrefixes = new Set(layout.teams.map((t) => t.idPrefix))
-  const takenNames = new Set(layout.teams.map((t) => t.name))
-  const takenTeamIds = layout.teams.map((t) => t.id)
+  const takenPrefixes = new Set(layout.teams.map(t => t.idPrefix))
+  const takenNames = new Set(layout.teams.map(t => t.name))
+  const takenTeamIds = layout.teams.map(t => t.id)
   // 家具は placementBlocked の障害物ではない(§04-4 の非対称は意図的)。
   // §02-3 の①は家具も避けるので、この段でだけ足す
   const furnitureRects = rectsOfKinds(layout, ['furniture'])
@@ -108,14 +112,16 @@ export const buildTeamImportPlan = (
     const spot = findSpiralSpot(anchor, size, layout.viewBox, (rect, stage) => {
       // 段に関わらず、同じ取り込みで置いた枠には重ねない。③でもここだけは効かせる
       // (効かせないと強制配置が全件アンカーの同一点へ重なる)
-      if (placedRects.some((placed) => rectsIntersect(placed, rect))) return true
+      if (placedRects.some(placed => rectsIntersect(placed, rect))) return true
       // ③強制オフセット配置: 既存物を避けない
       if (stage === 'forced') return false
       // ②チームのみ回避。teamAreaOverlaps はチーム枠を内側インセットせずに見るので
       // ①よりチーム枠の 4px ぶんだけ厳しいが、設備・家具を落とすぶん全体では緩い
       if (stage === 'avoid-teams') return teamAreaOverlaps(layout.teams, '', rect)
       // ①チーム枠(4px内側インセット)+設備+フロア外 = ゴースト配置と同じ判定 + 家具
-      return placementBlocked(layout, null, rect) || furnitureRects.some((r) => rectsIntersect(r, rect))
+      return (
+        placementBlocked(layout, null, rect) || furnitureRects.some(r => rectsIntersect(r, rect))
+      )
     })
 
     if (!spot) {
@@ -141,7 +147,10 @@ export const buildTeamImportPlan = (
     }
     teams.push(team)
     seats.push(
-      ...cloneSeats(source, team, { x: spot.rect.x - source.team.area.x, y: spot.rect.y - source.team.area.y })
+      ...cloneSeats(source, team, {
+        x: spot.rect.x - source.team.area.x,
+        y: spot.rect.y - source.team.area.y,
+      })
     )
     stages.push(spot.stage)
     placedRects.push(spot.rect)

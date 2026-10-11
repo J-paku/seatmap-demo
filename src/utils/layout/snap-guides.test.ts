@@ -152,11 +152,19 @@ describe('computeResizeSnap', () => {
     const resized: Rect = { x: 0, y: 0, w: 120, h: 100 }
     const sibling: Rect = { x: 100, y: 300, w: 0, h: 0 }
     // アンカーは x=0、動く辺は x=120、候補位置は100 → 吸着後の寸法は100
-    const facility = computeResizeSnap(resized, [sibling], 25, 'e', { minW: 105, minH: 75, max: 2500 })
+    const facility = computeResizeSnap(resized, [sibling], 25, 'e', {
+      minW: 105,
+      minH: 75,
+      max: 2500,
+    })
     expect(facility.rect).toEqual({ x: 0, y: 0, w: 120, h: 100 })
     expect(facility.guides).toEqual([])
 
-    const furniture = computeResizeSnap(resized, [sibling], 25, 'e', { minW: 40, minH: 40, max: 2500 })
+    const furniture = computeResizeSnap(resized, [sibling], 25, 'e', {
+      minW: 40,
+      minH: 40,
+      max: 2500,
+    })
     expect(furniture.rect).toEqual({ x: 0, y: 0, w: 100, h: 100 })
     expect(furniture.guides).toEqual([
       { axis: 'vertical', pos: 100, start: -10, end: 310, type: 'edge', extend: 10 },

@@ -5,7 +5,10 @@ import { clamp } from './geometry'
 import type { Seat } from '@/types'
 
 // §00-3: standard 105×75 / executive 110×90 / vertical 75×105
-const SEAT_SHAPE_DEFAULT_SIZE: Record<NonNullable<Seat['shape']>, { width: number; height: number }> = {
+const SEAT_SHAPE_DEFAULT_SIZE: Record<
+  NonNullable<Seat['shape']>,
+  { width: number; height: number }
+> = {
   standard: { width: 105, height: 75 },
   executive: { width: 110, height: 90 },
   vertical: { width: 75, height: 105 },

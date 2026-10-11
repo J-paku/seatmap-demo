@@ -15,7 +15,7 @@ const presenceForEmployee = (
   useNow: boolean
 ): PresenceStatus => {
   // 優先1: 終日(休暇)があれば終日 vacation
-  if (events.some((e) => e.isAllDay && e.category === 'vacation')) return 'vacation'
+  if (events.some(e => e.isAllDay && e.category === 'vacation')) return 'vacation'
   if (!useNow) return 'present'
   // 優先2: 進行中イベントのうち最高ランク
   let best: PresenceStatus = 'present'

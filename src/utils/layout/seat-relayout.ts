@@ -36,7 +36,7 @@ export const relayoutSeatsInGrid = (seats: Seat[], area: Rect, cols: number): Se
 
 // リファク後座席のバウンディングボックス+パディング20→最小200×100 でクランプした自動fit area
 export const fitAreaToSeats = (seats: Seat[], fallback: Rect): Rect => {
-  const bb = boundingBoxOf(seats.map((s) => rectOf(s)))
+  const bb = boundingBoxOf(seats.map(s => rectOf(s)))
   if (!bb) return fallback
   return {
     x: bb.x - FIT_PADDING,

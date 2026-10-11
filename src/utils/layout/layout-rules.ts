@@ -11,20 +11,30 @@ const areaRect = (area: Team['area']): Rect => ({ x: area.x, y: area.y, w: area.
 
 // Team area 同士の重なり判定(対象チーム自身は除外)
 export const teamAreaOverlaps = (teams: Team[], targetTeamId: string, candidate: Rect): boolean =>
-  teams.some((t) => t.id !== targetTeamId && rectsIntersect(areaRect(t.area), candidate))
+  teams.some(t => t.id !== targetTeamId && rectsIntersect(areaRect(t.area), candidate))
 
 // 座席と固定物(会議室・家具)の重なり判定。家具も物理的な障害物なので同じ扱いにする
 export const seatOverlapsFixture = (layout: SeatLayout, candidate: Rect): boolean =>
-  rectsOfKinds(layout, ['facility', 'furniture']).some((r) => rectsIntersect(r, candidate))
+  rectsOfKinds(layout, ['facility', 'furniture']).some(r => rectsIntersect(r, candidate))
 
 // ドロップ先で重なる他座席(あればスワップとして解釈する)
-export const findOverlappingSeat = (seats: Seat[], excludeSeatId: string, candidate: Rect): Seat | null =>
-  seats.find((s) => s.id !== excludeSeatId && rectsIntersect(rectOf(s), candidate)) ?? null
+export const findOverlappingSeat = (
+  seats: Seat[],
+  excludeSeatId: string,
+  candidate: Rect
+): Seat | null =>
+  seats.find(s => s.id !== excludeSeatId && rectsIntersect(rectOf(s), candidate)) ?? null
 
 // 候補矩形の中心を含む他チーム(あれば teamId を連鎖更新する)
-export const findTeamContaining = (teams: Team[], excludeTeamId: string, candidate: Rect): Team | null =>
+export const findTeamContaining = (
+  teams: Team[],
+  excludeTeamId: string,
+  candidate: Rect
+): Team | null =>
   teams.find(
-    (t) => t.id !== excludeTeamId && pointInRect(candidate.x + candidate.w / 2, candidate.y + candidate.h / 2, areaRect(t.area))
+    t =>
+      t.id !== excludeTeamId &&
+      pointInRect(candidate.x + candidate.w / 2, candidate.y + candidate.h / 2, areaRect(t.area))
   ) ?? null
 
 // §04-4: チーム枠を障害物として当てるときの内側インセット。枠線に触れる程度の重なりは通す
@@ -36,7 +46,7 @@ const TEAM_COLLISION_INSET = 4
 // 吸着候補(sibling-rects)は全家具を含むのに障害物は設備だけ、という非対称は意図的。
 // 家具は「揃えたいが避ける必要はない」もので、避けさせると壁沿いに何も置けなくなる
 const obstacleRects = (layout: SeatLayout, self: LayoutObjectRef | null): Rect[] => [
-  ...rectsOfKinds(layout, ['team'], self).map((r) => insetRect(r, TEAM_COLLISION_INSET)),
+  ...rectsOfKinds(layout, ['team'], self).map(r => insetRect(r, TEAM_COLLISION_INSET)),
   ...rectsOfKinds(layout, ['facility'], self),
 ]
 
@@ -56,13 +66,16 @@ export const placementBlockReason = (
   self: LayoutObjectRef | null,
   candidate: Rect
 ): PlacementBlockReason | null => {
-  const hits = obstacleRects(layout, self).filter((r) => rectsIntersect(r, candidate))
+  const hits = obstacleRects(layout, self).filter(r => rectsIntersect(r, candidate))
   return hits.length > 0 ? { kind: 'overlap', rects: hits } : null
 }
 
 // 真偽だけ欲しい発行前検証用。判定本体は placementBlockReason 1つに置く(判定基準は概念あたり1つ)
-export const placementBlocked = (layout: SeatLayout, self: LayoutObjectRef | null, candidate: Rect): boolean =>
-  placementBlockReason(layout, self, candidate) !== null
+export const placementBlocked = (
+  layout: SeatLayout,
+  self: LayoutObjectRef | null,
+  candidate: Rect
+): boolean => placementBlockReason(layout, self, candidate) !== null
 
 // §05-3: ロック・レイアウト固定で編集を拒む対象かどうか。拒む場合だけ理由文言を返す。
 //
@@ -70,20 +83,25 @@ export const placementBlocked = (layout: SeatLayout, self: LayoutObjectRef | nul
 // 両方が見るため。条件を各所で組み立て直すと、片方だけ locked を見て fixedLayout を見落とす、
 // といったズレが静かに入る(03-pitfalls #4)。
 // 文言の骨格は §07-2 のロック文と揃え、動詞だけを呼び出し側から受ける
-export const lockedMessage = (layout: SeatLayout, ref: LayoutObjectRef, action: string): string | null => {
-  const suffix = (label: string): string => `「${label}」はロックまたはレイアウト固定中のため${action}できません`
+export const lockedMessage = (
+  layout: SeatLayout,
+  ref: LayoutObjectRef,
+  action: string
+): string | null => {
+  const suffix = (label: string): string =>
+    `「${label}」はロックまたはレイアウト固定中のため${action}できません`
   if (ref.kind === 'team') {
-    const team = layout.teams.find((t) => t.id === ref.id)
+    const team = layout.teams.find(t => t.id === ref.id)
     if (!team) return null
     return team.locked || team.fixedLayout ? suffix(team.name) : null
   }
   if (ref.kind === 'facility') {
-    const facility = layout.facilities.find((f) => f.id === ref.id)
+    const facility = layout.facilities.find(f => f.id === ref.id)
     if (!facility) return null
     return facility.locked ? suffix(facility.name) : null
   }
   if (ref.kind === 'furniture') {
-    const item = layout.furniture.find((f) => f.id === ref.id)
+    const item = layout.furniture.find(f => f.id === ref.id)
     if (!item) return null
     return item.locked ? suffix(item.name || '家具') : null
   }
@@ -98,17 +116,17 @@ export const lockedMessage = (layout: SeatLayout, ref: LayoutObjectRef, action: 
 export const lockedForMoveMessage = (layout: SeatLayout, ref: LayoutObjectRef): string | null => {
   const suffix = (label: string): string => `「${label}」はロック中のため移動できません`
   if (ref.kind === 'team') {
-    const team = layout.teams.find((t) => t.id === ref.id)
+    const team = layout.teams.find(t => t.id === ref.id)
     if (!team) return null
     return team.locked ? suffix(team.name) : null
   }
   if (ref.kind === 'facility') {
-    const facility = layout.facilities.find((f) => f.id === ref.id)
+    const facility = layout.facilities.find(f => f.id === ref.id)
     if (!facility) return null
     return facility.locked ? suffix(facility.name) : null
   }
   if (ref.kind === 'furniture') {
-    const item = layout.furniture.find((f) => f.id === ref.id)
+    const item = layout.furniture.find(f => f.id === ref.id)
     if (!item) return null
     return item.locked ? suffix(item.name || '家具') : null
   }

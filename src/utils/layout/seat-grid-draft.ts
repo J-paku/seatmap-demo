@@ -1,4 +1,9 @@
-import { DEFAULT_SEAT_HEIGHT, DEFAULT_SEAT_WIDTH, RELAYOUT_COL_GAP, RELAYOUT_ROW_GAP } from './seat-relayout'
+import {
+  DEFAULT_SEAT_HEIGHT,
+  DEFAULT_SEAT_WIDTH,
+  RELAYOUT_COL_GAP,
+  RELAYOUT_ROW_GAP,
+} from './seat-relayout'
 import type { Seat } from '@/types'
 
 // 07-admin-edit: チームオーバーレイの座席編集グリッド初案(`SeatGridDraft`)を作る純粋関数群
@@ -33,22 +38,32 @@ export type SeatGridPosition = { seatId: string; x: number; y: number }
 const createMatrix = (rows: number, cols: number): (string | null)[][] =>
   Array.from({ length: rows }, () => Array.from({ length: cols }, () => null))
 
-const cloneMatrix = (cells: (string | null)[][]): (string | null)[][] => cells.map((row) => [...row])
+const cloneMatrix = (cells: (string | null)[][]): (string | null)[][] => cells.map(row => [...row])
 
-const setCell = (cells: (string | null)[][], row: number, col: number, value: string | null): (string | null)[][] => {
+const setCell = (
+  cells: (string | null)[][],
+  row: number,
+  col: number,
+  value: string | null
+): (string | null)[][] => {
   const next = cloneMatrix(cells)
   next[row][col] = value
   return next
 }
 
 // 右端に空列を1本足す(衝突解決時に置き場所が尽きた場合の最終手段)
-const appendCol = (cells: (string | null)[][]): (string | null)[][] => cells.map((row) => [...row, null])
+const appendCol = (cells: (string | null)[][]): (string | null)[][] =>
+  cells.map(row => [...row, null])
 
 const inBounds = (draft: SeatGridDraft, row: number, col: number): boolean =>
   row >= 0 && row < draft.cells.length && col >= 0 && col < (draft.cells[row]?.length ?? 0)
 
 // マンハッタン距離が最小の空セルを探す。同距離なら行優先・列優先で先に見つかった方を採用する
-const findNearestEmptyCell = (cells: (string | null)[][], row: number, col: number): GridCell | null => {
+const findNearestEmptyCell = (
+  cells: (string | null)[][],
+  row: number,
+  col: number
+): GridCell | null => {
   let best: GridCell | null = null
   let bestDist = Infinity
   for (let r = 0; r < cells.length; r += 1) {
@@ -70,20 +85,20 @@ const findNearestEmptyCell = (cells: (string | null)[][], row: number, col: numb
 export const buildSeatGridDraft = (seats: Seat[]): SeatGridDraft | null => {
   if (seats.length === 0) return null
 
-  const originX = Math.min(...seats.map((s) => s.x))
-  const originY = Math.min(...seats.map((s) => s.y))
+  const originX = Math.min(...seats.map(s => s.x))
+  const originY = Math.min(...seats.map(s => s.y))
 
   const ordered = [...seats].sort((a, b) =>
     a.y === b.y ? (a.x === b.x ? a.id.localeCompare(b.id) : a.x - b.x) : a.y - b.y
   )
-  const rawCells = ordered.map((seat) => ({
+  const rawCells = ordered.map(seat => ({
     seatId: seat.id,
     row: Math.round((seat.y - originY) / ROW_PITCH),
     col: Math.round((seat.x - originX) / COL_PITCH),
   }))
 
-  const rows = Math.max(...rawCells.map((c) => c.row)) + 1
-  const cols = Math.max(...rawCells.map((c) => c.col)) + 1
+  const rows = Math.max(...rawCells.map(c => c.row)) + 1
+  const cols = Math.max(...rawCells.map(c => c.col)) + 1
 
   let cells = createMatrix(rows, cols)
   for (const cell of rawCells) {
@@ -124,21 +139,25 @@ export const addRow = (draft: SeatGridDraft, edge: 'top' | 'bottom'): SeatGridDr
 // 列を追加する。`left`挿入は既存席の絶対座標を保つためoriginをずらし、`right`はorigin不変
 export const addCol = (draft: SeatGridDraft, edge: 'left' | 'right'): SeatGridDraft => {
   if (edge === 'left') {
-    return { ...draft, cells: draft.cells.map((row) => [null, ...row]), originX: draft.originX - draft.colPitch }
+    return {
+      ...draft,
+      cells: draft.cells.map(row => [null, ...row]),
+      originX: draft.originX - draft.colPitch,
+    }
   }
-  return { ...draft, cells: draft.cells.map((row) => [...row, null]) }
+  return { ...draft, cells: draft.cells.map(row => [...row, null]) }
 }
 
 // 指定行が完全に空か。範囲外はfalse
 export const isRowEmpty = (draft: SeatGridDraft, row: number): boolean => {
   if (row < 0 || row >= draft.cells.length) return false
-  return draft.cells[row].every((cell) => cell === null)
+  return draft.cells[row].every(cell => cell === null)
 }
 
 // 指定列が完全に空か。範囲外はfalse
 export const isColEmpty = (draft: SeatGridDraft, col: number): boolean => {
   if (draft.cells.length === 0 || col < 0 || col >= draft.cells[0].length) return false
-  return draft.cells.every((row) => row[col] === null)
+  return draft.cells.every(row => row[col] === null)
 }
 
 // 完全に空の行だけ削除する。空でなければ元の`draft`をそのまま返す。
@@ -154,7 +173,7 @@ export const removeRow = (draft: SeatGridDraft, row: number): SeatGridDraft => {
 // 先頭列の削除はoriginをずらして残りの席の絶対座標を保ち、中間列の削除は後続列が詰まる
 export const removeCol = (draft: SeatGridDraft, col: number): SeatGridDraft => {
   if (!isColEmpty(draft, col)) return draft
-  const cells = draft.cells.map((row) => row.filter((_, c) => c !== col))
+  const cells = draft.cells.map(row => row.filter((_, c) => c !== col))
   const originX = col === 0 ? draft.originX + draft.colPitch : draft.originX
   return { ...draft, cells, originX }
 }
@@ -179,7 +198,12 @@ export const moveSeat = (draft: SeatGridDraft, from: GridCell, to: GridCell): Se
   const seatId = draft.cells[from.row][from.col]
   if (seatId === null) return draft
   const destSeatId = draft.cells[to.row][to.col]
-  const cells = setCell(setCell(draft.cells, from.row, from.col, destSeatId), to.row, to.col, seatId)
+  const cells = setCell(
+    setCell(draft.cells, from.row, from.col, destSeatId),
+    to.row,
+    to.col,
+    seatId
+  )
   return { ...draft, cells }
 }
 
@@ -200,7 +224,11 @@ export const serializeSeatGrid = (draft: SeatGridDraft): SeatGridPosition[] => {
     for (let c = 0; c < draft.cells[r].length; c += 1) {
       const seatId = draft.cells[r][c]
       if (seatId === null) continue
-      positions.push({ seatId, x: draft.originX + c * draft.colPitch, y: draft.originY + r * draft.rowPitch })
+      positions.push({
+        seatId,
+        x: draft.originX + c * draft.colPitch,
+        y: draft.originY + r * draft.rowPitch,
+      })
     }
   }
   return positions

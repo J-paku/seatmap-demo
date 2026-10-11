@@ -87,12 +87,18 @@ describe('teamAreaOverlaps', () => {
 
 describe('seatOverlapsFixture', () => {
   it('会議室と重なる候補は true', () => {
-    const layout: SeatLayout = { ...emptyLayout, facilities: [facility({ x: 0, y: 0, width: 100, height: 100 })] }
+    const layout: SeatLayout = {
+      ...emptyLayout,
+      facilities: [facility({ x: 0, y: 0, width: 100, height: 100 })],
+    }
     expect(seatOverlapsFixture(layout, { x: 50, y: 50, w: 20, h: 20 })).toBe(true)
   })
 
   it('家具と重なる候補も true(家具も物理障害物として扱う)', () => {
-    const layout: SeatLayout = { ...emptyLayout, furniture: [furniture({ x: 0, y: 0, width: 100, height: 100 })] }
+    const layout: SeatLayout = {
+      ...emptyLayout,
+      furniture: [furniture({ x: 0, y: 0, width: 100, height: 100 })],
+    }
     expect(seatOverlapsFixture(layout, { x: 50, y: 50, w: 20, h: 20 })).toBe(true)
   })
 
@@ -164,35 +170,54 @@ describe('findTeamContaining', () => {
 
 describe('placementBlockReason / placementBlocked', () => {
   it('チーム枠(4px内側インセット)と重なると overlap を返す', () => {
-    const layout: SeatLayout = { ...emptyLayout, teams: [team({ area: { x: 0, y: 0, w: 100, h: 100 } })] }
+    const layout: SeatLayout = {
+      ...emptyLayout,
+      teams: [team({ area: { x: 0, y: 0, w: 100, h: 100 } })],
+    }
     // インセット後の枠は (4,4)-(96,96)。候補(50,50,10,10)は完全に内側で重なる
     const reason = placementBlockReason(layout, null, { x: 50, y: 50, w: 10, h: 10 })
     expect(reason).toEqual({ kind: 'overlap', rects: [{ x: 4, y: 4, w: 92, h: 92 }] })
   })
 
   it('インセット分だけ縁が空くので、枠の最外縁(0〜4px)ぎりぎりの重なりはブロックしない', () => {
-    const layout: SeatLayout = { ...emptyLayout, teams: [team({ area: { x: 0, y: 0, w: 100, h: 100 } })] }
+    const layout: SeatLayout = {
+      ...emptyLayout,
+      teams: [team({ area: { x: 0, y: 0, w: 100, h: 100 } })],
+    }
     // 候補は x:-10〜0 の範囲(左側の外側)。インセット後の枠は x>=4 から始まるので重ならない
     const reason = placementBlockReason(layout, null, { x: -10, y: 50, w: 10, h: 10 })
     expect(reason).toBeNull()
   })
 
   it('会議室(facility)はインセット無しでそのまま障害物になる', () => {
-    const layout: SeatLayout = { ...emptyLayout, facilities: [facility({ x: 0, y: 0, width: 100, height: 100 })] }
+    const layout: SeatLayout = {
+      ...emptyLayout,
+      facilities: [facility({ x: 0, y: 0, width: 100, height: 100 })],
+    }
     const reason = placementBlockReason(layout, null, { x: 0, y: 0, w: 10, h: 10 })
     expect(reason).toEqual({ kind: 'overlap', rects: [{ x: 0, y: 0, w: 100, h: 100 }] })
   })
 
   it('家具(furniture)は障害物に含まれない(重なり配置を許す)', () => {
-    const layout: SeatLayout = { ...emptyLayout, furniture: [furniture({ x: 0, y: 0, width: 100, height: 100 })] }
+    const layout: SeatLayout = {
+      ...emptyLayout,
+      furniture: [furniture({ x: 0, y: 0, width: 100, height: 100 })],
+    }
     const reason = placementBlockReason(layout, null, { x: 0, y: 0, w: 10, h: 10 })
     expect(reason).toBeNull()
     expect(placementBlocked(layout, null, { x: 0, y: 0, w: 10, h: 10 })).toBe(false)
   })
 
   it('self に一致するチームは自身を除外して判定する', () => {
-    const layout: SeatLayout = { ...emptyLayout, teams: [team({ id: 'team-01', area: { x: 0, y: 0, w: 100, h: 100 } })] }
-    const reason = placementBlockReason(layout, { kind: 'team', id: 'team-01' }, { x: 50, y: 50, w: 10, h: 10 })
+    const layout: SeatLayout = {
+      ...emptyLayout,
+      teams: [team({ id: 'team-01', area: { x: 0, y: 0, w: 100, h: 100 } })],
+    }
+    const reason = placementBlockReason(
+      layout,
+      { kind: 'team', id: 'team-01' },
+      { x: 50, y: 50, w: 10, h: 10 }
+    )
     expect(reason).toBeNull()
   })
 
@@ -207,7 +232,10 @@ describe('placementBlockReason / placementBlocked', () => {
   })
 
   it('placementBlocked は placementBlockReason の真偽値版', () => {
-    const layout: SeatLayout = { ...emptyLayout, facilities: [facility({ x: 0, y: 0, width: 100, height: 100 })] }
+    const layout: SeatLayout = {
+      ...emptyLayout,
+      facilities: [facility({ x: 0, y: 0, width: 100, height: 100 })],
+    }
     expect(placementBlocked(layout, null, { x: 0, y: 0, w: 10, h: 10 })).toBe(true)
     expect(placementBlocked(layout, null, { x: 500, y: 500, w: 10, h: 10 })).toBe(false)
   })
@@ -215,7 +243,10 @@ describe('placementBlockReason / placementBlocked', () => {
 
 describe('lockedMessage', () => {
   it('team.locked が true なら理由文言を返す', () => {
-    const layout: SeatLayout = { ...emptyLayout, teams: [team({ id: 'team-01', name: '営業部', locked: true })] }
+    const layout: SeatLayout = {
+      ...emptyLayout,
+      teams: [team({ id: 'team-01', name: '営業部', locked: true })],
+    }
     const msg = lockedMessage(layout, { kind: 'team', id: 'team-01' }, '移動')
     expect(msg).toBe('「営業部」はロックまたはレイアウト固定中のため移動できません')
   })
@@ -235,19 +266,28 @@ describe('lockedMessage', () => {
   })
 
   it('facility.locked が true なら理由文言を返す', () => {
-    const layout: SeatLayout = { ...emptyLayout, facilities: [facility({ id: 'fac-01', name: '会議室A', locked: true })] }
+    const layout: SeatLayout = {
+      ...emptyLayout,
+      facilities: [facility({ id: 'fac-01', name: '会議室A', locked: true })],
+    }
     const msg = lockedMessage(layout, { kind: 'facility', id: 'fac-01' }, '削除')
     expect(msg).toBe('「会議室A」はロックまたはレイアウト固定中のため削除できません')
   })
 
   it('furniture.locked が true かつ name があれば name を使う', () => {
-    const layout: SeatLayout = { ...emptyLayout, furniture: [furniture({ id: 'furn-001', name: 'ソファ', locked: true })] }
+    const layout: SeatLayout = {
+      ...emptyLayout,
+      furniture: [furniture({ id: 'furn-001', name: 'ソファ', locked: true })],
+    }
     const msg = lockedMessage(layout, { kind: 'furniture', id: 'furn-001' }, '移動')
     expect(msg).toBe('「ソファ」はロックまたはレイアウト固定中のため移動できません')
   })
 
   it('furniture.locked が true かつ name が空文字(建設設備)なら「家具」を使う', () => {
-    const layout: SeatLayout = { ...emptyLayout, furniture: [furniture({ id: 'furn-002', name: '', locked: true })] }
+    const layout: SeatLayout = {
+      ...emptyLayout,
+      furniture: [furniture({ id: 'furn-002', name: '', locked: true })],
+    }
     const msg = lockedMessage(layout, { kind: 'furniture', id: 'furn-002' }, '移動')
     expect(msg).toBe('「家具」はロックまたはレイアウト固定中のため移動できません')
   })
@@ -271,8 +311,13 @@ describe('lockedForMoveMessage', () => {
   })
 
   it('locked のチームは移動を拒む', () => {
-    const layout: SeatLayout = { ...emptyLayout, teams: [team({ id: 'team-01', name: '営業部', locked: true })] }
-    expect(lockedForMoveMessage(layout, { kind: 'team', id: 'team-01' })).toBe('「営業部」はロック中のため移動できません')
+    const layout: SeatLayout = {
+      ...emptyLayout,
+      teams: [team({ id: 'team-01', name: '営業部', locked: true })],
+    }
+    expect(lockedForMoveMessage(layout, { kind: 'team', id: 'team-01' })).toBe(
+      '「営業部」はロック中のため移動できません'
+    )
   })
 
   it('locked の会議室も同じ骨格の文言を返す', () => {
@@ -286,7 +331,10 @@ describe('lockedForMoveMessage', () => {
   })
 
   it('ロックを持たない家具は移動できる(null)', () => {
-    const layout: SeatLayout = { ...emptyLayout, furniture: [furniture({ id: 'furn-001', name: 'ソファ' })] }
+    const layout: SeatLayout = {
+      ...emptyLayout,
+      furniture: [furniture({ id: 'furn-001', name: 'ソファ' })],
+    }
     expect(lockedForMoveMessage(layout, { kind: 'furniture', id: 'furn-001' })).toBeNull()
   })
 })

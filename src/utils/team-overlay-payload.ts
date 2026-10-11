@@ -11,7 +11,12 @@ export const buildTeamOverlayPayload = (
   teamId: string,
   rect: DOMRect
 ): TeamOverlayPayload | null => {
-  const team = teams.find((candidate) => candidate.id === teamId)
+  const team = teams.find(candidate => candidate.id === teamId)
   if (!team) return null
-  return { teamId, teamName: team.name, teamColor: resolveTeamColor(colorMap, team.id, team.name).background, rect }
+  return {
+    teamId,
+    teamName: team.name,
+    teamColor: resolveTeamColor(colorMap, team.id, team.name).background,
+    rect,
+  }
 }

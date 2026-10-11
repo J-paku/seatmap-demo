@@ -18,15 +18,15 @@ const areaRect = (area: Team['area']): Rect => ({ x: area.x, y: area.y, w: area.
 const entriesOfKind = (layout: SeatLayout, kind: LayoutObjectKind): LayoutObjectEntry[] => {
   switch (kind) {
     case 'seat':
-      return layout.seats.map((s) => ({ id: s.id, rect: rectOf(s) }))
+      return layout.seats.map(s => ({ id: s.id, rect: rectOf(s) }))
     case 'team':
-      return layout.teams.map((t) => ({ id: t.id, rect: areaRect(t.area) }))
+      return layout.teams.map(t => ({ id: t.id, rect: areaRect(t.area) }))
     case 'facility':
-      return layout.facilities.map((f) => ({ id: f.id, rect: rectOf(f) }))
+      return layout.facilities.map(f => ({ id: f.id, rect: rectOf(f) }))
     case 'furniture':
       // 家具だけが rotation を持つ。座席は保存時に幅高さの交換を済ませており、
       // 会議室(Facility)は rotation フィールドを持たないので、どちらもここへ載せない
-      return layout.furniture.map((f) => ({ id: f.id, rect: rotatedRectOf(f) }))
+      return layout.furniture.map(f => ({ id: f.id, rect: rotatedRectOf(f) }))
     default: {
       // 種別を足してここに case を書き忘れると、この代入がコンパイルエラーになる
       const exhaustive: never = kind
@@ -41,11 +41,11 @@ export const rectsOfKinds = (
   kinds: readonly LayoutObjectKind[],
   except: LayoutObjectRef | null = null
 ): Rect[] =>
-  kinds.flatMap((kind) =>
+  kinds.flatMap(kind =>
     entriesOfKind(layout, kind)
-      .filter((entry) => !(except && except.kind === kind && except.id === entry.id))
-      .map((entry) => entry.rect)
+      .filter(entry => !(except && except.kind === kind && except.id === entry.id))
+      .map(entry => entry.rect)
   )
 
 export const rectOfRef = (layout: SeatLayout, ref: LayoutObjectRef): Rect | null =>
-  entriesOfKind(layout, ref.kind).find((entry) => entry.id === ref.id)?.rect ?? null
+  entriesOfKind(layout, ref.kind).find(entry => entry.id === ref.id)?.rect ?? null

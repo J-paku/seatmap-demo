@@ -109,14 +109,20 @@ describe('addRow / addCol', () => {
 
   it('top挿入は先頭に空行を足し、originYをrowPitch分だけ引く', () => {
     const result = addRow(base, 'top')
-    expect(result.cells).toEqual([[null, null], ['a', 'b']])
+    expect(result.cells).toEqual([
+      [null, null],
+      ['a', 'b'],
+    ])
     expect(result.originY).toBe(-ROW_PITCH)
     expect(result.originX).toBe(0)
   })
 
   it('bottom挿入は末尾に空行を足し、originは変わらない', () => {
     const result = addRow(base, 'bottom')
-    expect(result.cells).toEqual([['a', 'b'], [null, null]])
+    expect(result.cells).toEqual([
+      ['a', 'b'],
+      [null, null],
+    ])
     expect(result.originY).toBe(0)
   })
 
@@ -133,7 +139,13 @@ describe('addRow / addCol', () => {
   })
 
   it('cellsが空配列の状態でaddRowしても列数1のフォールバックで壊れない', () => {
-    const empty: SeatGridDraft = { cells: [], originX: 0, originY: 0, colPitch: COL_PITCH, rowPitch: ROW_PITCH }
+    const empty: SeatGridDraft = {
+      cells: [],
+      originX: 0,
+      originY: 0,
+      colPitch: COL_PITCH,
+      rowPitch: ROW_PITCH,
+    }
     const result = addRow(empty, 'bottom')
     expect(result.cells).toEqual([[null]])
   })
@@ -172,7 +184,13 @@ describe('isRowEmpty / isColEmpty', () => {
   })
 
   it('cellsが空配列ならisColEmptyはfalseを返す', () => {
-    const empty: SeatGridDraft = { cells: [], originX: 0, originY: 0, colPitch: COL_PITCH, rowPitch: ROW_PITCH }
+    const empty: SeatGridDraft = {
+      cells: [],
+      originX: 0,
+      originY: 0,
+      colPitch: COL_PITCH,
+      rowPitch: ROW_PITCH,
+    }
     expect(isColEmpty(empty, 0)).toBe(false)
   })
 })

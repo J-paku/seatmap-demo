@@ -42,7 +42,14 @@ describe('applySeatShape', () => {
   })
 
   it('回転90(四分位回転)は幅高さを交換し、中心を保つ位置補正を入れる', () => {
-    const seat = baseSeat({ shape: 'vertical', rotation: 90, x: 100, y: 200, width: 75, height: 105 })
+    const seat = baseSeat({
+      shape: 'vertical',
+      rotation: 90,
+      x: 100,
+      y: 200,
+      width: 75,
+      height: 105,
+    })
     const result = applySeatShape(seat, 'standard')
     // baseW=105,baseH=75、turned=true なので width=baseH=75, height=baseW=105
     expect(result.width).toBe(75)
@@ -54,7 +61,14 @@ describe('applySeatShape', () => {
   })
 
   it('回転270も回転90と同じ四分位回転として扱う', () => {
-    const seat = baseSeat({ shape: 'vertical', rotation: 270, x: 100, y: 200, width: 75, height: 105 })
+    const seat = baseSeat({
+      shape: 'vertical',
+      rotation: 270,
+      x: 100,
+      y: 200,
+      width: 75,
+      height: 105,
+    })
     const result = applySeatShape(seat, 'standard')
     expect(result.width).toBe(75)
     expect(result.height).toBe(105)
@@ -63,7 +77,14 @@ describe('applySeatShape', () => {
   })
 
   it('回転180は四分位回転扱いにならず、幅高さを交換しない', () => {
-    const seat = baseSeat({ shape: 'vertical', rotation: 180, x: 100, y: 200, width: 75, height: 105 })
+    const seat = baseSeat({
+      shape: 'vertical',
+      rotation: 180,
+      x: 100,
+      y: 200,
+      width: 75,
+      height: 105,
+    })
     const result = applySeatShape(seat, 'standard')
     expect(result.width).toBe(105)
     expect(result.height).toBe(75)
@@ -78,7 +99,14 @@ describe('applySeatShape', () => {
   })
 
   it('isSizeOverridden=true では shape だけ差し替え、サイズ・位置は上書きしない', () => {
-    const seat = baseSeat({ shape: 'standard', isSizeOverridden: true, width: 999, height: 888, x: 10, y: 20 })
+    const seat = baseSeat({
+      shape: 'standard',
+      isSizeOverridden: true,
+      width: 999,
+      height: 888,
+      x: 10,
+      y: 20,
+    })
     const result = applySeatShape(seat, 'executive')
     expect(result.shape).toBe('executive')
     expect(result.width).toBe(999)

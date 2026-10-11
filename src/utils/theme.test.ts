@@ -46,11 +46,11 @@ describe('isThemeMode', () => {
 
 describe('THEME_OPTIONS', () => {
   it('light・dracula・kuroxxx の3件をこの順で持つ', () => {
-    expect(THEME_OPTIONS.map((option) => option.mode)).toEqual(['light', 'dracula', 'kuroxxx'])
+    expect(THEME_OPTIONS.map(option => option.mode)).toEqual(['light', 'dracula', 'kuroxxx'])
   })
 
   it('各オプションはラベルと2色のスウォッチ(背景・アクセント)を#RRGGBB形式で持つ', () => {
-    THEME_OPTIONS.forEach((option) => {
+    THEME_OPTIONS.forEach(option => {
       expect(option.label.length).toBeGreaterThan(0)
       expect(option.swatchBg).toMatch(/^#[0-9A-Fa-f]{6}$/)
       expect(option.swatchAccent).toMatch(/^#[0-9A-Fa-f]{6}$/)
@@ -58,7 +58,7 @@ describe('THEME_OPTIONS', () => {
   })
 
   it('light の表示ラベルは「ライト」', () => {
-    const light = THEME_OPTIONS.find((option) => option.mode === 'light')
+    const light = THEME_OPTIONS.find(option => option.mode === 'light')
     expect(light?.label).toBe('ライト')
   })
 })

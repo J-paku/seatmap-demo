@@ -13,7 +13,7 @@ const withDate = (iso: string, dateKey: string): string => dateKey + iso.slice(D
 
 export const anchorSchedulesToDate = (events: ScheduleEvent[], nowMs: number): ScheduleEvent[] => {
   const dateKey = jstDateKey(jstDateFromMs(nowMs))
-  return events.map((e) => ({
+  return events.map(e => ({
     ...e,
     start: withDate(e.start, dateKey),
     end: withDate(e.end, dateKey),

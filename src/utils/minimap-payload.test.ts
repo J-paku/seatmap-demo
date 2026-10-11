@@ -71,12 +71,16 @@ describe('buildMinimapPayload', () => {
     const colorMap = new Map<string, TeamColorEntry>()
     const result = buildMinimapPayload(layout, colorMap, null)
     const expectedColor = resolveTeamColor(colorMap, team.id, team.name).background
-    expect(result.areas).toEqual([{ idPrefix: 'A', x: 5, y: 6, w: 200, h: 150, label: 'チームA', dotColor: expectedColor }])
+    expect(result.areas).toEqual([
+      { idPrefix: 'A', x: 5, y: 6, w: 200, h: 150, label: 'チームA', dotColor: expectedColor },
+    ])
   })
 
   it('colorMap に登録済みのチームはレジストリの背景色をそのまま使う', () => {
     const team = makeTeam({ id: 'team-a', color: '#112233' })
-    const colorMap = new Map<string, TeamColorEntry>([['team-a', { background: '#ABCDEF', foreground: '#000000', index: 0 }]])
+    const colorMap = new Map<string, TeamColorEntry>([
+      ['team-a', { background: '#ABCDEF', foreground: '#000000', index: 0 }],
+    ])
     const layout = makeLayout({ teams: [team] })
     const result = buildMinimapPayload(layout, colorMap, null)
     expect(result.areas[0].dotColor).toBe('#ABCDEF')
@@ -89,7 +93,7 @@ describe('buildMinimapPayload', () => {
     const common = makeFacility({ id: 'f-common', kind: 'common', name: '共有スペース' })
     const layout = makeLayout({ facilities: [aisle, meeting, booth, common] })
     const result = buildMinimapPayload(layout, new Map(), null)
-    expect(result.furniture.map((item) => ({ id: item.id, kind: item.kind }))).toEqual([
+    expect(result.furniture.map(item => ({ id: item.id, kind: item.kind }))).toEqual([
       { id: 'f-aisle', kind: 'aisle' },
       { id: 'f-meeting', kind: 'facility' },
       { id: 'f-booth', kind: 'facility' },
@@ -98,10 +102,25 @@ describe('buildMinimapPayload', () => {
   })
 
   it('facility は名前・座標・サイズをそのまま MinimapFurniture へ引き継ぐ', () => {
-    const facility = makeFacility({ id: 'f-1', name: '会議室X', x: 11, y: 22, width: 33, height: 44 })
+    const facility = makeFacility({
+      id: 'f-1',
+      name: '会議室X',
+      x: 11,
+      y: 22,
+      width: 33,
+      height: 44,
+    })
     const layout = makeLayout({ facilities: [facility] })
     const result = buildMinimapPayload(layout, new Map(), null)
-    expect(result.furniture[0]).toEqual({ id: 'f-1', kind: 'facility', name: '会議室X', x: 11, y: 22, width: 33, height: 44 })
+    expect(result.furniture[0]).toEqual({
+      id: 'f-1',
+      kind: 'facility',
+      name: '会議室X',
+      x: 11,
+      y: 22,
+      width: 33,
+      height: 44,
+    })
   })
 
   it('建設設備の家具(wall等)は structure、それ以外(table等)は object に区分される', () => {
@@ -109,7 +128,7 @@ describe('buildMinimapPayload', () => {
     const table = makeFurniture({ id: 'furn-table', kind: 'table', name: 'テーブル' })
     const layout = makeLayout({ furniture: [wall, table] })
     const result = buildMinimapPayload(layout, new Map(), null)
-    expect(result.furniture.map((item) => ({ id: item.id, kind: item.kind }))).toEqual([
+    expect(result.furniture.map(item => ({ id: item.id, kind: item.kind }))).toEqual([
       { id: 'furn-wall', kind: 'structure' },
       { id: 'furn-table', kind: 'object' },
     ])
@@ -127,7 +146,7 @@ describe('buildMinimapPayload', () => {
     const item = makeFurniture({ id: 'furn-1' })
     const layout = makeLayout({ facilities: [facility], furniture: [item] })
     const result = buildMinimapPayload(layout, new Map(), null)
-    expect(result.furniture.map((entry) => entry.id)).toEqual(['f-1', 'furn-1'])
+    expect(result.furniture.map(entry => entry.id)).toEqual(['f-1', 'furn-1'])
   })
 
   it('currentTeamId に一致するチームがあれば currentArea を返す', () => {

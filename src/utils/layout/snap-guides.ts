@@ -72,8 +72,8 @@ const solveDragAxis = (
     }
   }
   if (candidates.length === 0) return { delta: 0, matched: [] }
-  const min = Math.min(...candidates.map((c) => Math.abs(c.diff)))
-  const matched = candidates.filter((c) => Math.abs(Math.abs(c.diff) - min) < SNAP_TIE_WINDOW)
+  const min = Math.min(...candidates.map(c => Math.abs(c.diff)))
+  const matched = candidates.filter(c => Math.abs(Math.abs(c.diff) - min) < SNAP_TIE_WINDOW)
   // 適用するのは同率グループの先頭。最小そのものへ差し替えない
   return { delta: matched[0].diff, matched }
 }
@@ -81,7 +81,7 @@ const solveDragAxis = (
 // 同率グループの候補1つにつき1本。線に沿った区間は「吸着後のドラッグ矩形」と
 // 「その候補の相手」の両端4点を覆う範囲へ、両端 GUIDE_EXTEND を外向きに足す
 const dragGuidesOf = (snapped: Rect, matched: Candidate[], axis: 'x' | 'y'): SnapGuide[] =>
-  matched.map((c) => {
+  matched.map(c => {
     const along =
       axis === 'x'
         ? [snapped.y, snapped.y + snapped.h, c.sibling.y, c.sibling.y + c.sibling.h]
@@ -101,7 +101,9 @@ const dragGuidesOf = (snapped: Rect, matched: Candidate[], axis: 'x' | 'y'): Sna
 const dedupeGuides = (lines: SnapGuide[]): SnapGuide[] => {
   const out: SnapGuide[] = []
   for (const line of lines) {
-    const hit = out.find((r) => r.axis === line.axis && Math.abs(r.pos - line.pos) < GUIDE_MERGE_WINDOW)
+    const hit = out.find(
+      r => r.axis === line.axis && Math.abs(r.pos - line.pos) < GUIDE_MERGE_WINDOW
+    )
     if (!hit) {
       out.push({ ...line })
       continue
@@ -116,7 +118,11 @@ const dedupeGuides = (lines: SnapGuide[]): SnapGuide[] => {
 // ドラッグ中矩形を siblings(Team area・会議室・家具)のエッジ/中心線へ吸着。
 // 移動なので大きさは変わらず、矩形ごと平行移動する。辺は辺と、中心は中心とだけ揃える —
 // 交差ペア(自分の辺 ↔ 相手の中心線)を作ると、寄せた向きと逆へ跳んで相手の内側へ埋まる
-export const computeSnap = (dragging: Rect, siblings: Rect[], thresholdViewBox: number): SnapResult => {
+export const computeSnap = (
+  dragging: Rect,
+  siblings: Rect[],
+  thresholdViewBox: number
+): SnapResult => {
   const sx = solveDragAxis(dragging, siblings, thresholdViewBox, 'x')
   const sy = solveDragAxis(dragging, siblings, thresholdViewBox, 'y')
   const snapped: Rect = { ...dragging, x: dragging.x + sx.delta, y: dragging.y + sy.delta }
@@ -181,7 +187,14 @@ const solveResizeAxis = (
 }
 
 // clamp は max 側の保険としてだけ残す。最小寸法は候補の棄却で守るので min 側には触れない
-const applyResizeAxis = (lo: number, size: number, snap: ResizeSnap, pick: EdgePick, min: number, max: number) => {
+const applyResizeAxis = (
+  lo: number,
+  size: number,
+  snap: ResizeSnap,
+  pick: EdgePick,
+  min: number,
+  max: number
+) => {
   if (!snap || pick === 'none') return { lo, size }
   if (pick === 'end') return { lo, size: clamp(snap.pos - lo, min, max) }
   const next = clamp(lo + size - snap.pos, min, max)

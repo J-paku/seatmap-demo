@@ -21,7 +21,11 @@ describe('buildTeamColorRegistry', () => {
   it('team.color を背景色として登録し、対比の高い方(白)を前景色に選ぶ', () => {
     const team = makeTeam({ id: 'team-a', color: '#336699' })
     const registry = buildTeamColorRegistry([team])
-    expect(registry.get('team-a')).toEqual({ background: '#336699', foreground: '#ffffff', index: 0 })
+    expect(registry.get('team-a')).toEqual({
+      background: '#336699',
+      foreground: '#ffffff',
+      index: 0,
+    })
   })
 
   it('背景が白なら前景は黒、背景が黒なら前景は白になる(WCAG対比の高い方を選ぶ)', () => {
@@ -33,7 +37,11 @@ describe('buildTeamColorRegistry', () => {
   })
 
   it('index は配列の並び順(0始まり)を反映する', () => {
-    const teams = [makeTeam({ id: 'team-a' }), makeTeam({ id: 'team-b' }), makeTeam({ id: 'team-c' })]
+    const teams = [
+      makeTeam({ id: 'team-a' }),
+      makeTeam({ id: 'team-b' }),
+      makeTeam({ id: 'team-c' }),
+    ]
     const registry = buildTeamColorRegistry(teams)
     expect(registry.get('team-a')?.index).toBe(0)
     expect(registry.get('team-b')?.index).toBe(1)
@@ -41,7 +49,10 @@ describe('buildTeamColorRegistry', () => {
   })
 
   it('team.id が重複する場合は後勝ちで上書きされる(index も上書き後の値になる)', () => {
-    const teams = [makeTeam({ id: 'dup', color: '#ffffff' }), makeTeam({ id: 'dup', color: '#000000' })]
+    const teams = [
+      makeTeam({ id: 'dup', color: '#ffffff' }),
+      makeTeam({ id: 'dup', color: '#000000' }),
+    ]
     const registry = buildTeamColorRegistry(teams)
     expect(registry.size).toBe(1)
     expect(registry.get('dup')?.background).toBe('#000000')
@@ -81,7 +92,10 @@ describe('resolveTeamColor', () => {
   })
 
   it('フォールバック時の index は呼び出し時点のレジストリサイズを引き継ぐ', () => {
-    const registry = buildTeamColorRegistry([makeTeam({ id: 'team-a' }), makeTeam({ id: 'team-b' })])
+    const registry = buildTeamColorRegistry([
+      makeTeam({ id: 'team-a' }),
+      makeTeam({ id: 'team-b' }),
+    ])
     const result = resolveTeamColor(registry, 'unregistered', 'チームC')
     expect(result.index).toBe(2)
   })

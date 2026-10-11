@@ -2,7 +2,13 @@ import { describe, it, expect } from 'vitest'
 import { isOccupiedSeat, countOccupiedSeats, countOccupiedSeatsByTeam } from './seat-occupancy'
 import type { Employee, Seat, Team } from '@/types'
 
-const employee = (id: string): Employee => ({ id, name: `社員${id}`, nameKana: 'シャイン', teamId: 'team-a', team: 'チームA' })
+const employee = (id: string): Employee => ({
+  id,
+  name: `社員${id}`,
+  nameKana: 'シャイン',
+  teamId: 'team-a',
+  team: 'チームA',
+})
 
 const seat = (over: Partial<Seat>): Seat => ({
   id: 'seat-1',

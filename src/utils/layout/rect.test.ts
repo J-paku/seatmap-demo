@@ -175,23 +175,38 @@ describe('clampGhostCenter', () => {
   const canvas = { left: 0, top: 0, right: 1000, bottom: 800 }
 
   it('内側なら無変化', () => {
-    expect(clampGhostCenter({ x: 500, y: 400 }, canvas, { width: 200, height: 100 })).toEqual({ x: 500, y: 400 })
+    expect(clampGhostCenter({ x: 500, y: 400 }, canvas, { width: 200, height: 100 })).toEqual({
+      x: 500,
+      y: 400,
+    })
   })
 
   it('左上では辺がキャンバス端に接する位置で止まる', () => {
-    expect(clampGhostCenter({ x: 10, y: 10 }, canvas, { width: 200, height: 100 })).toEqual({ x: 100, y: 50 })
+    expect(clampGhostCenter({ x: 10, y: 10 }, canvas, { width: 200, height: 100 })).toEqual({
+      x: 100,
+      y: 50,
+    })
   })
 
   it('右下でも辺が端に接する位置で止まる', () => {
-    expect(clampGhostCenter({ x: 5000, y: 5000 }, canvas, { width: 200, height: 100 })).toEqual({ x: 900, y: 750 })
+    expect(clampGhostCenter({ x: 5000, y: 5000 }, canvas, { width: 200, height: 100 })).toEqual({
+      x: 900,
+      y: 750,
+    })
   })
 
   it('幅がキャンバスを超えると右辺が右端に貼り付く(中央へ寄せ直さない)', () => {
-    expect(clampGhostCenter({ x: 500, y: 400 }, canvas, { width: 2000, height: 100 })).toEqual({ x: 0, y: 400 })
+    expect(clampGhostCenter({ x: 500, y: 400 }, canvas, { width: 2000, height: 100 })).toEqual({
+      x: 0,
+      y: 400,
+    })
   })
 
   it('幅超過時はどこを指しても同じ場所で止まる', () => {
-    expect(clampGhostCenter({ x: 900, y: 400 }, canvas, { width: 2000, height: 100 })).toEqual({ x: 0, y: 400 })
+    expect(clampGhostCenter({ x: 900, y: 400 }, canvas, { width: 2000, height: 100 })).toEqual({
+      x: 0,
+      y: 400,
+    })
   })
 })
 

@@ -49,8 +49,12 @@ describe('TOAST_MESSAGES', () => {
   })
 
   it('APIエラー系メッセージが期待した文言を持つ', () => {
-    expect(TOAST_MESSAGES.API_AUTH_ERROR).toBe('認証エラーが発生しました。ログイン状態を確認してください')
-    expect(TOAST_MESSAGES.API_NETWORK_ERROR).toBe('通信エラーが発生しました。ネットワーク接続を確認してください')
+    expect(TOAST_MESSAGES.API_AUTH_ERROR).toBe(
+      '認証エラーが発生しました。ログイン状態を確認してください'
+    )
+    expect(TOAST_MESSAGES.API_NETWORK_ERROR).toBe(
+      '通信エラーが発生しました。ネットワーク接続を確認してください'
+    )
   })
 
   it('アクション系メッセージが期待した文言を持つ', () => {

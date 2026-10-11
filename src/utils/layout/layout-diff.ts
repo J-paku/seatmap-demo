@@ -46,7 +46,7 @@ const isSameEntity = (before: Identified, after: Identified): boolean =>
 // 追加・削除・内容変更のいずれかに当たる id
 const changedIdsOf = (before: readonly Identified[], after: readonly Identified[]): Set<string> => {
   const afterById = new Map(after.map((entity): [string, Identified] => [entity.id, entity]))
-  const beforeIds = new Set(before.map((entity) => entity.id))
+  const beforeIds = new Set(before.map(entity => entity.id))
   const changed = new Set<string>()
   for (const entity of before) {
     const next = afterById.get(entity.id)

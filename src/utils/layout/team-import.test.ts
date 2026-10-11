@@ -52,7 +52,13 @@ describe('buildTeamImportPlan', () => {
     expect(plan.stages).toEqual(['avoid-all'])
     expect(plan.unplacedCount).toBe(0)
     expect(plan.teams).toEqual([
-      { id: 'team-01', idPrefix: 'A', name: 'Team', color: '#000000', area: { x: 150, y: 160, w: 100, h: 80 } },
+      {
+        id: 'team-01',
+        idPrefix: 'A',
+        name: 'Team',
+        color: '#000000',
+        area: { x: 150, y: 160, w: 100, h: 80 },
+      },
     ])
     // delta = spot.rect - source.team.area = (150,160)。座席は平行移動+再接頭辞+社員をnull化
     expect(plan.seats).toEqual([
@@ -83,7 +89,14 @@ describe('buildTeamImportPlan', () => {
 
   it('idPrefix/チーム名/チームidが既存と衝突すれば次の空き番へ送る', () => {
     const existing = layout({
-      teams: [team({ id: 'team-01', idPrefix: 'A', name: 'Sales', area: { x: 900, y: 900, w: 50, h: 50 } })],
+      teams: [
+        team({
+          id: 'team-01',
+          idPrefix: 'A',
+          name: 'Sales',
+          area: { x: 900, y: 900, w: 50, h: 50 },
+        }),
+      ],
     })
     const source: TeamImportSource = {
       team: team({ area: { x: 0, y: 0, w: 100, h: 80 }, name: 'Sales' }),
@@ -98,8 +111,18 @@ describe('buildTeamImportPlan', () => {
   it('「Base」と「Base (2)」が既に使われていれば「Base (3)」まで送る', () => {
     const existing = layout({
       teams: [
-        team({ id: 'team-01', idPrefix: 'A', name: 'Base', area: { x: 900, y: 900, w: 10, h: 10 } }),
-        team({ id: 'team-02', idPrefix: 'B', name: 'Base (2)', area: { x: 920, y: 900, w: 10, h: 10 } }),
+        team({
+          id: 'team-01',
+          idPrefix: 'A',
+          name: 'Base',
+          area: { x: 900, y: 900, w: 10, h: 10 },
+        }),
+        team({
+          id: 'team-02',
+          idPrefix: 'B',
+          name: 'Base (2)',
+          area: { x: 920, y: 900, w: 10, h: 10 },
+        }),
       ],
     })
     const source: TeamImportSource = {
@@ -146,7 +169,7 @@ describe('buildTeamImportPlan', () => {
       seats: [seat({ id: 'x-001' }), seat({ id: 'y-001' })],
     }
     const plan = buildTeamImportPlan(layout(), [source], { x: 200, y: 200 })
-    expect(plan.seats.map((s) => s.id)).toEqual(['A-001', 'A-001-2'])
+    expect(plan.seats.map(s => s.id)).toEqual(['A-001', 'A-001-2'])
   })
 
   it('複製した座席の社員は必ずnullにする(元がemployeeIdを持っていても連れてこない)', () => {
@@ -164,7 +187,17 @@ describe('buildTeamImportPlan', () => {
     // 同じアンカー中心位置がそのまま通る。小さい障害物だと avoid-all がスパイラルの
     // 別の空き位置を見つけてしまい結果が一意に定まらないため、全域covered で確定させる
     const existing = layout({
-      facilities: [{ id: 'fac-01', name: 'Room', kind: 'meeting', x: 0, y: 0, width: 1600, height: 1154 } as Facility],
+      facilities: [
+        {
+          id: 'fac-01',
+          name: 'Room',
+          kind: 'meeting',
+          x: 0,
+          y: 0,
+          width: 1600,
+          height: 1154,
+        } as Facility,
+      ],
     })
     const source: TeamImportSource = {
       team: team({ area: { x: 0, y: 0, w: 100, h: 80 } }),
@@ -177,7 +210,17 @@ describe('buildTeamImportPlan', () => {
 
   it('家具がフロア全域を覆っていてもavoid-teams段は家具を見ないため、同じ位置にすぐ置ける', () => {
     const existing = layout({
-      furniture: [{ id: 'furn-001', kind: 'wall', name: '', x: 0, y: 0, width: 1600, height: 1154 } as Furniture],
+      furniture: [
+        {
+          id: 'furn-001',
+          kind: 'wall',
+          name: '',
+          x: 0,
+          y: 0,
+          width: 1600,
+          height: 1154,
+        } as Furniture,
+      ],
     })
     const source: TeamImportSource = {
       team: team({ area: { x: 0, y: 0, w: 100, h: 80 } }),
@@ -190,7 +233,9 @@ describe('buildTeamImportPlan', () => {
 
   it('チームがフロア全域を覆っていてもforced段まで緩めてアンカー中心に置く', () => {
     const existing = layout({
-      teams: [team({ id: 'team-01', idPrefix: 'A', name: 'Big', area: { x: 0, y: 0, w: 1600, h: 1154 } })],
+      teams: [
+        team({ id: 'team-01', idPrefix: 'A', name: 'Big', area: { x: 0, y: 0, w: 1600, h: 1154 } }),
+      ],
     })
     const source: TeamImportSource = {
       team: team({ area: { x: 0, y: 0, w: 100, h: 80 } }),
@@ -211,7 +256,12 @@ describe('buildTeamImportPlan', () => {
     expect(plan.unplacedCount).toBe(0)
     const [first, second] = plan.teams
     const firstRect: Rect = { x: first.area.x, y: first.area.y, w: first.area.w, h: first.area.h }
-    const secondRect: Rect = { x: second.area.x, y: second.area.y, w: second.area.w, h: second.area.h }
+    const secondRect: Rect = {
+      x: second.area.x,
+      y: second.area.y,
+      w: second.area.w,
+      h: second.area.h,
+    }
     expect(rectsIntersect(firstRect, secondRect)).toBe(false)
     // idPrefix・チームidも重複しない
     expect(first.idPrefix).not.toBe(second.idPrefix)

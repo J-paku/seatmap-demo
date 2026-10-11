@@ -35,7 +35,12 @@ describe('buildTeamOverlayPayload', () => {
     const rect = makeRect()
     const result = buildTeamOverlayPayload([team], colorMap, 'team-a', rect)
     const expectedColor = resolveTeamColor(colorMap, team.id, team.name).background
-    expect(result).toEqual({ teamId: 'team-a', teamName: 'チームA', teamColor: expectedColor, rect })
+    expect(result).toEqual({
+      teamId: 'team-a',
+      teamName: 'チームA',
+      teamColor: expectedColor,
+      rect,
+    })
   })
 
   it('teamId に一致するチームが無ければ null を返す', () => {
@@ -53,7 +58,9 @@ describe('buildTeamOverlayPayload', () => {
 
   it('colorMap に登録済みのチームはレジストリの背景色を使う', () => {
     const team = makeTeam({ id: 'team-a', color: '#112233' })
-    const colorMap = new Map<string, TeamColorEntry>([['team-a', { background: '#ABCDEF', foreground: '#000000', index: 0 }]])
+    const colorMap = new Map<string, TeamColorEntry>([
+      ['team-a', { background: '#ABCDEF', foreground: '#000000', index: 0 }],
+    ])
     const result = buildTeamOverlayPayload([team], colorMap, 'team-a', makeRect())
     expect(result?.teamColor).toBe('#ABCDEF')
   })

@@ -11,7 +11,12 @@ describe('findSpiralSpot', () => {
   })
 
   it('アンカーがフロア外なら内側へクランプしてから探索する', () => {
-    const spot = findSpiralSpot({ x: -500, y: -500 }, { width: 100, height: 80 }, bounds, () => false)
+    const spot = findSpiralSpot(
+      { x: -500, y: -500 },
+      { width: 100, height: 80 },
+      bounds,
+      () => false
+    )
     // centerX=clamp(-500,0,1600)=0, centerY=clamp(-500,0,1154)=0
     // offset(0,0)の矩形は x=-50<0 でフロア外のため棄却され、次の格子点まで進む
     expect(spot).not.toBeNull()
@@ -23,7 +28,7 @@ describe('findSpiralSpot', () => {
     const anchor = { x: 200, y: 200 }
     const size = { width: 10, height: 10 }
     // offset(0,0)の矩形(x:195,y:195)だけを塞ぐ
-    const spot = findSpiralSpot(anchor, size, bounds, (rect) => rect.x === 195 && rect.y === 195)
+    const spot = findSpiralSpot(anchor, size, bounds, rect => rect.x === 195 && rect.y === 195)
     // spiralOffsetsのring1先頭は(dx:-1,dy:-1) → x=200-15-5=180, y=180
     expect(spot).toEqual({ rect: { x: 180, y: 180, w: 10, h: 10 }, stage: 'avoid-all' })
   })
@@ -31,7 +36,8 @@ describe('findSpiralSpot', () => {
   it('avoid-allとavoid-teamsが常に塞がれていればforced段まで緩めて即座に返す', () => {
     const anchor = { x: 200, y: 200 }
     const size = { width: 100, height: 80 }
-    const isBlocked = (_rect: Rect, stage: 'avoid-all' | 'avoid-teams' | 'forced') => stage !== 'forced'
+    const isBlocked = (_rect: Rect, stage: 'avoid-all' | 'avoid-teams' | 'forced') =>
+      stage !== 'forced'
     const spot = findSpiralSpot(anchor, size, bounds, isBlocked)
     expect(spot).toEqual({ rect: { x: 150, y: 160, w: 100, h: 80 }, stage: 'forced' })
   })
@@ -52,7 +58,12 @@ describe('findSpiralSpot', () => {
   })
 
   it('isBlockedが常にtrueならforced段でも置けずnullを返す', () => {
-    const spot = findSpiralSpot({ x: 200, y: 200 }, { width: 10, height: 10 }, { width: 20, height: 20 }, () => true)
+    const spot = findSpiralSpot(
+      { x: 200, y: 200 },
+      { width: 10, height: 10 },
+      { width: 20, height: 20 },
+      () => true
+    )
     expect(spot).toBeNull()
   })
 })

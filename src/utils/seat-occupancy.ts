@@ -13,7 +13,7 @@ export const isOccupiedSeat = (seat: Seat, employeeById: Map<string, Employee>):
 // 単一チーム分の実在着席数。呼び出し側で対象チームの座席へ絞り込んだ配列を渡す
 // (TeamOverlay ヘッダーの「N名」用)
 export const countOccupiedSeats = (seats: Seat[], employeeById: Map<string, Employee>): number =>
-  seats.filter((seat) => isOccupiedSeat(seat, employeeById)).length
+  seats.filter(seat => isOccupiedSeat(seat, employeeById)).length
 
 // 全チーム分をまとめて1回で集計する。teams に含まれるチームは座席が1件も無くても0で埋め、
 // teams に無いチームの座席は数えない(キャンバスのチームラベル「N名」用)
