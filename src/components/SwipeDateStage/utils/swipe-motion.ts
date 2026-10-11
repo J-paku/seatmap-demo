@@ -14,15 +14,20 @@ const EASING = 'cubic-bezier(0.22, 1, 0.36, 1)'
 const SNAP_TRANSFORM = `transform ${SNAP_MS}ms ${EASING}`
 const SNAP_TRANSFORM_OPACITY = `transform ${SNAP_MS}ms ${EASING}, opacity ${SNAP_MS}ms ${EASING}`
 
+// 移動量を RESIST_START で 0〜1 に均した進み具合。逆向き(負)の移動量は 0 になる
+const progressOf = (distance: number): number => Math.min(Math.max(distance, 0) / RESIST_START, 1)
+
 // 指の移動量にゴム抵抗をかけつつ、カード・奥行き・スタンプへ一括で反映する
 export const applyFollowStyles = (refs: SwipeStageRefs, dx: number, transition: boolean): void => {
   const card = refs.cardRef.current
   if (!card) return
 
   const abs = Math.abs(dx)
+  // RESIST_START までは指どおり、超えた分だけ RESIST_FACTOR 倍に縮める。
+  // 境目では両側が同じ値になるので、比較の分岐ではなく min/max で書く
   const resisted =
-    abs <= RESIST_START ? dx : Math.sign(dx) * (RESIST_START + (abs - RESIST_START) * RESIST_FACTOR)
-  const ratio = Math.min(abs / RESIST_START, 1)
+    Math.sign(dx) * (Math.min(abs, RESIST_START) + Math.max(abs - RESIST_START, 0) * RESIST_FACTOR)
+  const ratio = progressOf(abs)
   const tilt = (resisted / RESIST_START) * MAX_TILT_DEG
 
   card.style.transition = transition ? SNAP_TRANSFORM : 'none'
@@ -36,16 +41,15 @@ export const applyFollowStyles = (refs: SwipeStageRefs, dx: number, transition: 
     depth.style.opacity = String(ratio)
   }
 
-  // 右スワイプ=前日スタンプ・左スワイプ=翌日スタンプ
-  const stampScale = 0.85 + 0.15 * ratio
-  const applyStamp = (el: HTMLDivElement | null, active: boolean) => {
+  // 右スワイプ=前日スタンプ・左スワイプ=翌日スタンプ。反対側のスタンプは進み具合 0(透明・縮小)になる
+  const applyStamp = (el: HTMLDivElement | null, progress: number) => {
     if (!el) return
     el.style.transition = transition ? SNAP_TRANSFORM_OPACITY : 'none'
-    el.style.opacity = String(active ? ratio : 0)
-    el.style.transform = `scale(${active ? stampScale : 0.85})`
+    el.style.opacity = String(progress)
+    el.style.transform = `scale(${0.85 + 0.15 * progress})`
   }
-  applyStamp(refs.stampPrevRef.current, dx > 0)
-  applyStamp(refs.stampNextRef.current, dx < 0)
+  applyStamp(refs.stampPrevRef.current, progressOf(dx))
+  applyStamp(refs.stampNextRef.current, progressOf(-dx))
 }
 
 // 確定時に画面外へ送り出す
