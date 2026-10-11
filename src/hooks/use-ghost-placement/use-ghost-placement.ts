@@ -86,7 +86,8 @@ export const useGhostPlacement = ({
   const onViewChange = useCallback(() => refreshGuidesRef.current(), [])
 
   const view = useGhostTransform({ active, onViewChange })
-  const { transform, transformRef, toLogicalRect, toScreenGuides, readCanvasRect, readInitial } = view
+  const { transform, transformRef, toLogicalRect, toScreenGuides, readCanvasRect, readInitial } =
+    view
 
   // 論理矩形へスナップを掛け、そのぶん画面中心をずらす
   const applySnap = useCallback(
@@ -96,7 +97,10 @@ export const useGhostPlacement = ({
       const t = transformRef.current
       const snap = computeSnap(rect, siblingsRef.current, snapThreshold(rect, t.scale))
       return {
-        center: { x: screenCenter.x + (snap.x - rect.x) * t.scale, y: screenCenter.y + (snap.y - rect.y) * t.scale },
+        center: {
+          x: screenCenter.x + (snap.x - rect.x) * t.scale,
+          y: screenCenter.y + (snap.y - rect.y) * t.scale,
+        },
         guides: snap.guides,
       }
     },
@@ -173,7 +177,7 @@ export const useGhostPlacement = ({
   // 重なった障害物を画面座標へ移す。ゴースト層の強調表示用
   const screenBlockedRects =
     blockReason && screenOrigin
-      ? blockReason.rects.map((r) => ({
+      ? blockReason.rects.map(r => ({
           left: screenOrigin.x + r.x * transform.scale,
           top: screenOrigin.y + r.y * transform.scale,
           width: r.w * transform.scale,
@@ -206,7 +210,11 @@ export const useGhostPlacement = ({
     if (!rect) return null
     // 確定時にもう一度スナップを掛ける。ゴーストを触らずキャンバス側を動かして位置を
     // 合わせた場合、ドラッグ中に計算した吸着結果は既に古いため
-    const snap = computeSnap(rect, siblingsRef.current, snapThreshold(rect, transformRef.current.scale))
+    const snap = computeSnap(
+      rect,
+      siblingsRef.current,
+      snapThreshold(rect, transformRef.current.scale)
+    )
     return { ...rect, x: snap.x, y: snap.y }
   }, [toLogicalRect, readCanvasRect, transformRef])
 

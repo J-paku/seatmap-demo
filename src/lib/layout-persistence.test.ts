@@ -115,11 +115,35 @@ describe('layout-persistence', () => {
       floorName: '本社1F',
       viewBox: { width: 1000, height: 800 },
       seats: [
-        { id: 'seat-001', teamId: 'team-a', x: 0, y: 0, width: 105, height: 75, rotation: 0, employeeId: 'emp-1' },
-        { id: 'seat-002', teamId: 'team-a', x: 100, y: 0, width: 105, height: 75, rotation: 0, employeeId: 'emp-ghost' },
+        {
+          id: 'seat-001',
+          teamId: 'team-a',
+          x: 0,
+          y: 0,
+          width: 105,
+          height: 75,
+          rotation: 0,
+          employeeId: 'emp-1',
+        },
+        {
+          id: 'seat-002',
+          teamId: 'team-a',
+          x: 100,
+          y: 0,
+          width: 105,
+          height: 75,
+          rotation: 0,
+          employeeId: 'emp-ghost',
+        },
       ],
       teams: [
-        { id: 'team-a', idPrefix: 'A', name: 'チームA', color: '#336699', area: { x: 0, y: 0, w: 300, h: 300 } },
+        {
+          id: 'team-a',
+          idPrefix: 'A',
+          name: 'チームA',
+          color: '#336699',
+          area: { x: 0, y: 0, w: 300, h: 300 },
+        },
       ],
       facilities: [
         { id: 'fac-1', name: '会議室1', kind: 'meeting', x: 0, y: 0, width: 100, height: 100 },
@@ -269,11 +293,9 @@ describe('layout-persistence', () => {
 
   describe('quota超過(setItemがthrow)', () => {
     it('saveStoredLayout: setItemがthrowするとそのまま呼び出し元へ伝播する(キャッチしない実装)', () => {
-      const spy = vi
-        .spyOn(window.localStorage, 'setItem')
-        .mockImplementation(() => {
-          throw new Error('QuotaExceededError')
-        })
+      const spy = vi.spyOn(window.localStorage, 'setItem').mockImplementation(() => {
+        throw new Error('QuotaExceededError')
+      })
 
       expect(() => saveStoredLayout(DEFAULT_FLOOR_ID, makeLayout(DEFAULT_FLOOR_ID))).toThrow(
         'QuotaExceededError'
@@ -283,11 +305,9 @@ describe('layout-persistence', () => {
     })
 
     it('saveCustomLayout: setItemがthrowするとそのまま呼び出し元へ伝播する', () => {
-      const spy = vi
-        .spyOn(window.localStorage, 'setItem')
-        .mockImplementation(() => {
-          throw new Error('QuotaExceededError')
-        })
+      const spy = vi.spyOn(window.localStorage, 'setItem').mockImplementation(() => {
+        throw new Error('QuotaExceededError')
+      })
 
       expect(() => saveCustomLayout('custom-1', makeLayout(DEFAULT_FLOOR_ID))).toThrow(
         'QuotaExceededError'
@@ -297,25 +317,21 @@ describe('layout-persistence', () => {
     })
 
     it('saveLayoutMetas: setItemがthrowするとそのまま呼び出し元へ伝播する', () => {
-      const spy = vi
-        .spyOn(window.localStorage, 'setItem')
-        .mockImplementation(() => {
-          throw new Error('QuotaExceededError')
-        })
+      const spy = vi.spyOn(window.localStorage, 'setItem').mockImplementation(() => {
+        throw new Error('QuotaExceededError')
+      })
 
-      expect(() => saveLayoutMetas([{ layoutId: 'custom-1', layoutName: 'A', updatedAt: 'x' }])).toThrow(
-        'QuotaExceededError'
-      )
+      expect(() =>
+        saveLayoutMetas([{ layoutId: 'custom-1', layoutName: 'A', updatedAt: 'x' }])
+      ).toThrow('QuotaExceededError')
 
       spy.mockRestore()
     })
 
     it('saveDefaultLayoutId: setItemがthrowするとそのまま呼び出し元へ伝播する', () => {
-      const spy = vi
-        .spyOn(window.localStorage, 'setItem')
-        .mockImplementation(() => {
-          throw new Error('QuotaExceededError')
-        })
+      const spy = vi.spyOn(window.localStorage, 'setItem').mockImplementation(() => {
+        throw new Error('QuotaExceededError')
+      })
 
       expect(() => saveDefaultLayoutId('custom-1')).toThrow('QuotaExceededError')
 

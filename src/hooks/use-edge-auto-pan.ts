@@ -16,7 +16,9 @@ type EdgeAutoPan = {
 }
 
 export const useEdgeAutoPan = (): EdgeAutoPan => {
-  const stateRef = useRef<{ x: number; y: number; rect: DOMRect; onFrame?: () => void } | null>(null)
+  const stateRef = useRef<{ x: number; y: number; rect: DOMRect; onFrame?: () => void } | null>(
+    null
+  )
   const rafRef = useRef(0)
 
   const stop = useCallback(() => {

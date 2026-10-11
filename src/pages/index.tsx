@@ -26,10 +26,7 @@ const HomePage = () => {
         {/* viewport-fit=cover が無いと env(safe-area-inset-*) は全て 0 に解決される。
             AppHeader・a11y トースト・TeamOverlay の3箇所が既にこれを前提に書かれているため付ける。
             拡大禁止(user-scalable=no)は WCAG 1.4.4 に反するので付けない。キャンバスのピンチはレイヤー側の touch-action: none が受ける */}
-        <meta
-          name='viewport'
-          content='width=device-width, initial-scale=1, viewport-fit=cover'
-        />
+        <meta name='viewport' content='width=device-width, initial-scale=1, viewport-fit=cover' />
         <meta name='description' content={SITE_DESCRIPTION} />
         <meta property='og:type' content='website' />
         <meta property='og:title' content={SITE_TITLE} />

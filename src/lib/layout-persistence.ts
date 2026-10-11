@@ -51,14 +51,14 @@ const officialLayoutKey = (floorId: FloorId): string =>
 // 有効な社員id集合を引数で受けるのは、ここから社員データ(lib/mock-loader.ts)を import すると
 // 循環参照になるため(mock-loader 側が既にこのファイルを import している)
 const pruneDanglingEmployeeIds = (seats: Seat[], validEmployeeIds: ReadonlySet<string>): Seat[] =>
-  seats.map((seat) =>
+  seats.map(seat =>
     seat.employeeId !== null && !validEmployeeIds.has(seat.employeeId)
       ? { ...seat, employeeId: null }
       : seat
   )
 
 // 配列でない古い/壊れた保存分でも落ちないよう、配列と確認できた時だけ写す
-const mapIfArray = <T,>(value: T[], fill: (item: T) => T): T[] =>
+const mapIfArray = <T>(value: T[], fill: (item: T) => T): T[] =>
   Array.isArray(value) ? value.map(fill) : value
 
 // --- 増設フィールドの既定値埋め(1件分) ---
@@ -207,7 +207,7 @@ export const saveCustomLayout = (layoutId: string, layout: SeatLayout): void => 
 export const deleteCustomLayout = (layoutId: string): void => {
   if (typeof window === 'undefined') return
   window.localStorage.removeItem(customLayoutKey(layoutId))
-  saveLayoutMetas(loadLayoutMetas().filter((meta) => meta.layoutId !== layoutId))
+  saveLayoutMetas(loadLayoutMetas().filter(meta => meta.layoutId !== layoutId))
 }
 
 // 起動時に開くレイアウトのidを読み込む。JSONではない生文字列キーなのでパース失敗は起きない

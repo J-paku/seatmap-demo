@@ -1,6 +1,11 @@
 // @vitest-environment happy-dom
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import type { PartsAvatarConfig, PixelAvatarConfig, PixelsAvatarConfig, StoredAvatarRecord } from '@/types'
+import type {
+  PartsAvatarConfig,
+  PixelAvatarConfig,
+  PixelsAvatarConfig,
+  StoredAvatarRecord,
+} from '@/types'
 import { loadStoredAvatar, loadStoredAvatars, saveStoredAvatar } from '@/lib/avatar-persistence'
 
 // lib/avatar-persistence.ts はキー接頭辞を export していないため、旧接頭辞の残存データを
@@ -28,7 +33,10 @@ const pixelsConfig: PixelsAvatarConfig = {
   rows: Array<string>(16).fill('a'.repeat(16)),
 }
 
-const makeRecord = (ownerCode: string, config: StoredAvatarRecord['config']): StoredAvatarRecord => ({
+const makeRecord = (
+  ownerCode: string,
+  config: StoredAvatarRecord['config']
+): StoredAvatarRecord => ({
   ownerCode,
   ownerName: '山田太郎',
   config,
@@ -90,7 +98,12 @@ describe('avatar-persistence', () => {
     })
 
     it('新接頭辞キーでもkindを持たない旧形式の値は型ガードで弾かれnullになる', () => {
-      const oldShapeUnderNewKey = { ownerCode: '0001', ownerName: '山田太郎', config: { id: 'av1' }, updatedTime: 'x' }
+      const oldShapeUnderNewKey = {
+        ownerCode: '0001',
+        ownerName: '山田太郎',
+        config: { id: 'av1' },
+        updatedTime: 'x',
+      }
       window.localStorage.setItem(keyOf('0001'), JSON.stringify(oldShapeUnderNewKey))
 
       expect(loadStoredAvatar('0001')).toBeNull()
@@ -138,7 +151,12 @@ describe('avatar-persistence', () => {
       const brokenRecord = {
         ownerCode: '0001',
         ownerName: '山田太郎',
-        config: { kind: 'pixels', size: 8, palette: { a: '#ffffff' }, rows: Array<string>(8).fill('a'.repeat(8)) },
+        config: {
+          kind: 'pixels',
+          size: 8,
+          palette: { a: '#ffffff' },
+          rows: Array<string>(8).fill('a'.repeat(8)),
+        },
         updatedTime: 'x',
       }
       window.localStorage.setItem(keyOf('0001'), JSON.stringify(brokenRecord))
@@ -159,11 +177,9 @@ describe('avatar-persistence', () => {
 
   describe('quota超過(setItemがthrow)', () => {
     it('saveStoredAvatar は書き込み失敗を握りつぶし例外を投げない', () => {
-      const spy = vi
-        .spyOn(window.localStorage, 'setItem')
-        .mockImplementation(() => {
-          throw new Error('QuotaExceededError')
-        })
+      const spy = vi.spyOn(window.localStorage, 'setItem').mockImplementation(() => {
+        throw new Error('QuotaExceededError')
+      })
 
       expect(() => saveStoredAvatar(makeRecord('0001', presetConfig))).not.toThrow()
       expect(loadStoredAvatar('0001')).toBeNull()

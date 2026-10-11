@@ -32,10 +32,10 @@ import { useGlobalAnnouncement } from '@/contexts/announcement-context'
 // EMPLOYEES はモジュール定数で初回レンダー時点から確定しているのでモジュールスコープに置く
 // (useEmployees() の SWR データを使うと初期レンダーで undefined になり、その時だけ全座席が
 // 空席に見えるレースが起きる)
-const VALID_EMPLOYEE_IDS: ReadonlySet<string> = new Set(EMPLOYEES.map((employee) => employee.id))
+const VALID_EMPLOYEE_IDS: ReadonlySet<string> = new Set(EMPLOYEES.map(employee => employee.id))
 
 // キャッシュ即時描画(fallbackData)+バックグラウンド再取得(SWR)+取得成功時にキャッシュ更新
-const useCached = <T,>(name: string, data: T, fallbackData?: T) => {
+const useCached = <T>(name: string, data: T, fallbackData?: T) => {
   const fingerprint = fingerprintOf(name, data)
   return useSWR<T>(
     `mock/${name}`,

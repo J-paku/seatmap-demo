@@ -13,7 +13,7 @@ export const useQuantizedClock = (enabled: boolean): number => {
     const sync = () => {
       const now = Date.now()
       const q = now - (now % 60000)
-      setMinuteMs((prev) => (prev === q ? prev : q))
+      setMinuteMs(prev => (prev === q ? prev : q))
     }
     sync()
     const id = window.setInterval(sync, 60000)

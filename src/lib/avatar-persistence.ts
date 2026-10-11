@@ -12,13 +12,17 @@ const isPixelAvatarConfig = (value: unknown): value is PixelAvatarConfig => {
   if (value === null || typeof value !== 'object') return false
   const v = value as Record<string, unknown>
   if (v.kind === 'preset') return typeof v.id === 'string'
-  if (v.kind === 'pixels') return v.size === 16 && Array.isArray(v.rows) && typeof v.palette === 'object'
+  if (v.kind === 'pixels')
+    return v.size === 16 && Array.isArray(v.rows) && typeof v.palette === 'object'
   if (v.kind !== 'parts') return false
-  if (typeof v.hair !== 'string' || typeof v.face !== 'string' || typeof v.outfit !== 'string') return false
+  if (typeof v.hair !== 'string' || typeof v.face !== 'string' || typeof v.outfit !== 'string')
+    return false
   const p = v.palette
   if (p === null || typeof p !== 'object') return false
   const pal = p as Record<string, unknown>
-  return typeof pal.hair === 'string' && typeof pal.skin === 'string' && typeof pal.outfit === 'string'
+  return (
+    typeof pal.hair === 'string' && typeof pal.skin === 'string' && typeof pal.outfit === 'string'
+  )
 }
 
 const isStoredAvatarRecord = (value: unknown): value is StoredAvatarRecord => {

@@ -214,8 +214,8 @@ describe('touchLayoutMetaUpdatedAt', () => {
     mod.touchLayoutMetaUpdatedAt('L1')
 
     const metas = loadLayoutMetas()
-    const l1 = metas.find((m) => m.layoutId === 'L1')
-    const l2 = metas.find((m) => m.layoutId === 'L2')
+    const l1 = metas.find(m => m.layoutId === 'L1')
+    const l2 = metas.find(m => m.layoutId === 'L2')
     expect(l1?.updatedAt).toBe(new Date(FIXED_NOW).toISOString())
     expect(l2?.updatedAt).toBe('2020-01-01T00:00:00.000Z')
   })

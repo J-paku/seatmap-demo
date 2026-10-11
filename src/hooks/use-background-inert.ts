@@ -19,7 +19,7 @@ export const useBackgroundInert = (active: boolean, rootId: string) => {
       savedPointerEvents = root.style.pointerEvents
       root.setAttribute('aria-hidden', 'true')
       root.style.pointerEvents = 'none'
-      root.querySelectorAll<HTMLElement>(FOCUSABLE).forEach((el) => {
+      root.querySelectorAll<HTMLElement>(FOCUSABLE).forEach(el => {
         savedTabindex.push({ el, prev: el.getAttribute('tabindex') })
         el.setAttribute('tabindex', '-1')
       })

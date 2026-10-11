@@ -12,4 +12,5 @@ export const SeatDeleteProvider = SeatDeleteContext.Provider
 
 // Providerで包まれていない(=編集ツリー外)場合はnullを返す。呼び出し側はnullを
 // 「削除ボタン自体を出さない」判定に使う(エラーを投げない — 他のcontextsのuseXxxとは異なる)
-export const useSeatDeleteRequest = (): SeatDeleteRequestHandler | null => useContext(SeatDeleteContext)
+export const useSeatDeleteRequest = (): SeatDeleteRequestHandler | null =>
+  useContext(SeatDeleteContext)

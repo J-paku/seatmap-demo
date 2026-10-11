@@ -40,16 +40,16 @@ type LayerRule = {
 
 const LAYER_RULES: Record<DetailPanelLayer, LayerRule> = {
   facility: {
-    isOpen: (s) => s.facilityDetailId !== null,
+    isOpen: s => s.facilityDetailId !== null,
     close: () => EMPTY,
   },
   employee: {
-    isOpen: (s) => s.seatDetailId !== null || s.personDetailId !== null,
-    close: (s) => ({ ...s, seatDetailId: null, personDetailId: null }),
+    isOpen: s => s.seatDetailId !== null || s.personDetailId !== null,
+    close: s => ({ ...s, seatDetailId: null, personDetailId: null }),
   },
   schedule: {
-    isOpen: (s) => s.scheduleDetailId !== null,
-    close: (s) => ({ ...s, scheduleDetailId: null }),
+    isOpen: s => s.scheduleDetailId !== null,
+    close: s => ({ ...s, scheduleDetailId: null }),
   },
 }
 
@@ -66,7 +66,7 @@ export const DetailPanelProvider = ({ children }: { children: ReactNode }) => {
   // 施設詳細を開いたまま参加者カードを重ねる。施設を閉じてしまうと参加者を1人見るたびに
   // 会議室へ戻り直すことになるため、戻り先として施設だけは残す(他は従来どおり畳む)
   const openPersonDetail = useCallback((employeeId: string) => {
-    setState((s) => ({ ...EMPTY, facilityDetailId: s.facilityDetailId, personDetailId: employeeId }))
+    setState(s => ({ ...EMPTY, facilityDetailId: s.facilityDetailId, personDetailId: employeeId }))
   }, [])
 
   const openFacilityDetail = useCallback((facilityId: string) => {
@@ -75,7 +75,7 @@ export const DetailPanelProvider = ({ children }: { children: ReactNode }) => {
 
   const openScheduleDetail = useCallback((eventId: string) => {
     // 社員詳細を維持したままスタック(どちらの経路で開いていても同じ)
-    setState((s) => (s.seatDetailId || s.personDetailId ? { ...s, scheduleDetailId: eventId } : s))
+    setState(s => (s.seatDetailId || s.personDetailId ? { ...s, scheduleDetailId: eventId } : s))
   }, [])
 
   // 席の有無に関わらず開けるようになったため、座席を引く分岐は持たない
@@ -84,7 +84,7 @@ export const DetailPanelProvider = ({ children }: { children: ReactNode }) => {
   // DETAIL_PANEL_LAYER_ORDER を逆順(上から)に辿り、最初に開いている層だけを畳む。
   // 社員が施設の上に載っている時は社員だけを外し(施設は残る)、施設単独・社員単独は全部閉じる
   const closeTop = useCallback(() => {
-    setState((s) => {
+    setState(s => {
       for (const layer of [...DETAIL_PANEL_LAYER_ORDER].reverse()) {
         if (LAYER_RULES[layer].isOpen(s)) return LAYER_RULES[layer].close(s)
       }

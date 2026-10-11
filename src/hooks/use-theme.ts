@@ -53,4 +53,3 @@ export function useTheme(): { themeMode: ThemeMode; setTheme: (mode: ThemeMode) 
 
   return { themeMode, setTheme }
 }
-

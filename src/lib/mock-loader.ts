@@ -30,7 +30,7 @@ import facilityMeetingsJson from '@mocks/facility-meetings.json'
 
 // JSON 由来の緩い型を、union フィールドを持つ確定型へ整形(このファイルが唯一の import 点)
 export const EMPLOYEES: Employee[] = employeesJson
-const AVATAR_RECORDS: StoredAvatarRecord[] = avatarsJson.map((r) => ({
+const AVATAR_RECORDS: StoredAvatarRecord[] = avatarsJson.map(r => ({
   ...r,
   config: r.config as PixelAvatarConfig,
 }))
@@ -44,12 +44,12 @@ type RawFacility = Omit<Facility, 'kind'> & { kind: string }
 type RawFurniture = Omit<Furniture, 'kind'> & { kind: string }
 
 const toSeats = (raw: RawSeat[]): Seat[] =>
-  raw.map((s) => ({ ...s, rotation: s.rotation as Seat['rotation'] }))
+  raw.map(s => ({ ...s, rotation: s.rotation as Seat['rotation'] }))
 const toFacilities = (raw: RawFacility[]): Facility[] =>
-  raw.map((f) => ({ ...f, kind: f.kind as Facility['kind'] }))
+  raw.map(f => ({ ...f, kind: f.kind as Facility['kind'] }))
 // 家具の種データ。初期は空で、編集モードで置いたぶんは保存レイアウト側に載る
 const toFurniture = (raw: RawFurniture[]): Furniture[] =>
-  raw.map((f) => ({
+  raw.map(f => ({
     ...f,
     kind: f.kind as Furniture['kind'],
   }))
@@ -81,14 +81,14 @@ export const FLOOR_SEEDS: Record<FloorId, FloorSeed> = {
 // 全フロア分を結合した一覧。社員→所属チーム名・チーム色や会議室名の解決は表示中フロアに依らないため、
 // 一覧としてはフロアを跨いで配る(1F表示中でも2F所属社員の所属・色が引ける)。
 // キャンバスへ描くチーム箱・会議室は表示中フロアぶんだけで、そちらは useSeatLayout が配る
-export const ALL_TEAMS: Team[] = FLOORS.flatMap((floor) => FLOOR_SEEDS[floor.floorId].teams)
+export const ALL_TEAMS: Team[] = FLOORS.flatMap(floor => FLOOR_SEEDS[floor.floorId].teams)
 export const ALL_FACILITIES: Facility[] = FLOORS.flatMap(
-  (floor) => FLOOR_SEEDS[floor.floorId].facilities
+  floor => FLOOR_SEEDS[floor.floorId].facilities
 )
 // モックは生成時の1日分しか持たないので、日付を「今日」へ寄せてから配る
 // (寄せないと翌日以降は全員在席・予定ゼロになる)
 export const SCHEDULES: ScheduleEvent[] = anchorSchedulesToDate(
-  schedulesJson.map((s) => ({ ...s, category: s.category as ScheduleEvent['category'] })),
+  schedulesJson.map(s => ({ ...s, category: s.category as ScheduleEvent['category'] })),
   Date.now()
 )
 export const FACILITY_MEETINGS: FacilityMeeting[] = facilityMeetingsJson
@@ -105,7 +105,7 @@ const responseDelay = () => 200 + Math.floor(Math.random() * 300)
 // 静的データでnameごとの内容は変わらないため、name単位でメモ化する
 // (JSON.stringifyは配列が大きいとコストが無視できず、useCachedは呼び出し側のレンダーのたび実行されるため)
 const fingerprintCache = new Map<string, string>()
-export const fingerprintOf = <T,>(name: string, data: T): string => {
+export const fingerprintOf = <T>(name: string, data: T): string => {
   const cached = fingerprintCache.get(name)
   if (cached !== undefined) return cached
   const fingerprint = hashString(JSON.stringify(data))
@@ -119,14 +119,14 @@ type CacheEnvelope<T> = {
   data: T
 }
 
-const isCacheEnvelope = <T,>(value: unknown): value is CacheEnvelope<T> =>
+const isCacheEnvelope = <T>(value: unknown): value is CacheEnvelope<T> =>
   typeof value === 'object' &&
   value !== null &&
   'fingerprint' in value &&
   'data' in value &&
   typeof (value as { fingerprint: unknown }).fingerprint === 'string'
 
-export const readCache = <T,>(name: string, fingerprint: string): T | undefined => {
+export const readCache = <T>(name: string, fingerprint: string): T | undefined => {
   try {
     if (typeof window === 'undefined') return undefined
     const raw = window.localStorage.getItem(CACHE_PREFIX + name)
@@ -140,7 +140,7 @@ export const readCache = <T,>(name: string, fingerprint: string): T | undefined 
   }
 }
 
-export const writeCache = <T,>(name: string, data: T, fingerprint: string): void => {
+export const writeCache = <T>(name: string, data: T, fingerprint: string): void => {
   try {
     if (typeof window === 'undefined') return
     const envelope: CacheEnvelope<T> = { fingerprint, data }
@@ -150,10 +150,10 @@ export const writeCache = <T,>(name: string, data: T, fingerprint: string): void
   }
 }
 
-const wait = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms))
+const wait = (ms: number) => new Promise<void>(resolve => setTimeout(resolve, ms))
 
 // 静的データを「遅延つき取得」として返す。FORCE_FAIL 時のみ 1s→2s→4s の指数バックオフで3回再試行
-export const fetchWithRetry = async <T,>(data: T): Promise<T> => {
+export const fetchWithRetry = async <T>(data: T): Promise<T> => {
   await wait(responseDelay())
   if (!FORCE_FAIL) return data
   // 強制失敗時: 指数バックオフ(1s→2s→4s)。全滅しても空で死なずデータを返す(原本: 失敗しても空画面)
@@ -168,6 +168,6 @@ export const fetchWithRetry = async <T,>(data: T): Promise<T> => {
 export const touchLayoutMetaUpdatedAt = (layoutId: string): void => {
   const updatedAt = new Date().toISOString()
   saveLayoutMetas(
-    loadLayoutMetas().map((meta) => (meta.layoutId === layoutId ? { ...meta, updatedAt } : meta))
+    loadLayoutMetas().map(meta => (meta.layoutId === layoutId ? { ...meta, updatedAt } : meta))
   )
 }

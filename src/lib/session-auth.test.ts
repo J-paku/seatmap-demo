@@ -21,7 +21,7 @@ describe('session-auth', () => {
   afterEach(() => {
     // モジュール内の listeners Set はファイル内でモジュールインスタンスが共有されるため、
     // テストごとに登録した購読を必ず解除して次のテストへ漏れさせない
-    unsubscribers.splice(0).forEach((unsubscribe) => unsubscribe())
+    unsubscribers.splice(0).forEach(unsubscribe => unsubscribe())
     vi.restoreAllMocks()
   })
 

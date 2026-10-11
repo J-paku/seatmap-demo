@@ -23,7 +23,10 @@ export type GhostTransform = {
   readCanvasRect: () => DOMRect | null
   // 起動時の初期化。変換とキャンバス矩形を同期で読む(描画中には作れない実測値)
   readInitial: () => DOMRect | null
-  toLogicalRect: (screenCenter: { x: number; y: number }, size: { width: number; height: number }) => Rect | null
+  toLogicalRect: (
+    screenCenter: { x: number; y: number },
+    size: { width: number; height: number }
+  ) => Rect | null
   toScreenCenter: (rect: Rect) => { x: number; y: number } | null
   toScreenGuides: (guides: SnapGuide[]) => SnapGuide[]
 }
@@ -73,7 +76,10 @@ export const useGhostTransform = ({ active, onViewChange }: Options): GhostTrans
 
   // 画面座標 → viewBox 座標
   const toLogicalRect = useCallback(
-    (screenCenter: { x: number; y: number }, size: { width: number; height: number }): Rect | null => {
+    (
+      screenCenter: { x: number; y: number },
+      size: { width: number; height: number }
+    ): Rect | null => {
       const canvas = canvasRectRef.current
       if (!canvas) return null
       const t = transformRef.current
@@ -103,10 +109,22 @@ export const useGhostTransform = ({ active, onViewChange }: Options): GhostTrans
     const t = transformRef.current
     const toX = (v: number) => canvas.left + t.tx + v * t.scale
     const toY = (v: number) => canvas.top + t.ty + v * t.scale
-    return gs.map((g) =>
+    return gs.map(g =>
       g.axis === 'vertical'
-        ? { ...g, pos: toX(g.pos), start: toY(g.start), end: toY(g.end), extend: g.extend * t.scale }
-        : { ...g, pos: toY(g.pos), start: toX(g.start), end: toX(g.end), extend: g.extend * t.scale }
+        ? {
+            ...g,
+            pos: toX(g.pos),
+            start: toY(g.start),
+            end: toY(g.end),
+            extend: g.extend * t.scale,
+          }
+        : {
+            ...g,
+            pos: toY(g.pos),
+            start: toX(g.start),
+            end: toX(g.end),
+            extend: g.extend * t.scale,
+          }
     )
   }, [])
 

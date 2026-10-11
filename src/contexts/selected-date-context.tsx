@@ -46,7 +46,7 @@ export const SelectedDateProvider = ({ children }: { children: ReactNode }) => {
   }, [])
 
   const goToPrevDay = useCallback(() => {
-    setDate((prev) => {
+    setDate(prev => {
       const next = addJstDays(prev, -1)
       commitDebounced(next)
       return next
@@ -54,7 +54,7 @@ export const SelectedDateProvider = ({ children }: { children: ReactNode }) => {
   }, [commitDebounced])
 
   const goToNextDay = useCallback(() => {
-    setDate((prev) => {
+    setDate(prev => {
       const next = addJstDays(prev, 1)
       commitDebounced(next)
       return next
@@ -95,7 +95,17 @@ export const SelectedDateProvider = ({ children }: { children: ReactNode }) => {
       goToToday,
       setDateImmediate,
     }),
-    [date, debouncedDate, today, isToday, isTodaySelected, goToPrevDay, goToNextDay, goToToday, setDateImmediate]
+    [
+      date,
+      debouncedDate,
+      today,
+      isToday,
+      isTodaySelected,
+      goToPrevDay,
+      goToNextDay,
+      goToToday,
+      setDateImmediate,
+    ]
   )
 
   return <Ctx.Provider value={api}>{children}</Ctx.Provider>

@@ -4,7 +4,10 @@ import type { RefObject } from 'react'
 // 暗幕の上で起きたスクロールを背面へ伝えない。React の合成イベントは touchmove/wheel を
 // passive 登録するため preventDefault が無視される。ここだけネイティブで passive:false 登録する。
 // 止めるのは暗幕自身が対象のときだけ — パネル側へ広げるとシート内リストのスクロールまで死ぬ
-export const useBackdropTouchGuard = (backdropRef: RefObject<HTMLElement | null>, active: boolean): void => {
+export const useBackdropTouchGuard = (
+  backdropRef: RefObject<HTMLElement | null>,
+  active: boolean
+): void => {
   useEffect(() => {
     if (!active) return
     const el = backdropRef.current

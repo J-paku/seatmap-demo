@@ -14,8 +14,7 @@ import type { FloorId } from '@/types'
 // STEP2: 複数レイアウト対応 — 現在表示中のレイアウトが公式(どのフロアか)か、カスタムのどれかを表す。
 // 実物の updatedTime はサーバキャッシュ鮮度用でここでは不要なので持たない
 export type LayoutSource =
-  | { type: 'official'; floorId: FloorId }
-  | { type: 'custom'; layoutId: string }
+  { type: 'official'; floorId: FloorId } | { type: 'custom'; layoutId: string }
 
 type LayoutSourceApi = {
   source: LayoutSource
@@ -32,7 +31,7 @@ const OFFICIAL_SOURCE: LayoutSource = { type: 'official', floorId: DEFAULT_FLOOR
 const readStoredSource = (): LayoutSource => {
   const defaultLayoutId = loadDefaultLayoutId()
   if (!defaultLayoutId) return OFFICIAL_SOURCE
-  const exists = loadLayoutMetas().some((meta) => meta.layoutId === defaultLayoutId)
+  const exists = loadLayoutMetas().some(meta => meta.layoutId === defaultLayoutId)
   return exists ? { type: 'custom', layoutId: defaultLayoutId } : OFFICIAL_SOURCE
 }
 
@@ -75,7 +74,9 @@ export const LayoutSourceProvider = ({ children }: { children: ReactNode }) => {
       const validFloorId = isFloorId(floorId) ? floorId : DEFAULT_FLOOR_ID
       if (source.type === 'official' && source.floorId === validFloorId) return false
       setSelectedSource(
-        validFloorId === DEFAULT_FLOOR_ID ? OFFICIAL_SOURCE : { type: 'official', floorId: validFloorId }
+        validFloorId === DEFAULT_FLOOR_ID
+          ? OFFICIAL_SOURCE
+          : { type: 'official', floorId: validFloorId }
       )
       return true
     },

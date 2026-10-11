@@ -109,7 +109,7 @@ export const useLayoutEditor = (sourceLayout: SeatLayout | undefined): UseLayout
     (seatId: string, x: number, y: number) => {
       const layout = editingLayout
       if (!layout) return
-      const seat = layout.seats.find((s) => s.id === seatId)
+      const seat = layout.seats.find(s => s.id === seatId)
       if (!seat) return
       const candidate: Rect = { x, y, w: seat.width, h: seat.height }
 
@@ -139,7 +139,10 @@ export const useLayoutEditor = (sourceLayout: SeatLayout | undefined): UseLayout
     [stage]
   )
 
-  const deleteSeat = useCallback((seatId: string) => stage({ type: 'seat-delete', seatId }), [stage])
+  const deleteSeat = useCallback(
+    (seatId: string) => stage({ type: 'seat-delete', seatId }),
+    [stage]
+  )
 
   // 05-4 の一括操作。空配列は発行しない — リデューサーが無変化を返すだけだが、
   // 「押したのに何も起きない」経路をここで閉じておく
@@ -172,7 +175,7 @@ export const useLayoutEditor = (sourceLayout: SeatLayout | undefined): UseLayout
     (teamId: string, x: number, y: number): boolean => {
       const layout = editingLayout
       if (!layout) return false
-      const team = layout.teams.find((t) => t.id === teamId)
+      const team = layout.teams.find(t => t.id === teamId)
       if (!team) return false
       // §05-3: 入口(ゴースト)でも同じ判定を通しているが、発行口でも必ず見る。
       // 二重ガードにしないと、入口を増やしたときにロックを素通りする経路が生まれる
@@ -232,8 +235,14 @@ export const useLayoutEditor = (sourceLayout: SeatLayout | undefined): UseLayout
       const placed = guardPlacement(rect)
       if (!placed) return false
       return (
-        stage({ type: 'furniture-add', furnitureKind, x: placed.x, y: placed.y, width: placed.w, height: placed.h }) !==
-        'blocked'
+        stage({
+          type: 'furniture-add',
+          furnitureKind,
+          x: placed.x,
+          y: placed.y,
+          width: placed.w,
+          height: placed.h,
+        }) !== 'blocked'
       )
     },
     [guardPlacement, stage]
@@ -309,7 +318,12 @@ export const useLayoutEditor = (sourceLayout: SeatLayout | undefined): UseLayout
 
   const setObjectLabelVisible = useCallback(
     (ref: LayoutObjectRef, labelVisible: boolean) => {
-      stage({ type: 'object-label-visible', kind: ref.kind as EditableObjectKind, id: ref.id, labelVisible })
+      stage({
+        type: 'object-label-visible',
+        kind: ref.kind as EditableObjectKind,
+        id: ref.id,
+        labelVisible,
+      })
     },
     [stage]
   )
@@ -319,8 +333,15 @@ export const useLayoutEditor = (sourceLayout: SeatLayout | undefined): UseLayout
       const placed = guardPlacement(rect)
       if (!placed) return false
       return (
-        stage({ type: 'team-add', name, color, x: placed.x, y: placed.y, width: placed.w, height: placed.h }) !==
-        'blocked'
+        stage({
+          type: 'team-add',
+          name,
+          color,
+          x: placed.x,
+          y: placed.y,
+          width: placed.w,
+          height: placed.h,
+        }) !== 'blocked'
       )
     },
     [guardPlacement, stage]

@@ -255,7 +255,11 @@
   --sheet-inset-min: 12px;
   /* シートが侵してはいけない画面端の帯。margin:auto は残余を上下で等分するため、
      上下の大きい側に合わせないと切り欠き側だけ食い込む */
-  --sheet-safe-inset: max(var(--sheet-inset-min), env(safe-area-inset-top, 0px), env(safe-area-inset-bottom, 0px));
+  --sheet-safe-inset: max(
+    var(--sheet-inset-min),
+    env(safe-area-inset-top, 0px),
+    env(safe-area-inset-bottom, 0px)
+  );
   /* 全シート共通幅。従来の width + max-width の2宣言を1本に畳んだもの(値は等価) */
   --sheet-width: min(100% - 24px, 448px);
   --sheet-radius: 16px;

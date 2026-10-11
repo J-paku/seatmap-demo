@@ -228,16 +228,7 @@ export type Facility = {
 // 家具。会議室(Facility)とは別型にする。Facility.kind へ家具種別を混ぜると
 // 既存の会議室ロジック(状態色・ホバーカード・詳細パネル)が全て巻き添えになるため分ける
 export type FurnitureKind =
-  | 'wall'
-  | 'column'
-  | 'stairs'
-  | 'door'
-  | 'window'
-  | 'sofa'
-  | 'table'
-  | 'shelf'
-  | 'plant'
-  | 'bed'
+  'wall' | 'column' | 'stairs' | 'door' | 'window' | 'sofa' | 'table' | 'shelf' | 'plant' | 'bed'
 // 'facility' は足さない。会議室は Facility 型が持ち、混ぜると上記の巻き添えが起きる
 
 // name は建設設備(壁・柱・階段・ドア・窓)では空文字固定。ラベル・既定サイズ・

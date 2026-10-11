@@ -8,7 +8,7 @@ const SESSION_AUTH_KEY = 'seatmap-demo/session-auth'
 const listeners = new Set<() => void>()
 
 const notify = (): void => {
-  listeners.forEach((listener) => {
+  listeners.forEach(listener => {
     listener()
   })
 }

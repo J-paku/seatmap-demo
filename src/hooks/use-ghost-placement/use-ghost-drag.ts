@@ -27,8 +27,23 @@ type DragState =
   | { kind: 'none' }
   // startX/startY/moved はドラッグ確定判定用。端ゾーンでゴーストを掴んだだけの
   // タップ(指の微振動)で自動パンを始めないため、確定前は edgePan を呼ばない
-  | { kind: 'move'; pointerId: number; grabDx: number; grabDy: number; startX: number; startY: number; moved: boolean }
-  | { kind: 'resize'; pointerId: number; handle: ResizeHandle; startX: number; startY: number; startRect: Rect }
+  | {
+      kind: 'move'
+      pointerId: number
+      grabDx: number
+      grabDy: number
+      startX: number
+      startY: number
+      moved: boolean
+    }
+  | {
+      kind: 'resize'
+      pointerId: number
+      handle: ResizeHandle
+      startX: number
+      startY: number
+      startRect: Rect
+    }
 
 export type GhostDrag = {
   // 枠を掴んで移動している間だけ true
@@ -55,7 +70,10 @@ type Options = {
   setLogicalSize: (size: { width: number; height: number }) => void
   setGuides: (guides: SnapGuide[]) => void
   // 論理矩形へスナップを掛け、そのぶん画面中心をずらす
-  applySnap: (screenCenter: { x: number; y: number }) => { center: { x: number; y: number }; guides: SnapGuide[] }
+  applySnap: (screenCenter: { x: number; y: number }) => {
+    center: { x: number; y: number }
+    guides: SnapGuide[]
+  }
 }
 
 export const useGhostDrag = ({
@@ -85,9 +103,9 @@ export const useGhostDrag = ({
     const drag = dragRef.current
     if (captured && drag.kind !== 'none') {
       try {
-        ;(captured.target as Element & { releasePointerCapture: (id: number) => void }).releasePointerCapture(
-          drag.pointerId
-        )
+        ;(
+          captured.target as Element & { releasePointerCapture: (id: number) => void }
+        ).releasePointerCapture(drag.pointerId)
       } catch {
         // capture 未取得・既に解放済みの場合は無視
       }
@@ -226,13 +244,23 @@ export const useGhostDrag = ({
       }
 
       if (drag.kind === 'move') {
-        if (!drag.moved && Math.hypot(e.clientX - drag.startX, e.clientY - drag.startY) > DRAG_CONFIRM_PX) {
+        if (
+          !drag.moved &&
+          Math.hypot(e.clientX - drag.startX, e.clientY - drag.startY) > DRAG_CONFIRM_PX
+        ) {
           drag.moved = true
         }
         // クランプにはフットプリント(実寸×scale)を使う。44px下限で膨らんだ描画箱ではない —
         // 目的は「置かれる物をキャンバスの内側に留める」ことなので、膨らんだ箱のはみ出しは許容する
-        const footprint = { width: sizeRef.current.width * t.scale, height: sizeRef.current.height * t.scale }
-        const raw = clampGhostCenter({ x: e.clientX - drag.grabDx, y: e.clientY - drag.grabDy }, canvas, footprint)
+        const footprint = {
+          width: sizeRef.current.width * t.scale,
+          height: sizeRef.current.height * t.scale,
+        }
+        const raw = clampGhostCenter(
+          { x: e.clientX - drag.grabDx, y: e.clientY - drag.grabDy },
+          canvas,
+          footprint
+        )
         // 端ゾーンでは吸着させない。自動パンで地図側が毎フレーム動くため、吸着先も
         // 毎フレーム変わり、ガイドが実位置とずれたまま凍り付く
         const panning = drag.moved && edgePanDelta({ x: e.clientX, y: e.clientY }, canvas) !== null
@@ -314,7 +342,14 @@ export const useGhostDrag = ({
   // 呼び出し側の effect 依存に入るので参照ごと安定させる。毎レンダー新しい object を返すと、
   // 起動 effect が毎レンダー走ってゴーストが中央へ戻り続ける
   return useMemo(
-    () => ({ isDragging, resizingHandle, onGhostPointerDown, onHandlePointerDown, isGrabbing, reset }),
+    () => ({
+      isDragging,
+      resizingHandle,
+      onGhostPointerDown,
+      onHandlePointerDown,
+      isGrabbing,
+      reset,
+    }),
     [isDragging, resizingHandle, onGhostPointerDown, onHandlePointerDown, isGrabbing, reset]
   )
 }

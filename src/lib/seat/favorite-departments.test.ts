@@ -39,7 +39,10 @@ describe('favorite-departments', () => {
   describe('旧スキーマ・破損データ(無効化手段のないキャッシュ対策の回帰テスト)', () => {
     it('配列でないJSON(オブジェクト形式の旧保存分)はSetへ変換できず空集合へ落ちる', () => {
       // 「選択中の部署」をオブジェクトで持っていた想定の旧形式データを実際に書き込む
-      localStorage.setItem(FAVORITE_DEPARTMENTS_STORAGE_KEY, JSON.stringify({ selected: ['営業部'] }))
+      localStorage.setItem(
+        FAVORITE_DEPARTMENTS_STORAGE_KEY,
+        JSON.stringify({ selected: ['営業部'] })
+      )
 
       const result = readFavoriteDepartments()
 

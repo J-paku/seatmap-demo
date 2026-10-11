@@ -17,7 +17,7 @@ const mergeByOwnerCode = (
   base: StoredAvatarRecord[],
   overrides: StoredAvatarRecord[]
 ): StoredAvatarRecord[] => {
-  const map = new Map(base.map((r) => [r.ownerCode, r]))
+  const map = new Map(base.map(r => [r.ownerCode, r]))
   for (const record of overrides) map.set(record.ownerCode, record)
   return [...map.values()]
 }
@@ -39,12 +39,12 @@ export function useAvatars(): UseAvatarsResult {
   const refreshAvatarFor = useCallback(async (ownerCode: string): Promise<void> => {
     const record = loadStoredAvatar(ownerCode)
     if (!record) return
-    setAvatars((prev) => mergeByOwnerCode(prev, [record]))
+    setAvatars(prev => mergeByOwnerCode(prev, [record]))
   }, [])
 
   const upsertLocalAvatar = useCallback(async (record: StoredAvatarRecord): Promise<void> => {
     saveStoredAvatar(record)
-    setAvatars((prev) => mergeByOwnerCode(prev, [record]))
+    setAvatars(prev => mergeByOwnerCode(prev, [record]))
   }, [])
 
   return { avatars, isInitialLoading, refreshAvatarFor, upsertLocalAvatar }

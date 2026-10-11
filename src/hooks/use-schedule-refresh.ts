@@ -36,7 +36,7 @@ export const useScheduleRefresh = (): ScheduleRefresh => {
   // 秒単位カウントダウン
   useEffect(() => {
     if (cooldown <= 0) return
-    const id = window.setInterval(() => setCooldown((c) => (c <= 1 ? 0 : c - 1)), 1000)
+    const id = window.setInterval(() => setCooldown(c => (c <= 1 ? 0 : c - 1)), 1000)
     return () => window.clearInterval(id)
   }, [cooldown])
 
