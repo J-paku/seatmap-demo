@@ -15,7 +15,8 @@
     "test:coverage": "vitest run --coverage",
     "test:mutation": "stryker run",
     "test:boundary": "node scripts/check-test-boundary.mjs",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "verify": "npm run lint && npm run typecheck && npm run format:check && npm run test:coverage && npm run test:boundary && npm run knip && npm run build"
   },
   "dependencies": {
     "next": "16.2.12",
@@ -36,7 +37,6 @@
     "eslint-config-next": "16.2.12",
     "happy-dom": "^20.11.2",
     "knip": "^6.32.0",
-    "playwright": "^1.64.0",
     "prettier": "^3.9.10",
     "serve": "^14.2.6",
     "tailwindcss": "^4.3.3",

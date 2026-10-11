@@ -1,5 +1,13 @@
 import { defineConfig } from 'vitest/config'
 import { fileURLToPath, URL } from 'node:url'
+import { COVERAGE_TARGETS } from './scripts/gate-targets.mjs'
+
+// 1ファイルを文・分岐・関数・行のすべてで100%に固定するしきい値(glob ごとのしきい値では `100: true` と同じ意味)
+const FULL_COVERAGE = { statements: 100, branches: 100, functions: 100, lines: 100 }
+
+// 純粋モジュールはファイルごとに100%で固定する。人がコードを読まない代わりに、テストが一度も通らない行・分岐を残さない。
+// 対象は一覧を手で並べず、scripts/gate-targets.mjs の COVERAGE_TARGETS(純粋モジュールの置き場の全部)を使う。
+// 新しい純粋モジュールは置いた時点で対象になる。名指しで外したパスが実在しないときは、gate-targets.mjs を読み込む時点で落ちる
 
 // src の import はツリーを跨ぐと `@/`、モックの JSON は `@mocks` の alias で書く(docs/structure.md 3.)。
 // テストもその import を通るので、tsconfig.json の paths と同じ alias をここにも張る(無いとテストが全滅する)
@@ -31,13 +39,15 @@ export default defineConfig({
       ],
       reporter: ['text-summary', 'json-summary'],
       reportsDirectory: 'coverage',
-      // 2026-10-12の実測(statements 43.82%・branches 30.11%・functions 36.54%・lines 41.93%)から2pt引いて切り捨てた値。
+      // 2026-10-12の実測(statements 53.71%・branches 37.05%・functions 45.39%・lines 51.57%)から2pt引いて切り捨てた値。
       // 目標値ではなく、テストを消したり使われないコードを増やしたりしたときに落とすための床
       thresholds: {
-        statements: 41,
-        branches: 28,
-        functions: 34,
-        lines: 39,
+        statements: 51,
+        branches: 35,
+        functions: 43,
+        lines: 49,
+        // ファイル別100%(一覧は scripts/gate-targets.mjs の COVERAGE_TARGETS)
+        ...Object.fromEntries(COVERAGE_TARGETS.map(file => [file, FULL_COVERAGE])),
       },
     },
   },

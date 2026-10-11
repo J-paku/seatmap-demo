@@ -16,6 +16,7 @@
 /.stryker-tmp
 /test-results
 /playwright-report
+/blob-report/
 /.lighthouseci
 
 # next.js
