@@ -36,6 +36,12 @@ describe('triggerHaptic', () => {
     window.removeEventListener('haptic', handler)
   })
 
+  it('window が無い環境(サーバー側の描画)では何もせず、例外を投げない', () => {
+    vi.stubGlobal('window', undefined)
+    expect(() => triggerHaptic('light')).not.toThrow()
+    vi.unstubAllGlobals()
+  })
+
   it('haptic 以外の名前ではイベントを発火しない', () => {
     const handler = vi.fn()
     window.addEventListener('other-event', handler)

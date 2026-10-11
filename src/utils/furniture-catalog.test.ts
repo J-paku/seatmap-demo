@@ -105,6 +105,13 @@ describe('furniture-catalog', () => {
       })
       expect(new Set(allKinds).size).toBe(allKinds.length)
     })
+
+    it('建設設備・オブジェクトの順に、それぞれの区分の種別を並べる', () => {
+      expect(FURNITURE_LIBRARY_GROUPS).toEqual([
+        { label: '建設設備', kinds: ['wall', 'column', 'stairs', 'door', 'window'] },
+        { label: 'オブジェクト', kinds: ['sofa', 'table', 'shelf', 'plant', 'bed'] },
+      ])
+    })
   })
 
   describe('defaultFurnitureName', () => {

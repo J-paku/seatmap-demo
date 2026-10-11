@@ -1,8 +1,14 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { viewportCenterAnchor } from '../utils/measure-import-anchor'
+import {
+  FACILITY_DEFAULT_SIZE,
+  FACILITY_MIN_SIZE,
+  FURNITURE_MIN_SIZE,
+  IDLE_SIZE,
+} from '../utils/place-object-sizes'
 import type { GhostRequest } from '@/components/GhostPlacementLayer'
 import type { ObjectCategory } from '@/components/ObjectCategorySheet'
 import { siblingRectsForObject } from '@/components/SeatMapCanvas/utils/sibling-rects'
-import { SEATMAP_BG_ID } from '@/components/SheetShell'
 import { useGhostPlacement } from '@/hooks/use-ghost-placement/use-ghost-placement'
 import type { GhostPlacement } from '@/hooks/use-ghost-placement/use-ghost-placement'
 import type { GaroonFacility } from '@/lib/garoon/facilities'
@@ -11,9 +17,7 @@ import type { UseLayoutEditorApi } from '@/hooks/use-layout-editor/use-layout-ed
 import { FURNITURE_DEFAULT_SIZE, FURNITURE_KIND_LABEL } from '@/utils/furniture-catalog'
 import { rectOfRef } from '@/utils/layout/layout-objects'
 import { lockedForMoveMessage, placementBlockReason } from '@/utils/layout/layout-rules'
-import { GHOST_MIN_SIZE } from '@/utils/layout/rect'
 import type { Rect } from '@/utils/layout/rect'
-import { DEFAULT_SEAT_HEIGHT, DEFAULT_SEAT_WIDTH } from '@/utils/layout/seat-relayout'
 import { NEW_TEAM_AREA_SIZE } from '@/utils/layout/team-create-grid'
 import { buildTeamImportPlan } from '@/utils/layout/team-import'
 import type { TeamImportSource } from '@/utils/layout/team-import'
@@ -23,30 +27,6 @@ import type { FurnitureKind, LayoutObjectRef } from '@/types'
 // ゴーストの幾何は use-ghost-placement、置けるかどうかの規則は utils/layout/layout-rules が持ち、
 // ここは「今どの段にいるか」と「確定したら何を発行するか」だけを持つ。
 // メニューの開閉は FAB 側(useAdminAddFab)の持ち物なのでここには無い
-
-// 会議室の既定サイズ
-const FACILITY_DEFAULT_SIZE = { width: 200, height: 150 }
-// 配置していない間に渡す寸法。参照を固定しないとゴースト側の初期化が毎レンダー走る
-const IDLE_SIZE = { width: 0, height: 0 }
-// 会議室は座席1つ分より小さくしない。家具は共通の最小辺まで縮められる
-const FACILITY_MIN_SIZE = { width: DEFAULT_SEAT_WIDTH, height: DEFAULT_SEAT_HEIGHT }
-const FURNITURE_MIN_SIZE = { width: GHOST_MIN_SIZE, height: GHOST_MIN_SIZE }
-// §02-3: 取り込みのアンカーはビューポート中央のSVG座標。実測が取れないときの
-// フォールバックだけは原典転記の固定値を使う
-const IMPORT_ANCHOR_FALLBACK = { x: 960, y: 540 }
-
-// §02-3 のアンカー実測。ゴーストと同じ経路(キャンバス矩形 + 変換層の transform)で読む。
-// キャンバス内部の ref ではなく DOM フックを見るのは、この導線がキャンバスの外に居るため
-const viewportCenterAnchor = (): { x: number; y: number } => {
-  const canvas = document.getElementById(SEATMAP_BG_ID)
-  const layer = document.querySelector<HTMLElement>('[data-canvas-transform-layer="true"]')
-  if (!canvas || !layer) return IMPORT_ANCHOR_FALLBACK
-  const rect = canvas.getBoundingClientRect()
-  if (rect.width === 0 || rect.height === 0) return IMPORT_ANCHOR_FALLBACK
-  const matrix = new DOMMatrixReadOnly(getComputedStyle(layer).transform)
-  const scale = matrix.a || 1
-  return { x: (rect.width / 2 - matrix.e) / scale, y: (rect.height / 2 - matrix.f) / scale }
-}
 
 // §02-2 の順序: チームカテゴリ → ゴースト配置 → 「配置」 → 名前/色ダイアログ → 「作成」。
 // team-form は位置が決まった後の段なので、確定済みの矩形を持って進む

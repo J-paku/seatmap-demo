@@ -102,6 +102,21 @@ describe('deriveFacilityState', () => {
     expect(state.current).toEqual(current)
     expect(state.next).toEqual(late)
   })
+
+  it('これからの会議が複数あれば、入力の並びに依らず開始が最も早いものをnextにする', () => {
+    const latest = meeting({ id: 'latest', startMin: 800, endMin: 830 })
+    const middle = meeting({ id: 'middle', startMin: 700, endMin: 730 })
+    const soonest = meeting({ id: 'soonest', startMin: 650, endMin: 680 })
+    const state = deriveFacilityState(facility, [latest, middle, soonest], 620)
+    expect(state).toEqual({ status: 'upcoming', next: soonest })
+  })
+
+  it('境界: 開始ちょうどの会議は進行中で、nextにはその後の会議を返す', () => {
+    const current = meeting({ id: 'cur', startMin: 600, endMin: 660 })
+    const next = meeting({ id: 'nxt', startMin: 700, endMin: 730 })
+    const state = deriveFacilityState(facility, [current, next], 600)
+    expect(state).toEqual({ status: 'in_meeting', current, next })
+  })
 })
 
 describe('minToHHMM', () => {

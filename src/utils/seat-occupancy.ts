@@ -6,9 +6,10 @@
 import type { Employee, Seat, Team } from '@/types'
 
 // employeeId が非null かつ employeeById に実在する座席だけを「着席」とみなす。
-// 表示・集計だけでなく編集系の着席判定(削除確認・空席タップ)からも呼ばれる公開関数
+// 表示・集計だけでなく編集系の着席判定(削除確認・空席タップ)からも呼ばれる公開関数。
+// 空席の null は社員の鍵に無いので has がそのまま false を返す。null を渡せるよう鍵の型を広げて引く
 export const isOccupiedSeat = (seat: Seat, employeeById: Map<string, Employee>): boolean =>
-  seat.employeeId !== null && employeeById.has(seat.employeeId)
+  (employeeById as ReadonlyMap<string | null, Employee>).has(seat.employeeId)
 
 // 単一チーム分の実在着席数。呼び出し側で対象チームの座席へ絞り込んだ配列を渡す
 // (TeamOverlay ヘッダーの「N名」用)
@@ -25,9 +26,11 @@ export const countOccupiedSeatsByTeam = (
   const counts = new Map<string, number>()
   for (const team of teams) counts.set(team.id, 0)
   for (const seat of seats) {
-    if (!counts.has(seat.teamId)) continue
+    // teams に無いチームは鍵が無く undefined になる
+    const count = counts.get(seat.teamId)
+    if (count === undefined) continue
     if (!isOccupiedSeat(seat, employeeById)) continue
-    counts.set(seat.teamId, (counts.get(seat.teamId) ?? 0) + 1)
+    counts.set(seat.teamId, count + 1)
   }
   return counts
 }

@@ -1,5 +1,6 @@
 import { useCallback, useMemo, useState } from 'react'
 import type { LayoutEditor } from '../type'
+import { nameOf } from '../utils/resolve-assignee-name'
 import type { Employee, Seat } from '@/types'
 
 // 座席への配属。確認が要る場合と要らない場合の分岐と、結果文言の組み立てをここに閉じる。
@@ -32,9 +33,6 @@ type Options = {
   employeeById: Map<string, Employee>
   onDone: (message: string) => void
 }
-
-const nameOf = (employeeById: Map<string, Employee>, id: string | null | undefined): string =>
-  (id ? employeeById.get(id)?.name : undefined) ?? '担当者'
 
 export const useSeatAssign = ({ editor, employeeById, onDone }: Options): SeatAssign => {
   const [assignSeatId, setAssignSeatId] = useState<string | null>(null)

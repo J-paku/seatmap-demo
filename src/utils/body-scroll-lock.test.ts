@@ -1,5 +1,5 @@
 // @vitest-environment happy-dom
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { lockBodyScroll, unlockBodyScroll } from './body-scroll-lock'
 
 // lockCount / originalOverflow はモジュール内のクロージャ変数で公開 API から直接リセットできない。
@@ -69,5 +69,30 @@ describe('lockBodyScroll / unlockBodyScroll', () => {
     document.body.style.overflow = 'visible'
     expect(() => unlockBodyScroll()).not.toThrow()
     expect(document.body.style.overflow).toBe('visible')
+  })
+})
+
+describe('document が無い環境(サーバー側の描画)', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals()
+  })
+
+  it('ロックもアンロックも何もせず、例外を投げない', () => {
+    vi.stubGlobal('document', undefined)
+    expect(() => lockBodyScroll()).not.toThrow()
+    expect(() => unlockBodyScroll()).not.toThrow()
+  })
+
+  it('document が無い間の呼び出しは、ロックの回数を変えない', () => {
+    resetLockState()
+    document.body.style.overflow = 'auto'
+    lockBodyScroll()
+    vi.stubGlobal('document', undefined)
+    expect(() => lockBodyScroll()).not.toThrow()
+    expect(() => unlockBodyScroll()).not.toThrow()
+    vi.unstubAllGlobals()
+    expect(document.body.style.overflow).toBe('hidden')
+    unlockBodyScroll()
+    expect(document.body.style.overflow).toBe('auto')
   })
 })

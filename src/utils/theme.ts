@@ -14,9 +14,10 @@ export const isDarkTheme = (mode: ThemeMode): boolean => mode !== 'light'
 export const migrateLegacyTheme = (value: string | null): string | null =>
   value === 'dark' ? DEFAULT_DARK_THEME : value
 
-// localStorage に保存された文字列が有効な ThemeMode か検証する型ガード
+// localStorage に保存された文字列が有効な ThemeMode か検証する型ガード。
+// 未保存の null はテーマの候補に無いので includes がそのまま false を返す
 export const isThemeMode = (value: string | null): value is ThemeMode =>
-  value !== null && (THEME_MODES as readonly string[]).includes(value)
+  (THEME_MODES as readonly (string | null)[]).includes(value)
 
 // テーマ選択 UI 用メタ — ラベルと2色スウォッチ(背景 + アクセント)
 export interface ThemeOption {

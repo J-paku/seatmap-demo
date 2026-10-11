@@ -1,26 +1,15 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { LayoutEditor } from '../type'
+import { FINISH_DELAY_MS, TOAST_MS, VALID_EMPLOYEE_IDS } from '../utils/save-layout-constants'
 import { fetchMock } from '@/lib/fetch-mock'
 import { useSeatLayout } from '@/hooks/use-mock-data'
 import { useLayoutSource } from '@/contexts/layout-source-context'
 import { loadCustomLayout, loadStoredLayout } from '@/lib/layout-persistence'
-import { EMPLOYEES } from '@/lib/mock-loader'
 import { TOAST_MESSAGES } from '@/utils/toast-messages'
 import type { StoredSeatLayout } from '@/types'
 
 // 07: 「完了」「キャンセル」「レイアウトをリセット」の保存まわり
 // 05-6: 楽観ロック(カスタムレイアウトのみ)と、保存成功トーストの「元に戻す」もここへ集約する
-
-// 完了処理の疑似遅延(01のfetchMock経由に準拠した保存中表現)
-const FINISH_DELAY_MS = 400
-// 07-6: 保存成功トーストの表示時間(仕様通り5秒)。画面中央への配置は seatmap.module.css の .saveToast 側
-const TOAST_MS = 5000
-
-// 楽観ロックの照合・「元に戻す」用スナップショットの読み直しで使う実在社員id集合。
-// hooks/use-mock-data.ts の VALID_EMPLOYEE_IDS と同じ EMPLOYEES から作る(同一ソースからの
-// 同一導出なので判定基準の重複には当たらない)。「元に戻す」は読み直した版をそのまま書き戻すため、
-// 空集合などで誤魔化すと宙ぶらりん社員idの穴埋めが狂う
-const VALID_EMPLOYEE_IDS: ReadonlySet<string> = new Set(EMPLOYEES.map(employee => employee.id))
 
 type LayoutSave = {
   isSaving: boolean

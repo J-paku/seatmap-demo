@@ -61,4 +61,13 @@ describe('normalizeHex', () => {
   it('rejects a double leading # (only one # is stripped)', () => {
     expect(normalizeHex('##abc')).toBeNull()
   })
+
+  it('rejects a # that is not at the start (only a leading # may be omitted)', () => {
+    expect(normalizeHex('ab#c')).toBeNull()
+  })
+
+  it('rejects 6 hex digits with an extra leading or trailing character', () => {
+    expect(normalizeHex('#g123456')).toBeNull()
+    expect(normalizeHex('#123456g')).toBeNull()
+  })
 })

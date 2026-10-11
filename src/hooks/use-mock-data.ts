@@ -25,14 +25,9 @@ import {
   writeCache,
 } from '@/lib/mock-loader'
 import { useLayoutSource } from '@/contexts/layout-source-context'
-import type { LayoutSource } from '@/contexts/layout-source-context'
 import { useGlobalAnnouncement } from '@/contexts/announcement-context'
-
-// 実在する社員idの集合。保存レイアウトを読む時に、実在しない社員を指す座席を空席へ戻すために渡す。
-// EMPLOYEES はモジュール定数で初回レンダー時点から確定しているのでモジュールスコープに置く
-// (useEmployees() の SWR データを使うと初期レンダーで undefined になり、その時だけ全座席が
-// 空席に見えるレースが起きる)
-const VALID_EMPLOYEE_IDS: ReadonlySet<string> = new Set(EMPLOYEES.map(employee => employee.id))
+import { VALID_EMPLOYEE_IDS } from '@/utils/collect-employee-ids'
+import { layoutSwrKey } from '@/utils/build-layout-key'
 
 // キャッシュ即時描画(fallbackData)+バックグラウンド再取得(SWR)+取得成功時にキャッシュ更新
 const useCached = <T>(name: string, data: T, fallbackData?: T) => {
@@ -84,13 +79,6 @@ const useFloorSeed = (floorId: FloorId) => {
 export const useSchedules = () => useCached('schedules', SCHEDULES)
 
 export const useFacilityMeetings = () => useCached('facility-meetings', FACILITY_MEETINGS)
-
-// 07: 保存済みレイアウトの上書き分を扱うSWRキー(mock/系に合わせ、mutateで表示即時更新できるようにする)。
-// STEP2: source(公式のフロア/カスタム)ごとにキーを分ける。固定のままだと切り替えても前のキャッシュが返り続ける
-const officialLayoutSwrKey = (floorId: FloorId): string => `mock/layout-override:${floorId}`
-const customLayoutSwrKey = (layoutId: string): string => `mock/layout:${layoutId}`
-const layoutSwrKey = (source: LayoutSource, floorId: FloorId): string =>
-  source.type === 'official' ? officialLayoutSwrKey(floorId) : customLayoutSwrKey(source.layoutId)
 
 // SeatLayout はローダーが teams+seats+facilities を合成(種データ側)。
 // その上に、source(公式/カスタム)に応じた保存分をlocalStorageから上書き適用する。

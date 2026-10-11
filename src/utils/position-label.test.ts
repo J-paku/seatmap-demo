@@ -37,4 +37,12 @@ describe('formatPositionLabel', () => {
   it('半角括弧は区分表記として扱わず除去しない', () => {
     expect(formatPositionLabel('主任(A)')).toBe('主任(A)')
   })
+
+  it('区分接尾辞が無くても前後の空白は除く', () => {
+    expect(formatPositionLabel(' 主任　')).toBe('主任')
+  })
+
+  it('区分を除いた残りが空白だけなら null を返す', () => {
+    expect(formatPositionLabel('　（管理職）')).toBeNull()
+  })
 })
