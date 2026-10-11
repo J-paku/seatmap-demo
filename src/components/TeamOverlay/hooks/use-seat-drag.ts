@@ -1,6 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { DragEvent as ReactDragEvent, PointerEvent as ReactPointerEvent } from 'react'
-import { SEAT_GRID_CELL_ATTR, TRASH_DROP_ZONE_ATTR } from '../utils/seat-drag-attrs'
+import {
+  TOUCH_DRAG_TOLERANCE_PX,
+  TOUCH_LONG_PRESS_MS,
+  resolveCellFromElement,
+  resolveIsOverTrashZone,
+  resolveSeatIdFromElement,
+} from '../utils/resolve-seat-drag'
 import { safeSetPointerCapture } from '@/utils/gesture/pointer-capture'
 import { suppressGhostClick } from '@/utils/gesture/suppress-ghost-click'
 import type { GridCell } from '@/utils/layout/seat-grid-draft'
@@ -15,38 +21,6 @@ import type { GridCell } from '@/utils/layout/seat-grid-draft'
 // `data-seat-grid-cell={formatSeatGridCellAttr(cell)}` を付け、席が置かれたセルには
 // 既存のサイト共通規約(`data-seat-id`, ViewSeatCell/SeatCard と同じ)をそのまま付ければ、
 // このフックが返す props を spread するだけでドラッグ/ドロップが成立する
-
-// タッチ: 長押しでドラッグ開始とみなすまでの時間(ms)。§06-2の仕様値
-const TOUCH_LONG_PRESS_MS = 350
-// タッチ: 開始前にこれ以上動いたらスクロール優先でキャンセルする距離(px)
-const TOUCH_DRAG_TOLERANCE_PX = 10
-
-const parseSeatGridCellAttr = (value: string | undefined): GridCell | null => {
-  if (!value) return null
-  const [rowText, colText] = value.split(':')
-  const row = Number(rowText)
-  const col = Number(colText)
-  if (!Number.isInteger(row) || !Number.isInteger(col)) return null
-  return { row, col }
-}
-
-// 任意の子要素から祖先を遡ってセル番地を解決する(pointermove/dragover/elementFromPointの結果に使う)
-const resolveCellFromElement = (el: Element | null): GridCell | null => {
-  const cellEl = el?.closest<HTMLElement>(`[${SEAT_GRID_CELL_ATTR}]`)
-  return parseSeatGridCellAttr(cellEl?.dataset.seatGridCell)
-}
-
-// 座席idは既存のサイト共通規約(`data-seat-id`)から読む。同じ概念の判定基準をここで作らない
-const resolveSeatIdFromElement = (el: Element | null): string | null => {
-  const seatEl = el?.closest<HTMLElement>('[data-seat-id]')
-  return seatEl?.dataset.seatId ?? null
-}
-
-// ゴミ箱ゾーン(TrashDropZone)の上に乗っているかをdata属性から判定する。
-// TrashDropZoneはSeatMapPortal経由でbody直下に描かれるためReactツリーを跨げず、
-// elementFromPointで得たDOMから直接判定する必要がある
-const resolveIsOverTrashZone = (el: Element | null): boolean =>
-  !!el?.closest(`[${TRASH_DROP_ZONE_ATTR}]`)
 
 // タッチ側の内部状態機械。pending(長押し待ち)→dragging(確定)の一方向遷移
 type TouchDragState =

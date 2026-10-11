@@ -1,26 +1,9 @@
 import { useEffect, useLayoutEffect, useState } from 'react'
 import type { RefObject } from 'react'
+import { isSameHints, readHints } from '../utils/read-scroll-hints'
+import type { ScrollHints } from '../utils/read-scroll-hints'
 
 // 横スクロールヒントの判定。Desktop / Compact 共通で scrollWidth 実測を使う
-
-type ScrollHints = {
-  hasOverflow: boolean
-  atStart: boolean
-  atEnd: boolean
-}
-
-// 実 DOM から現在値を読む
-const readHints = (el: HTMLElement): ScrollHints => {
-  const max = el.scrollWidth - el.clientWidth
-  return {
-    hasOverflow: max > 1,
-    atStart: el.scrollLeft <= 1,
-    atEnd: el.scrollLeft >= max - 1,
-  }
-}
-
-const isSameHints = (a: ScrollHints, b: ScrollHints): boolean =>
-  a.hasOverflow === b.hasOverflow && a.atStart === b.atStart && a.atEnd === b.atEnd
 
 // scrollWidth / clientWidth / scrollLeft を実測し、scroll・コンテナリサイズ・列数変化のたびに測り直す
 export const useScrollHints = (ref: RefObject<HTMLElement | null>, cols: number): ScrollHints => {

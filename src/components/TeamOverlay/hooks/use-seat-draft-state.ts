@@ -1,14 +1,11 @@
 import { useCallback, useRef, useState } from 'react'
+import { DRAFT_SEAT_ID_PREFIX, isSameIdSet } from '../utils/track-seat-draft'
 import { buildSeatByEmployee } from '@/components/EmployeeAssignSheet/hooks/use-employee-assign'
 import type { Seat } from '@/types'
 
 // 座席編集(STEP A2)の下書き差分。UI・グリッド演算・保存処理は他 STEP の担当で、
 // ここは「今どこがどう変わっているか」を4本の独立した容れ物で持つだけ。
 // 1つの巨大オブジェクトにまとめると件数計上も取り消しも複雑になるため分けている
-
-// 下書きで追加した座席の仮 id。確定 id はレイアウト側の採番口が振るため、
-// ここでは「まだ確定していない」と分かる接頭辞だけを持つ
-const DRAFT_SEAT_ID_PREFIX = 'seat-draft-'
 
 // 判定の土台になる座席2種。どちらも算出元は use-draft-applied-seats の1本で、
 // この容れ物は自前で座席配列を組み立て直さない(同じ概念の判定基準を二重に作らないため)
@@ -17,16 +14,6 @@ type SeatDraftSeatSources = {
   saved: Seat[]
   // 下書きを反映した全座席。社員が今どこに座っているかの解決に使う
   resolved: Seat[]
-}
-
-// 2つのid集合が同じ内容か(順序は問わない)。§06-3のgrid移動席数の差し引きゼロ判定にしか
-// 使わないためこのファイル内に閉じる
-const isSameIdSet = (a: Set<string>, b: Set<string>): boolean => {
-  if (a.size !== b.size) return false
-  for (const id of a) {
-    if (!b.has(id)) return false
-  }
-  return true
 }
 
 export type SeatDraftState = {
