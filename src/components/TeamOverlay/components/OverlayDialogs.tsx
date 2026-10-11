@@ -1,11 +1,9 @@
-import type { UseBulkAssignResult } from '../hooks/use-bulk-assign'
-import type { SeatDeleteConfirmContent } from '../hooks/use-overlay-seat-delete'
-import type { AssignConfirmContent } from '../utils/assign-confirm-content'
+import type { UseOverlayEditWiringResult } from '../hooks/use-overlay-edit-wiring'
 import { buildTeamDeleteConfirmMessage, ConfirmDialog } from '@/components/edit/ConfirmDialog'
 import { DeleteConfirmDialog } from '@/components/edit/DeleteConfirmDialog'
 import { EmployeeAssignSheet } from '@/components/EmployeeAssignSheet'
 import { SeatMapPortal } from '@/components/SeatMapPortal'
-import type { Employee, Seat } from '@/types'
+import type { Employee } from '@/types'
 import e from '@/components/edit/admin-edit.module.css'
 
 // TeamOverlay/index.tsx から移設(01-authoring §4: indexは組み立てのみ)。配属シート(社員検索)+
@@ -14,72 +12,53 @@ import e from '@/components/edit/admin-edit.module.css'
 // ハンドラをそのまま並べるだけ
 
 type Props = {
-  // STEP C2/§06-4: 配属シート(社員検索)
-  assignSeatId: string | null
-  assignTargetSeat: Seat | null
-  assignEmployees: Employee[]
-  draftAppliedSeats: Seat[]
+  // 編集配線(use-overlay-edit-wiring)の戻り値。配属シートと確認ダイアログ5種の値・ハンドラをここから読む
+  edit: UseOverlayEditWiringResult
   employeeById: Map<string, Employee>
-  // §06-4: このopenがヘッダーの「部署一括取込」から来たものならtrue
-  assignInitialBulkMode: boolean
-  onAssignSelect: (employeeId: string) => void
-  onAssignSelectRequiringConfirm: (employeeId: string) => void
-  onAssignClear: () => void
-  onAssignClose: () => void
-  onBulkAssignRequest: () => void
-  onBulkAssignSelected: (employeeIds: string[]) => void
-  // §07-4: 配属確認
-  assignConfirm: AssignConfirmContent | null
-  onConfirmAssignSelect: () => void
-  onCancelAssignSelect: () => void
-  // §07-5: 一括移動確認
-  bulkAssign: UseBulkAssignResult
-  // §06-2/§07-2: 座席削除確認。既存のDeleteConfirmDialog(components/edit/、担当外)を再利用する
-  seatDeleteConfirm: SeatDeleteConfirmContent | null
-  onConfirmSeatDelete: () => void
-  onCancelSeatDelete: () => void
-  // §06-3: 編集破棄確認
-  isDiscardConfirmOpen: boolean
-  onConfirmDiscardClose: () => void
-  onCancelDiscardClose: () => void
-  // §07-3: チーム削除確認
-  isTeamDeleteConfirmOpen: boolean
+  // §07-3: チーム削除確認の文言に出す
   teamName: string
   occupiedCount: number
   emptySeatCount: number
-  onConfirmTeamDelete: () => void
-  onCancelTeamDelete: () => void
 }
 
 export const OverlayDialogs = ({
-  assignSeatId,
-  assignTargetSeat,
-  assignEmployees,
-  draftAppliedSeats,
+  edit: {
+    // STEP C2/§06-4: 配属シート(社員検索)
+    assignSeatId,
+    assignTargetSeat,
+    assignEmployees,
+    draftAppliedSeats,
+    // §06-4: このopenがヘッダーの「部署一括取込」から来たものならtrue
+    assignInitialBulkMode,
+    handleAssignSelect,
+    handleAssignSelectRequiringConfirm,
+    handleAssignClear,
+    handleAssignClose,
+    handleBulkAssignRequest,
+    handleBulkAssignSelected,
+    // §07-4: 配属確認
+    assignConfirm,
+    confirmAssignSelect,
+    cancelAssignSelect,
+    // §07-5: 一括移動確認
+    bulkAssign,
+    // §06-2/§07-2: 座席削除確認。既存のDeleteConfirmDialog(components/edit/、担当外)を再利用する
+    seatDeleteConfirm,
+    confirmSeatDelete,
+    cancelSeatDelete,
+    // §06-3: 編集破棄確認
+    isDiscardConfirmOpen,
+    confirmDiscardClose,
+    cancelDiscardClose,
+    // §07-3: チーム削除確認
+    isTeamDeleteConfirmOpen,
+    confirmTeamDelete,
+    cancelTeamDelete,
+  },
   employeeById,
-  assignInitialBulkMode,
-  onAssignSelect,
-  onAssignSelectRequiringConfirm,
-  onAssignClear,
-  onAssignClose,
-  onBulkAssignRequest,
-  onBulkAssignSelected,
-  assignConfirm,
-  onConfirmAssignSelect,
-  onCancelAssignSelect,
-  bulkAssign,
-  seatDeleteConfirm,
-  onConfirmSeatDelete,
-  onCancelSeatDelete,
-  isDiscardConfirmOpen,
-  onConfirmDiscardClose,
-  onCancelDiscardClose,
-  isTeamDeleteConfirmOpen,
   teamName,
   occupiedCount,
   emptySeatCount,
-  onConfirmTeamDelete,
-  onCancelTeamDelete,
 }: Props) => (
   // STEP C2: styles.panel は backdrop-filter + overflow:hidden で fixed 子を閉じ込めるため、
   // TrashDropZone と同じ理由で SeatMapPortal 経由で body 直下へ描く
@@ -93,12 +72,12 @@ export const OverlayDialogs = ({
       employees={assignEmployees}
       seats={draftAppliedSeats}
       employeeById={employeeById}
-      onSelect={onAssignSelect}
-      onSelectRequiringConfirm={onAssignSelectRequiringConfirm}
-      onClear={onAssignClear}
-      onClose={onAssignClose}
-      onBulkAssign={onBulkAssignRequest}
-      onBulkAssignSelected={onBulkAssignSelected}
+      onSelect={handleAssignSelect}
+      onSelectRequiringConfirm={handleAssignSelectRequiringConfirm}
+      onClear={handleAssignClear}
+      onClose={handleAssignClose}
+      onBulkAssign={handleBulkAssignRequest}
+      onBulkAssignSelected={handleBulkAssignSelected}
       initialBulkMode={assignInitialBulkMode}
     />
     {/* §07-4 配属確認。文言の組み立ては use-overlay-edit-wiring の純関数が持ち、ここは並べるだけ */}
@@ -117,8 +96,8 @@ export const OverlayDialogs = ({
         cancelLabel='キャンセル'
         role='alertdialog'
         variant='default'
-        onConfirm={onConfirmAssignSelect}
-        onCancel={onCancelAssignSelect}
+        onConfirm={confirmAssignSelect}
+        onCancel={cancelAssignSelect}
       />
     )}
     {/* §07-5: 他所配属者(movers)がいる時だけ出す移動確認。newcomers だけなら確認を挟まない */}
@@ -156,8 +135,8 @@ export const OverlayDialogs = ({
       <DeleteConfirmDialog
         employeeName={seatDeleteConfirm.employeeName}
         department={seatDeleteConfirm.department}
-        onConfirm={onConfirmSeatDelete}
-        onCancel={onCancelSeatDelete}
+        onConfirm={confirmSeatDelete}
+        onCancel={cancelSeatDelete}
       />
     )}
     {/* §06-3: 編集中に閉じようとした時の破棄確認。保存せずに閉じる経路はここだけを通る */}
@@ -167,8 +146,8 @@ export const OverlayDialogs = ({
         message='変更を破棄して編集を終了しますか?'
         confirmLabel='破棄して終了'
         cancelLabel='キャンセル'
-        onConfirm={onConfirmDiscardClose}
-        onCancel={onCancelDiscardClose}
+        onConfirm={confirmDiscardClose}
+        onCancel={cancelDiscardClose}
       />
     )}
     {/* §07-3: チーム削除のタイプ確認。キーワード(チーム名)を打ち切るまで確定は押せない */}
@@ -181,8 +160,8 @@ export const OverlayDialogs = ({
         cancelLabel='キャンセル'
         confirmIcon='delete_forever'
         typedConfirmation={{ keyword: teamName }}
-        onConfirm={onConfirmTeamDelete}
-        onCancel={onCancelTeamDelete}
+        onConfirm={confirmTeamDelete}
+        onCancel={cancelTeamDelete}
       />
     )}
   </SeatMapPortal>

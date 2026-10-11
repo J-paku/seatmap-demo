@@ -6,6 +6,8 @@ import type { UseOverlayAssignResult } from './use-overlay-assign'
 import type { UseOverlayEditModeResult } from './use-overlay-edit-mode'
 import { useOverlaySeatDelete } from './use-overlay-seat-delete'
 import type { UseOverlaySeatDeleteResult } from './use-overlay-seat-delete'
+import { useOverlaySessionEnter } from './use-overlay-session-enter'
+import type { UseOverlaySessionEnterResult } from './use-overlay-session-enter'
 import { useOverlaySessionExit } from './use-overlay-session-exit'
 import type { UseOverlaySessionExitResult } from './use-overlay-session-exit'
 import type { UseSeatSelectionResult } from './use-seat-selection'
@@ -15,15 +17,17 @@ import { useSeatLayout } from '@/hooks/use-mock-data'
 import { prefersReducedMotion } from '@/utils/detect-reduced-motion'
 import type { GridCell } from '@/utils/layout/seat-grid-draft'
 import { DEFAULT_SEAT_HEIGHT, DEFAULT_SEAT_WIDTH } from '@/utils/layout/seat-relayout'
-import type { Employee, Seat, TeamOverlayPayload } from '@/types'
+import type { Employee, MinimapArea, Seat, TeamOverlayPayload } from '@/types'
 
 // TeamOverlayの編集配線をまとめる入口。ここが直接持つのは「席そのものの操作」
 // (選択のトグル・席追加とその直後のハイライト・フリーアドレス設定)だけで、
-// 配属・座席削除・セッションの終了はそれぞれ専用のフックへ分けてある(index.tsxは組み立てだけ)
+// 配属・座席削除・セッションの開始と終了はそれぞれ専用のフックへ分けてある(index.tsxは組み立てだけ)
 
 export type UseOverlayEditWiringParams = {
   payload: TeamOverlayPayload | null
   seats: Seat[]
+  // 開いているチームの座席(保存済み)。編集開始でグリッドを起こす元になる
+  teamSeats: Seat[]
   employeeById: Map<string, Employee>
   seatGrid: SeatGrid
   editMode: UseOverlayEditModeResult
@@ -31,12 +35,15 @@ export type UseOverlayEditWiringParams = {
   isCompactMobile: boolean
   // 追加直後の席までスクロールさせるための本文スクロール領域
   bodyRef: RefObject<HTMLDivElement | null>
+  // 席0件のチームで編集を始めるときの基準の矩形
+  minimapTeamArea: MinimapArea | null
   announce: (message: string) => void
   onClose: () => void
 }
 
 export type UseOverlayEditWiringResult = UseOverlayAssignResult &
   UseOverlaySeatDeleteResult &
+  UseOverlaySessionEnterResult &
   UseOverlaySessionExitResult & {
     handleSelectSeat: (seatId: string) => void
     handleAddSeat: (cell: GridCell) => void
@@ -50,12 +57,14 @@ export type UseOverlayEditWiringResult = UseOverlayAssignResult &
 export const useOverlayEditWiring = ({
   payload,
   seats,
+  teamSeats,
   employeeById,
   seatGrid,
   editMode,
   seatSelection,
   isCompactMobile,
   bodyRef,
+  minimapTeamArea,
   announce,
   onClose,
 }: UseOverlayEditWiringParams): UseOverlayEditWiringResult => {
@@ -121,6 +130,8 @@ export const useOverlayEditWiring = ({
 
   const seatDelete = useOverlaySeatDelete({ editMode, seatGrid, draftAppliedSeats, employeeById })
 
+  const sessionEnter = useOverlaySessionEnter({ editMode, teamSeats, minimapTeamArea, announce })
+
   const sessionExit = useOverlaySessionExit({ payload, editMode, employeeById, announce, onClose })
 
   const handleAddSeat = useCallback(
@@ -177,6 +188,7 @@ export const useOverlayEditWiring = ({
   return {
     ...assign,
     ...seatDelete,
+    ...sessionEnter,
     ...sessionExit,
     handleSelectSeat,
     handleAddSeat,

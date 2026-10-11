@@ -11,7 +11,7 @@ import type { Employee, Seat } from '@/types'
 // §06-2/§07-2: 座席削除確認の内容。DeleteConfirmDialog(components/edit/、担当外)をそのまま
 // 再利用するため、渡す2値だけをここで解決する。employeeNameがnullなら空席1席ケース、
 // 非nullなら在席1席ケースへその側で振り分けられる
-export type SeatDeleteConfirmContent = {
+type SeatDeleteConfirmContent = {
   employeeName: string | null
   department: string | null
 }

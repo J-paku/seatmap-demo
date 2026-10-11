@@ -7,6 +7,8 @@ import { useScheduleRefresh } from '@/hooks/use-schedule-refresh'
 // 同期バッジが出すスケジュール取得状態。PC / モバイルで分岐しない共通処理
 
 type OverlaySession = {
+  // 本文のスクロール領域。開くたびに先頭へ戻すのでここで持ち、本文の要素の ref に渡す
+  bodyRef: RefObject<HTMLDivElement | null>
   loading: boolean
   clickLocked: boolean
   // 以下はスケジュール同期バッジ用。時刻・クールタイム・再取得はこのフックで自作せず、
@@ -18,10 +20,8 @@ type OverlaySession = {
   retrySync: () => void
 }
 
-export const useOverlaySession = (
-  isOpen: boolean,
-  bodyRef: RefObject<HTMLElement | null>
-): OverlaySession => {
+export const useOverlaySession = (isOpen: boolean): OverlaySession => {
+  const bodyRef = useRef<HTMLDivElement>(null)
   const [loading, setLoading] = useState(true)
   const [clickLocked, setClickLocked] = useState(true)
   const schedule = useScheduleRefresh()
@@ -54,6 +54,7 @@ export const useOverlaySession = (
   }, [isOpen, bodyRef])
 
   return {
+    bodyRef,
     loading,
     clickLocked,
     syncedAtMs: schedule.lastUpdatedMs,

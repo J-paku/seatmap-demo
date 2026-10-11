@@ -1,4 +1,3 @@
-import { useCallback, useMemo, useRef, useState } from 'react'
 import { EditDock } from './components/EditDock'
 import { Minimap } from './components/Minimap'
 import { OverlayDialogs } from './components/OverlayDialogs'
@@ -9,27 +8,28 @@ import { SeatLayoutHeader } from './components/SeatLayoutHeader'
 import { TeamOverlayHeader } from './components/TeamOverlayHeader'
 import { TrashDropZone } from './components/TrashDropZone'
 import { useIsCompactMobile } from './hooks/use-compact-mobile'
-import { useModalShell } from './hooks/use-modal-shell'
 import { useOverlayEditMode } from './hooks/use-overlay-edit-mode'
 import { useOverlayEditWiring } from './hooks/use-overlay-edit-wiring'
 import { useOverlaySession } from './hooks/use-overlay-session'
+import { usePanelShell } from './hooks/use-panel-shell'
 import { useSeatDrag } from './hooks/use-seat-drag'
 import { useSeatLayoutCompose } from './hooks/use-seat-layout-compose'
+import { useSeatLayoutTour } from './hooks/use-seat-layout-tour'
 import { useSeatSelection } from './hooks/use-seat-selection'
+import { useTeamSeats } from './hooks/use-team-seats'
 import { anchorTransformOrigin } from './utils/anchor-origin'
-import { resolveSeatIdFromElement, SEAT_GRID_CELL_ATTR } from './utils/seat-drag-attrs'
-import { COMPACT_SIDE_PADDING_PX } from './utils/seat-grid'
-import { SEAT_LAYOUT_TOUR_STEPS, SEAT_LAYOUT_TOUR_STORAGE_KEY } from './utils/tour-steps'
+import {
+  isMarginClick,
+  shouldClearHighlight,
+  shouldClearSelection,
+} from './utils/judge-overlay-click'
+import { resolveSidePadding } from './utils/resolve-side-padding'
 import type { TeamOverlayProps } from './type'
 import styles from './team-overlay-modal.module.css'
 import { useGlobalAnnouncement } from '@/contexts/announcement-context'
 import { SeatDeleteProvider } from '@/contexts/seat-delete-context'
 import { CoachMarkTour } from '@/components/CoachMarkTour'
-import { useCoachMarkTour } from '@/components/CoachMarkTour/hooks/use-coach-mark-tour'
 import { SheetHandle } from '@/components/SheetHandle'
-import { useSwipeToDismiss } from '@/hooks/use-swipe-to-dismiss'
-import type { Rect } from '@/utils/layout/rect'
-import { countOccupiedSeats } from '@/utils/seat-occupancy'
 
 // 10: チームバウンダリクリックで開く大型オーバーレイ(座席グリッド全体)
 // クリックしたバウンダリ中心から膨らむように開く。中央固定拡大ではない
@@ -51,18 +51,14 @@ export const TeamOverlay = ({
   minimapTeamArea = null,
   minimapViewBox,
 }: Props) => {
-  const bodyRef = useRef<HTMLDivElement>(null)
   const isCompactMobile = useIsCompactMobile()
-  const { loading, clickLocked, syncedAtMs, syncCooldown, isSyncing, retrySync } =
-    useOverlaySession(payload !== null, bodyRef)
+  const { bodyRef, loading, clickLocked, syncedAtMs, syncCooldown, isSyncing, retrySync } =
+    useOverlaySession(payload !== null)
   // STEP D3: 編集の開始・保存・キャンセル・一括配置の結果はここから唯一のLiveRegion(a11y全体で
   // 共有するAnnouncementProvider)へ流す。TeamOverlay専用のLiveRegionは新設しない
   const { announce } = useGlobalAnnouncement()
 
-  const teamSeats = useMemo(
-    () => (payload ? seats.filter(s => s.teamId === payload.teamId) : []),
-    [seats, payload]
-  )
+  const { teamSeats, occupiedCount, emptySeatCount } = useTeamSeats(seats, payload, employeeById)
   const editMode = useOverlayEditMode()
   const seatGrid = useSeatLayoutCompose({
     teamSeats,
@@ -70,70 +66,44 @@ export const TeamOverlay = ({
     grid: editMode.grid,
     draft: editMode.draft,
   })
-  // 判定基準は utils/seat-occupancy.ts に一本化(存在しない社員IDを参照する座席まで
-  // 数えてしまい、空席なのに N名と出る不整合を防ぐ)
-  const occupiedCount = useMemo(
-    () => countOccupiedSeats(teamSeats, employeeById),
-    [teamSeats, employeeById]
-  )
 
   // STEP B1: 編集中セルの選択(席か空セルのどちらか1件だけ)。編集モードを抜けると自動で消える
   const seatSelection = useSeatSelection(editMode.isEditMode)
 
   // 編集セッションの配線(選択のトグル・席追加とハイライト・配属シート・一括配置・保存/取消・
   // 編集中の閉じるガード)はuse-overlay-edit-wiringの1本にまとめてある
-  const {
-    handleSelectSeat,
-    handleAddSeat,
-    assignSeatId,
-    assignTargetSeat,
-    assignEmployees,
-    draftAppliedSeats,
-    assignInitialBulkMode,
-    handleAssignSeat,
-    handleAssignSelect,
-    handleAssignSelectRequiringConfirm,
-    assignConfirm,
-    confirmAssignSelect,
-    cancelAssignSelect,
-    handleAssignClear,
-    handleAssignClose,
-    bulkAssign,
-    handleBulkAssignRequest,
-    handleBulkAssignSelected,
-    handleOpenBulkAssign,
-    canOpenBulkAssign,
-    freeAddressEnabled,
-    toggleFreeAddress,
-    requestSeatDelete,
-    requestSeatDeleteAtCell,
-    seatDeleteConfirm,
-    confirmSeatDelete,
-    cancelSeatDelete,
-    seatCommit,
-    handleSaveEdit,
-    handleCancelEdit,
-    hasEditChanges,
-    isDiscardConfirmOpen,
-    confirmDiscardClose,
-    cancelDiscardClose,
-    isTeamDeleteConfirmOpen,
-    requestTeamDelete,
-    confirmTeamDelete,
-    cancelTeamDelete,
-    guardedClose,
-  } = useOverlayEditWiring({
+  const edit = useOverlayEditWiring({
     payload,
     seats,
+    teamSeats,
     employeeById,
     seatGrid,
     editMode,
     seatSelection,
     isCompactMobile,
     bodyRef,
+    minimapTeamArea,
     announce,
     onClose,
   })
+  const {
+    handleEnterEdit,
+    handleSelectSeat,
+    handleAddSeat,
+    handleAssignSeat,
+    handleOpenBulkAssign,
+    canOpenBulkAssign,
+    freeAddressEnabled,
+    toggleFreeAddress,
+    requestSeatDelete,
+    requestSeatDeleteAtCell,
+    seatCommit,
+    handleSaveEdit,
+    handleCancelEdit,
+    hasEditChanges,
+    requestTeamDelete,
+    guardedClose,
+  } = edit
 
   // STEP B2/B3: 編集中セルのドラッグ移動/入替とゴミ箱への削除。moveSeatはuseOverlayEditModeの
   // grid差分適用口をそのまま渡す。§07-2: ゴミ箱投下(このフック内部のタッチ経路+後段の
@@ -144,46 +114,26 @@ export const TeamOverlay = ({
     removeSeatAtCell: requestSeatDeleteAtCell,
   })
 
-  // 下スワイプで閉じるのは Compact だけの挙動。内部スクロールが上端かどうかの判定は
-  // フック側(computeScrollGate)がイベント経路から遡って行うため bodyRef は渡さない
-  const sheetRef = useRef<HTMLDivElement>(null)
-  const { sheetHandlers, dragStyle } = useSwipeToDismiss({
-    onDismiss: guardedClose,
-    enabled: payload !== null && isCompactMobile,
-  })
-  // useModalShell(フォーカストラップ)へ渡す実ノード参照と、フックのシート root 登録を1つの ref に束ねる。
-  // 毎レンダー新しい関数を渡すと背景スクロール連鎖ガードが着脱を繰り返すため参照を固定する
-  const setSheetNode = useCallback(
-    (node: HTMLDivElement | null) => {
-      sheetRef.current = node
-      sheetHandlers.ref(node)
-    },
-    [sheetHandlers.ref]
+  // 下スワイプで閉じる(Compact だけ)・Escape・フォーカストラップをパネルの実ノードへ取り付ける
+  const { sheetHandlers, dragStyle, setSheetNode } = usePanelShell(
+    payload !== null,
+    isCompactMobile,
+    guardedClose
   )
-  useModalShell(payload !== null, sheetRef, guardedClose)
 
-  // 座席配置ガイド。分岐なし2ステップで自動再生はせず、ヘッダーのガイドボタンから
-  // 再生する度に既読を無視して最初から出す(既読フラグの無効化=replayNonceの加算)
-  const [tourReplayNonce, setTourReplayNonce] = useState(0)
-  const tour = useCoachMarkTour({
-    steps: SEAT_LAYOUT_TOUR_STEPS,
-    storageKey: SEAT_LAYOUT_TOUR_STORAGE_KEY,
-    replayNonce: tourReplayNonce,
-    autoStart: false,
-  })
-  const handleHelp = useCallback(() => setTourReplayNonce(count => count + 1), [])
+  // 座席配置ガイド。再生はヘッダーのガイドボタン(handleHelp)からだけ
+  const { tour, handleHelp } = useSeatLayoutTour()
 
   if (!payload) return null
 
   const { teamColor, teamName, rect } = payload
-  const sidePadding = isCompactMobile ? COMPACT_SIDE_PADDING_PX : 0
-  const teamRect: Rect = minimapTeamArea ?? { x: 0, y: 0, w: 0, h: 0 }
+  const sidePadding = resolveSidePadding(isCompactMobile)
   return (
     <div
       className={`${styles.wrap}${isCompactMobile ? ` ${styles.isCompact}` : ''}`}
       onClick={e => {
         // ラッパー余白クリックで閉じる(パネル自身のクリックは stopPropagation)
-        if (e.target === e.currentTarget) guardedClose()
+        if (isMarginClick(e.target, e.currentTarget)) guardedClose()
       }}
     >
       <div className={styles.backdrop} onClick={guardedClose} />
@@ -203,20 +153,8 @@ export const TeamOverlay = ({
         }}
         onClick={e => {
           e.stopPropagation()
-          // ヒット表示はその席自身のクリック以外で解除する。座席以外(空白・ヘッダー・
-          // ミニマップ等)をクリックした時に消えなかったのが元の不具合。ヒット席自身の
-          // クリックだけは社員詳細を開く経路と競合するため除外する
-          if (highlightSeatId) {
-            if (resolveSeatIdFromElement(e.target as HTMLElement) !== highlightSeatId) {
-              onClearHighlight?.()
-            }
-          }
-          // 編集中はセル(席・空セルどちらも data-seat-grid-cell を持つ)以外のタップで選択解除する。
-          // グリッド余白・オーバーレイ余白のどちらもこの1箇所で拾える
-          if (
-            editMode.isEditMode &&
-            !(e.target as HTMLElement).closest(`[${SEAT_GRID_CELL_ATTR}]`)
-          ) {
+          if (shouldClearHighlight(e.target as HTMLElement, highlightSeatId)) onClearHighlight?.()
+          if (shouldClearSelection(e.target as HTMLElement, editMode.isEditMode)) {
             seatSelection.clearSelection()
           }
         }}
@@ -250,10 +188,7 @@ export const TeamOverlay = ({
               isCompactMobile={isCompactMobile}
               isEditMode={editMode.isEditMode}
               isSaving={seatCommit.isSaving}
-              onEnterEdit={() => {
-                editMode.enterEditMode(teamSeats, teamRect)
-                announce('[info]座席編集を開始しました')
-              }}
+              onEnterEdit={handleEnterEdit}
               onExitEdit={handleCancelEdit}
               onHelp={handleHelp}
               canBulkAssign={canOpenBulkAssign}
@@ -359,34 +294,11 @@ export const TeamOverlay = ({
           (01-authoring §4: indexは組み立てのみ)。SeatMapPortal経由でbody直下へ描く事情も
           そちらに引き継いだ */}
       <OverlayDialogs
-        assignSeatId={assignSeatId}
-        assignTargetSeat={assignTargetSeat}
-        assignEmployees={assignEmployees}
-        draftAppliedSeats={draftAppliedSeats}
+        edit={edit}
         employeeById={employeeById}
-        assignInitialBulkMode={assignInitialBulkMode}
-        onAssignSelect={handleAssignSelect}
-        onAssignSelectRequiringConfirm={handleAssignSelectRequiringConfirm}
-        onAssignClear={handleAssignClear}
-        onAssignClose={handleAssignClose}
-        onBulkAssignRequest={handleBulkAssignRequest}
-        onBulkAssignSelected={handleBulkAssignSelected}
-        assignConfirm={assignConfirm}
-        onConfirmAssignSelect={confirmAssignSelect}
-        onCancelAssignSelect={cancelAssignSelect}
-        bulkAssign={bulkAssign}
-        seatDeleteConfirm={seatDeleteConfirm}
-        onConfirmSeatDelete={confirmSeatDelete}
-        onCancelSeatDelete={cancelSeatDelete}
-        isDiscardConfirmOpen={isDiscardConfirmOpen}
-        onConfirmDiscardClose={confirmDiscardClose}
-        onCancelDiscardClose={cancelDiscardClose}
-        isTeamDeleteConfirmOpen={isTeamDeleteConfirmOpen}
         teamName={teamName}
         occupiedCount={occupiedCount}
-        emptySeatCount={teamSeats.length - occupiedCount}
-        onConfirmTeamDelete={confirmTeamDelete}
-        onCancelTeamDelete={cancelTeamDelete}
+        emptySeatCount={emptySeatCount}
       />
       {/* 座席配置ガイド。.panel は指追従の transform を受けるため、fixed 基準のスポットライトが
           その中にあると座標系がずれる。.wrap(fixed・transform なし)直下に置いて基準を分ける */}

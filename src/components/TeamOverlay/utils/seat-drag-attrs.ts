@@ -2,7 +2,7 @@ import type { GridCell } from '@/utils/layout/seat-grid-draft'
 
 // STEP B2/B3: 座席ドラッグ/ドロップの経路がDOMから直接読み取るdata属性の規約(名前・書き方・読み方)と、
 // タッチでドラッグを始める閾値。書く側のコンポーネント(TrashDropZone/DesktopSeatGrid/CompactSeatGrid)と
-// 読む側(use-seat-drag・TeamOverlay/index.tsx)の両方から参照されるため、どちらか一方に属させず
+// 読む側(use-seat-drag・utils/judge-overlay-click.ts)の両方から参照されるため、どちらか一方に属させず
 // 独立したutilsに置く
 
 // タッチ: 長押しでドラッグ開始とみなすまでの時間(ms)。§06-2の仕様値
