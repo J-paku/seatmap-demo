@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { MinimapArea, MinimapFurniture } from '@/types'
-import { boundingWindow, centerOf, clamp01, cropWindow } from './compute-minimap-bounds'
+import { boundingWindow, centerOf, cropWindow } from './compute-minimap-bounds'
 
 const area = (x: number, y: number, w: number, h: number): MinimapArea => ({
   idPrefix: 'A',
@@ -20,14 +20,6 @@ const furniture = (x: number, y: number, width: number, height: number): Minimap
   y,
   width,
   height,
-})
-
-describe('clamp01', () => {
-  it('0〜1 の内側はそのまま、外側は端へ収める', () => {
-    expect(clamp01(-0.5)).toBe(0)
-    expect(clamp01(0.3)).toBe(0.3)
-    expect(clamp01(1.7)).toBe(1)
-  })
 })
 
 describe('centerOf', () => {

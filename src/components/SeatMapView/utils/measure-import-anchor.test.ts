@@ -1,7 +1,7 @@
 // @vitest-environment happy-dom
 import { afterEach, describe, it, expect, vi } from 'vitest'
 import { viewportCenterAnchor } from './measure-import-anchor'
-import { SEATMAP_BG_ID } from '@/components/SheetShell'
+import { SEATMAP_BG_ID } from '@/utils/seatmap-bg-id'
 
 // 実測が取れないときに返す原典転記の固定値
 const FALLBACK = { x: 960, y: 540 }

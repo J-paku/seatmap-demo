@@ -4,6 +4,7 @@ import { useBodyScrollLock } from '@/hooks/use-body-scroll-lock'
 import { useBackgroundInert } from '@/hooks/use-background-inert'
 import { useFocusTrap } from '@/hooks/use-focus-trap'
 import { useSwipeToDismiss } from '@/hooks/use-swipe-to-dismiss'
+import { SEATMAP_BG_ID } from '@/utils/seatmap-bg-id'
 import styles from './sheet.module.css'
 
 const VARIANT_CLASS = {
@@ -11,8 +12,6 @@ const VARIANT_CLASS = {
   facility: styles.facility,
   schedule: styles.schedule,
 } as const
-
-export const SEATMAP_BG_ID = 'seatmap-bg-root'
 
 type Props = {
   title: string

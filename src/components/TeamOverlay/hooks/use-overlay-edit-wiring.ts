@@ -12,6 +12,7 @@ import type { UseSeatSelectionResult } from './use-seat-selection'
 import { SEAT_ADD_HIGHLIGHT_MS } from '../utils/seat-add-highlight'
 import type { SeatGrid } from '../type'
 import { useSeatLayout } from '@/hooks/use-mock-data'
+import { prefersReducedMotion } from '@/utils/detect-reduced-motion'
 import type { GridCell } from '@/utils/layout/seat-grid-draft'
 import { DEFAULT_SEAT_HEIGHT, DEFAULT_SEAT_WIDTH } from '@/utils/layout/seat-relayout'
 import type { Employee, Seat, TeamOverlayPayload } from '@/types'
@@ -162,7 +163,7 @@ export const useOverlayEditWiring = ({
       const target = bodyRef.current?.querySelector<HTMLElement>(
         `[data-seat-id="${justAddedSeatId}"]`
       )
-      const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+      const reduced = prefersReducedMotion()
       target?.scrollIntoView({
         behavior: reduced ? 'auto' : 'smooth',
         block: 'nearest',

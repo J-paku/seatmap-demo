@@ -9,6 +9,3 @@ export const isModalOpen = (): boolean =>
 
 export const lodOf = (scale: number): Lod =>
   scale >= 0.5 ? 'detail' : scale >= 0.3 ? 'mid' : 'overview'
-
-export const prefersReducedMotion = (): boolean =>
-  typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches

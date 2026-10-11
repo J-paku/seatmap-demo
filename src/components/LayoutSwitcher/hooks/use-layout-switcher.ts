@@ -13,8 +13,9 @@ import { createEmptyLayout, createLayoutId } from '@/utils/layout/layout-id'
 import { useLayoutSource } from '@/contexts/layout-source-context'
 import { useGlobalAnnouncement } from '@/contexts/announcement-context'
 import { floorNameOf } from '@/utils/floors'
+import { subscribeNever } from '@/utils/subscribe-never'
 import type { LayoutMeta } from '@/types'
-import { getServerStoredLayouts, subscribeStoredLayouts } from '../utils/subscribe-stored-layouts'
+import { getServerStoredLayouts } from '../utils/subscribe-stored-layouts'
 
 export type UseLayoutSwitcherResult = {
   isOpen: boolean
@@ -40,9 +41,10 @@ export const useLayoutSwitcher = (): UseLayoutSwitcherResult => {
   const { announce } = useGlobalAnnouncement()
   const [isOpen, setIsOpen] = useState(false)
   // トグルボタンの現在名表示にも一覧が要るため、マウント時点の保存内容を見る。
-  // ハイドレーション直後に差し替わる(ペイント前に同期で流れるためちらつかない)
+  // ハイドレーション直後に差し替わる(ペイント前に同期で流れるためちらつかない)。
+  // 起動直後の値は後から変わらないので購読先が無い。以降の変更は保存後の読み直しが受け持つ
   const hydratedLayouts = useSyncExternalStore(
-    subscribeStoredLayouts,
+    subscribeNever,
     getStoredLayouts,
     getServerStoredLayouts
   )

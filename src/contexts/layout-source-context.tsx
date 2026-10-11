@@ -9,6 +9,7 @@ import {
 import type { ReactNode } from 'react'
 import { loadDefaultLayoutId, loadLayoutMetas } from '@/lib/layout-persistence'
 import { DEFAULT_FLOOR_ID, isFloorId } from '@/utils/floors'
+import { subscribeNever } from '@/utils/subscribe-never'
 import type { FloorId } from '@/types'
 
 // STEP2: 複数レイアウト対応 — 現在表示中のレイアウトが公式(どのフロアか)か、カスタムのどれかを表す。
@@ -47,20 +48,13 @@ const getStoredSource = (): LayoutSource => {
 // そのサブツリーをクライアント描画へ落とす(ちらつきは消えないまま例外#418だけが増える)
 const getServerStoredSource = (): LayoutSource => OFFICIAL_SOURCE
 
-// 起動直後の値は後から変わらないので購読先が無い。以降の変更は選択操作の状態が受け持つ
-const noop = (): void => undefined
-const subscribeStoredSource = (): (() => void) => noop
-
 const Ctx = createContext<LayoutSourceApi | null>(null)
 
 export const LayoutSourceProvider = ({ children }: { children: ReactNode }) => {
   // ハイドレーション直後にlocalStorage由来の値へ差し替わる(useSyncExternalStoreの差し替えは
-  // ペイント前に同期で流れるため、useEffectで書き戻すよりちらつきが小さい)
-  const storedSource = useSyncExternalStore(
-    subscribeStoredSource,
-    getStoredSource,
-    getServerStoredSource
-  )
+  // ペイント前に同期で流れるため、useEffectで書き戻すよりちらつきが小さい)。
+  // 起動直後の値は後から変わらないので購読先が無い。以降の変更は選択操作の状態が受け持つ
+  const storedSource = useSyncExternalStore(subscribeNever, getStoredSource, getServerStoredSource)
   // 切り替え操作が入ったらそちらが優先。未操作のうちは保存済みの起動レイアウトを見る
   const [selectedSource, setSelectedSource] = useState<LayoutSource | null>(null)
   const source = selectedSource ?? storedSource

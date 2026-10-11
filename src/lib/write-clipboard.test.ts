@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { writeClipboardText } from './copy-field-clipboard'
+import { writeClipboardText } from './write-clipboard'
 
 describe('writeClipboardText', () => {
   afterEach(() => {

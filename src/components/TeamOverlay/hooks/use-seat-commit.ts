@@ -1,13 +1,10 @@
 import { useCallback, useState } from 'react'
 import type { SeatDraftState } from './use-seat-draft-state'
-import {
-  EMPTY_COMMIT_RESULT,
-  FINISH_DELAY_MS,
-  normalizeDraftIntoLayout,
-} from '../utils/commit-seat-draft'
+import { EMPTY_COMMIT_RESULT, normalizeDraftIntoLayout } from '../utils/commit-seat-draft'
 import type { SeatCommitResult } from '../utils/commit-seat-draft'
 import type { SeatGridDraft } from '@/utils/layout/seat-grid-draft'
 import { applyLayoutAction } from '@/utils/layout/layout-actions'
+import { FINISH_DELAY_MS } from '@/utils/save-delay'
 import { fetchMock } from '@/lib/fetch-mock'
 import { useSeatLayout } from '@/hooks/use-mock-data'
 

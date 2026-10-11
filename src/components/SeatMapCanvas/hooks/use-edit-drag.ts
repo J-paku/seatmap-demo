@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { PointerEvent as ReactPointerEvent } from 'react'
 import { useUndoChip } from './use-undo-chip'
-import { DRAG_THRESHOLD_PX } from '../utils/edit-drag-threshold'
 import type { PressState, UndoChipRequest, UndoChipView, RecentPlacement, Viewport } from '../type'
+import { DRAG_CONFIRM_PX } from '@/utils/gesture/confirm-drag'
 import type { LayoutObjectRef, SeatLayout } from '@/types'
 
 // 07: 編集モードのチーム枠・設備のタップ判定と、座席の複数選択。閲覧モードではこのロジックへ到達しない。
@@ -201,7 +201,7 @@ export const useEditDrag = ({
       if (!press || press.pointerId !== e.pointerId) return
       if (
         !press.moved &&
-        Math.hypot(e.clientX - press.startX, e.clientY - press.startY) > DRAG_THRESHOLD_PX
+        Math.hypot(e.clientX - press.startX, e.clientY - press.startY) > DRAG_CONFIRM_PX
       ) {
         press.moved = true
       }

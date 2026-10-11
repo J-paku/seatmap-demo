@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import type { RefObject } from 'react'
 import { REVEAL_MS } from '../utils/reveal-grid-insert'
+import { prefersReducedMotion } from '@/utils/detect-reduced-motion'
 
 // 行・列を足すと、増えた帯はスクロールの外側に生まれることがある(特に左右)。
 // 足した直後にその帯までスクロールし、短い点灯で「どこが増えたか」を示す。
@@ -33,7 +34,7 @@ export const useGridEdgeInsert = (scrollRef: RefObject<HTMLElement | null>): Gri
   useLayoutEffect(() => {
     const el = scrollRef.current
     if (!el || inserted === null) return
-    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    const reduced = prefersReducedMotion()
     const behavior: ScrollBehavior = reduced ? 'auto' : 'smooth'
     if (inserted.edge === 'left') el.scrollTo({ left: 0, behavior })
     else if (inserted.edge === 'right') el.scrollTo({ left: el.scrollWidth, behavior })

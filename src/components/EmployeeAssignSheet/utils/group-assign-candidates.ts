@@ -1,6 +1,6 @@
 // useEmployeeAssign(配属候補シート)が使う候補の絞り込み・並び替え・部門ツリー化
 import { matchesEmployeeQuery } from '@/utils/employee-search'
-import { UNASSIGNED_DEPARTMENT } from '@/utils/unassigned-department'
+import { normalizeDepartment } from '@/utils/unassigned-department'
 import type { Employee, Seat } from '@/types'
 
 export type AssignCandidate = {
@@ -16,12 +16,6 @@ export type AssignCandidate = {
 export type AssignDepartmentGroup = {
   department: string
   candidates: AssignCandidate[]
-}
-
-// 所属部署名の正規化。空文字・空白のみは「未所属」に丸める
-export const departmentOf = (employee: Employee): string => {
-  const trimmed = employee.team.trim()
-  return trimmed.length > 0 ? trimmed : UNASSIGNED_DEPARTMENT
 }
 
 // §06-4: 空クエリ=未配属者全員。非空クエリは名前・チーム・社員番号(カナ含む)の部分一致
@@ -55,7 +49,7 @@ export const buildDepartmentGroups = (
 ): AssignDepartmentGroup[] => {
   const grouped = new Map<string, AssignCandidate[]>()
   for (const candidate of candidates) {
-    const department = departmentOf(candidate.employee)
+    const department = normalizeDepartment(candidate.employee.team)
     const list = grouped.get(department)
     if (list) list.push(candidate)
     else grouped.set(department, [candidate])

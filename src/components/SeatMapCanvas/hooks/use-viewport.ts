@@ -2,7 +2,6 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react
 import { useViewportInput } from './use-viewport-input'
 import { TRANSITION_MS } from '../utils/animate-viewport'
 import { stepAnim } from '../utils/anim-step'
-import { prefersReducedMotion } from '../utils/canvas-metrics'
 import type { Anim, Viewport } from '../type'
 import {
   MAX_SCALE,
@@ -15,6 +14,7 @@ import {
   zoomAtPoint,
 } from '@/utils/layout/geometry'
 import type { Transform } from '@/utils/layout/geometry'
+import { prefersReducedMotion } from '@/utils/detect-reduced-motion'
 
 // パン・ズームの変換そのものを持つ。DOM へ直接 transform を当て、再レンダーは
 // ジェスチャー終了時の scaleSnap 更新だけに絞る

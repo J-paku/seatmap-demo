@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { EMPTY_COMMIT_RESULT, FINISH_DELAY_MS, normalizeDraftIntoLayout } from './commit-seat-draft'
+import { EMPTY_COMMIT_RESULT, normalizeDraftIntoLayout } from './commit-seat-draft'
 import type { SeatDraftState } from '../hooks/use-seat-draft-state'
 import type { SeatGridDraft } from '@/utils/layout/seat-grid-draft'
 import type { Seat, SeatLayout, Team } from '@/types'
@@ -77,10 +77,6 @@ const rowsOf = (layout: SeatLayout): SeatRow[] =>
   layout.seats.map((s): SeatRow => [s.id, s.x, s.y, s.employeeId, s.rotation])
 
 describe('保存まわりの値', () => {
-  it('保存の疑似遅延は use-layout-save と同じ 400ms', () => {
-    expect(FINISH_DELAY_MS).toBe(400)
-  })
-
   it('保存しなかったときの結果は、畳んだ社員が0人', () => {
     expect(EMPTY_COMMIT_RESULT).toEqual({ dedupedEmployeeIds: [] })
   })

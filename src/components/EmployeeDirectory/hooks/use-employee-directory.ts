@@ -4,12 +4,8 @@ import type { Employee } from '@/types'
 import { matchesEmployeeQuery, normalizeSearchText } from '@/utils/employee-search'
 import { useFavorites } from './use-favorites'
 import type { FavoritesContent } from '../components/DepartmentTree/types'
-import { UNASSIGNED_DEPARTMENT } from '@/utils/unassigned-department'
-import {
-  normalizeDepartment,
-  resolvePositionRank,
-  resolveSortCode,
-} from '../utils/sort-directory-employees'
+import { UNASSIGNED_DEPARTMENT, normalizeDepartment } from '@/utils/unassigned-department'
+import { resolvePositionRank, resolveSortCode } from '../utils/sort-directory-employees'
 
 interface DepartmentGroup {
   dept: string

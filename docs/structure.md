@@ -25,7 +25,7 @@ seatmap-demo/
 │  │  ├─ type.ts
 │  │  ├─ components/             TeamAreaLayer.tsx / EditObjectLayer.tsx
 │  │  ├─ hooks/                  use-canvas-pointer.ts / use-viewport.ts / use-edit-drag.ts 等9本
-│  │  └─ utils/                  anim-step.ts / canvas-metrics.ts / gesture-math.ts / sibling-rects.ts
+│  │  └─ utils/                  anim-step.ts / canvas-metrics.ts / gesture-math.ts 等
 │  ├─ TeamOverlay/ EmployeeDirectory/ EmployeeDetail/ AvatarCustomizer/ SwipeDateStage/
 │  │                             同型構造(index.tsx + type.ts + components/ + hooks/ + utils/)。
 │  │                             TeamOverlay/components/OverlayDialogs.tsxは配属シート+確認ダイアログ群の集約先

@@ -1,5 +1,6 @@
-// useGhostTransform が使う、キャンバスと変換レイヤーの DOM 探索と変換の実測
-import { SEATMAP_BG_ID } from '@/components/SheetShell'
+// useGhostTransform と取り込みのアンカー実測(SeatMapView/utils/measure-import-anchor)が使う、
+// キャンバスと変換レイヤーの DOM 探索と変換の実測
+import { SEATMAP_BG_ID } from '@/utils/seatmap-bg-id'
 
 export type Transform = { scale: number; tx: number; ty: number }
 

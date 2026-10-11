@@ -1,6 +1,6 @@
 // @vitest-environment happy-dom
 import { describe, it, expect, afterEach } from 'vitest'
-import { SEATMAP_BG_ID } from '@/components/SheetShell'
+import { SEATMAP_BG_ID } from '@/utils/seatmap-bg-id'
 import { findCanvas, findLayer, readTransform } from './read-canvas-transform'
 
 // getComputedStyle は文書に繋がった要素でしか inline style を返さないので、毎回 body へ足す

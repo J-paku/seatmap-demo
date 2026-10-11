@@ -1,5 +1,5 @@
 // useBulkAssign(部署一括取込)が使う、対象社員の選び出しと一括配置の計画の組み立て
-import { buildSeatByEmployee } from '@/components/EmployeeAssignSheet/hooks/use-employee-assign'
+import { buildSeatByEmployee } from '@/utils/locate-employee-seat'
 import type { Employee, Seat } from '@/types'
 
 type BulkAssignTarget = {

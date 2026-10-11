@@ -1,10 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import type { Employee } from '@/types'
-import {
-  normalizeDepartment,
-  resolvePositionRank,
-  resolveSortCode,
-} from './sort-directory-employees'
+import { resolvePositionRank, resolveSortCode } from './sort-directory-employees'
 
 const employee = (overrides: Partial<Employee>): Employee => ({
   id: 'e1',
@@ -54,17 +50,6 @@ const POSITIONS_IN_RANK_ORDER = [
   '副主任',
   'チームリーダー',
 ]
-
-describe('normalizeDepartment', () => {
-  it('前後の空白を落とした部署名を返す', () => {
-    expect(normalizeDepartment(' 営業部 ')).toBe('営業部')
-  })
-
-  it('空文字・空白だけの部署名は「未所属」にまとめる', () => {
-    expect(normalizeDepartment('')).toBe('未所属')
-    expect(normalizeDepartment('  ')).toBe('未所属')
-  })
-})
 
 describe('resolveSortCode', () => {
   it('ownerCode の数字の並びを数値で返す', () => {

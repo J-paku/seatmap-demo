@@ -2,7 +2,6 @@ import { describe, it, expect } from 'vitest'
 import type { Employee, Seat } from '@/types'
 import {
   buildDepartmentGroups,
-  departmentOf,
   filterCandidateEmployees,
   sortCandidates,
   type AssignCandidate,
@@ -23,17 +22,6 @@ const candidate = (person: Employee, seatedAt: string | null = null): AssignCand
 })
 
 const ids = (list: AssignCandidate[]) => list.map(item => item.employee.id)
-
-describe('departmentOf', () => {
-  it('前後の空白を落とした所属部署名を返す', () => {
-    expect(departmentOf(employee('e1', ' 営業部 '))).toBe('営業部')
-  })
-
-  it('空文字・空白だけの所属は「未所属」にまとめる', () => {
-    expect(departmentOf(employee('e1', ''))).toBe('未所属')
-    expect(departmentOf(employee('e1', '  '))).toBe('未所属')
-  })
-})
 
 describe('filterCandidateEmployees', () => {
   const free = employee('free', 'あ部')

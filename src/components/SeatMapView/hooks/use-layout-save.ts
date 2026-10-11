@@ -1,10 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { LayoutEditor } from '../type'
-import { FINISH_DELAY_MS, TOAST_MS, VALID_EMPLOYEE_IDS } from '../utils/save-layout-constants'
+import { TOAST_MS } from '../utils/save-layout-constants'
 import { fetchMock } from '@/lib/fetch-mock'
 import { useSeatLayout } from '@/hooks/use-mock-data'
 import { useLayoutSource } from '@/contexts/layout-source-context'
 import { loadCustomLayout, loadStoredLayout } from '@/lib/layout-persistence'
+import { VALID_EMPLOYEE_IDS } from '@/utils/collect-employee-ids'
+import { FINISH_DELAY_MS } from '@/utils/save-delay'
 import { TOAST_MESSAGES } from '@/utils/toast-messages'
 import type { StoredSeatLayout } from '@/types'
 
@@ -48,7 +50,9 @@ export const useLayoutSave = (editor: LayoutEditor): LayoutSave => {
 
   // 表示中ソース(公式/カスタム)の保存済みレイアウトを読み直す。楽観ロック照合と
   // 「元に戻す」用スナップショットの両方がここを通る(キー生成・穴埋めロジックの重複を避けるため
-  // lib/layout-persistence.ts の読み込み口をそのまま使う)
+  // lib/layout-persistence.ts の読み込み口をそのまま使う)。実在社員id集合は hooks/use-mock-data.ts の
+  // 読み込みと同じ utils/collect-employee-ids.ts のものを渡す。「元に戻す」は読み直した版をそのまま
+  // 書き戻すため、空集合などで誤魔化すと宙ぶらりん社員idの穴埋めが狂う
   const readCurrentStored = useCallback((): StoredSeatLayout | null => {
     return source.type === 'official'
       ? loadStoredLayout(source.floorId, VALID_EMPLOYEE_IDS)

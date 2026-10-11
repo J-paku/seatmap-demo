@@ -9,8 +9,6 @@ const PADDING_RATIO = 0.04
 // 対象が1件も無いときの退化矩形。百分率計算の分母を 0 にしないためだけに存在する
 const EMPTY_BOUNDS: MinimapRect = { x: 0, y: 0, w: 1, h: 1 }
 
-export const clamp01 = (value: number): number => Math.min(1, Math.max(0, value))
-
 export const centerOf = (area: MinimapArea) => ({ x: area.x + area.w / 2, y: area.y + area.h / 2 })
 
 // viewBox があるフロアの窓は viewBox 全域(辺は 1 を下回らせない)。以前は現在チームを中心に

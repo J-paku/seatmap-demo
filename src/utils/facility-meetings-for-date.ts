@@ -4,7 +4,7 @@
 import type { FacilityMeeting } from '@/types'
 import type { JstDate } from '@/utils/jst-date'
 import { jstWeekday } from '@/utils/jst-date'
-import { hashStringToInt } from '@/utils/hash-string'
+import { facilityDaySeed } from '@/utils/seed-facility-day'
 
 // 予定を敷き詰めるグリッド(09:00〜17:30・30分刻み)
 const GRID_START_MIN = 9 * 60
@@ -90,7 +90,7 @@ export const meetingsForDate = (
 
   if (employeeIds.length === 0) return []
 
-  let state = hashStringToInt(`${dateKey}#${facilityId}`)
+  let state = facilityDaySeed(dateKey, facilityId)
   const pull = (max: number): number => {
     state = nextLcgState(state)
     return (state >>> 0) % max

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import type { RefObject } from 'react'
 import { GLOW_MS, GLOW_REDUCED_MS, SCROLL_DELAY_MS } from '../utils/time-seat-highlight'
+import { prefersReducedMotion } from '@/utils/detect-reduced-motion'
 
 // 検索ヒット座席への追従。Compact のみが持つ挙動で、Desktop 側には無い
 export const useSeatHighlightAnimation = (
@@ -16,7 +17,7 @@ export const useSeatHighlightAnimation = (
       setGlowing(false)
       return
     }
-    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    const reduced = prefersReducedMotion()
     const scrollTimer = window.setTimeout(() => {
       const target = scrollRef.current?.querySelector<HTMLElement>(
         `[data-seat-id="${highlightSeatId}"]`

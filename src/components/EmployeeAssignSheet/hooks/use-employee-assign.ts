@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useState } from 'react'
 import { readFavoriteDepartments } from '@/lib/seat/favorite-departments'
 import type { Employee, Seat } from '@/types'
+import { buildSeatByEmployee } from '@/utils/locate-employee-seat'
+import { normalizeDepartment } from '@/utils/unassigned-department'
 import {
   buildDepartmentGroups,
-  departmentOf,
   filterCandidateEmployees,
   sortCandidates,
   type AssignCandidate,
@@ -13,18 +14,6 @@ import {
 // 配属候補の絞り込み・並び替え・部門ツリー化と、各社員が今どこに座っているかの解決。
 // 並び替え・グルーピングの本体は React に依存しない純関数として分離し(utils/group-assign-candidates.ts)、node から直接
 // 実行検証できるようにする(フック本体はローカル状態と useMemo で純関数をつなぐだけ)
-
-// 「今どこに座っているか」の唯一の判定口。座席配列を先頭から走査し、最初に見つかった席を
-// その社員の現在席とする(utils/layout/layout-actions.ts の seat-assign-employee が使う find と同じ先勝ち)。
-// 検索シートだけでなく、部署一括配置(use-bulk-assign)と下書きの配属(use-seat-draft-state)も
-// この1本を通す — 走査を各所で書くと先勝ち/後勝ちが食い違い、同じ人が2席に見える原因になる
-export const buildSeatByEmployee = (seats: Seat[]): Map<string, Seat> => {
-  const map = new Map<string, Seat>()
-  for (const seat of seats) {
-    if (seat.employeeId && !map.has(seat.employeeId)) map.set(seat.employeeId, seat)
-  }
-  return map
-}
 
 export const useEmployeeAssign = (
   employees: Employee[],
@@ -66,7 +55,7 @@ export const useEmployeeAssign = (
   const currentDepartment = useMemo(() => {
     if (!targetSeat) return null
     const member = employees.find(employee => employee.teamId === targetSeat.teamId)
-    return member ? departmentOf(member) : null
+    return member ? normalizeDepartment(member.team) : null
   }, [employees, targetSeat])
 
   const departmentGroups = useMemo<AssignDepartmentGroup[]>(

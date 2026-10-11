@@ -1,6 +1,6 @@
-import { rectsOfKinds } from '@/utils/layout/layout-objects'
+import { rectsOfKinds } from './layout-objects'
+import type { Rect } from './rect'
 import type { LayoutObjectRef, SeatLayout } from '@/types'
-import type { Rect } from '../type'
 
 // スナップ吸着候補になる兄弟オブジェクトの矩形群。
 // どの種別を含めるかだけをここで決め、配列の取り出しは utils/layout/layout-objects へ委ねる

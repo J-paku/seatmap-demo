@@ -1,11 +1,5 @@
-// useEmployeeDirectory(社員ディレクトリ)が部署の束ねと部署内の並び替えに使うキー
+// useEmployeeDirectory(社員ディレクトリ)が部署内の並び替えに使うキー。部署の束ねは utils/unassigned-department の normalizeDepartment
 import type { Employee } from '@/types'
-import { UNASSIGNED_DEPARTMENT } from '@/utils/unassigned-department'
-
-export const normalizeDepartment = (team: string) => {
-  const trimmed = team.trim()
-  return trimmed.length > 0 ? trimmed : UNASSIGNED_DEPARTMENT
-}
 
 // 並び替え用の社員番号を解決（数値が小さいほど先輩 → 昇順で上位に並ぶ）
 // 第一に ownerCode（UserCode 由来の整形済み社員番号）を使用。メール形式 LoginId のパースは不安定なため未取得時のみフォールバック

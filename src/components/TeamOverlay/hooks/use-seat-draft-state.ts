@@ -1,6 +1,6 @@
 import { useCallback, useRef, useState } from 'react'
 import { DRAFT_SEAT_ID_PREFIX, isSameIdSet } from '../utils/track-seat-draft'
-import { buildSeatByEmployee } from '@/components/EmployeeAssignSheet/hooks/use-employee-assign'
+import { buildSeatByEmployee } from '@/utils/locate-employee-seat'
 import type { Seat } from '@/types'
 
 // 座席編集(STEP A2)の下書き差分。UI・グリッド演算・保存処理は他 STEP の担当で、

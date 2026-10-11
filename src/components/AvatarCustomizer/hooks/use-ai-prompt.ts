@@ -1,6 +1,7 @@
 // AI生成プロンプトの状態管理 — 要望テキスト入力・プロンプト組み立て・クリップボードコピー
 import { useCallback, useMemo, useState, type ChangeEvent } from 'react'
 import { useGlobalAnnouncement } from '@/contexts/announcement-context'
+import { writeClipboardText } from '@/lib/write-clipboard'
 import { TOAST_MESSAGES } from '@/utils/toast-messages'
 import { buildAiPromptText } from '../utils/avatar-prompt-builder'
 
@@ -26,13 +27,14 @@ export const useAiPrompt = (): UseAiPromptResult => {
   }, [])
 
   const handleCopyAiPrompt = useCallback(async (): Promise<boolean> => {
-    if (typeof navigator === 'undefined' || !navigator.clipboard) {
-      setGlobalAnnouncement(`[error]${TOAST_MESSAGES.COPY_FAILED}`)
-      return false
-    }
-
     try {
-      await navigator.clipboard.writeText(aiPromptText)
+      // 書き込みの呼び出し自体が同期で投げても下の catch で失敗として扱えるよう、try の内側で呼ぶ
+      const written = writeClipboardText(aiPromptText)
+      if (written === null) {
+        setGlobalAnnouncement(`[error]${TOAST_MESSAGES.COPY_FAILED}`)
+        return false
+      }
+      await written
       setGlobalAnnouncement(`[success]${TOAST_MESSAGES.COPY_SUCCESS}`)
       return true
     } catch {

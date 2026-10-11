@@ -25,7 +25,7 @@ components/SeatMapView/index.tsx          画面ルート。組み立てのみ
    ├─ hooks/use-undo-chip.ts              「元に戻す」チップの表示位置と自動消去
    ├─ components/TeamAreaLayer.tsx        → @/components/TeamArea (data-team-id)
    ├─ components/EditObjectLayer.tsx      編集モードのみ。会議室/家具の操作面
-   └─ utils/                              anim-step.ts / canvas-metrics.ts / gesture-math.ts / sibling-rects.ts
+   └─ utils/                              anim-step.ts / canvas-metrics.ts / gesture-math.ts 等
 ```
 
 `SeatMapCanvas/index.tsx` が実際に描画する子(キャンバス外の画面固定 UI 含む)は

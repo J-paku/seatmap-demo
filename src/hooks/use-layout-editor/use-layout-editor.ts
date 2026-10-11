@@ -18,9 +18,6 @@ import type { EditableObjectKind } from '@/utils/layout/layout-actions'
 import { MSG_FACILITY, MSG_OVERLAP, MSG_SAVING } from '@/utils/layout/layout-edit-messages'
 import type { FurnitureKind, LayoutObjectRef, Seat, SeatLayout, Team } from '@/types'
 
-// use-object-placement がここから読んでいるための中継。呼び出し側を utils へ向け替えたら消す
-export { MSG_OVERLAP } from '@/utils/layout/layout-edit-messages'
-
 // 07-admin-edit: 編集アクションの発行口。セッション管理は useEditSession、
 // 判定規則は utils/layout/layout-rules が持ち、ここは「発行してよいか」を決めるだけ。
 // 永続化(localStorage保存)は範囲外で、呼び出し側が finishEdit 直前に保存する

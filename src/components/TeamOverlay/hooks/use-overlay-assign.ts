@@ -5,7 +5,7 @@ import type { UseOverlayEditModeResult } from './use-overlay-edit-mode'
 import { buildAssignConfirmContent, UNKNOWN_TEAM_NAME } from '../utils/assign-confirm-content'
 import type { AssignConfirmContent } from '../utils/assign-confirm-content'
 import type { SeatGrid } from '../type'
-import { buildSeatByEmployee } from '@/components/EmployeeAssignSheet/hooks/use-employee-assign'
+import { buildSeatByEmployee } from '@/utils/locate-employee-seat'
 import type { Employee, Seat, TeamOverlayPayload } from '@/types'
 
 // TeamOverlay の配属まわりの配線だけを持つ。シートの開閉・単体配属・確認文言・一括配置。

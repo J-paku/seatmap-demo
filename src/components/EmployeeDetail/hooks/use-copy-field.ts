@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { writeClipboardText } from '@/lib/copy-field-clipboard'
+import { writeClipboardText } from '@/lib/write-clipboard'
 import type { ContactField } from '../type'
 import { BUBBLE_MS } from '../utils/copy-bubble-duration'
 

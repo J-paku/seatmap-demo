@@ -1,7 +1,8 @@
 import { useMemo } from 'react'
 import type { MinimapRect } from '../type'
 import type { MinimapArea, MinimapFurniture } from '@/types'
-import { boundingWindow, centerOf, clamp01, cropWindow } from '../utils/compute-minimap-bounds'
+import { clamp } from '@/utils/layout/geometry'
+import { boundingWindow, centerOf, cropWindow } from '../utils/compute-minimap-bounds'
 
 // ミニマップの「どこを切り取って見せるか」と「現在地が窓のどこか」を決める計算。
 // 純粋計算のみで副作用を持たない
@@ -53,8 +54,8 @@ export const useMinimapData = ({
     return {
       centerX: x,
       centerY: y,
-      xRate: clamp01((x - worldBounds.x) / worldBounds.w),
-      yRate: clamp01((y - worldBounds.y) / worldBounds.h),
+      xRate: clamp((x - worldBounds.x) / worldBounds.w, 0, 1),
+      yRate: clamp((y - worldBounds.y) / worldBounds.h, 0, 1),
     }
   }, [currentArea, worldBounds])
 

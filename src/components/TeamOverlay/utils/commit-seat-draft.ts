@@ -6,9 +6,6 @@ import type { Seat, SeatLayout } from '@/types'
 
 // 座席編集の確定(use-seat-commit)が使う、下書きをレイアウトへ畳み込む正規化と保存まわりの値
 
-// use-layout-save.ts のFINISH_DELAY_MSと同じ値(保存中の体感を全画面で揃える)
-export const FINISH_DELAY_MS = 400
-
 // §06-5 重複配属デデュプ: 1人が複数席に居る場合、最後に配置した席だけ残して他を空席化する。
 // 「最後に配置した席」は座席配列の後ろにある席とみなす — reducer(seat-add)は新しい席を必ず
 // 末尾へ積むため、下書きで後から置いた席ほど後ろに来る。判定はこの1本だけに置き、
