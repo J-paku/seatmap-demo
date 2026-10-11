@@ -1,9 +1,11 @@
-import { useState } from 'react'
+import { useBulkSelection } from './hooks/use-bulk-selection'
 import { useEmployeeAssign } from './hooks/use-employee-assign'
+import { buildSeatNote, labelBulkDepartment } from './utils/build-sheet-labels'
+import { canOpenSheet, checkTargetSeatEmpty, findSeatOccupant } from './utils/resolve-target-seat'
+import { selectCandidate } from './utils/route-assign-choice'
 import { PickerSheet } from '@/components/PickerSheet'
 import { PixelAvatar } from '@/components/PixelAvatar'
 import { useEmployeeAvatar } from '@/hooks/use-employee-avatar'
-import { isOccupiedSeat } from '@/utils/seat-occupancy'
 import type { Employee, Seat } from '@/types'
 import styles from '../object-picker.module.css'
 
@@ -130,8 +132,7 @@ export const EmployeeAssignSheet = ({
   onBulkAssignSelected,
   initialBulkMode = false,
 }: Props) => {
-  // §06-4/§07-4: 「対象が空席か」の判定は着席判定の唯一の正本(utils/seat-occupancy)を通す
-  const isTargetSeatEmpty = seat !== null && !isOccupiedSeat(seat, employeeById)
+  const isTargetSeatEmpty = checkTargetSeatEmpty(seat, employeeById)
   const {
     query,
     setQuery,
@@ -142,54 +143,27 @@ export const EmployeeAssignSheet = ({
     bulkMembers,
     currentDepartment,
   } = useEmployeeAssign(employees, seats, seat, isTargetSeatEmpty)
-  const occupant = seat?.employeeId ? (employeeById.get(seat.employeeId) ?? null) : null
+  const occupant = findSeatOccupant(seat, employeeById)
 
-  const [isBulkMode, setIsBulkMode] = useState(initialBulkMode)
-  const [selectedBulkIds, setSelectedBulkIds] = useState<Set<string>>(new Set())
+  const {
+    isBulkMode,
+    selectedBulkIds,
+    enterBulkMode,
+    exitBulkMode,
+    toggleBulkMember,
+    toggleBulkDepartmentAll,
+    confirmBulkAssign,
+  } = useBulkSelection(initialBulkMode, bulkMembers, onBulkAssignSelected, onBulkAssign)
 
-  const enterBulkMode = () => {
-    setSelectedBulkIds(new Set())
-    setIsBulkMode(true)
-  }
-
-  const exitBulkMode = () => {
-    setIsBulkMode(false)
-    setSelectedBulkIds(new Set())
-  }
-
-  const toggleBulkMember = (employeeId: string) => {
-    setSelectedBulkIds(prev => {
-      const next = new Set(prev)
-      if (next.has(employeeId)) next.delete(employeeId)
-      else next.add(employeeId)
-      return next
-    })
-  }
-
-  const toggleBulkDepartmentAll = () => {
-    setSelectedBulkIds(prev => {
-      const allIds = bulkMembers.map(candidate => candidate.employee.id)
-      const allSelected = allIds.length > 0 && allIds.every(id => prev.has(id))
-      return allSelected ? new Set() : new Set(allIds)
-    })
-  }
-
-  const confirmBulkAssign = () => {
-    const employeeIds = Array.from(selectedBulkIds)
-    if (onBulkAssignSelected) onBulkAssignSelected(employeeIds)
-    else onBulkAssign?.()
-    exitBulkMode()
-  }
-
-  const bulkDepartmentLabel = currentDepartment ?? '対象部署'
+  const bulkDepartmentLabel = labelBulkDepartment(currentDepartment)
 
   return (
     <PickerSheet
-      isOpen={isOpen && seat !== null}
+      isOpen={canOpenSheet(isOpen, seat)}
       title='座席配置'
       icon='person_search'
       ariaLabel='社員検索'
-      note={occupant ? `現在は${occupant.name}さんが着席しています` : '空席です'}
+      note={buildSeatNote(occupant)}
       onClose={onClose}
     >
       {isBulkMode ? (
@@ -302,13 +276,9 @@ export const EmployeeAssignSheet = ({
                         key={candidate.employee.id}
                         employee={candidate.employee}
                         seatedAt={candidate.seatedAt}
-                        onSelect={() => {
-                          if (candidate.needsConfirm && onSelectRequiringConfirm) {
-                            onSelectRequiringConfirm(candidate.employee.id)
-                            return
-                          }
-                          onSelect(candidate.employee.id)
-                        }}
+                        onSelect={() =>
+                          selectCandidate(candidate, onSelect, onSelectRequiringConfirm)
+                        }
                       />
                     ))}
                 </div>
