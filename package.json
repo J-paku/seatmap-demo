@@ -9,7 +9,9 @@
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
     "knip": "knip",
-    "test": "vitest run"
+    "test": "vitest run",
+    "format": "prettier --write \"src/**/*.{ts,tsx,css}\" \"scripts/**/*.{mjs,js}\"",
+    "format:check": "prettier --check \"src/**/*.{ts,tsx,css}\" \"scripts/**/*.{mjs,js}\""
   },
   "dependencies": {
     "next": "16.2.12",
@@ -26,6 +28,7 @@
     "eslint-config-next": "16.2.12",
     "happy-dom": "^20.11.2",
     "knip": "^6.32.0",
+    "prettier": "^3.9.10",
     "tailwindcss": "^4.3.3",
     "typescript": "^5",
     "vitest": "^4.1.10"

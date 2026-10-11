@@ -27,7 +27,8 @@ const REPO_ROOT = path.dirname(SCRIPTS_DIR)
 
 const BASE_URL = process.env.BASE_URL || process.argv[2] || 'http://localhost:4173/'
 const DEFAULT_PLAYWRIGHT_NODE_MODULES = path.resolve(REPO_ROOT, '../J-paku.github.io/node_modules')
-const PLAYWRIGHT_NODE_MODULES = process.env.PLAYWRIGHT_NODE_MODULES || DEFAULT_PLAYWRIGHT_NODE_MODULES
+const PLAYWRIGHT_NODE_MODULES =
+  process.env.PLAYWRIGHT_NODE_MODULES || DEFAULT_PLAYWRIGHT_NODE_MODULES
 
 // ---- 0. Playwright の解決。この repo に無いので他 repo の node_modules を借りる ----
 const loadChromium = () => {
@@ -36,7 +37,9 @@ const loadChromium = () => {
   } catch (e) {
     console.error('[verify-offscreen-indicator] Playwright が見つかりません。')
     console.error(`  参照先(PLAYWRIGHT_NODE_MODULES): ${PLAYWRIGHT_NODE_MODULES}`)
-    console.error('  対処: Playwright 入りの他 repo の node_modules を PLAYWRIGHT_NODE_MODULES で指定してください。')
+    console.error(
+      '  対処: Playwright 入りの他 repo の node_modules を PLAYWRIGHT_NODE_MODULES で指定してください。'
+    )
     console.error(`  詳細: ${e.message}`)
     process.exit(2)
   }
@@ -56,7 +59,7 @@ const findCoachMarkKeys = (dir, keys = new Set()) => {
     }
     if (!/\.(ts|tsx)$/.test(entry.name)) continue
     const matches = readFileSync(full, 'utf8').match(COACH_KEY_RE)
-    if (matches) matches.forEach((m) => keys.add(m))
+    if (matches) matches.forEach(m => keys.add(m))
   }
   return keys
 }
@@ -69,7 +72,9 @@ const SESSION_AUTH_KEY = (() => {
   if (!existsSync(file)) return null
   const m = readFileSync(file, 'utf8').match(/SESSION_AUTH_KEY\s*=\s*'([^']+)'/)
   if (!m) {
-    console.error('[verify-offscreen-indicator] src/lib/session-auth.ts の SESSION_AUTH_KEY を読めません。')
+    console.error(
+      '[verify-offscreen-indicator] src/lib/session-auth.ts の SESSION_AUTH_KEY を読めません。'
+    )
     process.exit(2)
   }
   return m[1]
@@ -96,15 +101,15 @@ const openPage = async () => {
   const context = await browser.newContext({ viewport: { width: 1280, height: 900 } })
   const page = await context.newPage()
   const pageErrors = []
-  page.on('pageerror', (e) => pageErrors.push(`pageerror: ${e.message}`))
-  page.on('console', (m) => {
+  page.on('pageerror', e => pageErrors.push(`pageerror: ${e.message}`))
+  page.on('console', m => {
     if (m.type() === 'error') pageErrors.push(`console.error: ${m.text()}`)
   })
   await page.addInitScript(
     ({ authKey, coachKeys }) => {
       try {
         if (authKey) window.sessionStorage.setItem(authKey, 'E0001')
-        coachKeys.forEach((k) => window.localStorage.setItem(k, '1'))
+        coachKeys.forEach(k => window.localStorage.setItem(k, '1'))
       } catch {
         // プライベートモード等で書けない環境でも到達確認は続行させる
       }
@@ -117,7 +122,9 @@ const openPage = async () => {
   } catch (e) {
     console.error(`[verify-offscreen-indicator] 対象(${BASE_URL})に到達できません。`)
     console.error(`  詳細: ${e.message.split('\n')[0]}`)
-    console.error('  対処: BASE_URL が正しいか、対象サーバーが起動しているか確認してください(ss -ltn 等)。')
+    console.error(
+      '  対処: BASE_URL が正しいか、対象サーバーが起動しているか確認してください(ss -ltn 等)。'
+    )
     await browser.close()
     process.exit(2)
   }
@@ -126,7 +133,7 @@ const openPage = async () => {
 }
 
 // 変換レイヤーの transform 行列から現在の論理ビューポートを実測する
-const readViewport = (page) =>
+const readViewport = page =>
   page.evaluate(() => {
     const layer = document.querySelector('[data-canvas-transform-layer="true"]')
     const container = layer.parentElement
@@ -158,15 +165,16 @@ const drag = async (page, dx, dy) => {
   ck('全チームが画面外でインジケーターが出る', appeared, appeared ? '' : 'パン14回で出ず')
 
   if (appeared) {
-    const info = await page.evaluate((sel) => {
+    const info = await page.evaluate(sel => {
       const btn = document.querySelector(sel)
       const r = btn.getBoundingClientRect()
       const layer = document.querySelector('[data-canvas-transform-layer="true"]')
       const cells = [...btn.firstElementChild.children]
-      const label = cells.find((el) => el.textContent.trim().length > 0)
+      const label = cells.find(el => el.textContent.trim().length > 0)
       return {
         ariaLabel: btn.getAttribute('aria-label'),
-        inViewport: r.left >= -1 && r.top >= -1 && r.right <= innerWidth + 1 && r.bottom <= innerHeight + 1,
+        inViewport:
+          r.left >= -1 && r.top >= -1 && r.right <= innerWidth + 1 && r.bottom <= innerHeight + 1,
         insideTransformLayer: layer.contains(btn),
         zIndex: getComputedStyle(btn).zIndex,
         labelBg: label ? getComputedStyle(label).backgroundColor : null,
@@ -176,7 +184,7 @@ const drag = async (page, dx, dy) => {
           if (!z) return false
           return r.left < z.right && r.right > z.left && r.top < z.bottom && r.bottom > z.top
         })(),
-        teamsOnScreen: [...document.querySelectorAll('[data-team-id]')].filter((t) => {
+        teamsOnScreen: [...document.querySelectorAll('[data-team-id]')].filter(t => {
           const b = t.getBoundingClientRect()
           return b.right > 0 && b.left < innerWidth && b.bottom > 0 && b.top < innerHeight
         }).length,
@@ -194,14 +202,19 @@ const drag = async (page, dx, dy) => {
 
     await page.click(INDICATOR)
     await page.waitForTimeout(900)
-    const after = await page.evaluate((sel) => ({
-      indicator: document.querySelector(sel) !== null,
-      teamsOnScreen: [...document.querySelectorAll('[data-team-id]')].filter((t) => {
-        const b = t.getBoundingClientRect()
-        return b.right > 0 && b.left < innerWidth && b.bottom > 0 && b.top < innerHeight
-      }).length,
-      live: [...document.querySelectorAll('[aria-live]')].map((el) => el.textContent || '').join(' | '),
-    }), INDICATOR)
+    const after = await page.evaluate(
+      sel => ({
+        indicator: document.querySelector(sel) !== null,
+        teamsOnScreen: [...document.querySelectorAll('[data-team-id]')].filter(t => {
+          const b = t.getBoundingClientRect()
+          return b.right > 0 && b.left < innerWidth && b.bottom > 0 && b.top < innerHeight
+        }).length,
+        live: [...document.querySelectorAll('[aria-live]')]
+          .map(el => el.textContent || '')
+          .join(' | '),
+      }),
+      INDICATOR
+    )
 
     ck('クリックでチームが画面内に戻る', after.teamsOnScreen > 0, `${after.teamsOnScreen}件`)
     ck('移動後にインジケーターが消える', after.indicator === false)
@@ -230,11 +243,11 @@ const drag = async (page, dx, dy) => {
     const needX = (AISLE_ONLY_CENTER.x - curX) * v.scale
     const needY = (AISLE_ONLY_CENTER.y - curY) * v.scale
     if (Math.abs(needX) < 6 && Math.abs(needY) < 6) break
-    const clampPx = (n) => Math.max(-500, Math.min(500, n))
+    const clampPx = n => Math.max(-500, Math.min(500, n))
     await drag(page, clampPx(-needX), clampPx(-needY))
   }
 
-  const state = await page.evaluate((sel) => {
+  const state = await page.evaluate(sel => {
     const layer = document.querySelector('[data-canvas-transform-layer="true"]')
     const container = layer.parentElement
     const m = new DOMMatrixReadOnly(getComputedStyle(layer).transform)
@@ -246,7 +259,7 @@ const drag = async (page, dx, dy) => {
         right: (r.width - m.e) / m.a,
         bottom: (r.height - m.f) / m.a,
       },
-      teamsOnScreen: [...document.querySelectorAll('[data-team-id]')].filter((t) => {
+      teamsOnScreen: [...document.querySelectorAll('[data-team-id]')].filter(t => {
         const b = t.getBoundingClientRect()
         return b.right > 0 && b.left < innerWidth && b.bottom > 0 && b.top < innerHeight
       }).length,
@@ -257,7 +270,10 @@ const drag = async (page, dx, dy) => {
   // 「通路だけが見えている」状態を作れたことを先に実測してから本判定に入る
   const vp = state.vp
   const aisleVisible =
-    AISLE.x < vp.right && AISLE.x + AISLE.w > vp.left && AISLE.y < vp.bottom && AISLE.y + AISLE.h > vp.top
+    AISLE.x < vp.right &&
+    AISLE.x + AISLE.w > vp.left &&
+    AISLE.y < vp.bottom &&
+    AISLE.y + AISLE.h > vp.top
   const meetingVisible =
     MEETING_BAND.left < vp.right &&
     MEETING_BAND.right > vp.left &&
@@ -274,6 +290,8 @@ const drag = async (page, dx, dy) => {
 
 await browser.close()
 
-const failed = results.filter((r) => !r.ok)
-console.log(`\nverdict: ${failed.length === 0 ? 'PASS' : 'FAIL'} (${results.length - failed.length}/${results.length})`)
+const failed = results.filter(r => !r.ok)
+console.log(
+  `\nverdict: ${failed.length === 0 ? 'PASS' : 'FAIL'} (${results.length - failed.length}/${results.length})`
+)
 process.exit(failed.length === 0 ? 0 : 1)

@@ -34,14 +34,55 @@ const DEFAULT_FLOOR_ID = FLOOR_DEFS[0].floorId
 // empCount: 実際の社員数(再席率70%前後に合わせて size とは独立に増員)
 // floorId: 所属フロア。color/area を明示したチームは帯レイアウトの自動算出に載せない
 const TEAM_DEFS = [
-  { name: '営業部', kana: 'エイギョウブ', mail: 'ei', size: 8, empCount: 10, idPrefix: 'dept-sales', floorId: 'floor-1' },
-  { name: '開発部', kana: 'カイハツブ', mail: 'ka', size: 8, empCount: 10, idPrefix: 'dept-dev', floorId: 'floor-1' },
-  { name: '総務部', kana: 'ソウムブ', mail: 'so', size: 7, empCount: 9, idPrefix: 'dept-general', floorId: 'floor-1' },
-  { name: '経理部', kana: 'ケイリブ', mail: 'ke', size: 7, empCount: 8, idPrefix: 'dept-account', floorId: 'floor-1' },
+  {
+    name: '営業部',
+    kana: 'エイギョウブ',
+    mail: 'ei',
+    size: 8,
+    empCount: 10,
+    idPrefix: 'dept-sales',
+    floorId: 'floor-1',
+  },
+  {
+    name: '開発部',
+    kana: 'カイハツブ',
+    mail: 'ka',
+    size: 8,
+    empCount: 10,
+    idPrefix: 'dept-dev',
+    floorId: 'floor-1',
+  },
+  {
+    name: '総務部',
+    kana: 'ソウムブ',
+    mail: 'so',
+    size: 7,
+    empCount: 9,
+    idPrefix: 'dept-general',
+    floorId: 'floor-1',
+  },
+  {
+    name: '経理部',
+    kana: 'ケイリブ',
+    mail: 'ke',
+    size: 7,
+    empCount: 8,
+    idPrefix: 'dept-account',
+    floorId: 'floor-1',
+  },
   // 企画部だけ箱幅を明示する。帯自動算出(size 6 → w744)のままだと 1F の空き幅が最大246pxしか残らず、
   // §02-2 の新規チームゴースト454×190を置ける位置が 1F に1つも無い(10px格子の全探索で0件)。
   // w514 は colsMax=4 になる幅で、右へ230px空ける。x/y/h は帯レイアウト4番目の帯と同値なので箱位置は動かない
-  { name: '企画部', kana: 'キカクブ', mail: 'ki', size: 6, empCount: 7, idPrefix: 'dept-planning', floorId: 'floor-1', area: { x: 30, y: 894, w: 514, h: 220 } },
+  {
+    name: '企画部',
+    kana: 'キカクブ',
+    mail: 'ki',
+    size: 6,
+    empCount: 7,
+    idPrefix: 'dept-planning',
+    floorId: 'floor-1',
+    area: { x: 30, y: 894, w: 514, h: 220 },
+  },
   // 2F の小部屋。色相環(72°刻み)を5チームで使い切っており自動採番だと営業部と同じ色相になるため、
   // 色と箱位置は既存 mocks/floor-2/teams.json の値をそのまま定義として持つ
   {
@@ -71,7 +112,7 @@ const OUTFIT_COLORS = ['#3B6EA8', '#2F3B52', '#4A5A6E', '#7C9E6F', '#8A5A5A', '#
 // ── ユーティリティ ──────────────────────────────────────
 
 // 文字列 → 32bit ハッシュ(PRNG シード用)
-const hashString = (str) => {
+const hashString = str => {
   let h = 2166136261
   for (let i = 0; i < str.length; i++) {
     h ^= str.charCodeAt(i)
@@ -81,7 +122,7 @@ const hashString = (str) => {
 }
 
 // mulberry32: シードから [0,1) を返す決定論的 PRNG
-const mulberry32 = (seed) => () => {
+const mulberry32 = seed => () => {
   seed |= 0
   seed = (seed + 0x6d2b79f5) | 0
   let t = Math.imul(seed ^ (seed >>> 15), 1 | seed)
@@ -103,22 +144,25 @@ const hslToHex = (h, s, l) => {
   else if (h < 240) [r, g, b] = [0, x, c]
   else if (h < 300) [r, g, b] = [x, 0, c]
   else [r, g, b] = [c, 0, x]
-  const to = (v) => Math.round((v + m) * 255).toString(16).padStart(2, '0').toUpperCase()
+  const to = v =>
+    Math.round((v + m) * 255)
+      .toString(16)
+      .padStart(2, '0')
+      .toUpperCase()
   return `#${to(r)}${to(g)}${to(b)}`
 }
 
 // 全角カタカナ→半角カタカナ。濁点・半濁点は2文字へ分解する(社員名簿の furigana 表記に合わせる)
 const KANA_FULL =
   'アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲンァィゥェォッャュョー'
-const KANA_HALF =
-  'ｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃﾄﾅﾆﾇﾈﾉﾊﾋﾌﾍﾎﾏﾐﾑﾒﾓﾔﾕﾖﾗﾘﾙﾚﾛﾜｦﾝｧｨｩｪｫｯｬｭｮｰ'
+const KANA_HALF = 'ｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃﾄﾅﾆﾇﾈﾉﾊﾋﾌﾍﾎﾏﾐﾑﾒﾓﾔﾕﾖﾗﾘﾙﾚﾛﾜｦﾝｧｨｩｪｫｯｬｭｮｰ'
 const KANA_VOICED = 'ガギグゲゴザジズゼゾダヂヅデドバビブベボ'
 const KANA_VOICED_BASE = 'カキクケコサシスセソタチツテトハヒフヘホ'
 const KANA_SEMI = 'パピプペポ'
 const KANA_SEMI_BASE = 'ハヒフヘホ'
-const toHalfWidthKana = (value) =>
+const toHalfWidthKana = value =>
   [...value]
-    .map((ch) => {
+    .map(ch => {
       const v = KANA_VOICED.indexOf(ch)
       if (v >= 0) return `${KANA_HALF[KANA_FULL.indexOf(KANA_VOICED_BASE[v])]}ﾞ`
       const s = KANA_SEMI.indexOf(ch)
@@ -130,10 +174,16 @@ const toHalfWidthKana = (value) =>
 
 // 服の単色から三色を生成。式は utils/avatar/avatar-color-utils.ts の deriveOutfitColors と同じに保つ
 // (このスクリプトは .mjs なので TS を import できず、やむを得ず複製している)
-const hexToRgb = (hex) => [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16))
-const rgbToHex = (rgb) =>
-  `#${rgb.map((n) => Math.max(0, Math.min(255, Math.round(n))).toString(16).padStart(2, '0')).join('')}`
-const deriveOutfitColors = (base) => {
+const hexToRgb = hex => [1, 3, 5].map(i => parseInt(hex.slice(i, i + 2), 16))
+const rgbToHex = rgb =>
+  `#${rgb
+    .map(n =>
+      Math.max(0, Math.min(255, Math.round(n)))
+        .toString(16)
+        .padStart(2, '0')
+    )
+    .join('')}`
+const deriveOutfitColors = base => {
   const [r, g, b] = hexToRgb(base)
   return {
     outfit: base,
@@ -142,15 +192,15 @@ const deriveOutfitColors = (base) => {
   }
 }
 
-const pad3 = (n) => String(n).padStart(3, '0')
-const pad2 = (n) => String(n).padStart(2, '0')
-const pad4 = (n) => String(n).padStart(4, '0')
+const pad3 = n => String(n).padStart(3, '0')
+const pad2 = n => String(n).padStart(2, '0')
+const pad4 = n => String(n).padStart(4, '0')
 
 // 社員IDから携帯電話番号を決定論的に生成(数字のみで保持し、tel:リンク・表示整形の両方を単一値で賄う)
 // 約20%判定(実結果は15〜20%レンジに収まる)は電話番号なしとし、詳細パネルの未設定表示分岐を実データで踏ませる
 // 公開リポジトリなので下4桁は伏せ字にし、実在番号と衝突しうる完全な11桁を残さない。
 // 表示整形(3-4-4)は文字数だけを見るので伏せ字のままで通る
-const buildPhone = (empId) => {
+const buildPhone = empId => {
   const rand = mulberry32(hashString(`phone-${empId}`))
   if (rand() < 0.2) return undefined
   const prefix = MOBILE_PREFIXES[Math.floor(rand() * MOBILE_PREFIXES.length)]
@@ -185,13 +235,13 @@ const BAND_PITCH = AREA_H + BAND_GAP // 帯ピッチ(AREA_H より大きく重�
 const teams = []
 const seats = []
 // 書き出しはフロアごとなので、生成しながらフロア別にも溜める(全フロア通しの配列は後段の割当が使う)
-const teamsByFloor = new Map(FLOOR_DEFS.map((f) => [f.floorId, []]))
-const seatsByFloor = new Map(FLOOR_DEFS.map((f) => [f.floorId, []]))
+const teamsByFloor = new Map(FLOOR_DEFS.map(f => [f.floorId, []]))
+const seatsByFloor = new Map(FLOOR_DEFS.map(f => [f.floorId, []]))
 const seatCountReport = [] // 検証・報告用: 座席数が変化したチームを記録
 const seatGeometryReport = [] // 検証・報告用: チームごとの列数×行数×収容数
 
 // 帯レイアウトはフロアごとに上から積む(area 明示のチームは帯を消費しない)
-const bandIndexByFloor = new Map(FLOOR_DEFS.map((f) => [f.floorId, 0]))
+const bandIndexByFloor = new Map(FLOOR_DEFS.map(f => [f.floorId, 0]))
 
 TEAM_DEFS.forEach((def, i) => {
   const teamId = `team-${pad2(i + 1)}`
@@ -241,7 +291,12 @@ TEAM_DEFS.forEach((def, i) => {
     }
   }
 
-  seatGeometryReport.push({ team: def.name, cols: actualCols, rows: actualRows, capacity: actualCols * actualRows })
+  seatGeometryReport.push({
+    team: def.name,
+    cols: actualCols,
+    rows: actualRows,
+    capacity: actualCols * actualRows,
+  })
 })
 
 // 社員IDからフロアを引く索引(会議室の割当・会議室会議の参加者抽選が使う)
@@ -306,20 +361,20 @@ TEAM_DEFS.forEach((def, ti) => {
   }
 })
 
-const floorIdByEmployeeId = new Map(employees.map((e) => [e.id, floorIdByTeamId.get(e.teamId)]))
+const floorIdByEmployeeId = new Map(employees.map(e => [e.id, floorIdByTeamId.get(e.teamId)]))
 
 // 座席へ社員を割当。前列だけを埋めると空席が後列に固まるため、
 // チーム固有シード(idPrefix ハッシュ)でチーム内の座席順をシャッフルしてから詰め、空席を両行に分散させる
 {
   const empByTeam = {}
-  employees.forEach((e) => {
+  employees.forEach(e => {
     ;(empByTeam[e.teamId] ||= []).push(e.id)
   })
   const seatsByTeam = {}
-  seats.forEach((s) => {
+  seats.forEach(s => {
     ;(seatsByTeam[s.teamId] ||= []).push(s)
   })
-  teams.forEach((team) => {
+  teams.forEach(team => {
     const teamSeats = seatsByTeam[team.id] || []
     const pool = empByTeam[team.id] || []
     const rand = mulberry32(hashString(team.idPrefix))
@@ -339,9 +394,9 @@ const floorIdByEmployeeId = new Map(employees.map((e) => [e.id, floorIdByTeamId.
 // チームゾーンの実測境界(箱が縦に伸びたぶん、これを起点に通路・施設列を組み立てる)。
 // 施設列は既定フロアの箱の右に組むので、境界も既定フロアのチームだけから採る
 const defaultFloorTeams = teamsByFloor.get(DEFAULT_FLOOR_ID)
-const teamZoneRight = Math.max(...defaultFloorTeams.map((t) => t.area.x + t.area.w))
-const teamZoneTop = Math.min(...defaultFloorTeams.map((t) => t.area.y))
-const teamZoneBottom = Math.max(...defaultFloorTeams.map((t) => t.area.y + t.area.h))
+const teamZoneRight = Math.max(...defaultFloorTeams.map(t => t.area.x + t.area.w))
+const teamZoneTop = Math.min(...defaultFloorTeams.map(t => t.area.y))
+const teamZoneBottom = Math.max(...defaultFloorTeams.map(t => t.area.y + t.area.h))
 
 // viewBox: 幅は1600固定、高さは最下端オブジェクト(=teamZoneBottom)+余白から算出(ハードコードしない)
 const VIEWBOX_W = 1600
@@ -362,7 +417,7 @@ const distributeVertical = (items, top, bottom) => {
   const totalH = items.reduce((sum, it) => sum + it.height, 0)
   const gap = items.length > 1 ? (bottom - top - totalH) / (items.length - 1) : 0
   let y = top
-  return items.map((it) => {
+  return items.map(it => {
     const placed = { ...it, y: Math.round(y) }
     y += it.height + gap
     return placed
@@ -374,12 +429,47 @@ const facilityRangeBottom = teamZoneBottom - FACILITY_MARGIN_BOTTOM
 
 const meetingRooms = distributeVertical(
   [
-    { id: 'fac-01', name: '会議室A', kind: 'meeting', capacity: 4, width: MEETING_ROOM_WIDTH, height: 130 },
-    { id: 'fac-02', name: '会議室B', kind: 'meeting', capacity: 6, width: MEETING_ROOM_WIDTH, height: 150 },
-    { id: 'fac-03', name: '会議室C', kind: 'meeting', capacity: 8, width: MEETING_ROOM_WIDTH, height: 175 },
-    { id: 'fac-04', name: '会議室D', kind: 'meeting', capacity: 12, width: MEETING_ROOM_WIDTH, height: 210 },
-    { id: 'fac-05', name: '応接室', kind: 'meeting', capacity: 6, width: MEETING_ROOM_WIDTH, height: 120 },
-  ].map((f) => ({ ...f, x: facilityColAX })),
+    {
+      id: 'fac-01',
+      name: '会議室A',
+      kind: 'meeting',
+      capacity: 4,
+      width: MEETING_ROOM_WIDTH,
+      height: 130,
+    },
+    {
+      id: 'fac-02',
+      name: '会議室B',
+      kind: 'meeting',
+      capacity: 6,
+      width: MEETING_ROOM_WIDTH,
+      height: 150,
+    },
+    {
+      id: 'fac-03',
+      name: '会議室C',
+      kind: 'meeting',
+      capacity: 8,
+      width: MEETING_ROOM_WIDTH,
+      height: 175,
+    },
+    {
+      id: 'fac-04',
+      name: '会議室D',
+      kind: 'meeting',
+      capacity: 12,
+      width: MEETING_ROOM_WIDTH,
+      height: 210,
+    },
+    {
+      id: 'fac-05',
+      name: '応接室',
+      kind: 'meeting',
+      capacity: 6,
+      width: MEETING_ROOM_WIDTH,
+      height: 120,
+    },
+  ].map(f => ({ ...f, x: facilityColAX })),
   facilityRangeTop,
   facilityRangeBottom
 )
@@ -389,7 +479,7 @@ const boothsAndCommon = distributeVertical(
     { id: 'fac-06', name: '電話ブース1', kind: 'booth', width: 120, height: 110 },
     { id: 'fac-07', name: '電話ブース2', kind: 'booth', width: 120, height: 110 },
     { id: 'fac-08', name: 'リフレッシュスペース', kind: 'common', width: 240, height: 220 },
-  ].map((f) => ({ ...f, x: facilityColBX })),
+  ].map(f => ({ ...f, x: facilityColBX })),
   facilityRangeTop,
   facilityRangeBottom
 )
@@ -411,37 +501,73 @@ facilities.push({
 // フロア2の施設。既定フロアのような帯レイアウト算出ではなく、実測値をそのまま定義として持つ
 // (チーム箱1つの小フロアなので、通路と会議室2室だけの手置き)
 const facilitiesFloor2 = [
-  { id: 'fac2-01', name: '会議室E', kind: 'meeting', capacity: 4, width: 250, height: 130, x: 450, y: 30 },
-  { id: 'fac2-02', name: '会議室F', kind: 'meeting', capacity: 6, width: 250, height: 150, x: 450, y: 200 },
-  { id: 'aisle2-01', name: '通路', kind: 'aisle', capacity: 0, x: 350, y: 6, width: 60, height: 350 },
+  {
+    id: 'fac2-01',
+    name: '会議室E',
+    kind: 'meeting',
+    capacity: 4,
+    width: 250,
+    height: 130,
+    x: 450,
+    y: 30,
+  },
+  {
+    id: 'fac2-02',
+    name: '会議室F',
+    kind: 'meeting',
+    capacity: 6,
+    width: 250,
+    height: 150,
+    x: 450,
+    y: 200,
+  },
+  {
+    id: 'aisle2-01',
+    name: '通路',
+    kind: 'aisle',
+    capacity: 0,
+    x: 350,
+    y: 6,
+    width: 60,
+    height: 350,
+  },
 ]
 
 const facilitiesByFloor = new Map([
   [DEFAULT_FLOOR_ID, facilities],
   ['floor-2', facilitiesFloor2],
 ])
-const allFacilities = FLOOR_DEFS.flatMap((f) => facilitiesByFloor.get(f.floorId))
+const allFacilities = FLOOR_DEFS.flatMap(f => facilitiesByFloor.get(f.floorId))
 
 // viewBox からはみ出す施設が無いかを検査(はみ出す場合は黙って切り詰めず報告する)。
 // viewBox は全フロア共通(utils/layout/geometry.ts)なので、判定も全フロアぶん通す
-const facilityOverflow = allFacilities.filter((f) => f.x < 0 || f.y < 0 || f.x + f.width > VIEWBOX_W || f.y + f.height > VIEWBOX_H)
+const facilityOverflow = allFacilities.filter(
+  f => f.x < 0 || f.y < 0 || f.x + f.width > VIEWBOX_W || f.y + f.height > VIEWBOX_H
+)
 if (facilityOverflow.length > 0) {
-  console.error(`viewBox(${VIEWBOX_W}x${VIEWBOX_H})に収まらない施設: ${facilityOverflow.map((f) => f.id).join(',')}`)
+  console.error(
+    `viewBox(${VIEWBOX_W}x${VIEWBOX_H})に収まらない施設: ${facilityOverflow.map(f => f.id).join(',')}`
+  )
 }
 
 // ── 予定生成 ────────────────────────────────────────────
 
 const OUT_TITLES = ['客先訪問', '外出打ち合わせ', '現地調査', '銀行手続き']
-const MEETING_TITLES = ['定例ミーティング', 'プロジェクト会議', '週次レビュー', '部門会議', '打ち合わせ']
+const MEETING_TITLES = [
+  '定例ミーティング',
+  'プロジェクト会議',
+  '週次レビュー',
+  '部門会議',
+  '打ち合わせ',
+]
 const VACATION_TITLES = ['有給休暇', '休暇']
 
 // ISO8601(+09:00)文字列を生成
-const iso = (hour, minute) =>
-  `${BASE_DATE}T${pad2(hour)}:${pad2(minute)}:00+09:00`
+const iso = (hour, minute) => `${BASE_DATE}T${pad2(hour)}:${pad2(minute)}:00+09:00`
 
 const schedules = []
 let evSeq = 1
-employees.forEach((emp) => {
+employees.forEach(emp => {
   const rand = mulberry32(hashString(emp.id))
   // デモの「自分」だけは抽選せず時刻付き1件に固定する。非公開予定は後段で必ず1件立てるが、
   // 休暇(終日1件で他と排他)を引くと時刻付きの器が無くなり、立てる先が無くなるため
@@ -497,7 +623,7 @@ employees.forEach((emp) => {
 // 未連携デモの応接室にも番号を消費させ、連携の有無を切り替えても他室の番号が動かないようにする
 const UNLINKED_FACILITY_IDS = new Set(['fac-05']) // 応接室: 施設未連携デモとして意図的に連携しない
 let facilitySeq = 0
-allFacilities.forEach((f) => {
+allFacilities.forEach(f => {
   if (f.kind !== 'meeting') return
   facilitySeq += 1
   if (UNLINKED_FACILITY_IDS.has(f.id)) return
@@ -506,8 +632,10 @@ allFacilities.forEach((f) => {
 
 // 終日の外出(出張)。休暇と違って時刻付きの予定と同居するので、予定表の「終日」帯と
 // 時刻付き一覧が両方出る日を作る。休暇持ちの社員には付けない(休暇は終日1件で排他のため)
-const employeesWithTimedEvents = [...new Set(schedules.filter((s) => !s.isAllDay).map((s) => s.employeeId))]
-employeesWithTimedEvents.forEach((employeeId) => {
+const employeesWithTimedEvents = [
+  ...new Set(schedules.filter(s => !s.isAllDay).map(s => s.employeeId)),
+]
+employeesWithTimedEvents.forEach(employeeId => {
   if (mulberry32(hashString(`trip#${employeeId}`))() >= 0.4) return
   schedules.push({
     id: `ev-${pad4(evSeq++)}`,
@@ -525,16 +653,16 @@ employeesWithTimedEvents.forEach((employeeId) => {
 // グループごとに1室だけ押さえる。会議室は同時刻に二重予約できない(定員も超えられない)ため、
 // 空いている室を先着順に割り当て、空きが無ければ施設なし(オンライン開催扱い)のままにする
 const linkedByFloor = new Map(
-  FLOOR_DEFS.map((f) => [f.floorId, facilitiesByFloor.get(f.floorId).filter((x) => x.facilityId)])
+  FLOOR_DEFS.map(f => [f.floorId, facilitiesByFloor.get(f.floorId).filter(x => x.facilityId)])
 )
 const bookingsByFacility = new Map(
-  FLOOR_DEFS.flatMap((f) => linkedByFloor.get(f.floorId)).map((f) => [f.facilityId, []])
+  FLOOR_DEFS.flatMap(f => linkedByFloor.get(f.floorId)).map(f => [f.facilityId, []])
 )
 
 const meetingGroups = new Map()
 schedules
-  .filter((s) => s.category === 'meeting')
-  .forEach((s) => {
+  .filter(s => s.category === 'meeting')
+  .forEach(s => {
     const key = meetingKey(s)
     const group = meetingGroups.get(key)
     if (group) group.push(s)
@@ -545,7 +673,7 @@ meetingGroups.forEach((group, key) => {
   // 非公開予定(件名を本人以外に出さない)。会議は予定単位ではなく会議単位で設定されるので
   // グループ全員に同じ値を入れる。在席状態は区分から出すので非公開でも変わらない
   if (mulberry32(hashString(`private#${key}`))() < 0.25) {
-    group.forEach((s) => {
+    group.forEach(s => {
       s.isPrivate = true
     })
   }
@@ -560,35 +688,35 @@ meetingGroups.forEach((group, key) => {
   const room = rooms
     .map((_, i) => rooms[(offset + i) % rooms.length])
     .find(
-      (f) =>
+      f =>
         fitsCapacity(f, group.length) &&
-        !bookingsByFacility.get(f.facilityId).some((b) => isOverlapping(start, end, b.start, b.end))
+        !bookingsByFacility.get(f.facilityId).some(b => isOverlapping(start, end, b.start, b.end))
     )
   if (!room) return
   bookingsByFacility.get(room.facilityId).push({ start, end })
-  group.forEach((s) => {
+  group.forEach(s => {
     s.facilityId = room.facilityId
   })
 })
 
 // 外出は個人の予定なので1件ずつ判定する(休暇は在席バッジで伝わるため対象外)
 schedules
-  .filter((s) => s.category === 'out')
-  .forEach((s) => {
+  .filter(s => s.category === 'out')
+  .forEach(s => {
     if (!s.isAllDay && mulberry32(hashString(`private#${s.id}`))() < 0.2) s.isPrivate = true
   })
 
 // デモの「自分」の非公開予定を1件保証する。「本人の予定は伏せない」分岐(utils/format.ts の
 // isScheduleMasked)は所有者が自分の非公開予定でしか通らず、抽選任せだと0件になりうる
 {
-  const ownEvents = schedules.filter((s) => s.employeeId === SELF_EMPLOYEE_ID)
-  const target = ownEvents.some((s) => s.isPrivate) ? undefined : ownEvents.find((s) => !s.isAllDay)
+  const ownEvents = schedules.filter(s => s.employeeId === SELF_EMPLOYEE_ID)
+  const target = ownEvents.some(s => s.isPrivate) ? undefined : ownEvents.find(s => !s.isAllDay)
   if (target?.category === 'meeting') {
     // 会議は会議単位で非公開になるので、同じ会議に出ている全員ぶんへ同じ値を入れる
     const key = meetingKey(target)
     schedules
-      .filter((s) => s.category === 'meeting' && meetingKey(s) === key)
-      .forEach((s) => {
+      .filter(s => s.category === 'meeting' && meetingKey(s) === key)
+      .forEach(s => {
         s.isPrivate = true
       })
   } else if (target) {
@@ -608,17 +736,53 @@ schedules
 const MEETING_ROSTERS = [
   { hour: 9, title: '打ち合わせ', participantIds: ['emp-003', 'emp-001', 'emp-002', 'emp-004'] },
   { hour: 14, title: '打ち合わせ', participantIds: ['emp-005', 'emp-001', 'emp-004', 'emp-008'] },
-  { hour: 17, title: '定例ミーティング', participantIds: ['emp-006', 'emp-034', 'emp-035', 'emp-007'] },
-  { hour: 14, title: '定例ミーティング', participantIds: ['emp-006', 'emp-007', 'emp-008', 'emp-010'] },
-  { hour: 12, title: 'プロジェクト会議', participantIds: ['emp-012', 'emp-022', 'emp-013', 'emp-023'] },
-  { hour: 9, title: 'プロジェクト会議', participantIds: ['emp-016', 'emp-011', 'emp-013', 'emp-014'] },
+  {
+    hour: 17,
+    title: '定例ミーティング',
+    participantIds: ['emp-006', 'emp-034', 'emp-035', 'emp-007'],
+  },
+  {
+    hour: 14,
+    title: '定例ミーティング',
+    participantIds: ['emp-006', 'emp-007', 'emp-008', 'emp-010'],
+  },
+  {
+    hour: 12,
+    title: 'プロジェクト会議',
+    participantIds: ['emp-012', 'emp-022', 'emp-013', 'emp-023'],
+  },
+  {
+    hour: 9,
+    title: 'プロジェクト会議',
+    participantIds: ['emp-016', 'emp-011', 'emp-013', 'emp-014'],
+  },
   { hour: 15, title: '週次レビュー', participantIds: ['emp-018', 'emp-021', 'emp-019', 'emp-024'] },
-  { hour: 10, title: 'プロジェクト会議', participantIds: ['emp-021', 'emp-023', 'emp-024', 'emp-028'] },
+  {
+    hour: 10,
+    title: 'プロジェクト会議',
+    participantIds: ['emp-021', 'emp-023', 'emp-024', 'emp-028'],
+  },
   { hour: 16, title: '部門会議', participantIds: ['emp-026', 'emp-042', 'emp-027', 'emp-043'] },
-  { hour: 13, title: 'プロジェクト会議', participantIds: ['emp-027', 'emp-021', 'emp-025', 'emp-028'] },
-  { hour: 11, title: 'プロジェクト会議', participantIds: ['emp-034', 'emp-030', 'emp-031', 'emp-033'] },
-  { hour: 12, title: '定例ミーティング', participantIds: ['emp-035', 'emp-036', 'emp-030', 'emp-037'] },
-  { hour: 14, title: 'プロジェクト会議', participantIds: ['emp-036', 'emp-031', 'emp-033', 'emp-037'] },
+  {
+    hour: 13,
+    title: 'プロジェクト会議',
+    participantIds: ['emp-027', 'emp-021', 'emp-025', 'emp-028'],
+  },
+  {
+    hour: 11,
+    title: 'プロジェクト会議',
+    participantIds: ['emp-034', 'emp-030', 'emp-031', 'emp-033'],
+  },
+  {
+    hour: 12,
+    title: '定例ミーティング',
+    participantIds: ['emp-035', 'emp-036', 'emp-030', 'emp-037'],
+  },
+  {
+    hour: 14,
+    title: 'プロジェクト会議',
+    participantIds: ['emp-036', 'emp-031', 'emp-033', 'emp-037'],
+  },
   { hour: 16, title: '週次レビュー', participantIds: ['emp-039', 'emp-038', 'emp-040', 'emp-041'] },
   { hour: 17, title: '週次レビュー', participantIds: ['emp-039', 'emp-041', 'emp-043', 'emp-044'] },
   { hour: 13, title: '打ち合わせ', participantIds: ['emp-045', 'emp-046', 'emp-047', 'emp-048'] },
@@ -626,7 +790,7 @@ const MEETING_ROSTERS = [
 ]
 
 const rosterByKey = new Map(
-  MEETING_ROSTERS.map((r) => [
+  MEETING_ROSTERS.map(r => [
     meetingKey({ start: iso(r.hour, 0), end: iso(r.hour + 1, 0), title: r.title }),
     r.participantIds,
   ])
@@ -637,11 +801,11 @@ const rosterByKey = new Map(
 const rosterlessMeetings = []
 meetingGroups.forEach((group, key) => {
   const roster = rosterByKey.get(key)
-  if (!roster || group.some((s) => !roster.includes(s.employeeId))) {
+  if (!roster || group.some(s => !roster.includes(s.employeeId))) {
     rosterlessMeetings.push(key)
     return
   }
-  group.forEach((s) => {
+  group.forEach(s => {
     s.organizerId = roster[0]
     s.participantIds = [...roster]
   })
@@ -649,20 +813,28 @@ meetingGroups.forEach((group, key) => {
 if (rosterlessMeetings.length > 0) {
   console.error(`参加者名簿と一致しない会議: ${rosterlessMeetings.join(' / ')}`)
 }
-const unusedRosters = [...rosterByKey.keys()].filter((key) => !meetingGroups.has(key))
+const unusedRosters = [...rosterByKey.keys()].filter(key => !meetingGroups.has(key))
 if (unusedRosters.length > 0) {
   console.error(`どの会議とも一致しない参加者名簿: ${unusedRosters.join(' / ')}`)
 }
 
 // 会議室会議(時刻=分のみ・日付非依存でいつ見ても活性)。参加者は同じフロアの社員から抽選する
 // (フロアを跨ぐ会議はデモの範囲外。予定側の会議室割り当てと同じ規則)
-const FACILITY_MEETING_TITLES = ['定例会議', 'プロジェクト進捗', '部門ミーティング', '1on1', 'レビュー会', '打ち合わせ', 'ブレスト']
+const FACILITY_MEETING_TITLES = [
+  '定例会議',
+  'プロジェクト進捗',
+  '部門ミーティング',
+  '1on1',
+  'レビュー会',
+  '打ち合わせ',
+  'ブレスト',
+]
 const facilityMeetings = []
 let fmSeq = 1
 FLOOR_DEFS.forEach(({ floorId }) => {
-  const empIds = employees.filter((e) => floorIdByEmployeeId.get(e.id) === floorId).map((e) => e.id)
+  const empIds = employees.filter(e => floorIdByEmployeeId.get(e.id) === floorId).map(e => e.id)
   if (empIds.length === 0) return // 社員の居ないフロアの室は会議を作らない(参加者を抽選できない)
-  linkedByFloor.get(floorId).forEach((f) => {
+  linkedByFloor.get(floorId).forEach(f => {
     const rand = mulberry32(hashString(`fm-${f.id}`))
     const n = 1 + Math.floor(rand() * 3) // 1..3件
     const usedHours = new Set()
@@ -711,26 +883,30 @@ FLOOR_DEFS.forEach(({ floorId, dir }) => {
   dump(dir, 'facilities.json', facilitiesByFloor.get(floorId))
 })
 
-const occupied = seats.filter((s) => s.employeeId).length
+const occupied = seats.filter(s => s.employeeId).length
 const occupancyPct = ((occupied / seats.length) * 100).toFixed(1)
-console.log(`teams=${teams.length} employees=${employees.length} seats=${seats.length}(着席${occupied}/空席${seats.length - occupied}, 再席率${occupancyPct}%) facilities=${allFacilities.length} schedules=${schedules.length} facilityMeetings=${facilityMeetings.length}`)
+console.log(
+  `teams=${teams.length} employees=${employees.length} seats=${seats.length}(着席${occupied}/空席${seats.length - occupied}, 再席率${occupancyPct}%) facilities=${allFacilities.length} schedules=${schedules.length} facilityMeetings=${facilityMeetings.length}`
+)
 console.log('フロア別 チーム/座席/施設(うち連携会議室):')
 FLOOR_DEFS.forEach(({ floorId }) => {
   const linked = linkedByFloor.get(floorId)
-  const fmCount = facilityMeetings.filter((m) => linked.some((f) => f.facilityId === m.facilityId)).length
+  const fmCount = facilityMeetings.filter(m =>
+    linked.some(f => f.facilityId === m.facilityId)
+  ).length
   console.log(
-    `  ${floorId}: teams=${teamsByFloor.get(floorId).length} seats=${seatsByFloor.get(floorId).length} facilities=${facilitiesByFloor.get(floorId).length}(連携${linked.length}: ${linked.map((f) => `${f.name}/${f.facilityId}`).join(',')}) 会議室会議=${fmCount}`
+    `  ${floorId}: teams=${teamsByFloor.get(floorId).length} seats=${seatsByFloor.get(floorId).length} facilities=${facilitiesByFloor.get(floorId).length}(連携${linked.length}: ${linked.map(f => `${f.name}/${f.facilityId}`).join(',')}) 会議室会議=${fmCount}`
   )
 })
-const withPhone = employees.filter((e) => e.phone).length
+const withPhone = employees.filter(e => e.phone).length
 console.log(`電話番号: あり${withPhone}/なし${employees.length - withPhone}`)
 if (seatCountReport.length > 0) {
   console.log('座席数変化(20px余白適用により箱幅を変えず座席数を調整):')
-  seatCountReport.forEach((r) => console.log(`  ${r.team}: ${r.before} -> ${r.after}`))
+  seatCountReport.forEach(r => console.log(`  ${r.team}: ${r.before} -> ${r.after}`))
 }
 console.log('チーム別 列数×行数(収容数):')
-seatGeometryReport.forEach((r) => console.log(`  ${r.team}: ${r.cols}×${r.rows} = ${r.capacity}`))
+seatGeometryReport.forEach(r => console.log(`  ${r.team}: ${r.cols}×${r.rows} = ${r.capacity}`))
 console.log(`teamZone: right=${teamZoneRight} top=${teamZoneTop} bottom=${teamZoneBottom}`)
 console.log(`viewBox(算出): ${VIEWBOX_W}×${VIEWBOX_H}`)
-const aisle = facilities.find((f) => f.kind === 'aisle')
+const aisle = facilities.find(f => f.kind === 'aisle')
 console.log(`aisle: x=${aisle.x} y=${aisle.y} width=${aisle.width} height=${aisle.height}`)

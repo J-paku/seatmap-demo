@@ -1,6 +1,7 @@
 // verify-s1.js — S1 完了判定。実行中の画面(ローカル / Pages 両方)で走らせる
 ;(() => {
-  const pass = [], fail = []
+  const pass = [],
+    fail = []
   const ck = (name, ok, detail) => (ok ? pass : fail).push(name + (detail ? ` — ${detail}` : ''))
 
   const layer = document.querySelector('[data-canvas-transform-layer="true"]')
@@ -12,7 +13,8 @@
   // 走査対象から除外する。除外は「.facility-status のテキストだけ」に限定し、
   // 座席カードが同じ語を描いた場合(=本来の違反)は検出できるようにする
   const layerClone = layer ? layer.cloneNode(true) : null
-  if (layerClone) layerClone.querySelectorAll('[class*="facilityStatus"]').forEach(el => el.remove())
+  if (layerClone)
+    layerClone.querySelectorAll('[class*="facilityStatus"]').forEach(el => el.remove())
   const seatCheckText = layerClone ? layerClone.textContent : ''
   const seatWords = ['在席', '空席', '会議中', '外出', 'リモート', '出張', '退勤', '休み']
   const hit = seatWords.filter(w => seatCheckText.includes(w))
@@ -26,11 +28,16 @@
   // 3. チーム箱がクリックを直接受ける(手前を何かが覆っていない)
   const teams = [...document.querySelectorAll('[data-team-id]')]
   ck('チーム箱が存在', teams.length > 0, `${teams.length}件`)
-  let blocked = 0, skipped = 0
+  let blocked = 0,
+    skipped = 0
   for (const t of teams) {
     const b = t.getBoundingClientRect()
-    const cx = b.x + b.width / 2, cy = b.y + b.height / 2
-    if (cx < 0 || cy < 0 || cx > innerWidth || cy > innerHeight) { skipped++; continue }
+    const cx = b.x + b.width / 2,
+      cy = b.y + b.height / 2
+    if (cx < 0 || cy < 0 || cx > innerWidth || cy > innerHeight) {
+      skipped++
+      continue
+    }
     const top = document.elementFromPoint(cx, cy)
     if (!(top === t || t.contains(top))) blocked++
   }
@@ -41,7 +48,8 @@
   let ov = 0
   for (let i = 0; i < rs.length; i++)
     for (let j = i + 1; j < rs.length; j++) {
-      const a = rs[i], b = rs[j]
+      const a = rs[i],
+        b = rs[j]
       if (a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top) ov++
     }
   ck('チーム箱が重ならない', ov === 0, `${ov}組`)

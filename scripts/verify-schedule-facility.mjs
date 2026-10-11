@@ -19,17 +19,17 @@ const read = (...p) => JSON.parse(readFileSync(join(MOCKS, ...p), 'utf-8'))
 const floorDirs = [
   '.',
   ...readdirSync(MOCKS, { withFileTypes: true })
-    .filter((entry) => entry.isDirectory() && existsSync(join(MOCKS, entry.name, 'facilities.json')))
-    .map((entry) => entry.name)
+    .filter(entry => entry.isDirectory() && existsSync(join(MOCKS, entry.name, 'facilities.json')))
+    .map(entry => entry.name)
     .sort(),
 ]
 
 const schedules = read('schedules.json')
 const facilityMeetings = read('facility-meetings.json')
-const facilitiesByFloor = new Map(floorDirs.map((dir) => [dir, read(dir, 'facilities.json')]))
+const facilitiesByFloor = new Map(floorDirs.map(dir => [dir, read(dir, 'facilities.json')]))
 
 const failures = []
-const fail = (msg) => failures.push(msg)
+const fail = msg => failures.push(msg)
 
 // 施設ID→施設。フロアを跨いで同じIDがあると後から重ねた側が消えて検査もすり抜けるので、
 // 重ねる前に衝突そのものを失敗として出す(採番規則がフロアごとに割れていないかの検査)
@@ -38,14 +38,17 @@ for (const [dir, list] of facilitiesByFloor) {
   for (const f of list) {
     if (!f.facilityId) continue
     const duplicated = linked.get(f.facilityId)
-    if (duplicated) fail(`施設IDの重複: ${f.facilityId} を ${duplicated.name}(${duplicated.floorDir}) と ${f.name}(${dir}) が持っている`)
+    if (duplicated)
+      fail(
+        `施設IDの重複: ${f.facilityId} を ${duplicated.name}(${duplicated.floorDir}) と ${f.name}(${dir}) が持っている`
+      )
     else linked.set(f.facilityId, { ...f, floorDir: dir })
   }
 }
 
 // 施設名の表示。未連携・実在しないIDでも落ちないようにする
 // (ここで落ちると、この行より後ろの検査結果と failures の出力ごと消える)
-const roomLabel = (facilityId) => linked.get(facilityId)?.name ?? `(実在しない施設ID ${facilityId})`
+const roomLabel = facilityId => linked.get(facilityId)?.name ?? `(実在しない施設ID ${facilityId})`
 
 // 1. 予定が指す施設IDが実在するか(施設未連携の会議室・通路を指していないか)
 for (const ev of schedules) {
@@ -64,7 +67,7 @@ for (const ev of schedules) {
   else groups.set(key, [ev])
 }
 for (const [key, group] of groups) {
-  const rooms = new Set(group.map((ev) => ev.facilityId ?? '(なし)'))
+  const rooms = new Set(group.map(ev => ev.facilityId ?? '(なし)'))
   if (rooms.size > 1) fail(`同じ会議が複数の室に分かれている: ${key} → ${[...rooms].join(',')}`)
   const room = linked.get(group[0].facilityId)
   if (room && !fitsCapacity(room, group.length)) {
@@ -86,7 +89,9 @@ for (const [facilityId, list] of byRoom) {
       const a = list[i]
       const b = list[j]
       if (!isSameMeeting(a, b) && isOverlapping(a.start, a.end, b.start, b.end)) {
-        fail(`二重予約: ${roomLabel(facilityId)} ${a.id}(${a.start.slice(11, 16)}) と ${b.id}(${b.start.slice(11, 16)})`)
+        fail(
+          `二重予約: ${roomLabel(facilityId)} ${a.id}(${a.start.slice(11, 16)}) と ${b.id}(${b.start.slice(11, 16)})`
+        )
       }
     }
   }
@@ -95,13 +100,16 @@ for (const [facilityId, list] of byRoom) {
 // 4. 画面の分岐が実データで一度も通らない状態を防ぐ(件数の合計ではなく、分岐ごとに1件以上あるかを見る)。
 // 非公開予定は所有者が本人かどうかで表示が割れる(utils/format.ts の isScheduleMasked)ため、
 // 総数だけ見ると片方の分岐が0件でも通ってしまう
-const privateEvents = schedules.filter((ev) => ev.isPrivate)
-const privateSelf = privateEvents.filter((ev) => ev.employeeId === SELF_EMPLOYEE_ID)
-const privateOthers = privateEvents.filter((ev) => ev.employeeId !== SELF_EMPLOYEE_ID)
-const withFacilityCount = schedules.filter((ev) => ev.facilityId).length
-if (privateOthers.length === 0) fail('他人の非公開予定が0件(件名マスク表示を実データで確認できない)')
+const privateEvents = schedules.filter(ev => ev.isPrivate)
+const privateSelf = privateEvents.filter(ev => ev.employeeId === SELF_EMPLOYEE_ID)
+const privateOthers = privateEvents.filter(ev => ev.employeeId !== SELF_EMPLOYEE_ID)
+const withFacilityCount = schedules.filter(ev => ev.facilityId).length
+if (privateOthers.length === 0)
+  fail('他人の非公開予定が0件(件名マスク表示を実データで確認できない)')
 if (privateSelf.length === 0) {
-  fail(`本人(${SELF_EMPLOYEE_ID})の非公開予定が0件(「本人の予定は伏せない」分岐を実データで通せない)`)
+  fail(
+    `本人(${SELF_EMPLOYEE_ID})の非公開予定が0件(「本人の予定は伏せない」分岐を実データで通せない)`
+  )
 }
 if (withFacilityCount === 0) fail('会議室を押さえた予定が0件')
 
@@ -112,8 +120,8 @@ for (const m of facilityMeetings) {
   if (!linked.has(m.facilityId)) fail(`${m.id}: 実在しない施設ID ${m.facilityId}`)
   meetingCountByFacility.set(m.facilityId, (meetingCountByFacility.get(m.facilityId) ?? 0) + 1)
 }
-const floorReport = floorDirs.map((dir) => {
-  const rooms = facilitiesByFloor.get(dir).filter((f) => f.facilityId)
+const floorReport = floorDirs.map(dir => {
+  const rooms = facilitiesByFloor.get(dir).filter(f => f.facilityId)
   for (const room of rooms) {
     if ((meetingCountByFacility.get(room.facilityId) ?? 0) === 0) {
       fail(`${dir} の ${room.name}(${room.facilityId}): 会議室会議が0件(常に空室になる)`)
@@ -121,9 +129,15 @@ const floorReport = floorDirs.map((dir) => {
   }
   return {
     floor: dir,
-    linkedRooms: rooms.map((room) => `${room.name}/${room.facilityId}`),
-    facilityMeetings: rooms.reduce((sum, room) => sum + (meetingCountByFacility.get(room.facilityId) ?? 0), 0),
-    scheduleBookings: rooms.reduce((sum, room) => sum + (byRoom.get(room.facilityId)?.length ?? 0), 0),
+    linkedRooms: rooms.map(room => `${room.name}/${room.facilityId}`),
+    facilityMeetings: rooms.reduce(
+      (sum, room) => sum + (meetingCountByFacility.get(room.facilityId) ?? 0),
+      0
+    ),
+    scheduleBookings: rooms.reduce(
+      (sum, room) => sum + (byRoom.get(room.facilityId)?.length ?? 0),
+      0
+    ),
   }
 })
 
@@ -135,7 +149,11 @@ console.log(
       floors: floorReport,
       schedules: schedules.length,
       withFacility: withFacilityCount,
-      private: { total: privateEvents.length, self: privateSelf.length, others: privateOthers.length },
+      private: {
+        total: privateEvents.length,
+        self: privateSelf.length,
+        others: privateOthers.length,
+      },
       failures,
     },
     null,

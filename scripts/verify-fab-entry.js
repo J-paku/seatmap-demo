@@ -37,19 +37,21 @@
 
   const report = () => {
     const checked = pass.length + fail.length
-    const nameOf = (entry) => entry.split(' — ')[0]
+    const nameOf = entry => entry.split(' — ')[0]
     const judged = new Set([...pass, ...fail].map(nameOf))
     const skippedNames = new Set(skip.map(nameOf))
-    const missing = REQUIRED.filter((name) => !judged.has(name) || skippedNames.has(name))
-    const verdict = checked === 0 || fail.length > 0 ? 'FAIL' : missing.length > 0 ? 'PARTIAL' : 'PASS'
+    const missing = REQUIRED.filter(name => !judged.has(name) || skippedNames.has(name))
+    const verdict =
+      checked === 0 || fail.length > 0 ? 'FAIL' : missing.length > 0 ? 'PARTIAL' : 'PASS'
     const out = { verdict, checked, pass, fail, skip, missingRequired: missing }
     console.log(JSON.stringify(out, null, 1))
     return out
   }
 
   const q = (sel, root) => [...(root || document).querySelectorAll(sel)]
-  const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
-  const raf = () => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
+  const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
+  const raf = () =>
+    new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)))
   const settle = async () => {
     await raf()
     await sleep(80)
@@ -65,12 +67,15 @@
     }
   }
   const fab = () => document.querySelector('[data-coach="admin-fab"]')
-  const pressEsc = () => document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))
+  const pressEsc = () =>
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))
   const key = (el, k) => el.dispatchEvent(new KeyboardEvent('keydown', { key: k, bubbles: true }))
 
   // ---- 0. 前提 ----
   if (!fab()) {
-    fail.push('前提: 左下FAB([data-coach="admin-fab"])が見つからない — 閲覧モードの初期画面で実行すること')
+    fail.push(
+      '前提: 左下FAB([data-coach="admin-fab"])が見つからない — 閲覧モードの初期画面で実行すること'
+    )
     return report()
   }
   const isCompact = window.innerWidth <= COMPACT_MAX_WIDTH
@@ -79,11 +84,15 @@
 
   // haptic の観測。§05-5 の触覚は window の 'haptic' イベントで飛ぶ
   const haptics = []
-  const onHaptic = (e) => haptics.push(e.detail)
+  const onHaptic = e => haptics.push(e.detail)
   window.addEventListener('haptic', onHaptic)
 
   // ---- R1 / A1 / A2: FABの名前・haspopup・背景膜 ----
-  ck('A1: FABが aria-haspopup=menu を持つ', fab().getAttribute('aria-haspopup') === 'menu', fab().getAttribute('aria-haspopup'))
+  ck(
+    'A1: FABが aria-haspopup=menu を持つ',
+    fab().getAttribute('aria-haspopup') === 'menu',
+    fab().getAttribute('aria-haspopup')
+  )
   const closedLabel = fab().getAttribute('aria-label')
   const closedBackdrop = q('[data-fab-backdrop]').length
   const closedOpenAttr = document.querySelector('[data-fab-open]')?.getAttribute('data-fab-open')
@@ -110,13 +119,17 @@
     const items = q('[role="menuitem"]', menu)
     // 行はアイコン span とラベル span を持つ。行全体の textContent を読むと
     // リガチャ文字("groups" など)が混ざるので、ラベル側(最後の span)だけを読む
-    const texts = items.map((el) => {
-      const spans = [...el.querySelectorAll('span')].filter((sp) => !sp.hasAttribute('aria-hidden'))
+    const texts = items.map(el => {
+      const spans = [...el.querySelectorAll('span')].filter(sp => !sp.hasAttribute('aria-hidden'))
       return (spans[0] ?? el).textContent.trim()
     })
-    const keys = items.map((el) => el.getAttribute('data-fab-item'))
-    const stagger = items.map((el) => getComputedStyle(el).getPropertyValue('--glass-stagger-i').trim())
-    const delays = items.map((el) => Math.round(parseFloat(getComputedStyle(el).animationDelay) * 1000))
+    const keys = items.map(el => el.getAttribute('data-fab-item'))
+    const stagger = items.map(el =>
+      getComputedStyle(el).getPropertyValue('--glass-stagger-i').trim()
+    )
+    const delays = items.map(el =>
+      Math.round(parseFloat(getComputedStyle(el).animationDelay) * 1000)
+    )
     ck(
       'R5: メニュー3項目の並び・data-fab-item・スタッガ反転が保たれている',
       items.length === 3 &&
@@ -145,7 +158,9 @@
       `先頭=${firstFocused} 次=${secondFocused} 回り込み=${wrapped} 復帰=${backToFab}`
     )
   } else {
-    fail.push('R5: メニュー3項目の並び・data-fab-item・スタッガ反転が保たれている — メニューが開かない')
+    fail.push(
+      'R5: メニュー3項目の並び・data-fab-item・スタッガ反転が保たれている — メニューが開かない'
+    )
     fail.push('R3: 開いたら先頭へ・↑↓で巡回・閉じたらFABへ焦点が戻る — メニューが開かない')
   }
 
@@ -189,7 +204,7 @@
 
   // 分類シートのカード → 家具ピッカーへ(A13 の medium もここで観測する)
   haptics.length = 0
-  const furnitureCard = q('button', categorySheet).find((b) => b.textContent.includes('家具'))
+  const furnitureCard = q('button', categorySheet).find(b => b.textContent.includes('家具'))
   ck('前提: 分類シートに家具カードがある', !!furnitureCard)
   furnitureCard?.click()
   await settle()
@@ -200,7 +215,9 @@
   const cardHaptic = haptics[0]
   const furniturePanel = furnitureSheet ? furnitureSheet.parentElement : null
   const furnitureFilter = furniturePanel ? getComputedStyle(furniturePanel).backdropFilter : ''
-  const closeCountFurniture = furnitureSheet ? q('button[aria-label="閉じる"]', furnitureSheet).length : -1
+  const closeCountFurniture = furnitureSheet
+    ? q('button[aria-label="閉じる"]', furnitureSheet).length
+    : -1
   ck(
     'A9: 家具ピッカーだけがガラス材(blur 28px + saturate 170%)',
     /blur\(28px\)/.test(furnitureFilter) &&
@@ -226,7 +243,10 @@
       `${gr.height.toFixed(1)}px / ${bar.width}×${bar.height}`
     )
   } else {
-    sk('R4: コンパクト幅で家具ピッカーがボトムシート(つまみ1件・画面下端に接する)', `幅${window.innerWidth}px は中央モーダル帯`)
+    sk(
+      'R4: コンパクト幅で家具ピッカーがボトムシート(つまみ1件・画面下端に接する)',
+      `幅${window.innerWidth}px は中央モーダル帯`
+    )
     sk('A8: つまみが高さ48pxで内部バーが40x4px', `幅${window.innerWidth}px ではつまみを出さない`)
   }
 
@@ -255,7 +275,7 @@
   const sheet2 = await waitFor(() =>
     document.querySelector('[role="dialog"][aria-modal="true"][aria-label="オブジェクトを追加"]')
   )
-  const facilityCard = sheet2 ? q('button', sheet2).find((b) => b.textContent.includes('施設')) : null
+  const facilityCard = sheet2 ? q('button', sheet2).find(b => b.textContent.includes('施設')) : null
   facilityCard?.click()
   await settle()
   const facilitySheet = await waitFor(() =>
@@ -264,10 +284,16 @@
   ck('前提: 施設ピッカーが開く', !!facilitySheet)
   if (facilitySheet) {
     const input = facilitySheet.querySelector('input[aria-label="施設名で検索"]')
-    ck('A11: 施設ピッカーを開いた直後は検索欄へ焦点が入る', document.activeElement === input, String(document.activeElement?.tagName))
+    ck(
+      'A11: 施設ピッカーを開いた直後は検索欄へ焦点が入る',
+      document.activeElement === input,
+      String(document.activeElement?.tagName)
+    )
     ck(
       'A10: 3シートとも button[aria-label="閉じる"] がちょうど1件',
-      closeCountCategory === 1 && closeCountFurniture === 1 && q('button[aria-label="閉じる"]', facilitySheet).length === 1,
+      closeCountCategory === 1 &&
+        closeCountFurniture === 1 &&
+        q('button[aria-label="閉じる"]', facilitySheet).length === 1,
       `分類=${closeCountCategory} 家具=${closeCountFurniture} 施設=${q('button[aria-label="閉じる"]', facilitySheet).length}`
     )
     ck(
@@ -293,14 +319,18 @@
         input.value === '' &&
         !!document.querySelector('[role="dialog"][aria-label="施設を選択"]') &&
         document.activeElement === input,
-      clearRect ? `${clearRect.width.toFixed(1)}×${clearRect.height.toFixed(1)} value="${input.value}"` : 'クリアボタンが出ない'
+      clearRect
+        ? `${clearRect.width.toFixed(1)}×${clearRect.height.toFixed(1)} value="${input.value}"`
+        : 'クリアボタンが出ない'
     )
     q('button[aria-label="閉じる"]', facilitySheet)[0]?.click()
     await settle()
   } else {
     fail.push('A10: 3シートとも button[aria-label="閉じる"] がちょうど1件 — 施設ピッカーが開かない')
     fail.push('A11: 施設ピッカーを開いた直後は検索欄へ焦点が入る — 施設ピッカーが開かない')
-    fail.push('A12: クリアボタンが32x44pxで、押すと入力が空・シートは開いたまま・焦点が入力欄へ戻る — 施設ピッカーが開かない')
+    fail.push(
+      'A12: クリアボタンが32x44pxで、押すと入力が空・シートは開いたまま・焦点が入力欄へ戻る — 施設ピッカーが開かない'
+    )
     fail.push('A14: 施設一覧の配置済み行が全角括弧つき + disabled — 施設ピッカーが開かない')
   }
 
@@ -339,7 +369,9 @@
       seatButtons[0].click()
       await settle()
       const afterOne = q('[data-coach="admin-fab"]').length
-      seatButtons[1].dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, shiftKey: true }))
+      seatButtons[1].dispatchEvent(
+        new MouseEvent('click', { bubbles: true, cancelable: true, shiftKey: true })
+      )
       await settle()
       const afterTwo = q('[data-coach="admin-fab"]').length
       document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))
@@ -351,12 +383,18 @@
         `1席=${afterOne} 2席=${afterTwo} 解除=${afterClear}`
       )
     } else {
-      sk('A3: 座席を1席/2席選ぶとFABが消え、解除で戻る', '編集セッションまたは座席ミラーへ到達できていない')
+      sk(
+        'A3: 座席を1席/2席選ぶとFABが消え、解除で戻る',
+        '編集セッションまたは座席ミラーへ到達できていない'
+      )
     }
   }
 
   // A4 / A5 はツアー既読キーの削除と再読み込みが前提。注入側からは再現できないので運転台の責務
-  sk('A4: ツアー既読キーを消した直後でもガイド層は常に1枚以下', '既読キーの削除と再読み込みが必要(運転台側で実施する)')
+  sk(
+    'A4: ツアー既読キーを消した直後でもガイド層は常に1枚以下',
+    '既読キーの削除と再読み込みが必要(運転台側で実施する)'
+  )
   sk('A5: 抑止は1回限りで、入り直せば編集ガイドが自動再生される', '同上')
 
   window.removeEventListener('haptic', onHaptic)

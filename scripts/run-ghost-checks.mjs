@@ -33,7 +33,8 @@ const REPO_ROOT = path.dirname(SCRIPTS_DIR)
 const BASE_URL = process.env.BASE_URL || process.argv[2] || 'http://localhost:4173/'
 
 const DEFAULT_PLAYWRIGHT_NODE_MODULES = path.resolve(REPO_ROOT, '../J-paku.github.io/node_modules')
-const PLAYWRIGHT_NODE_MODULES = process.env.PLAYWRIGHT_NODE_MODULES || DEFAULT_PLAYWRIGHT_NODE_MODULES
+const PLAYWRIGHT_NODE_MODULES =
+  process.env.PLAYWRIGHT_NODE_MODULES || DEFAULT_PLAYWRIGHT_NODE_MODULES
 
 // ---- 0. Playwright の解決 ----
 const loadChromium = () => {
@@ -43,7 +44,9 @@ const loadChromium = () => {
   } catch (e) {
     console.error('[run-ghost-checks] Playwrightが見つかりません。')
     console.error(`  参照先(PLAYWRIGHT_NODE_MODULES): ${PLAYWRIGHT_NODE_MODULES}`)
-    console.error('  対処: Playwright を入れてある repo の node_modules を PLAYWRIGHT_NODE_MODULES で指定してください。')
+    console.error(
+      '  対処: Playwright を入れてある repo の node_modules を PLAYWRIGHT_NODE_MODULES で指定してください。'
+    )
     console.error(`  詳細: ${e.message}`)
     process.exit(2)
   }
@@ -74,7 +77,7 @@ const findCoachMarkKeys = (dir, keys = new Set()) => {
     }
     if (!/\.(ts|tsx)$/.test(entry.name)) continue
     const matches = readFileSync(full, 'utf8').match(COACH_KEY_RE)
-    if (matches) matches.forEach((m) => keys.add(m))
+    if (matches) matches.forEach(m => keys.add(m))
   }
   return keys
 }
@@ -101,18 +104,18 @@ const GHOST_ANCHOR = '[aria-label="配置プレビュー（ドラッグで移動
 const EDIT_BADGE = '[data-edit-mode-badge="true"]'
 
 // ---- 4. ページの用意 ----
-const openFreshPage = async (browser) => {
+const openFreshPage = async browser => {
   const context = await browser.newContext({ viewport: { width: 1280, height: 900 } })
   const page = await context.newPage()
   const consoleErrors = []
-  page.on('pageerror', (e) => consoleErrors.push(`pageerror: ${e.message}`))
-  page.on('console', (m) => {
+  page.on('pageerror', e => consoleErrors.push(`pageerror: ${e.message}`))
+  page.on('console', m => {
     if (m.type() === 'error') consoleErrors.push(`console.error: ${m.text()}`)
   })
   await page.addInitScript(
     ({ keys, auth }) => {
       try {
-        keys.forEach((k) => localStorage.setItem(k, '1'))
+        keys.forEach(k => localStorage.setItem(k, '1'))
         if (auth) sessionStorage.setItem(auth.key, auth.value)
       } catch {
         // storage が使えない環境でも到達確認自体は続行させる
@@ -136,7 +139,7 @@ const openFreshPage = async (browser) => {
 
 // ---- 5. 注入 ----
 const inject = async (page, options) => {
-  await page.evaluate((o) => {
+  await page.evaluate(o => {
     window.__ghostVerify = o
   }, options)
   const result = await page.evaluate(VERIFY_GHOST_SRC)
@@ -147,7 +150,7 @@ const inject = async (page, options) => {
 }
 
 // ---- 6. 画面の実測ヘルパー ----
-const readCounts = (page) =>
+const readCounts = page =>
   page.evaluate(() => ({
     editObjects: document.querySelectorAll('[data-edit-object]').length,
     facilities: document.querySelectorAll('[data-facility="true"]').length,
@@ -155,7 +158,7 @@ const readCounts = (page) =>
     teams: document.querySelectorAll('[data-team-id]').length,
   }))
 
-const ghostCenter = async (page) => {
+const ghostCenter = async page => {
   // 中央ハンドルはポインタを受けないので、この座標で押すと枠(.preview)が受ける。
   // 枠側へアンカーが移っても中心は変わらない
   const box = await page.locator(GHOST_ANCHOR).first().boundingBox()
@@ -166,22 +169,29 @@ const ghostCenter = async (page) => {
 // 障害物(チーム枠・会議室・通路・家具)の画面矩形。free/aligned の候補探索に使う。
 // 障害物判定は utils/layout/layout-rules(チーム枠+施設)より広く取る — 広く取れば
 // 「空いている」と判定した点は必ず本当に空いている
-const readObstacles = (page) =>
+const readObstacles = page =>
   page.evaluate(() =>
-    [...document.querySelectorAll('[data-team-id], [data-furniture-id]')].map((el) => {
+    [...document.querySelectorAll('[data-team-id], [data-furniture-id]')].map(el => {
       const r = el.getBoundingClientRect()
       return { left: r.left, top: r.top, right: r.right, bottom: r.bottom }
     })
   )
 
-const readCanvasRect = (page) =>
+const readCanvasRect = page =>
   page.evaluate(() => {
     const el = document.getElementById('seatmap-bg-root')
     const r = el.getBoundingClientRect()
-    return { left: r.left, top: r.top, right: r.right, bottom: r.bottom, width: r.width, height: r.height }
+    return {
+      left: r.left,
+      top: r.top,
+      right: r.right,
+      bottom: r.bottom,
+      width: r.width,
+      height: r.height,
+    }
   })
 
-const readGhostSize = async (page) => {
+const readGhostSize = async page => {
   const frame = await page.evaluate(() => {
     const el = document.querySelector('[data-ghost="frame"], [data-ghost-frame="true"]')
     if (!el) return null
@@ -200,16 +210,27 @@ const readGhostSize = async (page) => {
 // alignTo=true なら、さらに「障害物の辺・中心線とゴーストの辺・中心線が揃う」点を優先する
 // (揃えば吸着が起き、ガイド線が出る = 出現側の網羅ができる)
 const findSpot = async (page, { aligned }) => {
-  const [obstacles, canvas, size] = await Promise.all([readObstacles(page), readCanvasRect(page), readGhostSize(page)])
+  const [obstacles, canvas, size] = await Promise.all([
+    readObstacles(page),
+    readCanvasRect(page),
+    readGhostSize(page),
+  ])
   const EDGE = 70
   const MARGIN = 12
   const halfW = size.width / 2
   const halfH = size.height / 2
   const free = (cx, cy) => {
-    const box = { left: cx - halfW - MARGIN, top: cy - halfH - MARGIN, right: cx + halfW + MARGIN, bottom: cy + halfH + MARGIN }
+    const box = {
+      left: cx - halfW - MARGIN,
+      top: cy - halfH - MARGIN,
+      right: cx + halfW + MARGIN,
+      bottom: cy + halfH + MARGIN,
+    }
     if (box.left < canvas.left + EDGE || box.right > canvas.right - EDGE) return false
     if (box.top < canvas.top + EDGE || box.bottom > canvas.bottom - EDGE) return false
-    return !obstacles.some((o) => box.left < o.right && box.right > o.left && box.top < o.bottom && box.bottom > o.top)
+    return !obstacles.some(
+      o => box.left < o.right && box.right > o.left && box.top < o.bottom && box.bottom > o.top
+    )
   }
   const xs = []
   const ys = []
@@ -245,7 +266,7 @@ const dragGhostTo = async (page, target, { release = true, steps = 24 } = {}) =>
 }
 
 // ---- 7. 到達手順 ----
-const openCreateFacilityGhost = async (page) => {
+const openCreateFacilityGhost = async page => {
   await page.getByRole('button', { name: '追加メニューを開く' }).click()
   await page.getByRole('menuitem', { name: '設備', exact: true }).click()
   const sheet = page.locator('[role="dialog"][aria-modal="true"][aria-label="オブジェクトを追加"]')
@@ -259,7 +280,7 @@ const openCreateFacilityGhost = async (page) => {
   await page.waitForTimeout(200)
 }
 
-const openRepositionGhost = async (page) => {
+const openRepositionGhost = async page => {
   await page.getByRole('button', { name: '追加メニューを開く' }).click()
   await page.getByRole('menuitem', { name: 'レイアウトを編集', exact: true }).click()
   await page.waitForSelector(EDIT_BADGE, { timeout: 8000 })
@@ -284,19 +305,20 @@ const openRepositionGhost = async (page) => {
   throw new Error(`掴み直しのゴーストが開かない(施設 ${count}件すべてで開かず)`)
 }
 
-const clickGhostConfirm = async (page) => {
+const clickGhostConfirm = async page => {
   await page.getByRole('button', { name: 'この位置に配置' }).click()
 }
-const clickGhostCancel = async (page) => {
+const clickGhostCancel = async page => {
   await page.getByRole('button', { name: '配置をキャンセル' }).click()
 }
-const waitGhostGone = (page) => page.waitForSelector(GHOST_ANCHOR, { state: 'detached', timeout: 8000 })
+const waitGhostGone = page =>
+  page.waitForSelector(GHOST_ANCHOR, { state: 'detached', timeout: 8000 })
 
 // ---- 8. シナリオ ----
 // 1シナリオ = 1ページ。前のシナリオの副作用(編集中のワーキングコピー・保存済みレイアウト)を
 // 持ち込まない。各シナリオは { checks: [{name, ok, detail}], reports: [注入結果] } を返す
 
-const scenarioCreate = async (page) => {
+const scenarioCreate = async page => {
   const checks = []
   const reports = []
   await openCreateFacilityGhost(page)
@@ -315,7 +337,11 @@ const scenarioCreate = async (page) => {
   // ガイド: 障害物の辺と揃う空き位置まで運び、掴んだまま注入する
   // (離すと guides は空へ戻る実装なので、押下中でなければ出現側を網羅できない)
   const alignedSpot = await findSpot(page, { aligned: true })
-  checks.push({ name: '吸着が起きる空き位置を探索できた', ok: !!alignedSpot, detail: JSON.stringify(alignedSpot) })
+  checks.push({
+    name: '吸着が起きる空き位置を探索できた',
+    ok: !!alignedSpot,
+    detail: JSON.stringify(alignedSpot),
+  })
   if (alignedSpot) {
     await dragGhostTo(page, alignedSpot, { release: false })
     reports.push(
@@ -333,8 +359,14 @@ const scenarioCreate = async (page) => {
   }
 
   // 離すとガイドは消える
-  const guidesAfterRelease = await page.evaluate(() => document.querySelectorAll('[data-ghost="guide"]').length)
-  checks.push({ name: '離すとガイド線が消える', ok: guidesAfterRelease === 0, detail: `${guidesAfterRelease}本` })
+  const guidesAfterRelease = await page.evaluate(
+    () => document.querySelectorAll('[data-ghost="guide"]').length
+  )
+  checks.push({
+    name: '離すとガイド線が消える',
+    ok: guidesAfterRelease === 0,
+    detail: `${guidesAfterRelease}本`,
+  })
 
   // 取消: 件数も座標も変わらない
   const beforeCancel = await readCounts(page)
@@ -359,14 +391,16 @@ const scenarioCreate = async (page) => {
   const afterConfirm = await readCounts(page)
   checks.push({
     name: '確定でセッションが閉じ、対象が1つ増える',
-    ok: afterConfirm.editObjects === beforeConfirm.editObjects + 1 && afterConfirm.facilities === beforeConfirm.facilities + 1,
+    ok:
+      afterConfirm.editObjects === beforeConfirm.editObjects + 1 &&
+      afterConfirm.facilities === beforeConfirm.facilities + 1,
     detail: `edit-object ${beforeConfirm.editObjects} → ${afterConfirm.editObjects} / facility ${beforeConfirm.facilities} → ${afterConfirm.facilities}`,
   })
   reports.push(await inject(page, { phase: 'create/確定後', mode: 'closed' }))
   return { checks, reports }
 }
 
-const scenarioReposition = async (page) => {
+const scenarioReposition = async page => {
   const checks = []
   const reports = []
   const ref = await openRepositionGhost(page)
@@ -375,7 +409,7 @@ const scenarioReposition = async (page) => {
   reports.push(await inject(page, { phase: 'move/初期表示', mode: 'open' }))
 
   const rectOfRef = () =>
-    page.evaluate((r) => {
+    page.evaluate(r => {
       const el = document.querySelector(`[data-edit-object="${r}"]`)
       if (!el) return null
       const b = el.getBoundingClientRect()
@@ -391,19 +425,31 @@ const scenarioReposition = async (page) => {
     const during = await rectOfRef()
     checks.push({
       name: '掴み直し中は実体がその場に残る(1pxも動かない)',
-      ok: !!during && !!beforeRect && Math.abs(during.x - beforeRect.x) <= 1 && Math.abs(during.y - beforeRect.y) <= 1,
+      ok:
+        !!during &&
+        !!beforeRect &&
+        Math.abs(during.x - beforeRect.x) <= 1 &&
+        Math.abs(during.y - beforeRect.y) <= 1,
       detail: `${JSON.stringify(beforeRect)} → ${JSON.stringify(during)}`,
     })
     // 空き位置へ運んだ直後だけ「リサイズ可能で重なっていない」局面になる。
     // ここで注入しないと、リサイズハンドルの属性検査がどの局面でも実測されず skip のまま残る
     reports.push(
-      await inject(page, { phase: 'move/空き位置(リサイズ可能)', mode: 'open', expectBlocked: false, probes: false })
+      await inject(page, {
+        phase: 'move/空き位置(リサイズ可能)',
+        mode: 'open',
+        expectBlocked: false,
+        probes: false,
+      })
     )
     await clickGhostConfirm(page)
     await waitGhostGone(page)
     const afterRect = await rectOfRef()
     const afterCounts = await readCounts(page)
-    const moved = afterRect && beforeRect ? Math.hypot(afterRect.x - beforeRect.x, afterRect.y - beforeRect.y) : 0
+    const moved =
+      afterRect && beforeRect
+        ? Math.hypot(afterRect.x - beforeRect.x, afterRect.y - beforeRect.y)
+        : 0
     checks.push({
       name: '確定でセッションが閉じ、対象の座標が変わる',
       ok: moved > 4,
@@ -419,7 +465,7 @@ const scenarioReposition = async (page) => {
   return { checks, reports }
 }
 
-const scenarioSessionExit = async (page) => {
+const scenarioSessionExit = async page => {
   const checks = []
   const reports = []
   await openCreateFacilityGhost(page)
@@ -455,11 +501,11 @@ const runScenario = async (browser, def) => {
     const { page, consoleErrors } = opened
     try {
       const { checks, reports } = await def.run(page)
-      const failedChecks = checks.filter((c) => !c.ok)
-      const reportFails = reports.flatMap((r) => r.fail)
+      const failedChecks = checks.filter(c => !c.ok)
+      const reportFails = reports.flatMap(r => r.fail)
       // 検査0件で FAIL を返した注入(前提不成立で打ち切った回)も1件の失敗として数える。
       // fail 配列が空だからと素通りさせない
-      const emptyFails = reports.filter((r) => r.verdict !== 'PASS' && r.fail.length === 0).length
+      const emptyFails = reports.filter(r => r.verdict !== 'PASS' && r.fail.length === 0).length
       const checked = checks.length + reports.reduce((sum, r) => sum + r.checked, 0)
       return {
         ...def,
@@ -472,7 +518,16 @@ const runScenario = async (browser, def) => {
       }
     } catch (e) {
       // 到達失敗を「0件検査の PASS」にしない。fail 1件を持つ明示的な FAIL にする
-      return { ...def, reached: false, reason: e.message, checked: 0, checks: [], reports: [], failCount: 1, consoleErrors }
+      return {
+        ...def,
+        reached: false,
+        reason: e.message,
+        checked: 0,
+        checks: [],
+        reports: [],
+        failCount: 1,
+        consoleErrors,
+      }
     }
   } finally {
     if (context) await context.close()
@@ -480,22 +535,26 @@ const runScenario = async (browser, def) => {
 }
 
 // ---- 10. 出力 ----
-const nameOf = (entry) => entry.split(' — ')[0]
+const nameOf = entry => entry.split(' — ')[0]
 
-const printScenario = (r) => {
+const printScenario = r => {
   console.log(`\n=== [${r.id}] ${r.label} ===`)
   if (!r.reached) {
     console.log(`  到達失敗: ${r.reason}`)
     return
   }
-  r.checks.forEach((c) => console.log(`  ${c.ok ? 'pass' : 'FAIL'}(運転台): ${c.name}${c.detail ? ` — ${c.detail}` : ''}`))
-  r.reports.forEach((rep) => {
-    console.log(`  [${rep.phase}] verdict=${rep.verdict} checked=${rep.checked} pass=${rep.pass.length} fail=${rep.fail.length} skip=${rep.skip.length}`)
-    rep.fail.forEach((f) => console.log(`    FAIL: ${f}`))
+  r.checks.forEach(c =>
+    console.log(`  ${c.ok ? 'pass' : 'FAIL'}(運転台): ${c.name}${c.detail ? ` — ${c.detail}` : ''}`)
+  )
+  r.reports.forEach(rep => {
+    console.log(
+      `  [${rep.phase}] verdict=${rep.verdict} checked=${rep.checked} pass=${rep.pass.length} fail=${rep.fail.length} skip=${rep.skip.length}`
+    )
+    rep.fail.forEach(f => console.log(`    FAIL: ${f}`))
   })
   if (r.consoleErrors.length > 0) {
     console.log('  ページ内エラー:')
-    r.consoleErrors.forEach((e) => console.log(`    ${e}`))
+    r.consoleErrors.forEach(e => console.log(`    ${e}`))
   }
 }
 
@@ -520,29 +579,31 @@ const main = async () => {
 
   // skip の消し込み: ある局面で skip になった判定は、別の局面で pass していなければならない。
   // 消し込めない skip = その項目は一度も実測されていない = 総合判定は FAIL
-  const allReports = results.flatMap((r) => r.reports)
-  const passedNames = new Set(allReports.flatMap((rep) => rep.pass.map(nameOf)))
-  const skippedNames = new Set(allReports.flatMap((rep) => rep.skip.map(nameOf)))
-  const unresolvedSkips = [...skippedNames].filter((n) => !passedNames.has(n))
+  const allReports = results.flatMap(r => r.reports)
+  const passedNames = new Set(allReports.flatMap(rep => rep.pass.map(nameOf)))
+  const skippedNames = new Set(allReports.flatMap(rep => rep.skip.map(nameOf)))
+  const unresolvedSkips = [...skippedNames].filter(n => !passedNames.has(n))
 
   const totalChecked = results.reduce((sum, r) => sum + r.checked, 0)
   const totalFail = results.reduce((sum, r) => sum + r.failCount, 0)
-  const anyUnreached = results.some((r) => !r.reached)
+  const anyUnreached = results.some(r => !r.reached)
   const verdict =
-    totalChecked > 0 && totalFail === 0 && !anyUnreached && unresolvedSkips.length === 0 ? 'PASS' : 'FAIL'
+    totalChecked > 0 && totalFail === 0 && !anyUnreached && unresolvedSkips.length === 0
+      ? 'PASS'
+      : 'FAIL'
 
   console.log('\n=== 総計 ===')
-  console.log(`シナリオ: ${results.length} / 到達成功: ${results.filter((r) => r.reached).length}`)
+  console.log(`シナリオ: ${results.length} / 到達成功: ${results.filter(r => r.reached).length}`)
   console.log(`総検査数: ${totalChecked} / fail: ${totalFail}`)
   if (unresolvedSkips.length > 0) {
     console.log(`消し込めない skip(どの局面でも実測されていない判定): ${unresolvedSkips.length}件`)
-    unresolvedSkips.forEach((n) => console.log(`  - ${n}`))
+    unresolvedSkips.forEach(n => console.log(`  - ${n}`))
   }
   console.log(`最終判定: ${verdict}`)
   process.exit(verdict === 'PASS' ? 0 : 1)
 }
 
-main().catch((e) => {
+main().catch(e => {
   console.error('[run-ghost-checks] HARNESS ERROR:', e.message)
   console.error(e.stack)
   process.exit(2)

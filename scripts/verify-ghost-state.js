@@ -32,9 +32,10 @@
     return out
   }
 
-  const raf = () => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
-  const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
-  const centerOf = (el) => {
+  const raf = () =>
+    new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)))
+  const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
+  const centerOf = el => {
     const r = el.getBoundingClientRect()
     return { x: r.left + r.width / 2, y: r.top + r.height / 2 }
   }
