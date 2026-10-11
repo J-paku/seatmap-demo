@@ -1,10 +1,17 @@
 import { useEffect, useMemo, useState } from 'react'
-import { matchesEmployeeQuery } from '@/utils/employee-search'
 import { readFavoriteDepartments } from '@/lib/seat/favorite-departments'
 import type { Employee, Seat } from '@/types'
+import {
+  buildDepartmentGroups,
+  departmentOf,
+  filterCandidateEmployees,
+  sortCandidates,
+  type AssignCandidate,
+  type AssignDepartmentGroup,
+} from '../utils/group-assign-candidates'
 
 // 配属候補の絞り込み・並び替え・部門ツリー化と、各社員が今どこに座っているかの解決。
-// 並び替え・グルーピングの本体は React に依存しない純関数として分離し(下記)、node から直接
+// 並び替え・グルーピングの本体は React に依存しない純関数として分離し(utils/group-assign-candidates.ts)、node から直接
 // 実行検証できるようにする(フック本体はローカル状態と useMemo で純関数をつなぐだけ)
 
 // 「今どこに座っているか」の唯一の判定口。座席配列を先頭から走査し、最初に見つかった席を
@@ -17,81 +24,6 @@ export const buildSeatByEmployee = (seats: Seat[]): Map<string, Seat> => {
     if (seat.employeeId && !map.has(seat.employeeId)) map.set(seat.employeeId, seat)
   }
   return map
-}
-
-export type AssignCandidate = {
-  employee: Employee
-  // 既に座っている席(あれば)。選ぶと移動/入れ替えになることの予告に使う
-  seatedAt: string | null
-  // §06-4/§07-4: 対象席が空席 かつ 本人が未配属の組み合わせだけ確認なしで即配属できる。
-  // それ以外は呼び出し側で確認モーダルを挟む(モーダル自体の文言・実際の呼び出しは別ラウンド担当。
-  // ここでは「確認が要るかどうか」の分岐だけを確定する)
-  needsConfirm: boolean
-}
-
-export type AssignDepartmentGroup = {
-  department: string
-  candidates: AssignCandidate[]
-}
-
-const UNASSIGNED_DEPARTMENT = '未所属'
-
-// 所属部署名の正規化。空文字・空白のみは「未所属」に丸める
-const departmentOf = (employee: Employee): string => {
-  const trimmed = employee.team.trim()
-  return trimmed.length > 0 ? trimmed : UNASSIGNED_DEPARTMENT
-}
-
-// §06-4: 空クエリ=未配属者全員。非空クエリは名前・チーム・社員番号(カナ含む)の部分一致
-const filterCandidateEmployees = (
-  employees: Employee[],
-  query: string,
-  seatByEmployee: Map<string, Seat>
-): Employee[] => {
-  const isSearching = query.trim().length > 0
-  if (!isSearching) return employees.filter(employee => !seatByEmployee.has(employee.id))
-  return employees.filter(employee => matchesEmployeeQuery(employee, query))
-}
-
-// §06-4: ソート 未配属→チーム→名前→ID
-const sortCandidates = (candidates: AssignCandidate[]): AssignCandidate[] =>
-  [...candidates].sort((left, right) => {
-    const seatedDiff = Number(left.seatedAt !== null) - Number(right.seatedAt !== null)
-    if (seatedDiff !== 0) return seatedDiff
-    const teamDiff = left.employee.team.localeCompare(right.employee.team, 'ja')
-    if (teamDiff !== 0) return teamDiff
-    const nameDiff = left.employee.name.localeCompare(right.employee.name, 'ja')
-    if (nameDiff !== 0) return nameDiff
-    return left.employee.id.localeCompare(right.employee.id, 'ja')
-  })
-
-// §06-4: 部門ツリー = 所属でグループ化 → 五十音順 → お気に入り繰り上げ → 現在チーム絶対先頭
-const buildDepartmentGroups = (
-  candidates: AssignCandidate[],
-  favoriteDepartments: Set<string>,
-  currentDepartment: string | null
-): AssignDepartmentGroup[] => {
-  const grouped = new Map<string, AssignCandidate[]>()
-  for (const candidate of candidates) {
-    const department = departmentOf(candidate.employee)
-    const list = grouped.get(department)
-    if (list) list.push(candidate)
-    else grouped.set(department, [candidate])
-  }
-
-  const names = Array.from(grouped.keys()).sort((a, b) => a.localeCompare(b, 'ja'))
-  const favorites = names.filter(name => favoriteDepartments.has(name))
-  const rest = names.filter(name => !favoriteDepartments.has(name))
-  const ordered = [...favorites, ...rest]
-  const pinned =
-    currentDepartment && ordered.includes(currentDepartment)
-      ? [currentDepartment, ...ordered.filter(name => name !== currentDepartment)]
-      : ordered
-
-  return pinned.map(department => ({
-    department,
-    candidates: grouped.get(department) ?? [],
-  }))
 }
 
 export const useEmployeeAssign = (

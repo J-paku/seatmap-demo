@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { readFavoriteDepartments, writeFavoriteDepartments } from '@/lib/seat/favorite-departments'
 import { readFavoriteIds, writeFavoriteIds } from '@/lib/seat/favorite-employees'
+import { createEmptySet, toggleSetValue } from '../utils/toggle-favorite-set'
 
 type FavoritesInitialization = 'lazy' | 'effect'
 
@@ -13,20 +14,6 @@ interface UseFavoritesResult {
   toggleFavorite: (empId: string) => void
   favoriteDeptNames: Set<string>
   toggleFavoriteDept: (dept: string) => void
-}
-
-const createEmptySet = () => new Set<string>()
-
-const toggleSetValue = (current: Set<string>, value: string): Set<string> => {
-  const next = new Set(current)
-
-  if (next.has(value)) {
-    next.delete(value)
-    return next
-  }
-
-  next.add(value)
-  return next
 }
 
 export function useFavorites(options: UseFavoritesOptions = {}): UseFavoritesResult {

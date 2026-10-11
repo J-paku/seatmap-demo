@@ -1,8 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
+import { writeClipboardText } from '@/lib/copy-field-clipboard'
 import type { ContactField } from '../type'
-
-// コピー成功の吹き出しを出す時間
-const BUBBLE_MS = 1600
+import { BUBBLE_MS } from '../utils/copy-bubble-duration'
 
 type CopyField = {
   copiedField: ContactField | null
@@ -21,9 +20,9 @@ export const useCopyField = (): CopyField => {
   )
 
   const copy = (field: ContactField, value: string) => {
-    if (typeof navigator === 'undefined' || !navigator.clipboard) return
-    navigator.clipboard
-      .writeText(value)
+    const written = writeClipboardText(value)
+    if (written === null) return
+    written
       .then(() => {
         setCopiedField(field)
         if (timeoutRef.current !== null) window.clearTimeout(timeoutRef.current)
