@@ -24,19 +24,18 @@ const clusterAxis = (values: number[], tolerance: number): number[] => {
   return centers
 }
 
+// 最も近い中心の番号。等距離なら番号の小さい方を残す
 const nearestIndex = (centers: number[], v: number): number => {
   let best = 0
-  for (let i = 1; i < centers.length; i += 1) {
-    if (Math.abs(v - centers[i]) < Math.abs(v - centers[best])) best = i
+  for (const [i, c] of centers.entries()) {
+    if (Math.abs(v - c) < Math.abs(v - centers[best])) best = i
   }
   return best
 }
 
-// 座席データはフロア絶対座標しか持たないため、ここで行列インデックスを起こす
+// 座席データはフロア絶対座標しか持たないため、ここで行列インデックスを起こす。
+// 席が0件なら平均が NaN になるが、まとめる値が無いので使われず、0行0列の空のグリッドになる
 export const buildSeatGrid = (seats: Seat[]): SeatGrid => {
-  if (seats.length === 0)
-    return { positionedSeats: [], seatByGridCell: new Map(), rows: 0, cols: 0 }
-
   const avgW = seats.reduce((sum, s) => sum + s.width, 0) / seats.length
   const avgH = seats.reduce((sum, s) => sum + s.height, 0) / seats.length
   const colCenters = clusterAxis(
