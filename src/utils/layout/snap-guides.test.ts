@@ -106,6 +106,91 @@ describe('computeSnap', () => {
 
     expect(computeSnap(dragging, [lower, upper], 20)).toEqual(result)
   })
+
+  it('左辺を相手の右辺へ・右辺を相手の左辺へ寄せても辺どうしの吸着になる', () => {
+    const sibling: Rect = { x: 0, y: 200, w: 100, h: 50 }
+    // 左辺103 ↔ 相手の右辺100
+    expect(computeSnap({ x: 103, y: 0, w: 50, h: 50 }, [sibling], 5)).toEqual({
+      x: 100,
+      y: 0,
+      guides: [{ axis: 'vertical', pos: 100, start: -10, end: 260, type: 'edge', extend: 10 }],
+    })
+    // 右辺-3 ↔ 相手の左辺0
+    expect(computeSnap({ x: -53, y: 0, w: 50, h: 50 }, [sibling], 5)).toEqual({
+      x: -50,
+      y: 0,
+      guides: [{ axis: 'vertical', pos: 0, start: -10, end: 260, type: 'edge', extend: 10 }],
+    })
+  })
+
+  it('y 方向にも吸着し、横向きのガイドは x 方向の区間を覆う', () => {
+    const dragging: Rect = { x: 0, y: 103, w: 50, h: 50 }
+    const sibling: Rect = { x: 200, y: 0, w: 50, h: 100 }
+    // 上辺103 ↔ 相手の下辺100。x は全て離れている
+    expect(computeSnap(dragging, [sibling], 5)).toEqual({
+      x: 0,
+      y: 100,
+      guides: [{ axis: 'horizontal', pos: 100, start: -10, end: 260, type: 'edge', extend: 10 }],
+    })
+  })
+
+  it('最小距離との差がちょうど同率窓(1)の候補は同率に含めない', () => {
+    const dragging: Rect = { x: 0, y: 0, w: 20, h: 20 }
+    // near は左辺・右辺・中心が全て距離3。far は右辺-4 ↔ ドラッグ左辺0 の距離4だけ
+    const near: Rect = { x: 3, y: 500, w: 20, h: 20 }
+    const far: Rect = { x: -24, y: 800, w: 20, h: 20 }
+    const result = computeSnap(dragging, [near, far], 5)
+    expect(result).toEqual({
+      x: 3,
+      y: 0,
+      guides: [
+        { axis: 'vertical', pos: 3, start: -10, end: 530, type: 'edge', extend: 10 },
+        { axis: 'vertical', pos: 23, start: -10, end: 530, type: 'edge', extend: 10 },
+        { axis: 'vertical', pos: 13, start: -10, end: 530, type: 'center', extend: 10 },
+      ],
+    })
+    expect(computeSnap(dragging, [far, near], 5)).toEqual(result)
+  })
+
+  it('縦と横のガイドは同じ位置でも別の線として残す', () => {
+    const dragging: Rect = { x: 103, y: 103, w: 50, h: 50 }
+    const sibling: Rect = { x: 0, y: 0, w: 100, h: 100 }
+    expect(computeSnap(dragging, [sibling], 5)).toEqual({
+      x: 100,
+      y: 100,
+      guides: [
+        { axis: 'vertical', pos: 100, start: -10, end: 160, type: 'edge', extend: 10 },
+        { axis: 'horizontal', pos: 100, start: -10, end: 160, type: 'edge', extend: 10 },
+      ],
+    })
+  })
+
+  it('位置差がちょうど畳み幅(2)の線は畳まない', () => {
+    const dragging: Rect = { x: 0, y: 0, w: 20, h: 20 }
+    // a は左辺4 ↔ 左辺0(距離4)、b は中心6 ↔ 中心10(距離4)。同率で、線の位置差は2
+    const a: Rect = { x: 4, y: 500, w: 100, h: 20 }
+    const b: Rect = { x: -44, y: 800, w: 100, h: 20 }
+    expect(computeSnap(dragging, [a, b], 5)).toEqual({
+      x: 4,
+      y: 0,
+      guides: [
+        { axis: 'vertical', pos: 4, start: -10, end: 530, type: 'edge', extend: 10 },
+        { axis: 'vertical', pos: 6, start: -10, end: 830, type: 'center', extend: 10 },
+      ],
+    })
+  })
+
+  it('畳んだ線は区間を和集合に広げ、片方が中心線なら center になる', () => {
+    const dragging: Rect = { x: 0, y: 0, w: 20, h: 20 }
+    // a は左辺5 ↔ 左辺0 の辺(距離5)、b は中心5 ↔ 中心10 の中心線(距離5)。どちらも位置5
+    const a: Rect = { x: 5, y: 500, w: 100, h: 20 }
+    const b: Rect = { x: -45, y: 1000, w: 100, h: 20 }
+    expect(computeSnap(dragging, [a, b], 6)).toEqual({
+      x: 5,
+      y: 0,
+      guides: [{ axis: 'vertical', pos: 5, start: -10, end: 1030, type: 'center', extend: 10 }],
+    })
+  })
 })
 
 describe('computeResizeSnap', () => {
@@ -169,6 +254,72 @@ describe('computeResizeSnap', () => {
     expect(furniture.guides).toEqual([
       { axis: 'vertical', pos: 100, start: -10, end: 310, type: 'edge', extend: 10 },
     ])
+  })
+
+  it('ハンドル "n" は y始点だけ吸着し、x は右辺の近くに線があっても動かない', () => {
+    const resized: Rect = { x: 0, y: 10, w: 50, h: 50 }
+    // x の線55は右辺50から5、y の線5は上辺10から5
+    const sibling: Rect = { x: 55, y: 5, w: 100, h: 200 }
+    expect(computeResizeSnap(resized, [sibling], 10, 'n', limits)).toEqual({
+      rect: { x: 0, y: 5, w: 50, h: 55 },
+      guides: [{ axis: 'horizontal', pos: 5, start: -10, end: 165, type: 'edge', extend: 10 }],
+    })
+  })
+
+  it('ハンドル "e" は上下の辺の近くに y の線があっても上下を動かさない', () => {
+    const resized: Rect = { x: 0, y: 0, w: 50, h: 50 }
+    // x の線55は右辺50から5。y の線-3・53は上辺0・下辺50からそれぞれ3
+    const sibling: Rect = { x: 55, y: -3, w: 100, h: 56 }
+    expect(computeResizeSnap(resized, [sibling], 10, 'e', limits)).toEqual({
+      rect: { x: 0, y: 0, w: 55, h: 50 },
+      guides: [{ axis: 'vertical', pos: 55, start: -13, end: 63, type: 'edge', extend: 10 }],
+    })
+  })
+
+  it('ハンドル "s" は y終点だけ吸着し、上辺は固定される', () => {
+    const resized: Rect = { x: 0, y: 0, w: 50, h: 50 }
+    const sibling: Rect = { x: 200, y: 55, w: 20, h: 100 }
+    expect(computeResizeSnap(resized, [sibling], 10, 's', limits)).toEqual({
+      rect: { x: 0, y: 0, w: 50, h: 55 },
+      guides: [{ axis: 'horizontal', pos: 55, start: -10, end: 230, type: 'edge', extend: 10 }],
+    })
+  })
+
+  it('しきい値ちょうどの距離の線には吸着する', () => {
+    const resized: Rect = { x: 0, y: 0, w: 50, h: 50 }
+    const sibling: Rect = { x: 60, y: 200, w: 0, h: 0 }
+    expect(computeResizeSnap(resized, [sibling], 10, 'e', limits).rect).toEqual({
+      x: 0,
+      y: 0,
+      w: 60,
+      h: 50,
+    })
+  })
+
+  it('吸着後の寸法がちょうど最小寸法なら候補に残す', () => {
+    const resized: Rect = { x: 0, y: 0, w: 20, h: 20 }
+    const sibling: Rect = { x: 10, y: 200, w: 0, h: 0 }
+    // アンカーは x=0。候補位置10なら寸法は10で、minW=10 ちょうど
+    expect(computeResizeSnap(resized, [sibling], 15, 'e', limits).rect).toEqual({
+      x: 0,
+      y: 0,
+      w: 10,
+      h: 20,
+    })
+  })
+
+  it('左端が0でない矩形でも、右辺の吸着は左端からの寸法で判定・適用する', () => {
+    const resized: Rect = { x: 100, y: 0, w: 50, h: 50 }
+    // 候補位置160 → 寸法60
+    const reach = computeResizeSnap(resized, [{ x: 160, y: 200, w: 0, h: 0 }], 15, 'e', limits)
+    expect(reach.rect).toEqual({ x: 100, y: 0, w: 60, h: 50 })
+    // 候補位置145 → 寸法45 は minW=50 を割るので棄却
+    const short = computeResizeSnap(resized, [{ x: 145, y: 200, w: 0, h: 0 }], 10, 'e', {
+      minW: 50,
+      minH: 10,
+      max: 1000,
+    })
+    expect(short).toEqual({ rect: resized, guides: [] })
   })
 
   it('しきい値外なら対辺・制御辺とも無変化でガイドも空', () => {

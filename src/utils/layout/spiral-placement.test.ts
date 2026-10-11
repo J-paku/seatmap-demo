@@ -66,4 +66,77 @@ describe('findSpiralSpot', () => {
     )
     expect(spot).toBeNull()
   })
+
+  it('内側のリングから順に、リング内は上辺左→右・右辺上→下・下辺右→左・左辺下→上で最初の空きを返す', () => {
+    // リング0〜2の格子オフセットを、仕様どおりの走査順で並べたもの
+    const order: [number, number][] = [
+      [0, 0],
+      [-1, -1],
+      [0, -1],
+      [1, -1],
+      [1, 0],
+      [1, 1],
+      [0, 1],
+      [-1, 1],
+      [-1, 0],
+      [-2, -2],
+      [-1, -2],
+      [0, -2],
+      [1, -2],
+      [2, -2],
+      [2, -1],
+      [2, 0],
+      [2, 1],
+      [2, 2],
+      [1, 2],
+      [0, 2],
+      [-1, 2],
+      [-2, 2],
+      [-2, 1],
+      [-2, 0],
+      [-2, -1],
+    ]
+    // アンカー(200,200)・10×10 なら、オフセット(dx,dy)の矩形の左上は (195+15dx, 195+15dy)
+    const rectAt = ([dx, dy]: [number, number]): Rect => ({
+      x: 195 + dx * 15,
+      y: 195 + dy * 15,
+      w: 10,
+      h: 10,
+    })
+    // 走査順で k 番目より前を全て塞げば、k 番目がちょうど最初の空きになる
+    order.forEach((offset, k) => {
+      const taken = new Set(order.slice(0, k).map(o => JSON.stringify(rectAt(o))))
+      const spot = findSpiralSpot({ x: 200, y: 200 }, { width: 10, height: 10 }, bounds, rect =>
+        taken.has(JSON.stringify(rect))
+      )
+      expect(spot, `k=${k}`).toEqual({ rect: rectAt(offset), stage: 'avoid-all' })
+    })
+  })
+
+  it('長辺方向でも、フロアの端から反対の端の格子点まで届く', () => {
+    // 60×15 のフロアの左上角から始め、右端(x=60)の格子点だけを空ける。
+    // 半径は短辺ではなく長辺から決まり、最外周のリング(60/15=4)まで走査する
+    const spot = findSpiralSpot(
+      { x: 0, y: 0 },
+      { width: 0, height: 0 },
+      { width: 60, height: 15 },
+      rect => rect.x !== 60
+    )
+    expect(spot).toEqual({ rect: { x: 60, y: 0, w: 0, h: 0 }, stage: 'avoid-all' })
+  })
+
+  it('フロアの辺にちょうど接する矩形はフロア内として置ける', () => {
+    const floor = { width: 100, height: 100 }
+    const size = { width: 10, height: 10 }
+    // 左上の辺に接する(x=0, y=0)
+    expect(findSpiralSpot({ x: 5, y: 5 }, size, floor, () => false)).toEqual({
+      rect: { x: 0, y: 0, w: 10, h: 10 },
+      stage: 'avoid-all',
+    })
+    // 右下の辺に接する(右端=100, 下端=100)
+    expect(findSpiralSpot({ x: 95, y: 95 }, size, floor, () => false)).toEqual({
+      rect: { x: 90, y: 90, w: 10, h: 10 },
+      stage: 'avoid-all',
+    })
+  })
 })

@@ -205,9 +205,10 @@ export const applyLayoutAction = (layout: SeatLayout, action: LayoutAction): Sea
       const target = layout.seats.find(s => s.id === action.seatId)
       if (!target) return layout
       if (target.employeeId === action.employeeId) return layout
-      // その社員が既に座っている席(あれば)。移動元には移動先の元の人が入る
+      // その社員が既に座っている席(あれば)。移動元には移動先の元の人が入る。
+      // 対象席は上の早期 return で別の人(または空席)と分かっているので、ここで除外しなくても拾わない
       const from = action.employeeId
-        ? layout.seats.find(s => s.employeeId === action.employeeId && s.id !== action.seatId)
+        ? layout.seats.find(s => s.employeeId === action.employeeId)
         : undefined
       const displaced = target.employeeId
       return {

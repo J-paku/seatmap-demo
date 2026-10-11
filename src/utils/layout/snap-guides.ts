@@ -43,6 +43,55 @@ type Edges = { lo: number; mid: number; hi: number }
 
 const edgesOf = (lo: number, size: number): Edges => ({ lo, mid: lo + size / 2, hi: lo + size })
 
+type Axis = 'x' | 'y'
+
+// 軸ごとの読み出し口を1つの表にまとめる。lines はその軸に沿った3本の線、cross はガイド線が
+// 伸びる向き(直交軸)の区間、guide は描く線の向き、handle はその軸の始点側・終点側の辺を動かす
+// ハンドルの文字。三項演算子で 'x' 以外を全て y 側へ倒す書き方だと、軸を取り違えた呼び出しが
+// 黙って通る。表から引けば引き損ねた時点で落ちる
+const AXES: Record<
+  Axis,
+  {
+    lines: (r: Rect) => Edges
+    cross: (r: Rect) => number[]
+    guide: SnapGuide['axis']
+    handle: { start: string; end: string }
+  }
+> = {
+  x: {
+    lines: r => edgesOf(r.x, r.w),
+    cross: r => [r.y, r.y + r.h],
+    guide: 'vertical',
+    handle: { start: 'w', end: 'e' },
+  },
+  y: {
+    lines: r => edgesOf(r.y, r.h),
+    cross: r => [r.x, r.x + r.w],
+    guide: 'horizontal',
+    handle: { start: 'n', end: 's' },
+  },
+}
+
+// ガイド線1本。線に沿った区間は「矩形」と「揃えた相手」の両端4点を覆う範囲へ、
+// 両端 GUIDE_EXTEND を外向きに足す。ドラッグとリサイズで同じ形を使う
+const guideOf = (
+  axis: Axis,
+  pos: number,
+  type: SnapGuide['type'],
+  rect: Rect,
+  sibling: Rect
+): SnapGuide => {
+  const along = [...AXES[axis].cross(rect), ...AXES[axis].cross(sibling)]
+  return {
+    axis: AXES[axis].guide,
+    pos,
+    start: Math.min(...along) - GUIDE_EXTEND,
+    end: Math.max(...along) + GUIDE_EXTEND,
+    type,
+    extend: GUIDE_EXTEND,
+  }
+}
+
 // 吸着ペア。軸あたり5組だけ。配列の順序が「同率のときどれを適用するか」を決めるので、
 // 並べ替えない・自動生成しない・距離順にソートしない
 const DRAG_PAIRS: readonly { drag: keyof Edges; sib: keyof Edges; type: SnapGuide['type'] }[] = [
@@ -59,12 +108,12 @@ const solveDragAxis = (
   dragging: Rect,
   siblings: Rect[],
   thresholdViewBox: number,
-  axis: 'x' | 'y'
+  axis: Axis
 ): { delta: number; matched: Candidate[] } => {
-  const d = axis === 'x' ? edgesOf(dragging.x, dragging.w) : edgesOf(dragging.y, dragging.h)
+  const d = AXES[axis].lines(dragging)
   const candidates: Candidate[] = []
   for (const sib of siblings) {
-    const s = axis === 'x' ? edgesOf(sib.x, sib.w) : edgesOf(sib.y, sib.h)
+    const s = AXES[axis].lines(sib)
     for (const pair of DRAG_PAIRS) {
       const diff = s[pair.sib] - d[pair.drag]
       if (Math.abs(diff) > thresholdViewBox) continue
@@ -78,23 +127,9 @@ const solveDragAxis = (
   return { delta: matched[0].diff, matched }
 }
 
-// 同率グループの候補1つにつき1本。線に沿った区間は「吸着後のドラッグ矩形」と
-// 「その候補の相手」の両端4点を覆う範囲へ、両端 GUIDE_EXTEND を外向きに足す
-const dragGuidesOf = (snapped: Rect, matched: Candidate[], axis: 'x' | 'y'): SnapGuide[] =>
-  matched.map(c => {
-    const along =
-      axis === 'x'
-        ? [snapped.y, snapped.y + snapped.h, c.sibling.y, c.sibling.y + c.sibling.h]
-        : [snapped.x, snapped.x + snapped.w, c.sibling.x, c.sibling.x + c.sibling.w]
-    return {
-      axis: axis === 'x' ? ('vertical' as const) : ('horizontal' as const),
-      pos: c.pos,
-      start: Math.min(...along) - GUIDE_EXTEND,
-      end: Math.max(...along) + GUIDE_EXTEND,
-      type: c.type,
-      extend: GUIDE_EXTEND,
-    }
-  })
+// 同率グループの候補1つにつき1本。区間は「吸着後のドラッグ矩形」と「その候補の相手」から取る
+const dragGuidesOf = (snapped: Rect, matched: Candidate[], axis: Axis): SnapGuide[] =>
+  matched.map(c => guideOf(axis, c.pos, c.type, snapped, c.sibling))
 
 // 同じ軸で位置差が GUIDE_MERGE_WINDOW 未満の線は1本へ畳む。区間は和集合、
 // pos は先に入っていた側を残し、片方でも center なら畳んだ結果は center
@@ -138,9 +173,9 @@ export const computeSnap = (
 type EdgePick = 'start' | 'end' | 'none'
 
 // 掴んだハンドルが動かす辺。'nw' は x も y も始点側、'e' は x の終点側だけ動く
-const pickOf = (handle: ResizeHandle, axis: 'x' | 'y'): EdgePick => {
-  if (axis === 'x') return handle.includes('w') ? 'start' : handle.includes('e') ? 'end' : 'none'
-  return handle.includes('n') ? 'start' : handle.includes('s') ? 'end' : 'none'
+const pickOf = (handle: ResizeHandle, axis: Axis): EdgePick => {
+  const letters = AXES[axis].handle
+  return handle.includes(letters.start) ? 'start' : handle.includes(letters.end) ? 'end' : 'none'
 }
 
 // 相手側の候補線は軸あたり3本。ドラッグ側は動く辺1本だけ
@@ -156,18 +191,18 @@ const solveResizeAxis = (
   resized: Rect,
   siblings: Rect[],
   thresholdViewBox: number,
-  axis: 'x' | 'y',
+  axis: Axis,
   pick: EdgePick,
   minSize: number
 ): ResizeSnap => {
   if (pick === 'none') return null
-  const d = axis === 'x' ? edgesOf(resized.x, resized.w) : edgesOf(resized.y, resized.h)
+  const d = AXES[axis].lines(resized)
   const movingPos = pick === 'start' ? d.lo : d.hi
   const fixedPos = pick === 'start' ? d.hi : d.lo
   let best: ResizeSnap = null
   let bestDiff = Infinity
   for (const sib of siblings) {
-    const s = axis === 'x' ? edgesOf(sib.x, sib.w) : edgesOf(sib.y, sib.h)
+    const s = AXES[axis].lines(sib)
     for (const line of RESIZE_LINES) {
       const pos = s[line.key]
       const diff = Math.abs(pos - movingPos)
@@ -186,7 +221,8 @@ const solveResizeAxis = (
   return best
 }
 
-// clamp は max 側の保険としてだけ残す。最小寸法は候補の棄却で守るので min 側には触れない
+// clamp は max 側の保険としてだけ残す。最小寸法は候補の棄却で守るので min 側には触れない。
+// pick が 'none' の軸は solveResizeAxis が必ず null を返すので、snap の有無だけ見れば足りる
 const applyResizeAxis = (
   lo: number,
   size: number,
@@ -195,29 +231,14 @@ const applyResizeAxis = (
   min: number,
   max: number
 ) => {
-  if (!snap || pick === 'none') return { lo, size }
+  if (!snap) return { lo, size }
   if (pick === 'end') return { lo, size: clamp(snap.pos - lo, min, max) }
   const next = clamp(lo + size - snap.pos, min, max)
   return { lo: lo + size - next, size: next }
 }
 
-const resizeGuideOf = (rect: Rect, snap: ResizeSnap, axis: 'x' | 'y'): SnapGuide[] => {
-  if (!snap) return []
-  const along =
-    axis === 'x'
-      ? [rect.y, rect.y + rect.h, snap.sibling.y, snap.sibling.y + snap.sibling.h]
-      : [rect.x, rect.x + rect.w, snap.sibling.x, snap.sibling.x + snap.sibling.w]
-  return [
-    {
-      axis: axis === 'x' ? 'vertical' : 'horizontal',
-      pos: snap.pos,
-      start: Math.min(...along) - GUIDE_EXTEND,
-      end: Math.max(...along) + GUIDE_EXTEND,
-      type: snap.type,
-      extend: GUIDE_EXTEND,
-    },
-  ]
-}
+const resizeGuideOf = (rect: Rect, snap: ResizeSnap, axis: Axis): SnapGuide[] =>
+  snap ? [guideOf(axis, snap.pos, snap.type, rect, snap.sibling)] : []
 
 // §04-3: リサイズ中は対辺固定で、動く辺だけをスナップさせる
 export const computeResizeSnap = (

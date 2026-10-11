@@ -90,6 +90,13 @@ describe('applyLayoutAction: seat-move', () => {
     const next = applyLayoutAction(layout, { type: 'seat-move', seatId: 'no-such', x: 1, y: 1 })
     expect(next).toBe(layout)
   })
+
+  it('対象外の座席は動かさない', () => {
+    const other = seat({ id: 's-2', x: 5, y: 5 })
+    const layout: SeatLayout = { ...emptyLayout, seats: [seat({ id: 's-1' }), other] }
+    const next = applyLayoutAction(layout, { type: 'seat-move', seatId: 's-1', x: 40, y: 60 })
+    expect(next.seats[1]).toBe(other)
+  })
 })
 
 describe('applyLayoutAction: seat-add', () => {
@@ -143,6 +150,36 @@ describe('applyLayoutAction: seat-add', () => {
     const next = applyLayoutAction(layout, { type: 'seat-add', teamId: 'team-01', x: 1, y: 1 })
     const added = next.seats.find(s => s.x === 1 && s.y === 1)
     expect(added?.id).toBe('team-01-005')
+  })
+
+  it('x/y の片方だけ指定したときは両方とも自動で決める', () => {
+    const layout: SeatLayout = { ...emptyLayout, teams: [team()] }
+    const onlyX = applyLayoutAction(layout, { type: 'seat-add', teamId: 'team-01', x: 500 })
+    expect(onlyX.seats[0]).toMatchObject({ x: 20, y: 20 })
+    const onlyY = applyLayoutAction(layout, { type: 'seat-add', teamId: 'team-01', y: 500 })
+    expect(onlyY.seats[0]).toMatchObject({ x: 20, y: 20 })
+  })
+
+  it('他チームの座席は採番・自動位置・枠の合わせ直しのどれにも混ぜない', () => {
+    const otherTeam = team({
+      id: 'team-02',
+      idPrefix: 'team-02',
+      area: { x: 1000, y: 1000, w: 300, h: 200 },
+    })
+    const layout: SeatLayout = {
+      ...emptyLayout,
+      teams: [team({ area: { x: 0, y: 0, w: 300, h: 200 } }), otherTeam],
+      seats: [
+        seat({ id: 'team-01-001', x: 0, y: 0 }),
+        seat({ id: 'team-02-001', teamId: 'team-02', x: 1000, y: 1000 }),
+      ],
+    }
+    const next = applyLayoutAction(layout, { type: 'seat-add', teamId: 'team-01' })
+    // 自チーム最後の席(0,0)の右隣。他チームの席(1000,1000)の隣ではない
+    expect(next.seats[2]).toMatchObject({ id: 'team-01-002', teamId: 'team-01', x: 123, y: 0 })
+    // 自チームの2席 (0,0)〜(228,75) の bbox+20
+    expect(next.teams[0].area).toEqual({ x: -20, y: -20, w: 268, h: 115 })
+    expect(next.teams[1]).toBe(otherTeam)
   })
 
   it('追加後、team.area は座席群にフィットさせ直す', () => {
@@ -203,6 +240,21 @@ describe('applyLayoutAction: seat-assign-employee', () => {
     })
     expect(next.seats.find(s => s.id === 's-1')?.employeeId).toBe('e2')
     expect(next.seats.find(s => s.id === 's-2')?.employeeId).toBe('e1')
+  })
+
+  it('移動元と移動先の2席だけを書き換え、他の席は変えない', () => {
+    const third = seat({ id: 's-3', employeeId: 'e3' })
+    const layout: SeatLayout = {
+      ...emptyLayout,
+      seats: [seat({ id: 's-1', employeeId: 'e1' }), seat({ id: 's-2', employeeId: 'e2' }), third],
+    }
+    const next = applyLayoutAction(layout, {
+      type: 'seat-assign-employee',
+      seatId: 's-1',
+      employeeId: 'e2',
+    })
+    expect(next.seats.map(s => s.employeeId)).toEqual(['e2', 'e1', 'e3'])
+    expect(next.seats[2]).toBe(third)
   })
 
   it('employeeId に null を渡すと単純に空席化し、他席は変わらない', () => {
@@ -266,7 +318,7 @@ describe('applyLayoutAction: seat-rotate', () => {
       seats: [seat({ id: 's-1', rotation: 0 }), seat({ id: 's-2', rotation: 0 })],
     }
     const next = applyLayoutAction(layout, { type: 'seat-rotate', seatIds: ['s-1'] })
-    expect(next.seats.find(s => s.id === 's-2')?.rotation).toBe(0)
+    expect(next.seats.map(s => s.rotation)).toEqual([90, 0])
   })
 
   it('対象が1件も居なければ同一参照', () => {
@@ -339,6 +391,43 @@ describe('applyLayoutAction: seat-assign / seat-swap', () => {
     expect(next.seats[0]).toMatchObject({ id: 'team-01-001', teamId: 'team-02' })
   })
 
+  it('seat-assign: 対象外の座席は付け替えない', () => {
+    const other = seat({ id: 'team-01-002', teamId: 'team-01' })
+    const layout: SeatLayout = { ...emptyLayout, seats: [seat({ id: 'team-01-001' }), other] }
+    const next = applyLayoutAction(layout, {
+      type: 'seat-assign',
+      seatId: 'team-01-001',
+      teamId: 'team-02',
+    })
+    expect(next.seats.map(s => s.teamId)).toEqual(['team-02', 'team-01'])
+    expect(next.seats[1]).toBe(other)
+  })
+
+  it('seat-assign: 存在しない座席なら同一参照', () => {
+    const layout: SeatLayout = { ...emptyLayout, seats: [seat({ id: 'team-01-001' })] }
+    const next = applyLayoutAction(layout, {
+      type: 'seat-assign',
+      seatId: 'no-such',
+      teamId: 'team-02',
+    })
+    expect(next).toBe(layout)
+  })
+
+  it('seat-swap: 先頭以外の2席を入れ替え、他の席は変えない', () => {
+    const first = seat({ id: 's-0', employeeId: 'e0' })
+    const layout: SeatLayout = {
+      ...emptyLayout,
+      seats: [first, seat({ id: 's-1', employeeId: 'e1' }), seat({ id: 's-2', employeeId: 'e2' })],
+    }
+    const next = applyLayoutAction(layout, {
+      type: 'seat-swap',
+      fromSeatId: 's-1',
+      toSeatId: 's-2',
+    })
+    expect(next.seats.map(s => s.employeeId)).toEqual(['e0', 'e2', 'e1'])
+    expect(next.seats[0]).toBe(first)
+  })
+
   it('seat-swap: 双方のemployeeIdを入れ替える', () => {
     const layout: SeatLayout = {
       ...emptyLayout,
@@ -373,6 +462,27 @@ describe('applyLayoutAction: seat-replace-all', () => {
       seats: [],
     })
     expect(next).toBe(layout)
+  })
+
+  it('他のチームが居ても、対象チームが無ければ同一参照', () => {
+    const layout: SeatLayout = { ...emptyLayout, teams: [team()], seats: [seat()] }
+    const next = applyLayoutAction(layout, {
+      type: 'seat-replace-all',
+      teamId: 'no-such',
+      seats: [seat({ id: 'x-001', teamId: 'no-such' })],
+    })
+    expect(next).toBe(layout)
+  })
+
+  it('既に対象チームの座席は複製せずそのまま積む', () => {
+    const own = seat({ id: 'team-01-009' })
+    const layout: SeatLayout = { ...emptyLayout, teams: [team()], seats: [seat()] }
+    const next = applyLayoutAction(layout, {
+      type: 'seat-replace-all',
+      teamId: 'team-01',
+      seats: [own],
+    })
+    expect(next.seats[0]).toBe(own)
   })
 
   it('isPending な座席は確定させず捨てる', () => {
@@ -454,6 +564,19 @@ describe('applyLayoutAction: team-move', () => {
     expect(next.seats[0]).toMatchObject({ x: 60, y: 40 })
   })
 
+  it('原点以外の枠でも、枠の移動量だけ座席を動かし、他チームの枠は動かさない', () => {
+    const otherTeam = team({ id: 'team-02', area: { x: 1000, y: 1000, w: 300, h: 200 } })
+    const layout: SeatLayout = {
+      ...emptyLayout,
+      teams: [team({ area: { x: 100, y: 50, w: 300, h: 200 } }), otherTeam],
+      seats: [seat({ id: 's-1', x: 110, y: 60 })],
+    }
+    const next = applyLayoutAction(layout, { type: 'team-move', teamId: 'team-01', x: 150, y: 80 })
+    expect(next.teams[0].area).toEqual({ x: 150, y: 80, w: 300, h: 200 })
+    expect(next.teams[1]).toBe(otherTeam)
+    expect(next.seats[0]).toMatchObject({ x: 160, y: 90 })
+  })
+
   it('所属外の座席は変更されず参照も同一のまま', () => {
     const otherSeat = seat({ id: 'other-1', teamId: 'other-team', x: 5, y: 5 })
     const layout: SeatLayout = {
@@ -493,6 +616,42 @@ describe('applyLayoutAction: team-relayout', () => {
       cols: 2,
     })
     expect(next).toBe(layout)
+  })
+
+  it('座席だけ残ってチームが無ければ同一参照', () => {
+    // team-replace-all はチームだけを差し替えるので、所属先の無い座席が残りうる
+    const layout: SeatLayout = {
+      ...emptyLayout,
+      teams: [team()],
+      seats: [seat({ id: 'ghost-001', teamId: 'ghost' })],
+    }
+    const next = applyLayoutAction(layout, {
+      type: 'team-relayout',
+      teamId: 'ghost',
+      rows: 1,
+      cols: 2,
+    })
+    expect(next).toBe(layout)
+  })
+
+  it('並べ直した席に枠を合わせ、他チームの枠と座席は変えない', () => {
+    const otherTeam = team({ id: 'team-02', area: { x: 1000, y: 1000, w: 300, h: 200 } })
+    const otherSeat = seat({ id: 'o-1', teamId: 'team-02', x: 1000, y: 1000 })
+    const layout: SeatLayout = {
+      ...emptyLayout,
+      teams: [team({ area: { x: 0, y: 0, w: 300, h: 200 } }), otherTeam],
+      seats: [seat({ id: 's-1', x: 200, y: 0 }), otherSeat, seat({ id: 's-2', x: 0, y: 0 })],
+    }
+    const next = applyLayoutAction(layout, {
+      type: 'team-relayout',
+      teamId: 'team-01',
+      rows: 1,
+      cols: 2,
+    })
+    // s-2(20,20) と s-1(143,20) の bbox+20
+    expect(next.teams[0].area).toEqual({ x: 0, y: 0, w: 268, h: 115 })
+    expect(next.teams[1]).toBe(otherTeam)
+    expect(next.seats[1]).toBe(otherSeat)
   })
 
   it('cols 列のグリッドに並べ直す(y→x順ソート後、行優先で配置)', () => {
@@ -551,6 +710,23 @@ describe('applyLayoutAction: team-add', () => {
     })
     const added = next.teams.find(t => t.id !== 'team-02')
     expect(added?.idPrefix).toBe('team-03')
+    expect(added?.id).toBe('team-03')
+  })
+
+  it('枠は指定位置・寸法そのままで、8席はその枠の左上から並べる', () => {
+    const next = applyLayoutAction(emptyLayout, {
+      type: 'team-add',
+      name: '新チーム',
+      color: '#000',
+      x: 100,
+      y: 100,
+      width: 454,
+      height: 190,
+    })
+    expect(next.teams[0].area).toEqual({ x: 100, y: 100, w: 454, h: 190 })
+    // 1席目は枠の左上+20、8席目は2行目の4列目
+    expect(next.seats[0]).toMatchObject({ x: 120, y: 120, width: 90, height: 65 })
+    expect(next.seats[7]).toMatchObject({ x: 444, y: 205, width: 90, height: 65 })
   })
 
   it('新規チームは8席(2行4列)を全て空席で連れてくる', () => {
@@ -653,6 +829,25 @@ describe('applyLayoutAction: facility-add', () => {
     expect(added?.kind).toBe('meeting')
   })
 
+  it('自動採番の番号は会議室(meeting)の件数だけを数える', () => {
+    const layout: SeatLayout = {
+      ...emptyLayout,
+      facilities: [
+        facility({ id: 'fac-01', kind: 'meeting' }),
+        facility({ id: 'fac-02', kind: 'meeting' }),
+        facility({ id: 'fac-03', kind: 'booth' }),
+      ],
+    }
+    const next = applyLayoutAction(layout, {
+      type: 'facility-add',
+      x: 0,
+      y: 0,
+      width: 100,
+      height: 100,
+    })
+    expect(next.facilities[3].name).toBe('会議室3')
+  })
+
   it('facilityId省略時は facilityId フィールド自体を持たない(施設未連携)', () => {
     const next = applyLayoutAction(emptyLayout, {
       type: 'facility-add',
@@ -742,7 +937,35 @@ describe('applyLayoutAction: object-move / object-resize / object-lock / object-
       x: 10,
       y: 20,
     })
-    expect(next.facilities[0]).toMatchObject({ x: 10, y: 20 })
+    // 位置だけを変え、寸法などは元のまま
+    expect(next.facilities[0]).toEqual(facility({ id: 'fac-01', x: 10, y: 20 }))
+  })
+
+  it('同じ種別の他の会議室・家具は変えない', () => {
+    const firstFacility = facility({ id: 'fac-01' })
+    const firstFurniture = furniture({ id: 'furn-001' })
+    const layout: SeatLayout = {
+      ...emptyLayout,
+      facilities: [firstFacility, facility({ id: 'fac-02' })],
+      furniture: [firstFurniture, furniture({ id: 'furn-002' })],
+    }
+    const moved = applyLayoutAction(layout, {
+      type: 'object-move',
+      kind: 'facility',
+      id: 'fac-02',
+      x: 10,
+      y: 20,
+    })
+    expect(moved.facilities[0]).toBe(firstFacility)
+    expect(moved.facilities[1]).toMatchObject({ id: 'fac-02', x: 10, y: 20 })
+    const locked = applyLayoutAction(layout, {
+      type: 'object-lock',
+      kind: 'furniture',
+      id: 'furn-002',
+      locked: true,
+    })
+    expect(locked.furniture[0]).toBe(firstFurniture)
+    expect(locked.furniture[1]).toMatchObject({ id: 'furn-002', locked: true })
   })
 
   it('furniture を対象に幅・高さを含めて更新する(object-resize)', () => {
@@ -840,6 +1063,16 @@ describe('applyLayoutAction: object-delete', () => {
     const next = applyLayoutAction(layout, {
       type: 'object-delete',
       kind: 'facility',
+      id: 'no-such',
+    })
+    expect(next).toBe(layout)
+  })
+
+  it('家具でも対象idが存在しなければ同一参照', () => {
+    const layout: SeatLayout = { ...emptyLayout, furniture: [furniture({ id: 'furn-001' })] }
+    const next = applyLayoutAction(layout, {
+      type: 'object-delete',
+      kind: 'furniture',
       id: 'no-such',
     })
     expect(next).toBe(layout)

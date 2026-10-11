@@ -76,6 +76,38 @@ describe('buildSeatGridDraft', () => {
     expect(draft?.originY).toBe(0)
   })
 
+  it('丸めて同じセルに落ちる席は、上の席(yが小さい方)が先にそのセルを取る', () => {
+    // q(0,5) と p(10,0) はどちらもセル(0,0)。配列順ではなく y の小さい p が先
+    const draft = buildSeatGridDraft([seat('q', 0, 5), seat('p', 10, 0)])
+    expect(draft?.cells).toEqual([['p', 'q']])
+  })
+
+  it('y が同じなら左の席(xが小さい方)が先にそのセルを取る', () => {
+    const draft = buildSeatGridDraft([seat('r', 5, 0), seat('s', 0, 0)])
+    expect(draft?.cells).toEqual([['s', 'r']])
+  })
+
+  it('座標まで同じなら id の順で先にそのセルを取る', () => {
+    const draft = buildSeatGridDraft([seat('b', 0, 0), seat('a', 0, 0)])
+    expect(draft?.cells).toEqual([['a', 'b']])
+  })
+
+  it('押し出し先はマンハッタン距離が最小の空セルで、同距離なら行優先で先のセル', () => {
+    // a→(0,0)、b→(2,1)、c も(2,1)に丸まり衝突、d→(2,2)。3×3 のグリッドになる。
+    // c から距離1の空セルは (1,1)・(2,0)・(2,2)。行優先で最初の (1,1) を取る
+    const seats = [
+      seat('a', 0, 0),
+      seat('b', COL_PITCH, 2 * ROW_PITCH),
+      seat('c', COL_PITCH + 5, 2 * ROW_PITCH + 5),
+      seat('d', 2 * COL_PITCH, 2 * ROW_PITCH + 10),
+    ]
+    expect(buildSeatGridDraft(seats)?.cells).toEqual([
+      ['a', null, null],
+      [null, 'c', null],
+      [null, 'b', 'd'],
+    ])
+  })
+
   it('originXYは全席中の最小座標になる(負の相対位置も許容)', () => {
     const seats = [seat('a', 100, 200), seat('b', 100 + COL_PITCH, 200)]
     const draft = buildSeatGridDraft(seats)
@@ -247,6 +279,19 @@ describe('removeRow / removeCol', () => {
     expect(result.originX).toBe(COL_PITCH)
   })
 
+  it('中間の空列を削除してもoriginXは変わらない', () => {
+    const draft: SeatGridDraft = {
+      cells: [['a', null, 'b']],
+      originX: 0,
+      originY: 0,
+      colPitch: COL_PITCH,
+      rowPitch: ROW_PITCH,
+    }
+    const result = removeCol(draft, 1)
+    expect(result.cells).toEqual([['a', 'b']])
+    expect(result.originX).toBe(0)
+  })
+
   it('空でない列を削除しようとすると元のdraftをそのまま返す', () => {
     const draft: SeatGridDraft = {
       cells: [['a', null]],
@@ -292,6 +337,20 @@ describe('placeSeat / clearSeat', () => {
   it('範囲外セルのclearは元のdraftを返す', () => {
     const result = clearSeat(draft, { row: 5, col: 5 })
     expect(result).toBe(draft)
+  })
+
+  it('行・列のどちらか一方だけが範囲外でも、配置・clearとも何もしない', () => {
+    // 1行2列。行は 0、列は 0〜1 だけが範囲内
+    const outside = [
+      { row: -1, col: 0 },
+      { row: 1, col: 0 },
+      { row: 0, col: -1 },
+      { row: 0, col: 2 },
+    ]
+    for (const cell of outside) {
+      expect(placeSeat(draft, cell, 'b')).toBe(draft)
+      expect(clearSeat(draft, cell)).toBe(draft)
+    }
   })
 })
 
@@ -342,6 +401,18 @@ describe('moveSeat', () => {
     }
     const result = moveSeat(draft, { row: 0, col: 0 }, { row: 0, col: 0 })
     expect(result).toBe(draft)
+  })
+
+  it('同じ列の別の行へも移動できる', () => {
+    const draft: SeatGridDraft = {
+      cells: [['a'], [null]],
+      originX: 0,
+      originY: 0,
+      colPitch: COL_PITCH,
+      rowPitch: ROW_PITCH,
+    }
+    const result = moveSeat(draft, { row: 0, col: 0 }, { row: 1, col: 0 })
+    expect(result.cells).toEqual([[null], ['a']])
   })
 
   it('移動元・移動先のどちらかが範囲外なら何もしない', () => {

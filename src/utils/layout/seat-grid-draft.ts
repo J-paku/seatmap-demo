@@ -55,8 +55,9 @@ const setCell = (
 const appendCol = (cells: (string | null)[][]): (string | null)[][] =>
   cells.map(row => [...row, null])
 
+// 行の範囲を先に確かめるので、列を見る時点で`draft.cells[row]`は必ず存在する
 const inBounds = (draft: SeatGridDraft, row: number, col: number): boolean =>
-  row >= 0 && row < draft.cells.length && col >= 0 && col < (draft.cells[row]?.length ?? 0)
+  row >= 0 && row < draft.cells.length && col >= 0 && col < draft.cells[row].length
 
 // マンハッタン距離が最小の空セルを探す。同距離なら行優先・列優先で先に見つかった方を採用する
 const findNearestEmptyCell = (
@@ -66,9 +67,9 @@ const findNearestEmptyCell = (
 ): GridCell | null => {
   let best: GridCell | null = null
   let bestDist = Infinity
-  for (let r = 0; r < cells.length; r += 1) {
-    for (let c = 0; c < cells[r].length; c += 1) {
-      if (cells[r][c] !== null) continue
+  for (const [r, cols] of cells.entries()) {
+    for (const [c, value] of cols.entries()) {
+      if (value !== null) continue
       const dist = Math.abs(r - row) + Math.abs(c - col)
       if (dist < bestDist) {
         bestDist = dist
@@ -102,10 +103,7 @@ export const buildSeatGridDraft = (seats: Seat[]): SeatGridDraft | null => {
 
   let cells = createMatrix(rows, cols)
   for (const cell of rawCells) {
-    if (cells[cell.row][cell.col] === null) {
-      cells = setCell(cells, cell.row, cell.col, cell.seatId)
-      continue
-    }
+    // 丸めたセル自身が空いていれば距離0でそのセルが選ばれる。埋まっていれば最近接の空セルへ押し出す
     let target = findNearestEmptyCell(cells, cell.row, cell.col)
     while (target === null) {
       cells = appendCol(cells)
@@ -154,11 +152,10 @@ export const isRowEmpty = (draft: SeatGridDraft, row: number): boolean => {
   return draft.cells[row].every(cell => cell === null)
 }
 
-// 指定列が完全に空か。範囲外はfalse
-export const isColEmpty = (draft: SeatGridDraft, col: number): boolean => {
-  if (draft.cells.length === 0 || col < 0 || col >= draft.cells[0].length) return false
-  return draft.cells.every(row => row[col] === null)
-}
+// 指定列が完全に空か。範囲外はfalse — 範囲外の列は各行で undefined になり null と一致しない。
+// 行が1本も無いと every が空真を返すので、そこだけ先に false へ倒す
+export const isColEmpty = (draft: SeatGridDraft, col: number): boolean =>
+  draft.cells.length > 0 && draft.cells.every(row => row[col] === null)
 
 // 完全に空の行だけ削除する。空でなければ元の`draft`をそのまま返す。
 // 先頭行の削除はoriginをずらして残りの席の絶対座標を保ち、中間行の削除は後続行が詰まる

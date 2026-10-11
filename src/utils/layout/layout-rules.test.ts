@@ -109,6 +109,15 @@ describe('seatOverlapsFixture', () => {
     }
     expect(seatOverlapsFixture(layout, { x: 200, y: 200, w: 20, h: 20 })).toBe(false)
   })
+
+  it('固定物が複数あれば、どれか1つと重なるだけで true', () => {
+    const layout: SeatLayout = {
+      ...emptyLayout,
+      facilities: [facility({ x: 0, y: 0, width: 100, height: 100 })],
+      furniture: [furniture({ x: 500, y: 500, width: 40, height: 30 })],
+    }
+    expect(seatOverlapsFixture(layout, { x: 50, y: 50, w: 20, h: 20 })).toBe(true)
+  })
 })
 
 describe('findOverlappingSeat', () => {
@@ -159,6 +168,16 @@ describe('findTeamContaining', () => {
     // candidate中心 = (200, 200) は area の右下端と一致
     const found = findTeamContaining(teams, 'team-02', { x: 100, y: 100, w: 200, h: 200 })
     expect(found?.id).toBe('team-01')
+  })
+
+  it('判定に使うのは候補の左上ではなく中心(x・y とも幅・高さの半分を足す)', () => {
+    const teams = [team({ id: 'team-01', area: { x: 100, y: 100, w: 200, h: 200 } })]
+    // 左上(60,60)は枠外、中心(110,110)は枠内
+    const found = findTeamContaining(teams, 'team-02', { x: 60, y: 60, w: 100, h: 100 })
+    expect(found?.id).toBe('team-01')
+    // 中心が枠の左(x=90)・上(y=90)へ外れれば含まない
+    expect(findTeamContaining(teams, 'team-02', { x: 40, y: 160, w: 100, h: 20 })).toBeNull()
+    expect(findTeamContaining(teams, 'team-02', { x: 160, y: 40, w: 20, h: 100 })).toBeNull()
   })
 
   it('中心がどのチームにも属さなければ null', () => {
@@ -299,6 +318,49 @@ describe('lockedMessage', () => {
   it('seat kind は常に null を返す(座席はロックを持たない)', () => {
     expect(lockedMessage(emptyLayout, { kind: 'seat', id: 'seat-x' }, '移動')).toBeNull()
   })
+
+  it('存在しない会議室・家具は null(嘘の許可を返さない)', () => {
+    expect(lockedMessage(emptyLayout, { kind: 'facility', id: 'no-such' }, '移動')).toBeNull()
+    expect(lockedMessage(emptyLayout, { kind: 'furniture', id: 'no-such' }, '移動')).toBeNull()
+  })
+
+  it('ロックしていない会議室・家具は null', () => {
+    const layout: SeatLayout = {
+      ...emptyLayout,
+      facilities: [facility({ id: 'fac-01' })],
+      furniture: [furniture({ id: 'furn-001' })],
+    }
+    expect(lockedMessage(layout, { kind: 'facility', id: 'fac-01' }, '移動')).toBeNull()
+    expect(lockedMessage(layout, { kind: 'furniture', id: 'furn-001' }, '移動')).toBeNull()
+  })
+
+  it('同じ種別の別の対象がロック中でも、idが一致する対象だけを見る', () => {
+    // ロック中の別対象を配列の先頭に置き、先頭一致で取り違えないことを確かめる
+    const layout: SeatLayout = {
+      ...emptyLayout,
+      teams: [team({ id: 'team-09', locked: true }), team({ id: 'team-01' })],
+      facilities: [facility({ id: 'fac-09', locked: true }), facility({ id: 'fac-01' })],
+      furniture: [furniture({ id: 'furn-009', locked: true }), furniture({ id: 'furn-001' })],
+    }
+    expect(lockedMessage(layout, { kind: 'team', id: 'team-01' }, '移動')).toBeNull()
+    expect(lockedMessage(layout, { kind: 'facility', id: 'fac-01' }, '移動')).toBeNull()
+    expect(lockedMessage(layout, { kind: 'furniture', id: 'furn-001' }, '移動')).toBeNull()
+  })
+
+  it('同じidの別種別がロック中でも、ref.kind の種別だけを見る', () => {
+    // 全種別に同じidを持たせ、会議室・家具・座席の ref が他種別の状態を拾わないことを確かめる
+    const layout: SeatLayout = {
+      ...emptyLayout,
+      teams: [team({ id: 'same', name: '営業部', locked: true })],
+      facilities: [facility({ id: 'same', name: '会議室A' })],
+      furniture: [furniture({ id: 'same', name: 'ソファ', locked: true })],
+    }
+    expect(lockedMessage(layout, { kind: 'facility', id: 'same' }, '移動')).toBeNull()
+    expect(lockedMessage(layout, { kind: 'seat', id: 'same' }, '移動')).toBeNull()
+    expect(lockedMessage(layout, { kind: 'furniture', id: 'same' }, '移動')).toBe(
+      '「ソファ」はロックまたはレイアウト固定中のため移動できません'
+    )
+  })
 })
 
 describe('lockedForMoveMessage', () => {
@@ -336,5 +398,58 @@ describe('lockedForMoveMessage', () => {
       furniture: [furniture({ id: 'furn-001', name: 'ソファ' })],
     }
     expect(lockedForMoveMessage(layout, { kind: 'furniture', id: 'furn-001' })).toBeNull()
+  })
+
+  it('locked の家具は名前を、名前が空なら「家具」を使う', () => {
+    const layout: SeatLayout = {
+      ...emptyLayout,
+      furniture: [
+        furniture({ id: 'furn-001', name: 'ソファ', locked: true }),
+        furniture({ id: 'furn-002', name: '', locked: true }),
+      ],
+    }
+    expect(lockedForMoveMessage(layout, { kind: 'furniture', id: 'furn-001' })).toBe(
+      '「ソファ」はロック中のため移動できません'
+    )
+    expect(lockedForMoveMessage(layout, { kind: 'furniture', id: 'furn-002' })).toBe(
+      '「家具」はロック中のため移動できません'
+    )
+  })
+
+  it('ロックしていない会議室は移動できる(null)', () => {
+    const layout: SeatLayout = { ...emptyLayout, facilities: [facility({ id: 'fac-01' })] }
+    expect(lockedForMoveMessage(layout, { kind: 'facility', id: 'fac-01' })).toBeNull()
+  })
+
+  it('存在しない対象は種別を問わず null', () => {
+    expect(lockedForMoveMessage(emptyLayout, { kind: 'team', id: 'no-such' })).toBeNull()
+    expect(lockedForMoveMessage(emptyLayout, { kind: 'facility', id: 'no-such' })).toBeNull()
+    expect(lockedForMoveMessage(emptyLayout, { kind: 'furniture', id: 'no-such' })).toBeNull()
+  })
+
+  it('同じ種別の別の対象がロック中でも、idが一致する対象だけを見る', () => {
+    const layout: SeatLayout = {
+      ...emptyLayout,
+      teams: [team({ id: 'team-09', locked: true }), team({ id: 'team-01' })],
+      facilities: [facility({ id: 'fac-09', locked: true }), facility({ id: 'fac-01' })],
+      furniture: [furniture({ id: 'furn-009', locked: true }), furniture({ id: 'furn-001' })],
+    }
+    expect(lockedForMoveMessage(layout, { kind: 'team', id: 'team-01' })).toBeNull()
+    expect(lockedForMoveMessage(layout, { kind: 'facility', id: 'fac-01' })).toBeNull()
+    expect(lockedForMoveMessage(layout, { kind: 'furniture', id: 'furn-001' })).toBeNull()
+  })
+
+  it('同じidの別種別がロック中でも、ref.kind の種別だけを見る', () => {
+    const layout: SeatLayout = {
+      ...emptyLayout,
+      teams: [team({ id: 'same', name: '営業部', locked: true })],
+      facilities: [facility({ id: 'same', name: '会議室A' })],
+      furniture: [furniture({ id: 'same', name: 'ソファ', locked: true })],
+    }
+    expect(lockedForMoveMessage(layout, { kind: 'facility', id: 'same' })).toBeNull()
+    expect(lockedForMoveMessage(layout, { kind: 'seat', id: 'same' })).toBeNull()
+    expect(lockedForMoveMessage(layout, { kind: 'furniture', id: 'same' })).toBe(
+      '「ソファ」はロック中のため移動できません'
+    )
   })
 })
