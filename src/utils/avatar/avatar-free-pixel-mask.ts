@@ -65,7 +65,9 @@ function countMaskTransparency(
 
   for (const { row, col } of getMaskCells(mask)) {
     const char = rows[row]?.[col] ?? TRANSPARENT_KEY
-    const isTransparent = !palette.hasOwnProperty(char) || char === TRANSPARENT_KEY
+    // palette は AI 出力のキーをそのまま持つので、palette 自身のメソッドは呼ばない
+    // (hasOwnProperty というキーがあるとメソッドが文字列で隠れて TypeError になる)
+    const isTransparent = !Object.hasOwn(palette, char) || char === TRANSPARENT_KEY
     totalCells++
     if (isTransparent) transparentCells++
   }

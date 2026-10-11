@@ -287,6 +287,15 @@ describe('parseAiImportedConfig — kind: pixels 経路', () => {
     })
   })
 
+  it('palette に hasOwnProperty という名前のキーがあっても、例外を投げず他のキーと同じく取り込む', () => {
+    const palette = { s: '#F0C49A', hasOwnProperty: '#FFFFFF' }
+    const result = parseAiImportedConfig(JSON.stringify({ ...validPixels, palette }))
+    expect(result).toEqual({
+      ok: true,
+      config: { kind: 'pixels', size: 16, palette, rows: opaqueRows },
+    })
+  })
+
   it('十分に不透明な rows はマスク正規化されずそのまま返る', () => {
     const result = parseAiImportedConfig(JSON.stringify(validPixels))
     expect(result).toEqual({

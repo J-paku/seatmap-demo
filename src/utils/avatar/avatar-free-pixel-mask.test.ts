@@ -126,6 +126,12 @@ describe('normalizeFreePixelRows — 過半が透明なマスクだけを埋め�
     expect(result).toEqual(buildRows(OPAQUE_FACE, OPAQUE_OUTFIT))
   })
 
+  it('palette に hasOwnProperty という名前のキーがあっても、例外を投げず不透明セルを数える', () => {
+    const rows = buildRows(repeatLine(6, '....kkkk'), OPAQUE_OUTFIT)
+    const palette = { ...KO_PALETTE, hasOwnProperty: '#FFFFFF' }
+    expect(normalizeFreePixelRows(rows, palette)).toEqual(rows)
+  })
+
   it('行が欠けていても、欠けた行を透明として数え、半分以下なら例外を投げずそのまま返す', () => {
     // row15 が無い 15 行。体マスクの透明セルは row15 の 16 個だけ
     const rows = buildRows(OPAQUE_FACE, repeatLine(3, 'o'.repeat(16)))

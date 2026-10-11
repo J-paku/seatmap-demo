@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import type { HairId } from '@/types'
+import type { HairId, PixelAvatarPresetId } from '@/types'
 import { deriveInitialQuickStartKind, deriveInitialParts } from './avatar-initial-state'
 import { PIXEL_AVATAR_PRESETS } from './pixel-avatar-presets'
 import {
@@ -78,6 +78,31 @@ describe('deriveInitialParts', () => {
       hair: 'bald', // normalizeHairId('bald') は変化しない
     })
   })
+
+  it('kind:preset で今は無い id (古い保存データ) を渡すと、例外を投げず既定のプリセット av1 で開く', () => {
+    // 型 (PixelAvatarPresetId) に無い id を、いったん string として持ってからキャストする(any/unknown 経由なし)
+    const removedPresetId: string = 'av99'
+    const result = deriveInitialParts({
+      kind: 'preset',
+      id: removedPresetId as PixelAvatarPresetId,
+    })
+    expect(result).toEqual({
+      parts: PIXEL_AVATAR_PRESETS.av1,
+      paletteId: 'av1',
+      hairColor: null,
+      outfitColor: null,
+    })
+  })
+
+  it.each(PALETTE_OPTIONS)(
+    'kind:preset の %s は、そのプリセット自身の paletteId に戻り色上書きは無い',
+    id => {
+      const result = deriveInitialParts({ kind: 'preset', id })
+      expect(result.paletteId).toBe(id)
+      expect(result.hairColor).toBeNull()
+      expect(result.outfitColor).toBeNull()
+    }
+  )
 
   it('kind:parts で "afro" (旧ID) を渡すと neatBob に正規化される', () => {
     // 'afro' は型定義 (HairId) からは削除済みの旧ID。過去に保存されたデータの残存を

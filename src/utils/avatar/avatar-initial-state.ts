@@ -68,20 +68,15 @@ export const deriveInitialParts = (
 
   const parts = resolveAvatarConfig(initialConfig)
   const normalizedHair = normalizeHairId(parts.hair as string)
-  // 初期パレット ID は preset から判定。parts 直渡しの場合はパレット一致 av を探す or av1 fallback
-  let paletteId: PixelAvatarPresetId = 'av1'
-  if (initialConfig && initialConfig.kind === 'preset') {
-    paletteId = initialConfig.id
-  } else {
-    const matched = PALETTE_OPTIONS.find(
-      id =>
-        PIXEL_AVATAR_PRESETS[id].palette.hair === parts.palette.hair &&
-        PIXEL_AVATAR_PRESETS[id].palette.outfit === parts.palette.outfit
-    )
-    if (matched) {
-      paletteId = matched
-    }
-  }
+  // 初期パレット ID は解決後の parts と髪色・服色が一致するプリセットを探す。無ければ av1
+  // preset の id をそのまま使わない: 今は無い id (古い保存データ) だと resolveAvatarConfig が既定の
+  // プリセットに置き換えるので、元の id では PIXEL_AVATAR_PRESETS を引けない
+  const matched = PALETTE_OPTIONS.find(
+    id =>
+      PIXEL_AVATAR_PRESETS[id].palette.hair === parts.palette.hair &&
+      PIXEL_AVATAR_PRESETS[id].palette.outfit === parts.palette.outfit
+  )
+  const paletteId: PixelAvatarPresetId = matched ?? 'av1'
   // パレット基準色と異なれば「単色上書き」とみなして初期値に保持
   const presetPalette = PIXEL_AVATAR_PRESETS[paletteId].palette
   const hairColor = parts.palette.hair !== presetPalette.hair ? parts.palette.hair : null
