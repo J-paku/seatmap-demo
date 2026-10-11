@@ -1,5 +1,10 @@
 import { describe, it, expect } from 'vitest'
-import { deriveFacilityState, minToHHMM, FACILITY_COLOR, FACILITY_STATUS_LABEL } from './facility-status'
+import {
+  deriveFacilityState,
+  minToHHMM,
+  FACILITY_COLOR,
+  FACILITY_STATUS_LABEL,
+} from './facility-status'
 import type { Facility, FacilityMeeting, FacilityStatus } from '@/types'
 
 const facility: Facility = {

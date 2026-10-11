@@ -1,10 +1,6 @@
 // プリセット定義 — parts 合成型の組み合わせを 1 エントリで表現
 // バリエーション追加は PIXEL_AVATAR_PRESETS に 1 行 + types の union に id 1 つ
-import type {
-  PartsAvatarConfig,
-  PixelAvatarConfig,
-  PixelAvatarPresetId,
-} from '@/types'
+import type { PartsAvatarConfig, PixelAvatarConfig, PixelAvatarPresetId } from '@/types'
 
 export const PIXEL_AVATAR_PRESETS: Record<PixelAvatarPresetId, PartsAvatarConfig> = {
   av1: {

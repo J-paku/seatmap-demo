@@ -10,4 +10,3 @@ export const getCompactNameLabel = (name: string) => {
   const parts = bareName.split(WHITESPACE_RE).filter(Boolean)
   return parts[0] ?? bareName
 }
-

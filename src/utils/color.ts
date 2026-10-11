@@ -19,7 +19,7 @@ export const normalizeHex = (input: string): string | null => {
   if (HEX_SHORT_DIGITS.test(digits)) {
     const doubled = digits
       .split('')
-      .map((c) => c + c)
+      .map(c => c + c)
       .join('')
     return `#${doubled.toUpperCase()}`
   }

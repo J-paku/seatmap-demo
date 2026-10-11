@@ -15,7 +15,15 @@ const SLOT_MIN = 30
 const DURATION_CANDIDATES = [30, 60, 90]
 
 // 件名プール
-const TITLE_POOL = ['定例会議', 'プロジェクト進捗', '1on1', '部門ミーティング', '打ち合わせ', '研修', '採用面接']
+const TITLE_POOL = [
+  '定例会議',
+  'プロジェクト進捗',
+  '1on1',
+  '部門ミーティング',
+  '打ち合わせ',
+  '研修',
+  '採用面接',
+]
 
 // 平日/週末で変わる件数上限(この値+1件までを乱数で選ぶ。0件を含む)
 const WEEKDAY_MAX_COUNT = 4
@@ -30,7 +38,8 @@ const LCG_MULTIPLIER = 1664525
 const LCG_INCREMENT = 1013904223
 
 // 32bit整数の乱数状態を1段階進める
-const nextLcgState = (state: number): number => (Math.imul(state, LCG_MULTIPLIER) + LCG_INCREMENT) | 0
+const nextLcgState = (state: number): number =>
+  (Math.imul(state, LCG_MULTIPLIER) + LCG_INCREMENT) | 0
 
 // dateKey(YYYY-MM-DD)をJST暦日へ変換する。曜日判定のみに使う
 const parseDateKey = (dateKey: string): JstDate => {
@@ -50,7 +59,7 @@ const overlaps = (aStart: number, aEnd: number, bStart: number, bEnd: number): b
   aStart < bEnd && bStart < aEnd
 
 // poolから重複なしでcount件選ぶ。pullは0以上max未満の整数を返す関数
-const pickDistinct = <T,>(pool: T[], count: number, pull: (max: number) => number): T[] => {
+const pickDistinct = <T>(pool: T[], count: number, pull: (max: number) => number): T[] => {
   const remaining = [...pool]
   const picked: T[] = []
   const n = Math.min(count, remaining.length)
@@ -73,7 +82,7 @@ export const meetingsForDate = (
   todayKey: string,
   employeeIds: string[]
 ): FacilityMeeting[] => {
-  const seedForFacility = seed.filter((m) => m.facilityId === facilityId)
+  const seedForFacility = seed.filter(m => m.facilityId === facilityId)
 
   if (dateKey === todayKey) {
     return [...seedForFacility].sort((a, b) => a.startMin - b.startMin)
@@ -99,7 +108,9 @@ export const meetingsForDate = (
   for (let i = 0; i < count; i += 1) {
     const duration = DURATION_CANDIDATES[pull(DURATION_CANDIDATES.length)]
     const candidates = allStarts.filter(
-      (s) => s + duration <= GRID_END_MIN && !placed.some((p) => overlaps(s, s + duration, p.startMin, p.endMin))
+      s =>
+        s + duration <= GRID_END_MIN &&
+        !placed.some(p => overlaps(s, s + duration, p.startMin, p.endMin))
     )
     if (candidates.length === 0) break
 
@@ -111,7 +122,7 @@ export const meetingsForDate = (
     const organizerId = pickDistinct(employeeIds, 1, pull)[0]
     const participantExtraCount = PARTICIPANT_EXTRA_MIN + pull(PARTICIPANT_EXTRA_SPAN)
     const others = pickDistinct(
-      employeeIds.filter((id) => id !== organizerId),
+      employeeIds.filter(id => id !== organizerId),
       participantExtraCount,
       pull
     )

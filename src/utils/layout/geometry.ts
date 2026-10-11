@@ -7,8 +7,7 @@ export const VIEWBOX_W = 1600
 export const VIEWBOX_H = 1154
 export const MAX_SCALE = 5
 
-export const clamp = (v: number, lo: number, hi: number) =>
-  Math.min(hi, Math.max(lo, v))
+export const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v))
 
 // 画面座標 → 論理座標
 export const toLogical = (screen: number, scale: number, translate: number) =>

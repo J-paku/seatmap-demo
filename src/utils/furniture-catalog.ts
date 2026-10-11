@@ -20,7 +20,7 @@ const FURNITURE_CATEGORY: Record<FurnitureKind, 'structural' | 'object'> = {
 const ALL_KINDS = Object.keys(FURNITURE_CATEGORY) as FurnitureKind[]
 
 const kindsOf = (category: 'structural' | 'object'): FurnitureKind[] =>
-  ALL_KINDS.filter((kind) => FURNITURE_CATEGORY[kind] === category)
+  ALL_KINDS.filter(kind => FURNITURE_CATEGORY[kind] === category)
 
 export const FURNITURE_KIND_LABEL: Record<FurnitureKind, string> = {
   wall: '壁',
@@ -48,10 +48,14 @@ export const FURNITURE_DEFAULT_SIZE: Record<FurnitureKind, { width: number; heig
   bed: { width: 90, height: 120 },
 }
 
-export const isStructuralKind = (kind: FurnitureKind): boolean => FURNITURE_CATEGORY[kind] === 'structural'
+export const isStructuralKind = (kind: FurnitureKind): boolean =>
+  FURNITURE_CATEGORY[kind] === 'structural'
 
 // 家具ピッカーの見出しと並び
-export const FURNITURE_LIBRARY_GROUPS: readonly { label: string; kinds: readonly FurnitureKind[] }[] = [
+export const FURNITURE_LIBRARY_GROUPS: readonly {
+  label: string
+  kinds: readonly FurnitureKind[]
+}[] = [
   { label: '建設設備', kinds: kindsOf('structural') },
   { label: 'オブジェクト', kinds: kindsOf('object') },
 ]

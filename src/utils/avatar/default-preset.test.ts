@@ -5,7 +5,7 @@ import { PIXEL_AVATAR_PRESETS, DEFAULT_AVATAR_PRESET_ID } from '@/utils/avatar/p
 describe('default-preset', () => {
   it('should return a valid preset ID for any seed', () => {
     const testSeeds = ['', 'emp-001', 'emp-002', 'unknown-seed', 'a', 'z']
-    testSeeds.forEach((seed) => {
+    testSeeds.forEach(seed => {
       const result = resolveDefaultPresetId(seed)
       expect(PIXEL_AVATAR_PRESETS[result]).toBeDefined()
     })
@@ -20,7 +20,7 @@ describe('default-preset', () => {
 
   it('should distribute seeds across available presets', () => {
     const seeds = Array.from({ length: 100 }, (_, i) => `emp-${i.toString().padStart(3, '0')}`)
-    const results = seeds.map((seed) => resolveDefaultPresetId(seed))
+    const results = seeds.map(seed => resolveDefaultPresetId(seed))
     const uniquePresets = new Set(results)
     expect(uniquePresets.size).toBeGreaterThan(1)
   })

@@ -13,8 +13,8 @@ describe('face-matrices', () => {
 
   it('should only contain null, "eyes", or "mouth" strings', () => {
     Object.entries(FACE_MATRICES).forEach(([faceId, matrix]) => {
-      matrix.forEach((row) => {
-        row.forEach((cell) => {
+      matrix.forEach(row => {
+        row.forEach(cell => {
           expect([null, 'eyes', 'mouth']).toContain(cell)
         })
       })

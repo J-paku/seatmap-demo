@@ -10,12 +10,13 @@ export type FacilityState = {
 }
 
 // 状態別カラー(10-main-interactions 正本・light literal)
-export const FACILITY_COLOR: Record<FacilityStatus, { bg: string; border: string; text: string }> = {
-  available: { bg: '#e8fcf0', border: '#a7f3d0', text: '#15803d' },
-  in_meeting: { bg: '#eef2ff', border: '#a5b4fc', text: '#4338ca' },
-  upcoming: { bg: '#fff8e1', border: '#fcd34d', text: '#92400e' },
-  unlinked: { bg: '#f8fafc', border: '#e2e8f0', text: '#94a3b8' },
-}
+export const FACILITY_COLOR: Record<FacilityStatus, { bg: string; border: string; text: string }> =
+  {
+    available: { bg: '#e8fcf0', border: '#a7f3d0', text: '#15803d' },
+    in_meeting: { bg: '#eef2ff', border: '#a5b4fc', text: '#4338ca' },
+    upcoming: { bg: '#fff8e1', border: '#fcd34d', text: '#92400e' },
+    unlinked: { bg: '#f8fafc', border: '#e2e8f0', text: '#94a3b8' },
+  }
 
 // 会議室状態の表示ラベル
 export const FACILITY_STATUS_LABEL: Record<FacilityStatus, string> = {
@@ -33,10 +34,10 @@ export const deriveFacilityState = (
 ): FacilityState => {
   if (!facility.facilityId) return { status: 'unlinked' }
   const mine = meetings
-    .filter((m) => m.facilityId === facility.facilityId)
+    .filter(m => m.facilityId === facility.facilityId)
     .sort((a, b) => a.startMin - b.startMin)
-  const current = mine.find((m) => m.startMin <= nowMin && nowMin < m.endMin)
-  const next = mine.find((m) => m.startMin > nowMin)
+  const current = mine.find(m => m.startMin <= nowMin && nowMin < m.endMin)
+  const next = mine.find(m => m.startMin > nowMin)
   if (current) return { status: 'in_meeting', current, next }
   if (next && next.startMin - nowMin <= UPCOMING_WINDOW_MIN) return { status: 'upcoming', next }
   return { status: 'available', next }

@@ -33,7 +33,12 @@ describe('computeScrollGate', () => {
   })
 
   it('returns false when currentTarget is not an Element', () => {
-    const target = makeElement({ scrollHeight: 200, clientHeight: 50, scrollTop: 10, overflowY: 'auto' })
+    const target = makeElement({
+      scrollHeight: 200,
+      clientHeight: 50,
+      scrollTop: 10,
+      overflowY: 'auto',
+    })
     document.body.appendChild(target)
     expect(computeScrollGate(target, null)).toBe(false)
   })
@@ -94,31 +99,56 @@ describe('computeScrollGate', () => {
   })
 
   it('treats scrollTop of exactly 1 as not blocking (iOS residual decimal boundary)', () => {
-    const el = makeElement({ scrollHeight: 300, clientHeight: 100, scrollTop: 1, overflowY: 'auto' })
+    const el = makeElement({
+      scrollHeight: 300,
+      clientHeight: 100,
+      scrollTop: 1,
+      overflowY: 'auto',
+    })
     document.body.appendChild(el)
     expect(computeScrollGate(el, el)).toBe(false)
   })
 
   it('treats scrollTop above 1 as blocking', () => {
-    const el = makeElement({ scrollHeight: 300, clientHeight: 100, scrollTop: 1.5, overflowY: 'auto' })
+    const el = makeElement({
+      scrollHeight: 300,
+      clientHeight: 100,
+      scrollTop: 1.5,
+      overflowY: 'auto',
+    })
     document.body.appendChild(el)
     expect(computeScrollGate(el, el)).toBe(true)
   })
 
   it('treats scrollHeight === clientHeight + 1 as not scrollable (boundary)', () => {
-    const el = makeElement({ scrollHeight: 101, clientHeight: 100, scrollTop: 10, overflowY: 'auto' })
+    const el = makeElement({
+      scrollHeight: 101,
+      clientHeight: 100,
+      scrollTop: 10,
+      overflowY: 'auto',
+    })
     document.body.appendChild(el)
     expect(computeScrollGate(el, el)).toBe(false)
   })
 
   it('treats scrollHeight === clientHeight + 2 as scrollable', () => {
-    const el = makeElement({ scrollHeight: 102, clientHeight: 100, scrollTop: 10, overflowY: 'auto' })
+    const el = makeElement({
+      scrollHeight: 102,
+      clientHeight: 100,
+      scrollTop: 10,
+      overflowY: 'auto',
+    })
     document.body.appendChild(el)
     expect(computeScrollGate(el, el)).toBe(true)
   })
 
   it('ignores a scrollable-sized element whose overflowY is visible', () => {
-    const el = makeElement({ scrollHeight: 300, clientHeight: 100, scrollTop: 10, overflowY: 'visible' })
+    const el = makeElement({
+      scrollHeight: 300,
+      clientHeight: 100,
+      scrollTop: 10,
+      overflowY: 'visible',
+    })
     document.body.appendChild(el)
     expect(computeScrollGate(el, el)).toBe(false)
   })

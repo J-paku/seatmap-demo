@@ -76,7 +76,11 @@ describe('visibleFacilityName', () => {
   })
 
   it('does not hide the facility name for the self employee’s own private event', () => {
-    const ownPrivateEvent: ScheduleEvent = { ...baseEvent, employeeId: SELF_EMPLOYEE_ID, isPrivate: true }
+    const ownPrivateEvent: ScheduleEvent = {
+      ...baseEvent,
+      employeeId: SELF_EMPLOYEE_ID,
+      isPrivate: true,
+    }
     expect(visibleFacilityName(ownPrivateEvent, '第一会議室')).toBe('第一会議室')
   })
 

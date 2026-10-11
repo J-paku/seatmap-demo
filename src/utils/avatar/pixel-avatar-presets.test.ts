@@ -15,7 +15,7 @@ describe('pixel-avatar-presets', () => {
   })
 
   it('should have all presets with kind="parts"', () => {
-    Object.values(PIXEL_AVATAR_PRESETS).forEach((preset) => {
+    Object.values(PIXEL_AVATAR_PRESETS).forEach(preset => {
       expect(preset.kind).toBe('parts')
     })
   })

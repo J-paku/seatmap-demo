@@ -26,9 +26,33 @@ const findDateKeyByWeekendness = (y: number, m: number, wantWeekend: boolean): s
 }
 
 const seed: FacilityMeeting[] = [
-  { id: 'fm-seed-2', facilityId: 'fac-a', title: '定例会議', startMin: 600, endMin: 660, organizerId: 'e1', participantIds: ['e1', 'e2'] },
-  { id: 'fm-seed-1', facilityId: 'fac-a', title: '1on1', startMin: 540, endMin: 570, organizerId: 'e3', participantIds: ['e3', 'e4'] },
-  { id: 'fm-seed-3', facilityId: 'fac-b', title: '採用面接', startMin: 700, endMin: 760, organizerId: 'e5', participantIds: ['e5'] },
+  {
+    id: 'fm-seed-2',
+    facilityId: 'fac-a',
+    title: '定例会議',
+    startMin: 600,
+    endMin: 660,
+    organizerId: 'e1',
+    participantIds: ['e1', 'e2'],
+  },
+  {
+    id: 'fm-seed-1',
+    facilityId: 'fac-a',
+    title: '1on1',
+    startMin: 540,
+    endMin: 570,
+    organizerId: 'e3',
+    participantIds: ['e3', 'e4'],
+  },
+  {
+    id: 'fm-seed-3',
+    facilityId: 'fac-b',
+    title: '採用面接',
+    startMin: 700,
+    endMin: 760,
+    organizerId: 'e5',
+    participantIds: ['e5'],
+  },
 ]
 
 const employeePool = Array.from({ length: 10 }, (_, i) => `e${i + 1}`)
@@ -98,7 +122,7 @@ describe('meetingsForDate', () => {
     // 最終的な配列位置とは一致しない場合がある。ここでは形式と一意性のみ検証する
     const dateKey = findDateKeyByWeekendness(2026, 7, false)
     const result = meetingsForDate(seed, 'fac-a', dateKey, '2026-06-15', employeePool)
-    const ids = result.map((m) => m.id)
+    const ids = result.map(m => m.id)
     for (const id of ids) expect(id).toMatch(new RegExp(`^fm-${dateKey}-fac-a-\\d+$`))
     expect(new Set(ids).size).toBe(ids.length)
   })

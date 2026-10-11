@@ -18,7 +18,7 @@ describe('kuroxxx-easter-egg', () => {
 
   it('all rects should have required properties', () => {
     const rects = buildKuroxxxRects()
-    rects.forEach((rect) => {
+    rects.forEach(rect => {
       expect(typeof rect.x).toBe('number')
       expect(typeof rect.y).toBe('number')
       expect(typeof rect.w).toBe('number')
@@ -28,7 +28,7 @@ describe('kuroxxx-easter-egg', () => {
 
   it('rect coordinates should be within grid bounds', () => {
     const rects = buildKuroxxxRects()
-    rects.forEach((rect) => {
+    rects.forEach(rect => {
       expect(rect.x).toBeGreaterThanOrEqual(0)
       expect(rect.x).toBeLessThan(KUROXXX_GRID_SIZE)
       expect(rect.y).toBeGreaterThanOrEqual(0)
@@ -41,7 +41,7 @@ describe('kuroxxx-easter-egg', () => {
   it('rect colors should be valid hex codes', () => {
     const HEX_COLOR_REGEX = /^#[0-9A-Fa-f]{6}$/
     const rects = buildKuroxxxRects()
-    rects.forEach((rect) => {
+    rects.forEach(rect => {
       expect(HEX_COLOR_REGEX.test(rect.color)).toBe(true)
     })
   })

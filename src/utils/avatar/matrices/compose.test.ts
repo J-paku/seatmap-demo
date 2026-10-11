@@ -183,7 +183,9 @@ describe('upscaleMatrix8to16 — 8x8 → 16x16 の nearest-neighbor 2倍拡大',
 
 describe('composePixelsAvatarMatrix — 16x16 フリーピクセルの直接色解決', () => {
   it('palette に存在するキー文字はそのままキーとして結果に反映される', () => {
-    const rows = Array.from({ length: 16 }, (_, y) => (y === 0 ? 's' + '.'.repeat(15) : '.'.repeat(16)))
+    const rows = Array.from({ length: 16 }, (_, y) =>
+      y === 0 ? 's' + '.'.repeat(15) : '.'.repeat(16)
+    )
     const config: PixelsAvatarConfig = { kind: 'pixels', size: 16, palette: { s: '#F0C49A' }, rows }
     const result = composePixelsAvatarMatrix(config)
     expect(result[0][0]).toBe('s')
@@ -192,7 +194,9 @@ describe('composePixelsAvatarMatrix — 16x16 フリーピクセルの直接色�
   })
 
   it('palette に存在しないキー文字 (未知キー) は "." と同様 null 扱いになる', () => {
-    const rows = Array.from({ length: 16 }, (_, y) => (y === 0 ? 'x' + '.'.repeat(15) : '.'.repeat(16)))
+    const rows = Array.from({ length: 16 }, (_, y) =>
+      y === 0 ? 'x' + '.'.repeat(15) : '.'.repeat(16)
+    )
     const config: PixelsAvatarConfig = { kind: 'pixels', size: 16, palette: { s: '#F0C49A' }, rows }
     const result = composePixelsAvatarMatrix(config)
     expect(result[0][0]).toBeNull()

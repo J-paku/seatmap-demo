@@ -1,6 +1,14 @@
 // 07-admin-edit: レイアウト編集のアクション定義と純粋リデューサー(副作用なし)
 import { defaultFurnitureName } from '../furniture-catalog'
-import { RELAYOUT_COL_GAP, RELAYOUT_PADDING, DEFAULT_SEAT_HEIGHT, DEFAULT_SEAT_WIDTH, fitAreaToSeats, relayoutSeatsInGrid, sortSeatsForRelayout } from './seat-relayout'
+import {
+  RELAYOUT_COL_GAP,
+  RELAYOUT_PADDING,
+  DEFAULT_SEAT_HEIGHT,
+  DEFAULT_SEAT_WIDTH,
+  fitAreaToSeats,
+  relayoutSeatsInGrid,
+  sortSeatsForRelayout,
+} from './seat-relayout'
 import { applySeatShape } from './seat-shape'
 import { newTeamSeatBoxes } from './team-create-grid'
 import type { Facility, Furniture, FurnitureKind, Seat, SeatLayout, Team } from '@/types'
@@ -34,7 +42,15 @@ export type LayoutAction =
   | { type: 'team-move'; teamId: string; x: number; y: number }
   | { type: 'team-relayout'; teamId: string; rows: number; cols: number }
   // idPrefix は座席IDの結束キーなので、衝突しない値をリデューサー側で採番する
-  | { type: 'team-add'; name: string; color: string; x: number; y: number; width: number; height: number }
+  | {
+      type: 'team-add'
+      name: string
+      color: string
+      x: number
+      y: number
+      width: number
+      height: number
+    }
   // チーム配列を丸ごと差し替える。既存チーム取り込みのように複数チームが一度に増える操作を
   // 1アクションにまとめ、undo 1回で全チームが元へ戻るようにする
   | { type: 'team-replace-all'; teams: Team[] }
@@ -47,11 +63,34 @@ export type LayoutAction =
   | { type: 'team-delete'; teamId: string }
   // §03-3: 施設ピッカーで選んだ Garoon マスタの1件。name/facilityId が無ければ
   // 予定システム未連携の会議室として自動採番する
-  | { type: 'facility-add'; x: number; y: number; width: number; height: number; name?: string; facilityId?: string }
-  | { type: 'furniture-add'; furnitureKind: FurnitureKind; x: number; y: number; width: number; height: number }
+  | {
+      type: 'facility-add'
+      x: number
+      y: number
+      width: number
+      height: number
+      name?: string
+      facilityId?: string
+    }
+  | {
+      type: 'furniture-add'
+      furnitureKind: FurnitureKind
+      x: number
+      y: number
+      width: number
+      height: number
+    }
   // id はレイアウト上の Facility.id / Furniture.id。予定システム側の Facility.facilityId ではない
   | { type: 'object-move'; kind: EditableObjectKind; id: string; x: number; y: number }
-  | { type: 'object-resize'; kind: EditableObjectKind; id: string; x: number; y: number; width: number; height: number }
+  | {
+      type: 'object-resize'
+      kind: EditableObjectKind
+      id: string
+      x: number
+      y: number
+      width: number
+      height: number
+    }
   | { type: 'object-delete'; kind: EditableObjectKind; id: string }
   // §05-3: 会議室・家具のロックトグル。ロック中は移動・リサイズ・削除を拒む
   | { type: 'object-lock'; kind: EditableObjectKind; id: string; locked: boolean }
@@ -102,27 +141,32 @@ const patchObject = (
   patch: ObjectPatch
 ): SeatLayout => {
   if (kind === 'facility') {
-    if (!layout.facilities.some((f) => f.id === id)) return layout
-    return { ...layout, facilities: layout.facilities.map((f) => (f.id === id ? { ...f, ...patch } : f)) }
+    if (!layout.facilities.some(f => f.id === id)) return layout
+    return {
+      ...layout,
+      facilities: layout.facilities.map(f => (f.id === id ? { ...f, ...patch } : f)),
+    }
   }
-  if (!layout.furniture.some((f) => f.id === id)) return layout
-  return { ...layout, furniture: layout.furniture.map((f) => (f.id === id ? { ...f, ...patch } : f)) }
+  if (!layout.furniture.some(f => f.id === id)) return layout
+  return { ...layout, furniture: layout.furniture.map(f => (f.id === id ? { ...f, ...patch } : f)) }
 }
 
 export const applyLayoutAction = (layout: SeatLayout, action: LayoutAction): SeatLayout => {
   switch (action.type) {
     case 'seat-move': {
-      const seat = layout.seats.find((s) => s.id === action.seatId)
+      const seat = layout.seats.find(s => s.id === action.seatId)
       if (!seat) return layout
       return {
         ...layout,
-        seats: layout.seats.map((s) => (s.id === action.seatId ? { ...s, x: action.x, y: action.y } : s)),
+        seats: layout.seats.map(s =>
+          s.id === action.seatId ? { ...s, x: action.x, y: action.y } : s
+        ),
       }
     }
     case 'seat-add': {
-      const team = layout.teams.find((t) => t.id === action.teamId)
+      const team = layout.teams.find(t => t.id === action.teamId)
       if (!team) return layout
-      const teamSeats = layout.seats.filter((s) => s.teamId === action.teamId)
+      const teamSeats = layout.seats.filter(s => s.teamId === action.teamId)
       let x = action.x
       let y = action.y
       if (x === undefined || y === undefined) {
@@ -147,25 +191,28 @@ export const applyLayoutAction = (layout: SeatLayout, action: LayoutAction): Sea
       }
       const seats = [...layout.seats, newSeat]
       // 追加席が area からはみ出す場合に備えて area を座席群へ合わせ直す
-      const fitted = fitAreaToSeats(seats.filter((s) => s.teamId === action.teamId), team.area)
+      const fitted = fitAreaToSeats(
+        seats.filter(s => s.teamId === action.teamId),
+        team.area
+      )
       return {
         ...layout,
         seats,
-        teams: layout.teams.map((t) => (t.id === action.teamId ? { ...t, area: fitted } : t)),
+        teams: layout.teams.map(t => (t.id === action.teamId ? { ...t, area: fitted } : t)),
       }
     }
     case 'seat-assign-employee': {
-      const target = layout.seats.find((s) => s.id === action.seatId)
+      const target = layout.seats.find(s => s.id === action.seatId)
       if (!target) return layout
       if (target.employeeId === action.employeeId) return layout
       // その社員が既に座っている席(あれば)。移動元には移動先の元の人が入る
       const from = action.employeeId
-        ? layout.seats.find((s) => s.employeeId === action.employeeId && s.id !== action.seatId)
+        ? layout.seats.find(s => s.employeeId === action.employeeId && s.id !== action.seatId)
         : undefined
       const displaced = target.employeeId
       return {
         ...layout,
-        seats: layout.seats.map((s) => {
+        seats: layout.seats.map(s => {
           if (s.id === target.id) return { ...s, employeeId: action.employeeId }
           if (from && s.id === from.id) return { ...s, employeeId: displaced }
           return s
@@ -173,16 +220,18 @@ export const applyLayoutAction = (layout: SeatLayout, action: LayoutAction): Sea
       }
     }
     case 'seat-delete': {
-      if (!layout.seats.some((s) => s.id === action.seatId)) return layout
-      return { ...layout, seats: layout.seats.filter((s) => s.id !== action.seatId) }
+      if (!layout.seats.some(s => s.id === action.seatId)) return layout
+      return { ...layout, seats: layout.seats.filter(s => s.id !== action.seatId) }
     }
     case 'seat-rotate': {
       const ids = new Set(action.seatIds)
       // 対象が1件も居なければ元のレイアウトを返す(dispatch が undo を積まない)
-      if (!layout.seats.some((s) => ids.has(s.id))) return layout
+      if (!layout.seats.some(s => ids.has(s.id))) return layout
       return {
         ...layout,
-        seats: layout.seats.map((s) => (ids.has(s.id) ? { ...s, rotation: nextRotation(s.rotation) } : s)),
+        seats: layout.seats.map(s =>
+          ids.has(s.id) ? { ...s, rotation: nextRotation(s.rotation) } : s
+        ),
       }
     }
     case 'seat-reshape': {
@@ -190,7 +239,7 @@ export const applyLayoutAction = (layout: SeatLayout, action: LayoutAction): Sea
       // 形状ごとの既定サイズ・クランプ・回転時の w/h 交換は applySeatShape が持つ。
       // 手で広げた席(isSizeOverridden)はサイズを押し戻さない
       let changed = false
-      const seats = layout.seats.map((s) => {
+      const seats = layout.seats.map(s => {
         if (!ids.has(s.id)) return s
         const next = applySeatShape(s, action.shape)
         if (next !== s) changed = true
@@ -202,27 +251,29 @@ export const applyLayoutAction = (layout: SeatLayout, action: LayoutAction): Sea
     }
     case 'seat-delete-many': {
       const ids = new Set(action.seatIds)
-      if (!layout.seats.some((s) => ids.has(s.id))) return layout
-      return { ...layout, seats: layout.seats.filter((s) => !ids.has(s.id)) }
+      if (!layout.seats.some(s => ids.has(s.id))) return layout
+      return { ...layout, seats: layout.seats.filter(s => !ids.has(s.id)) }
     }
     case 'seat-assign': {
-      const seat = layout.seats.find((s) => s.id === action.seatId)
+      const seat = layout.seats.find(s => s.id === action.seatId)
       if (!seat) return layout
       // 付け替えても座席IDの接頭辞は移動元チームのまま(トーストの {seatId} に旧接頭辞が出る)。
       // 所属判定は teamId が正本なので表示以外に影響はなく、これは許容仕様
       return {
         ...layout,
-        seats: layout.seats.map((s) => (s.id === action.seatId ? { ...s, teamId: action.teamId } : s)),
+        seats: layout.seats.map(s =>
+          s.id === action.seatId ? { ...s, teamId: action.teamId } : s
+        ),
       }
     }
     case 'seat-replace-all': {
-      if (!layout.teams.some((t) => t.id === action.teamId)) return layout
+      if (!layout.teams.some(t => t.id === action.teamId)) return layout
       // 未確定座席(isPending)は確定させずに捨てる。編集セッション中の仮置きを保存物へ残さない。
       // teamId は対象チームで揃える — 別チームの席が混ざると、下の others 側に残った
       // 旧席と二重になって「1つの席が2チームに見える」壊れ方をする
       const replaced = action.seats
-        .filter((s) => !s.isPending)
-        .map((s) => (s.teamId === action.teamId ? s : { ...s, teamId: action.teamId }))
+        .filter(s => !s.isPending)
+        .map(s => (s.teamId === action.teamId ? s : { ...s, teamId: action.teamId }))
       // 差し替え後も配列順を保つ(対象チームの席があった位置へ差し込む)。末尾へ足すと
       // sr-only ミラーの読み上げ順が操作のたびに入れ替わる
       const seats: Seat[] = []
@@ -241,12 +292,12 @@ export const applyLayoutAction = (layout: SeatLayout, action: LayoutAction): Sea
       return { ...layout, seats }
     }
     case 'seat-swap': {
-      const from = layout.seats.find((s) => s.id === action.fromSeatId)
-      const to = layout.seats.find((s) => s.id === action.toSeatId)
+      const from = layout.seats.find(s => s.id === action.fromSeatId)
+      const to = layout.seats.find(s => s.id === action.toSeatId)
       if (!from || !to) return layout
       return {
         ...layout,
-        seats: layout.seats.map((s) => {
+        seats: layout.seats.map(s => {
           if (s.id === from.id) return { ...s, employeeId: to.employeeId }
           if (s.id === to.id) return { ...s, employeeId: from.employeeId }
           return s
@@ -254,37 +305,37 @@ export const applyLayoutAction = (layout: SeatLayout, action: LayoutAction): Sea
       }
     }
     case 'team-move': {
-      const team = layout.teams.find((t) => t.id === action.teamId)
+      const team = layout.teams.find(t => t.id === action.teamId)
       if (!team) return layout
       const dx = action.x - team.area.x
       const dy = action.y - team.area.y
       return {
         ...layout,
-        teams: layout.teams.map((t) =>
+        teams: layout.teams.map(t =>
           t.id === action.teamId ? { ...t, area: { ...t.area, x: action.x, y: action.y } } : t
         ),
-        seats: layout.seats.map((s) =>
+        seats: layout.seats.map(s =>
           s.teamId === action.teamId ? { ...s, x: s.x + dx, y: s.y + dy } : s
         ),
       }
     }
     case 'team-relayout': {
-      const team = layout.teams.find((t) => t.id === action.teamId)
+      const team = layout.teams.find(t => t.id === action.teamId)
       if (!team) return layout
-      const teamSeats = layout.seats.filter((s) => s.teamId === action.teamId)
+      const teamSeats = layout.seats.filter(s => s.teamId === action.teamId)
       if (teamSeats.length === 0) return layout
       const relaid = relayoutSeatsInGrid(teamSeats, team.area, action.cols)
       const fitted = fitAreaToSeats(relaid, team.area)
-      const relaidById = new Map(relaid.map((s) => [s.id, s]))
+      const relaidById = new Map(relaid.map(s => [s.id, s]))
       return {
         ...layout,
-        teams: layout.teams.map((t) => (t.id === action.teamId ? { ...t, area: fitted } : t)),
-        seats: layout.seats.map((s) => relaidById.get(s.id) ?? s),
+        teams: layout.teams.map(t => (t.id === action.teamId ? { ...t, area: fitted } : t)),
+        seats: layout.seats.map(s => relaidById.get(s.id) ?? s),
       }
     }
     case 'team-add': {
       // idPrefix が既存と衝突すると座席IDの結束が壊れて席が混ざる。空いている連番まで送る
-      const takenPrefixes = new Set(layout.teams.map((t) => t.idPrefix))
+      const takenPrefixes = new Set(layout.teams.map(t => t.idPrefix))
       let index = layout.teams.length + 1
       let idPrefix = `team-${String(index).padStart(2, '0')}`
       while (takenPrefixes.has(idPrefix)) {
@@ -292,7 +343,11 @@ export const applyLayoutAction = (layout: SeatLayout, action: LayoutAction): Sea
         idPrefix = `team-${String(index).padStart(2, '0')}`
       }
       const added: Team = {
-        id: nextSequentialId(layout.teams.map((t) => t.id), 'team-', 2),
+        id: nextSequentialId(
+          layout.teams.map(t => t.id),
+          'team-',
+          2
+        ),
         idPrefix,
         name: action.name,
         color: action.color,
@@ -332,21 +387,25 @@ export const applyLayoutAction = (layout: SeatLayout, action: LayoutAction): Sea
       }
     }
     case 'team-delete': {
-      if (!layout.teams.some((t) => t.id === action.teamId)) return layout
+      if (!layout.teams.some(t => t.id === action.teamId)) return layout
       // 所属判定は seat.teamId が正本。座席IDの接頭辞では判定しない
       // (接頭辞は採番専用で、チーム跨ぎの付け替え後は旧チームのまま残る)
       return {
         ...layout,
-        teams: layout.teams.filter((t) => t.id !== action.teamId),
-        seats: layout.seats.filter((s) => s.teamId !== action.teamId),
+        teams: layout.teams.filter(t => t.id !== action.teamId),
+        seats: layout.seats.filter(s => s.teamId !== action.teamId),
       }
     }
     case 'facility-add': {
       // 施設ピッカー(§03-3)から来た分は Garoon の登録名と施設IDをそのまま載せる。
       // 素の追加(マスタ未経由)は予定システムと未連携のまま採番する — デモとして嘘をつかない
-      const meetingCount = layout.facilities.filter((f) => f.kind === 'meeting').length
+      const meetingCount = layout.facilities.filter(f => f.kind === 'meeting').length
       const added: Facility = {
-        id: nextSequentialId(layout.facilities.map((f) => f.id), 'fac-', 2),
+        id: nextSequentialId(
+          layout.facilities.map(f => f.id),
+          'fac-',
+          2
+        ),
         name: action.name ?? `会議室${meetingCount + 1}`,
         kind: 'meeting',
         x: action.x,
@@ -359,7 +418,11 @@ export const applyLayoutAction = (layout: SeatLayout, action: LayoutAction): Sea
     }
     case 'furniture-add': {
       const added: Furniture = {
-        id: nextSequentialId(layout.furniture.map((f) => f.id), 'furn-', 3),
+        id: nextSequentialId(
+          layout.furniture.map(f => f.id),
+          'furn-',
+          3
+        ),
         kind: action.furnitureKind,
         name: defaultFurnitureName(action.furnitureKind),
         x: action.x,
@@ -385,11 +448,11 @@ export const applyLayoutAction = (layout: SeatLayout, action: LayoutAction): Sea
     case 'object-delete': {
       // 照合キーは Facility.id / Furniture.id。facilityId フィールドと紛らわしいので取り違えない
       if (action.kind === 'facility') {
-        if (!layout.facilities.some((f) => f.id === action.id)) return layout
-        return { ...layout, facilities: layout.facilities.filter((f) => f.id !== action.id) }
+        if (!layout.facilities.some(f => f.id === action.id)) return layout
+        return { ...layout, facilities: layout.facilities.filter(f => f.id !== action.id) }
       }
-      if (!layout.furniture.some((f) => f.id === action.id)) return layout
-      return { ...layout, furniture: layout.furniture.filter((f) => f.id !== action.id) }
+      if (!layout.furniture.some(f => f.id === action.id)) return layout
+      return { ...layout, furniture: layout.furniture.filter(f => f.id !== action.id) }
     }
   }
 }

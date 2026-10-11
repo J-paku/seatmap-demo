@@ -10,8 +10,8 @@ describe('skin-base-matrix', () => {
   })
 
   it('should only contain null or "skin" strings', () => {
-    SKIN_BASE_MATRIX.forEach((row) => {
-      row.forEach((cell) => {
+    SKIN_BASE_MATRIX.forEach(row => {
+      row.forEach(cell => {
         expect([null, 'skin']).toContain(cell)
       })
     })

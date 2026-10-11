@@ -76,7 +76,7 @@ describe('furniture-catalog', () => {
     })
 
     it('should have labels and kinds in each group', () => {
-      FURNITURE_LIBRARY_GROUPS.forEach((group) => {
+      FURNITURE_LIBRARY_GROUPS.forEach(group => {
         expect(group.label).toBeTruthy()
         expect(Array.isArray(group.kinds)).toBe(true)
         expect(group.kinds.length).toBeGreaterThan(0)
@@ -87,8 +87,8 @@ describe('furniture-catalog', () => {
       const allKinds = new Set<string>()
       const labelKinds = new Set(Object.keys(FURNITURE_KIND_LABEL))
 
-      FURNITURE_LIBRARY_GROUPS.forEach((group) => {
-        group.kinds.forEach((kind) => {
+      FURNITURE_LIBRARY_GROUPS.forEach(group => {
+        group.kinds.forEach(kind => {
           allKinds.add(kind as string)
         })
       })
@@ -98,8 +98,8 @@ describe('furniture-catalog', () => {
 
     it('should have no duplicate kinds across groups', () => {
       const allKinds: string[] = []
-      FURNITURE_LIBRARY_GROUPS.forEach((group) => {
-        group.kinds.forEach((kind) => {
+      FURNITURE_LIBRARY_GROUPS.forEach(group => {
+        group.kinds.forEach(kind => {
           allKinds.push(kind as string)
         })
       })
@@ -121,7 +121,7 @@ describe('furniture-catalog', () => {
     })
 
     it('should be consistent with isStructuralKind', () => {
-      Object.keys(FURNITURE_KIND_LABEL).forEach((kind) => {
+      Object.keys(FURNITURE_KIND_LABEL).forEach(kind => {
         const name = defaultFurnitureName(kind as FurnitureKind)
         const isStructural = isStructuralKind(kind as FurnitureKind)
         if (isStructural) {

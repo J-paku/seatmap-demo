@@ -13,8 +13,8 @@ describe('hair-matrices', () => {
 
   it('should only contain null or "hair" strings', () => {
     Object.entries(HAIR_MATRICES).forEach(([hairId, matrix]) => {
-      matrix.forEach((row) => {
-        row.forEach((cell) => {
+      matrix.forEach(row => {
+        row.forEach(cell => {
           expect([null, 'hair']).toContain(cell)
         })
       })

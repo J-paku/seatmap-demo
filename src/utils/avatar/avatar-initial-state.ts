@@ -11,12 +11,7 @@ import {
   normalizeHairId,
   type QuickStartKind,
 } from './avatar-customizer-options'
-import type {
-  HairId,
-  PartsAvatarConfig,
-  PixelAvatarConfig,
-  PixelAvatarPresetId,
-} from '@/types'
+import type { HairId, PartsAvatarConfig, PixelAvatarConfig, PixelAvatarPresetId } from '@/types'
 
 // 初期状態の導出結果
 export interface DerivedInitialState {

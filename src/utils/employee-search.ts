@@ -5,7 +5,7 @@ import type { Employee } from '@/types'
 
 // ひらがな→カタカナ。NFKC が半角カナ・全角英数を畳んでくれるので、残るのはこの変換だけ
 const hiraganaToKatakana = (value: string): string =>
-  value.replace(/[ぁ-ゖ]/g, (c) => String.fromCharCode(c.charCodeAt(0) + 0x60))
+  value.replace(/[ぁ-ゖ]/g, c => String.fromCharCode(c.charCodeAt(0) + 0x60))
 
 export const normalizeSearchText = (value: string): string =>
   hiraganaToKatakana(value.normalize('NFKC').toLowerCase()).replace(/\s+/g, '')
@@ -25,5 +25,5 @@ const fieldsOf = (employee: Employee): string[] =>
 export const matchesEmployeeQuery = (employee: Employee, query: string): boolean => {
   const normalized = normalizeSearchText(query)
   if (normalized.length === 0) return true
-  return fieldsOf(employee).some((field) => normalizeSearchText(field).includes(normalized))
+  return fieldsOf(employee).some(field => normalizeSearchText(field).includes(normalized))
 }

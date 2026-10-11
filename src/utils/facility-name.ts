@@ -13,5 +13,7 @@ export const facilityNameByFacilityId = (facilities: Facility[]): Map<string, st
 
 // 表示に出す会議室名。非公開予定は件名だけでなく押さえた会議室も伏せる
 // (部屋から会議を辿れてしまうため。件名だけ伏せても防御にならない)
-export const visibleFacilityName = (event: ScheduleEvent, facilityName: string | undefined): string | undefined =>
-  isScheduleMasked(event) ? undefined : facilityName
+export const visibleFacilityName = (
+  event: ScheduleEvent,
+  facilityName: string | undefined
+): string | undefined => (isScheduleMasked(event) ? undefined : facilityName)

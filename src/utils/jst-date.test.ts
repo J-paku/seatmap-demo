@@ -19,7 +19,8 @@ const referenceJstDate = (ms: number): JstDate => {
 }
 
 // dateKeyの曜日を独立に計算する(parseDateKeyの再実装ではなく、標準Dateのみを使う)
-const weekdayOfDate = (date: JstDate): number => new Date(Date.UTC(date.y, date.m - 1, date.d)).getUTCDay()
+const weekdayOfDate = (date: JstDate): number =>
+  new Date(Date.UTC(date.y, date.m - 1, date.d)).getUTCDay()
 
 describe('jstDateFromMs', () => {
   it('通常のUTC時刻をJST暦日へ変換する', () => {
@@ -187,7 +188,7 @@ describe('buildMonthGrid', () => {
     const last = grid[grid.length - 1]
     // 12月分の6週グリッドは翌年1月に食い込む
     expect(last.y === 2025 || last.y === 2026).toBe(true)
-    expect(grid.some((d) => d.y === 2026 && d.m === 1)).toBe(true)
+    expect(grid.some(d => d.y === 2026 && d.m === 1)).toBe(true)
   })
 })
 

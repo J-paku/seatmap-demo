@@ -1,10 +1,5 @@
 // パーツ合成と色解決 — usePixelAvatar から呼び出されるエントリポイント
-import type {
-  AvatarPalette,
-  PartsAvatarConfig,
-  PixelMatrix,
-  PixelsAvatarConfig,
-} from '@/types'
+import type { AvatarPalette, PartsAvatarConfig, PixelMatrix, PixelsAvatarConfig } from '@/types'
 import { SKIN_BASE_MATRIX } from './skin-base-matrix'
 import { HAIR_MATRICES } from './hair-matrices'
 import { FACE_MATRICES } from './face-matrices'

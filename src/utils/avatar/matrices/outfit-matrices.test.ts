@@ -13,8 +13,8 @@ describe('outfit-matrices', () => {
 
   it('should only contain null, "outfit", "outfitDark", or "outfitAlt" strings', () => {
     Object.entries(OUTFIT_MATRICES).forEach(([outfitId, matrix]) => {
-      matrix.forEach((row) => {
-        row.forEach((cell) => {
+      matrix.forEach(row => {
+        row.forEach(cell => {
           expect([null, 'outfit', 'outfitDark', 'outfitAlt']).toContain(cell)
         })
       })

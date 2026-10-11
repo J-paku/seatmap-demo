@@ -57,7 +57,11 @@ describe('isScheduleMasked', () => {
   })
 
   it('is false for the self employee’s own private event', () => {
-    const ownPrivateEvent: ScheduleEvent = { ...meeting, employeeId: SELF_EMPLOYEE_ID, isPrivate: true }
+    const ownPrivateEvent: ScheduleEvent = {
+      ...meeting,
+      employeeId: SELF_EMPLOYEE_ID,
+      isPrivate: true,
+    }
     expect(isScheduleMasked(ownPrivateEvent)).toBe(false)
   })
 

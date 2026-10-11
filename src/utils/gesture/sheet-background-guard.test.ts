@@ -115,7 +115,11 @@ describe('attachSheetBackgroundGuard', () => {
 
   it('preventDefaults an upward drag when the scrollable ancestor is already at its bottom', () => {
     const node = document.createElement('div')
-    const scrollable = makeScrollableAncestor({ scrollTop: 0, clientHeight: 100, scrollHeight: 100 })
+    const scrollable = makeScrollableAncestor({
+      scrollTop: 0,
+      clientHeight: 100,
+      scrollHeight: 100,
+    })
     const child = document.createElement('div')
     node.appendChild(scrollable)
     scrollable.appendChild(child)
@@ -151,7 +155,10 @@ describe('attachSheetBackgroundGuard', () => {
     attachSheetBackgroundGuard(node)
 
     child.dispatchEvent(makeTouchEvent('touchstart', [makeTouch(child, 0, 0)]))
-    const moveEvent = makeTouchEvent('touchmove', [makeTouch(child, 0, 20), makeTouch(child, 50, 20)])
+    const moveEvent = makeTouchEvent('touchmove', [
+      makeTouch(child, 0, 20),
+      makeTouch(child, 50, 20),
+    ])
     const spy = vi.spyOn(moveEvent, 'preventDefault')
     child.dispatchEvent(moveEvent)
 

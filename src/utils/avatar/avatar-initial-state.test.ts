@@ -2,7 +2,13 @@ import { describe, it, expect } from 'vitest'
 import type { HairId } from '@/types'
 import { deriveInitialQuickStartKind, deriveInitialParts } from './avatar-initial-state'
 import { PIXEL_AVATAR_PRESETS } from './pixel-avatar-presets'
-import { PALETTE_OPTIONS, HAIR_OPTIONS, FACE_OPTIONS, ACCESSORY_OPTIONS, OUTFIT_OPTIONS } from './avatar-customizer-options'
+import {
+  PALETTE_OPTIONS,
+  HAIR_OPTIONS,
+  FACE_OPTIONS,
+  ACCESSORY_OPTIONS,
+  OUTFIT_OPTIONS,
+} from './avatar-customizer-options'
 
 describe('deriveInitialQuickStartKind', () => {
   it('initialConfig が無く、髪型が male 専用グループなら male を返す', () => {
@@ -33,7 +39,13 @@ describe('deriveInitialQuickStartKind', () => {
   it('kind:parts の場合は preset 判定をスキップし髪型で判定する', () => {
     expect(
       deriveInitialQuickStartKind(
-        { kind: 'parts', hair: 'garou', face: 'slit', outfit: 'solid', palette: PIXEL_AVATAR_PRESETS.av1.palette },
+        {
+          kind: 'parts',
+          hair: 'garou',
+          face: 'slit',
+          outfit: 'solid',
+          palette: PIXEL_AVATAR_PRESETS.av1.palette,
+        },
         'garou'
       )
     ).toBe('male')

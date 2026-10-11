@@ -7,13 +7,7 @@ import {
   ACCESSORY_OPTIONS as ACCESSORY_OPTIONS_FROM_REGISTRY,
   OUTFIT_OPTIONS as OUTFIT_OPTIONS_FROM_REGISTRY,
 } from './part-registry'
-import type {
-  AccessoryId,
-  FaceId,
-  HairId,
-  OutfitId,
-  PixelAvatarPresetId,
-} from '@/types'
+import type { AccessoryId, FaceId, HairId, OutfitId, PixelAvatarPresetId } from '@/types'
 
 // クイック開始テンプレート — ベース構成を一発適用するためのプリセット
 export type QuickStartKind = 'male' | 'female'

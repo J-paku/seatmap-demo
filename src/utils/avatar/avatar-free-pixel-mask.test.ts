@@ -24,7 +24,7 @@ describe('avatar-free-pixel-mask', () => {
     const palette = { skin: '#F0C49A', outfit: '#3B6EA8' }
     const result = normalizeFreePixelRows(rows, palette)
     expect(Array.isArray(result)).toBe(true)
-    result.forEach((row) => {
+    result.forEach(row => {
       expect(typeof row).toBe('string')
     })
   })

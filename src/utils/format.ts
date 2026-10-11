@@ -13,7 +13,8 @@ export const scheduleTimeLabel = (e: ScheduleEvent): string =>
   e.isAllDay ? '終日' : `${hhmm(e.start)} - ${hhmm(e.end)}`
 
 // 非公開予定を伏せるか。本人の予定は伏せない(自分の予定表では件名が見える)
-export const isScheduleMasked = (e: ScheduleEvent): boolean => !!e.isPrivate && e.employeeId !== SELF_EMPLOYEE_ID
+export const isScheduleMasked = (e: ScheduleEvent): boolean =>
+  !!e.isPrivate && e.employeeId !== SELF_EMPLOYEE_ID
 
 // 予定の件名表示。非公開のものと件名が空のものは「予定あり」だけを出す
 export const scheduleTitleLabel = (e: ScheduleEvent): string =>

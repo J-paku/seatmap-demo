@@ -16,8 +16,8 @@ export const DEFAULT_FLOOR_ID: FloorId = FLOORS[0].floorId
 
 // 受け取った文字列が現存フロアidか検証する型ガード(保存値・LayoutSource の検証に使う)
 export const isFloorId = (value: string): value is FloorId =>
-  FLOORS.some((floor) => floor.floorId === value)
+  FLOORS.some(floor => floor.floorId === value)
 
 // フロア名の解決。未知のidは既定フロア名へ寄せ、呼び出し側に undefined を意識させない
 export const floorNameOf = (floorId: string): string =>
-  FLOORS.find((floor) => floor.floorId === floorId)?.floorName ?? FLOORS[0].floorName
+  FLOORS.find(floor => floor.floorId === floorId)?.floorName ?? FLOORS[0].floorName

@@ -23,7 +23,7 @@ export const jstClockLabel = (ms: number): string => JST_CLOCK_FORMATTER.format(
 // epoch ms → JST暦日
 export const jstDateFromMs = (ms: number): JstDate => {
   const parts = JST_PARTS_FORMATTER.formatToParts(new Date(ms))
-  const get = (type: string) => Number(parts.find((p) => p.type === type)?.value ?? 0)
+  const get = (type: string) => Number(parts.find(p => p.type === type)?.value ?? 0)
   return { y: get('year'), m: get('month'), d: get('day') }
 }
 
@@ -38,10 +38,12 @@ export const jstDateKey = (date: JstDate): string =>
 export const jstKeyFromIso = (iso: string): string => iso.slice(0, 10)
 
 // JST暦日を n日ずらす
-export const addJstDays = (date: JstDate, n: number): JstDate => jstDateFromMs(jstDateToNoonMs(date) + n * 86400000)
+export const addJstDays = (date: JstDate, n: number): JstDate =>
+  jstDateFromMs(jstDateToNoonMs(date) + n * 86400000)
 
 // 2つのJST暦日が同一か
-export const isSameJstDate = (a: JstDate, b: JstDate): boolean => a.y === b.y && a.m === b.m && a.d === b.d
+export const isSameJstDate = (a: JstDate, b: JstDate): boolean =>
+  a.y === b.y && a.m === b.m && a.d === b.d
 
 // JST暦日の曜日(0=日〜6=土)
 export const jstWeekday = (date: JstDate): number => new Date(jstDateToNoonMs(date)).getUTCDay()

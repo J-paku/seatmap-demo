@@ -61,7 +61,8 @@ describe('parseAiImportedConfig — JSON / kind 分岐の共通経路', () => {
   })
 
   it('説明文つきの複数ブロックはフェンス全体一致しないため剥がされず invalidJson になる', () => {
-    const wrapped = 'ここにコードがあります:\n```json\n' + JSON.stringify(validParts) + '\n```\n以上です'
+    const wrapped =
+      'ここにコードがあります:\n```json\n' + JSON.stringify(validParts) + '\n```\n以上です'
     const result = parseAiImportedConfig(wrapped)
     expect(result).toEqual({ ok: false, error: 'invalidJson' })
   })

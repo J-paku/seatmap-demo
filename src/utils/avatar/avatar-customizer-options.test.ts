@@ -37,7 +37,7 @@ describe('avatar-customizer-options', () => {
 
   describe('color options', () => {
     it('HAIR_COLOR_OPTIONS should have valid hex colors', () => {
-      HAIR_COLOR_OPTIONS.forEach((color) => {
+      HAIR_COLOR_OPTIONS.forEach(color => {
         expect(HEX_COLOR_REGEX.test(color)).toBe(true)
       })
     })
@@ -47,7 +47,7 @@ describe('avatar-customizer-options', () => {
     })
 
     it('OUTFIT_COLOR_OPTIONS should have valid hex colors', () => {
-      OUTFIT_COLOR_OPTIONS.forEach((color) => {
+      OUTFIT_COLOR_OPTIONS.forEach(color => {
         expect(HEX_COLOR_REGEX.test(color)).toBe(true)
       })
     })
