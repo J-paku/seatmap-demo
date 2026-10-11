@@ -30,7 +30,7 @@ type Options = {
   onEndSession?: () => void
 }
 
-type EditDragState = {
+export type EditDragState = {
   editSelectedSeatIds: string[]
   editSelectedObject: LayoutObjectRef | null
   undoChip: {

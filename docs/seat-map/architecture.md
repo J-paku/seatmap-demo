@@ -14,6 +14,22 @@ src/components/SeatMapView/index.tsx      画面ルート。組み立てのみ
 ├─ hooks/use-seat-assign.ts               座席への社員配属(編集モード)
 ├─ hooks/use-edit-dialogs.ts              編集モードの各種ダイアログ状態
 ├─ hooks/use-layout-save.ts               編集レイアウトの保存/破棄
+├─ hooks/use-canvas-handle.ts             キャンバスの ref と、ref 経由の命令(元に戻すチップ・中央寄せ)
+├─ hooks/use-edit-session-start.ts        閲覧モードから編集セッションを起こす口
+├─ hooks/use-edit-session-end.ts          編集セッションの「完了」「キャンセル」
+├─ hooks/use-object-delete.ts             削除の実行と後始末
+├─ hooks/use-seat-bulk-actions.ts         座席の大型化と一括削除の確認
+├─ hooks/use-ghost-delete.ts              移動ゴーストの削除ボタン
+├─ hooks/use-placement-entries.ts         配置フローの入口(チーム枠タップ・FAB)
+├─ hooks/use-surface-state.ts             サイドバー・ホバー・レイアウト切り替えの開閉状態
+├─ hooks/use-seat-navigation.ts           座席へ飛ぶ導線(「座席へ移動」「自分の席」)
+├─ components/ViewModeHeader.tsx          閲覧モードのヘッダー・レイアウト切り替え・ガイドの入口
+├─ components/DirectorySidebar.tsx        社員ディレクトリの配線
+├─ components/NoticeToasts.tsx            一時通知と保存成功トースト
+├─ components/ViewModePanels.tsx          チームオーバーレイ・ホバーカード・詳細パネル
+├─ components/EditSurfaces.tsx            編集モードの常駐UI・FAB・シート・確認
+├─ components/TourLayers.tsx              操作ガイドの層
+├─ components/MapCanvas.tsx               SeatMapCanvas への配線(下の木の親)
 └─ src/components/SeatMapCanvas/index.tsx キャンバス本体。組み立てのみ
    ├─ hooks/use-viewport.ts               パン・ズームの変換モデル本体(3章)
    │  ├─ hooks/use-viewport-input.ts      リサイズ・キーボード・ホイール入力の配線
@@ -23,13 +39,22 @@ src/components/SeatMapView/index.tsx      画面ルート。組み立てのみ
    ├─ hooks/use-canvas-view-model.ts      LOD・カウンタ倍率・アクションバー座標等の派生値
    ├─ hooks/use-edit-drag.ts              編集モードのドラッグ(座席/チーム/オブジェクト共通)
    ├─ hooks/use-undo-chip.ts              「元に戻す」チップの表示位置と自動消去
+   ├─ hooks/use-canvas-handle.ts          親へ公開する命令(チーム箱の実測・中央寄せ・元に戻すチップ)
+   ├─ hooks/use-selection-routing.ts      余白クリックとミラー層の選択を編集/閲覧へ振り分け
+   ├─ hooks/use-seat-actions.ts           座席アクションバーの着席判定と削除の振り分け
+   ├─ components/TransformLayer.tsx       変換レイヤーの div とその中身(下の2つもここが描く)
    ├─ components/TeamAreaLayer.tsx        → @/components/TeamArea (data-team-id)
    ├─ components/EditObjectLayer.tsx      編集モードのみ。会議室/家具の操作面
+   ├─ components/NearestTeamTag.tsx       全チームが画面外のときの「最近傍チームへ移動」タグ
+   ├─ components/SelectedSeatsBar.tsx     編集中の座席アクションバー
+   ├─ components/SelectedObjectBar.tsx    編集中の会議室/家具の属性バー
+   ├─ components/CanvasUndoChip.tsx       「元に戻す」チップ
    └─ utils/                              anim-step.ts / canvas-metrics.ts / gesture-math.ts 等
 ```
 
-`src/components/SeatMapCanvas/index.tsx` が実際に描画する子(キャンバス外の画面固定 UI 含む)は
-`@/components/FacilityBlock` `@/components/FurnitureBlock` `@/components/SeatMirrorLayer`
+`src/components/SeatMapCanvas/index.tsx` と同じフォルダの `TransformLayer.tsx` が実際に描画する子
+(キャンバス外の画面固定 UI 含む)は `@/components/FacilityBlock` `@/components/FurnitureBlock`
+(この2つは `TransformLayer.tsx` の中)`@/components/SeatMirrorLayer`
 `@/components/ZoomControls` `@/components/MySeatButton`(`SeatMapView` 側でマウント)。
 
 各フックの詳細な責務分割は `docs/authoring.md` 1章の構成図、分割基準は `docs/conventions/01-authoring.md`
@@ -106,13 +131,13 @@ DOM 適用と次状態の保持だけを行う(関数は純粋・DOM に触れ�
 
 | フック | 値 | 付与箇所 | 契約 |
 |---|---|---|---|
-| `data-canvas-transform-layer="true"` | 固定文字列 | 変換レイヤーの `div` 1枚(`src/components/SeatMapCanvas/index.tsx:128`) | パン・ズームで一括変換される唯一のレイヤー。`getComputedStyle(...).transform` から現在の `scale` を読める(`verify-s1.js:53`) |
-| `data-team-id` | `Team.idPrefix`(**`Team.id` ではない**) | チーム箱のインタラクション面(`src/components/TeamArea.tsx:84`) | クリックを直接受ける矩形。`SeatMapCanvasHandle.measureTeamRect` もこの属性で `querySelector` する(`src/components/SeatMapCanvas/index.tsx:82`) |
+| `data-canvas-transform-layer="true"` | 固定文字列 | 変換レイヤーの `div` 1枚(`src/components/SeatMapCanvas/components/TransformLayer.tsx:49`) | パン・ズームで一括変換される唯一のレイヤー。`getComputedStyle(...).transform` から現在の `scale` を読める(`verify-s1.js:53`) |
+| `data-team-id` | `Team.idPrefix`(**`Team.id` ではない**) | チーム箱のインタラクション面(`src/components/TeamArea.tsx:84`) | クリックを直接受ける矩形。`SeatMapCanvasHandle.measureTeamRect` もこの属性で `querySelector` する(`src/components/SeatMapCanvas/hooks/use-canvas-handle.ts:18`) |
 | `data-furniture-id` | `Facility.id` または `Furniture.id` | 会議室・ブース・共用部・通路・家具すべて(`src/components/FacilityBlock.tsx:24,41`, `src/components/FurnitureBlock.tsx:20`) | 種別を問わず「オブジェクトである」ことの共通マーカー |
 | `data-facility="true"` | 固定文字列(`meeting` 種別のみ) | `src/components/FacilityBlock.tsx:42`(`isMeeting` の時だけ属性が付く。他は `undefined` = 属性自体が付かない) | 「会議室として数える」対象の絞り込み。家具側は明示的にこの属性を付けない理由がコメントにある: 「検証スクリプトが会議室だけを数えているため」(`src/components/FurnitureBlock.tsx:6`) |
 
 `measureTeamRect` の引数が `Team.idPrefix` であって `Team.id` でない点は、呼び出し側
-(`src/components/SeatMapView/hooks/use-team-seat-focus.ts:43`)・型定義のコメント
+(`src/components/SeatMapView/hooks/use-team-seat-focus.ts:40`)・型定義のコメント
 (`src/components/SeatMapCanvas/type.ts:44`)双方に明記されている、取り違えやすい実装ノート。
 
 ## 6. 会議室/家具の状態解決
@@ -120,9 +145,9 @@ DOM 適用と次状態の保持だけを行う(関数は純粋・DOM に触れ�
 `src/utils/facility-status.ts` の `deriveFacilityState(facility, meetings, nowMin)` が
 `facilityId`(予定システム連携ID)の有無→今の会議→直近30分以内の次の会議、の順で
 `available / in_meeting / upcoming / unlinked` を決める。呼び出しは
-`src/components/SeatMapView/hooks/use-seat-map-data.ts:69-80` の `facilityStateById` 組み立てに1箇所だけ。
+`src/components/SeatMapView/hooks/use-seat-map-data.ts:85-98` の `facilityStateById` 組み立てに1箇所だけ。
 「今日」を表示中のときだけ現在時刻で導出し、他日は連携有無のみ判定する
-(`use-seat-map-data.ts:76`)。
+(`use-seat-map-data.ts:92-93`)。
 
 家具の建設設備/オブジェクト区分(名前を持つか・ピッカーでのグループ分け)は
 `src/utils/furniture-catalog.ts` の `FURNITURE_CATEGORY` レコード1箇所が唯一の判定基準
@@ -141,17 +166,17 @@ DOM 適用と次状態の保持だけを行う(関数は純粋・DOM に触れ�
 (`{ teamId, teamName, teamColor, rect }`)の1形。組み立ては
 `src/utils/team-overlay-payload.ts:buildTeamOverlayPayload` の1箇所に統一されており、
 バウンダリのクリック経路(`src/components/SeatMapCanvas/hooks/use-canvas-view-model.ts:96-102`)と
-検索/自分の席経路(`src/components/SeatMapView/hooks/use-team-seat-focus.ts:34-57`)の両方がこれを通す
+検索/自分の席経路(`src/components/SeatMapView/hooks/use-team-seat-focus.ts:31-54`)の両方がこれを通す
 ——チーム色の解決基準が2箇所に分岐しないようにするためとコメントにある
 (`src/utils/team-overlay-payload.ts:1-3`)。
 
 - **バウンダリクリック経路**: `TeamArea` の `onClick` → `TeamAreaLayer` → `useCanvasViewModel.handleTeamBoundaryOpen`
   → `SeatMapCanvasProps.onTeamBoundaryClick` → `SeatMapView` の `focus.openByBoundary`
   (ヒット表示なしでオーバーレイを開く)
-- **検索/自分の席経路**: `SeatMapView` の `handleDirectorySeatSelect` / `handleGoToMySeat` →
+- **検索/自分の席経路**: `src/components/SeatMapView/hooks/use-seat-navigation.ts` の `handleGoToSeat` / `handleGoToMySeat` →
   `useTeamSeatFocus.focusSeat(seat)` → `canvasRef.current.measureTeamRect(team.idPrefix)` で
   キャンバスを動かさず対象チーム箱の `DOMRect` を実測(画面外でも常に描画されているため測れる、
-  `src/components/SeatMapCanvas/index.tsx:78-79` のコメント) → ヒット表示ありでオーバーレイを開く
+  `src/components/SeatMapCanvas/hooks/use-canvas-handle.ts:14-15` のコメント) → ヒット表示ありでオーバーレイを開く
 
 この先(オーバーレイ自体の DOM 構造・HIT表示・ミニマップ)は `docs/team-overlay/` の管轄。
 

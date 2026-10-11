@@ -49,7 +49,7 @@
 `src/components/TeamOverlay/components/SeatCard.tsx:32-38` の Desktop 空席カードは `<button disabled>`
 として描かれる。disabled なフォームコントロールはブラウザが `click` を一切ディスパッチしないため、
 素朴な実装のままだとパネル側の highlightSeatId/onClearHighlight ハンドラ
-(`src/components/TeamOverlay/index.tsx:168-171`)にイベントが届かない —
+(`src/components/TeamOverlay/components/OverlayPanel.tsx:62-68`)にイベントが届かない —
 **ソースレビューだけでは発見できない**類のギャップで、実ブラウザでの capture 段リスナー計測で初めて
 `clickEventFired: 0件` として確認できた(`check-hit-clear.mjs` case3)。
 

@@ -15,7 +15,7 @@ export type OffscreenPingPos = {
   edge: Edge
 }
 
-type UseOffscreenTeamIndicatorResult = {
+export type UseOffscreenTeamIndicatorResult = {
   nearestTeam: Team | null
   pingPos: OffscreenPingPos | null
   goToNearestTeam: () => void

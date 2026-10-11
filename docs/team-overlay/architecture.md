@@ -8,17 +8,22 @@
 
 ```
 src/components/TeamOverlay/
-├─ index.tsx                     組み立てのみ。開閉配線・HIT クリア判定
+├─ index.tsx                     組み立てのみ。フックを呼び、下位部品へ渡す
 ├─ type.ts                       このツリー全体で共有する型(平坦)
 ├─ components/
 │  ├─ CompactSeatGrid.tsx        Compact 座席グリッド
 │  ├─ DesktopSeatGrid.tsx        Desktop 座席グリッド
 │  ├─ Minimap.tsx                ミニマップの開閉トグルと aria 配線
 │  ├─ MinimapFigure.tsx          ミニマップの図形描画
+│  ├─ OverlayBody.tsx            本文(座席配置セクション → ゴースト → ミニマップ → 削除フッター)
+│  ├─ OverlayPanel.tsx           パネルと上部(ロードバー・ハンドル・ヘッダー)。パネル内クリックの判定
+│  ├─ OverlayWrap.tsx            最外枠と背景。余白クリックで閉じる
 │  ├─ ScrollHint.tsx             横スクロールヒントの共用部品
 │  ├─ SeatCard.tsx               Desktop 座席カード
 │  ├─ SeatGridFrame.tsx          Desktop/Compact の分岐点
 │  ├─ SeatLayoutHeader.tsx       座席配置セクションの見出し
+│  ├─ SeatLayoutSection.tsx      座席配置セクション(見出し → 同期バッジ → ゴミ箱 → グリッド)
+│  ├─ TeamDeleteFooter.tsx       チーム削除の入口
 │  ├─ TeamOverlayHeader.tsx      パネルヘッダー
 │  └─ ViewSeatCell.tsx           Compact 座席セル
 ├─ hooks/
@@ -27,13 +32,23 @@ src/components/TeamOverlay/
 │  ├─ use-minimap-data.ts            ミニマップの切り取り窓・現在地の純粋計算
 │  ├─ use-modal-shell.ts             body スクロールロック・Escape・フォーカストラップの束ね
 │  ├─ use-overlay-session.ts         開いた直後のローディング演出・クリックロック
+│  ├─ use-overlay-session-enter.ts   編集セッションの始め方
+│  ├─ use-panel-shell.ts             下スワイプ閉じとモーダルの殻を同じパネルへ束ねる
 │  ├─ use-scroll-activity.ts         document 捕捉段のスクロール中判定
 │  ├─ use-scroll-hints.ts            横スクロールの実測(overflow/atStart/atEnd)
-│  └─ use-seat-highlight-animation.ts ヒット席への追従スクロールと glow 演出
+│  ├─ use-seat-highlight-animation.ts ヒット席への追従スクロールと glow 演出
+│  ├─ use-seat-layout-tour.ts        座席配置ガイドの再生
+│  └─ use-team-seats.ts              開いているチームの座席・在席数・空席数
 └─ utils/
+   ├─ allow-swipe-dismiss.ts     下スワイプで閉じてよい条件
    ├─ anchor-origin.ts           拡大原点(transform-origin)計算
    ├─ compact-name.ts            Compact 氏名ラベルとフォントサイズ
+   ├─ count-empty-seats.ts       チーム削除の確認に出す空席数
+   ├─ filter-team-seats.ts       開いているチームの座席の絞り込み
+   ├─ judge-overlay-click.ts     余白クリック・HIT クリア・選択解除の判定
    ├─ minimap-label.ts           ミニマップラベルの文字数・省略
+   ├─ resolve-side-padding.ts    見出し・同期バッジの左右余白
+   ├─ resolve-team-rect.ts       編集開始の基準の矩形
    └─ seat-grid.ts               グリッド寸法定数と行列インデックス計算
 ```
 
@@ -41,7 +56,12 @@ src/components/TeamOverlay/
 
 | ファイル | 責務 |
 |---|---|
-| `index.tsx` | Props 受け取り・開閉/スワイプ/フォーカストラップの配線・HIT クリア判定(`index.tsx:80-89`)。状態・計算・分岐はほぼ持たない |
+| `index.tsx` | Props 受け取り・フックの呼び出し・下位部品への受け渡しだけ。状態・計算・分岐は持たない |
+| `OverlayWrap.tsx` | 最外枠と背景。余白か背景のクリックで閉じる |
+| `OverlayPanel.tsx` | パネルの実ノード(拡大原点・クリックロック・スワイプ追従)とロードバー・ハンドル・ヘッダー。パネル内クリックでの HIT クリア判定(`OverlayPanel.tsx:62-68`、判定本体は `judge-overlay-click.ts`) |
+| `OverlayBody.tsx` | 本文のスクロール領域。座席配置セクション → ドラッグ中のゴースト → ミニマップ → チーム削除フッターを積む |
+| `SeatLayoutSection.tsx` | 座席配置セクション。見出し → 同期バッジ → (ドラッグ中だけ)ゴミ箱 → 座席グリッド |
+| `TeamDeleteFooter.tsx` | チーム削除の入口(編集モードのみ) |
 | `SeatGridFrame.tsx` | `isCompactMobile` で `DesktopSeatGrid` / `CompactSeatGrid` を選ぶだけ |
 | `DesktopSeatGrid.tsx` | 固定列幅グリッド・`onClick` 直結・横スクロールヒント配線 |
 | `CompactSeatGrid.tsx` | 可変列幅グリッド(`ResizeObserver` 実測)・タップ誤爆ガード配線・横スクロールヒント配線 |
@@ -59,7 +79,11 @@ src/components/TeamOverlay/
 |---|---|---|
 | `use-compact-mobile.ts` | 760px 境界判定 | `useSyncExternalStore`(matchMedia を外部ストアとして購読) |
 | `use-modal-shell.ts` | body スクロールロック・Escape 閉じ・フォーカストラップの束ね | 副作用のみ(状態は持たない) |
-| `use-overlay-session.ts` | 開いた直後のローディング演出・クリックロック・本文スクロール位置リセット | `useState`(loading/clickLocked/syncedAt) |
+| `use-overlay-session.ts` | 開いた直後のローディング演出・クリックロック・本文スクロール位置リセット(本文の `bodyRef` もここで持つ) | `useState`(loading/clickLocked/syncedAt)+ `useRef` |
+| `use-overlay-session-enter.ts` | 編集セッションの始め方(今のチームの座席からグリッドを起こして開始を告げる) | 無し(`useCallback` のみ) |
+| `use-panel-shell.ts` | 下スワイプで閉じるジェスチャーとモーダルの殻を同じパネルのノードへ束ねる | `useRef`(状態は持たない) |
+| `use-seat-layout-tour.ts` | 座席配置ガイドの再生(ガイドボタンから毎回最初から) | `useState`(replayNonce) |
+| `use-team-seats.ts` | 開いているチームの座席・在席数・空席数 | 無し(純粋計算、`useMemo` のみ) |
 | `use-scroll-hints.ts` | 横スクロールの実測(`scrollWidth`/`clientWidth`/`scrollLeft`) | `useState` + `useLayoutEffect`(依存配列無し、毎コミット後に同期再測定) |
 | `use-scroll-activity.ts` | document 捕捉段のスクロール中判定(Compact 用) | `useRef`(再レンダーを起こさない) |
 | `use-seat-highlight-animation.ts` | ヒット席への追従スクロールと glow 演出 | `useState`(glowing) |
@@ -74,6 +98,12 @@ src/components/TeamOverlay/
 | `anchor-origin.ts` | クリックしたバウンダリ中心からの拡大原点(`transform-origin`)計算 |
 | `compact-name.ts` | Compact 氏名ラベル切り出し(`src/utils/display-utils.ts` へ委譲)とフォントサイズ計算 |
 | `minimap-label.ts` | ミニマップラベルの文字数・フォントサイズ・省略記号処理 |
+| `judge-overlay-click.ts` | 余白クリック・HIT クリア・編集中の選択解除の判定 |
+| `filter-team-seats.ts` | 開いているチームの座席の絞り込み(`seat.teamId` 一本) |
+| `count-empty-seats.ts` | チーム削除の確認に出す空席数 |
+| `resolve-side-padding.ts` | 見出し・同期バッジの左右余白(Compact だけグリッドに揃える) |
+| `resolve-team-rect.ts` | 編集開始で席0件のチームへグリッドを起こすときの基準の矩形 |
+| `allow-swipe-dismiss.ts` | 下スワイプで閉じてよい条件(開いていて Compact のとき) |
 
 ## 5. props の流れ
 
@@ -95,19 +125,19 @@ SeatMapView
       minimapAreas / minimapFurniture / minimapTeamArea / minimapViewBox
    />
 ```
-(`src/components/SeatMapView/index.tsx:198-211`)
+(`src/components/SeatMapView/components/ViewModePanels.tsx:35-48`)
 
 起動元は2系統で、`highlightSeatId` の有無だけが違う:
 
 - チーム箱クリック → `openByBoundary(payload)`。`highlightSeatId` は `null`
-  (`use-team-seat-focus.ts:66-70`)
+  (`use-team-seat-focus.ts:64-67`)
 - 自分の席ボタン / ディレクトリ検索 → `focusSeat(seat)`。`payload` はチーム箱の DOMRect を
   `canvasRef.current.measureTeamRect` で測って作り、`highlightSeatId` は `seat.id`
-  (`use-team-seat-focus.ts:34-57`)
+  (`use-team-seat-focus.ts:31-54`)
 
 `payload.rect` はキャンバス側(`docs/seat-map/` の対象)が測定した DOMRect をそのまま使う
-(`use-team-seat-focus.ts:43`)。座席クリックは `onSeatClick` を経由して `useDetailPanel().openSeatDetail`
-に渡り、社員詳細(EmployeeDetail、別ドメイン)を開く(`src/components/SeatMapView/index.tsx:48,204`)。
+(`use-team-seat-focus.ts:40`)。座席クリックは `onSeatClick` を経由して `useDetailPanel().openSeatDetail`
+に渡り、社員詳細(EmployeeDetail、別ドメイン)を開く(`src/components/SeatMapView/components/ViewModePanels.tsx:30,41`)。
 TeamOverlay はこの先に踏み込まない。
 
 ## 6. 状態がどこに住むか
@@ -129,15 +159,16 @@ TeamOverlay ツリーの中で `localStorage` に触れるのは `useMinimapColl
 
 ```
 payload.teamId
-  → seats.filter(s => s.teamId === payload.teamId)   // teamSeats (index.tsx:49-52)
+  → seats.filter(s => s.teamId === payload.teamId)   // teamSeats (utils/filter-team-seats.ts)
   → buildSeatGrid(teamSeats)                          // SeatGrid { positionedSeats, seatByGridCell, rows, cols }
   → SeatGridFrame(isCompactMobile で分岐)
       → DesktopSeatGrid  (seatByGridCell を row×col 全走査)
       → CompactSeatGrid  (positionedSeats をそのまま map)
 ```
 
-`teamSeats` / `grid` / `occupiedCount` はいずれも `useMemo`(`index.tsx:49-54`)。フィルタ基準は
-`seat.teamId` 一本 — キャンバス側の絞り込みと同じ基準を使う(`use-team-seat-focus.ts:41` のコメント)。
+`teamSeats` / `grid` / `occupiedCount` はいずれも `useMemo`(`teamSeats` と `occupiedCount` は `use-team-seats.ts:21-27`、`grid` は
+`use-seat-layout-compose.ts:30`)。フィルタ基準は
+`seat.teamId` 一本 — キャンバス側の絞り込みと同じ基準を使う(`use-team-seat-focus.ts:38` のコメント)。
 
 ## 8. ミニマップのデータフロー
 
@@ -163,7 +194,7 @@ props (areas, furniture, currentArea, viewBox)
 1. 座席セル自身の `onSelect`(`DesktopSeatGrid.tsx:63-70`、`CompactSeatGrid.tsx:93-98`)—
    `dimmed`(= `spotlight && !isHit`、`isHit = highlightSeatId === seat.id`)なら `onClearHighlight`
    を呼びクリック本体(`onSeatClick`)は無視する
-2. パネル全体の `onClick`(`index.tsx:80-89`)— クリック先の `closest('[data-seat-id]')` の ID が
+2. パネル全体の `onClick`(`OverlayPanel.tsx:62-68`、判定は `judge-overlay-click.ts:12-15`)— クリック先の `closest('[data-seat-id]')` の ID が
    `highlightSeatId` と不一致なら `onClearHighlight`
 
 他の座席セルをクリックした場合、React のイベントバブリングにより両方が実行される(1が先、2が後。

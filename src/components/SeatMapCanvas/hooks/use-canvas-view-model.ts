@@ -30,7 +30,7 @@ type SelectedObjectAttrs = {
   canToggleLabel: boolean
 }
 
-type CanvasViewModel = {
+export type CanvasViewModel = {
   lod: Lod
   counterScale: number
   assignedCountByTeam: Map<string, number>

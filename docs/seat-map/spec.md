@@ -8,7 +8,7 @@
 
 ## 1. キャンバスの構成要素
 
-`src/components/SeatMapCanvas/index.tsx` が描く DOM 順(z順、後勝ち)。
+`src/components/SeatMapCanvas/components/TransformLayer.tsx` が描く DOM 順(z順、後勝ち)。
 
 | 層 | 内容 | 実装 |
 |---|---|---|
@@ -18,12 +18,12 @@
 | 4 | (編集モードのみ)会議室・家具の操作面 | `EditObjectLayer` |
 | 5 | (編集モードのみ)整列ガイド線 | `AlignmentGuides` |
 
-1〜5 は `data-canvas-transform-layer="true"` の1枚のレイヤー(`src/components/SeatMapCanvas/index.tsx:125`)
+1〜5 は `data-canvas-transform-layer="true"` の1枚のレイヤー(`src/components/SeatMapCanvas/components/TransformLayer.tsx:49`)
 に収まり、パン・ズームで一括変換される。ズームボタン・sr-only 座席ミラーはこの変換レイヤーの外
 (`SeatMapCanvas` 内だが変換 `div` の兄弟)にあり、画面に固定される
-(`src/components/SeatMapCanvas/index.tsx:192-199`)。「自分の席」ボタン(`MySeatButton`)は
+(`src/components/SeatMapCanvas/index.tsx:127-143`)。「自分の席」ボタン(`MySeatButton`)は
 `SeatMapCanvas` 自体の外——`SeatMapView` が閲覧モード時のみ直接マウントする独立コンポーネントで、
-キャンバスの変換には一切触れない(`src/components/SeatMapView/index.tsx:188`)。
+キャンバスの変換には一切触れない(`src/components/SeatMapView/components/MapCanvas.tsx:80`)。
 
 閲覧モードでは 4〜5 は描画されない。**個人座席カードは閲覧・編集どちらのモードでもキャンバスに
 出ない**——`CLAUDE.md` 不変ルール1に例外は無い。座席へのアクセス経路は 5章(`SeatMirrorLayer`)を参照。

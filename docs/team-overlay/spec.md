@@ -7,7 +7,7 @@
 
 ## 0. パネル構成
 
-`index.tsx` の描画順そのまま。上から: ロードバー(読み込み中のみ)→ ハンドル(Compactのみ)→
+`OverlayPanel.tsx` と `OverlayBody.tsx` の描画順そのまま。上から: ロードバー(読み込み中のみ)→ ハンドル(Compactのみ)→
 ヘッダー(チーム名・人数・閉じるボタン)→ 本文(座席配置見出し → 座席グリッド → ミニマップ)。
 
 ## 1. 起動・終了
@@ -125,7 +125,7 @@ Compact と同じ実測ベースのフックで追従させるためボタン化
   (`DesktopSeatGrid.tsx:29-30` のコメント)
 - 解除条件: **ヒット席自身以外のクリック**。パネル全体の `onClick` でクリック先の
   `closest('[data-seat-id]')` を取り、その `dataset.seatId` が `highlightSeatId` と不一致なら
-  `onClearHighlight` を呼ぶ(`index.tsx:80-89`)。ヒット席自身のクリックは除外する — 社員詳細を開く
+  `onClearHighlight` を呼ぶ(`OverlayPanel.tsx:62-68`、判定は `judge-overlay-click.ts:12-15`)。ヒット席自身のクリックは除外する — 社員詳細を開く
   経路(`onSeatClick`)と競合するため
 - 元の不具合(commit `bd5144d` で修正): 座席以外(空白・ヘッダー・ミニマップ等)をクリックしても
   ハイライトが消えなかった。修正前は `onClick={(e) => e.stopPropagation()}` だけで、解除判定自体が
@@ -195,7 +195,7 @@ Compact の空席セルは非 disabled な `<div>`(`ViewSeatCell.tsx:79-86`)で 
 
 **修正**: `src/components/TeamOverlay/team-overlay-modal.module.css` の `.card.isEmpty`(当時のグローバル CSS では `.team-ovl-card.is-empty`)に `pointer-events: none` を
 追加し、クリックを素通しさせて背後のグリッド枠(`data-seat-id` を持たない `<div>`)に当てる。ハンドラ
-側(`index.tsx`)は無変更 — `closest('[data-seat-id]')` が `null` を返し `highlightSeatId` と不一致
+側(当時は `index.tsx`、今は `OverlayPanel.tsx`)は無変更 — `closest('[data-seat-id]')` が `null` を返し `highlightSeatId` と不一致
 になるため、既存の解除ロジックがそのまま働く。
 
 この修正は CSS 側だけで成立しており、`.card.isEmpty` のルールを後から編集すると挙動が

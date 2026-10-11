@@ -11,7 +11,7 @@
 
 - 関数名は `use` 接頭辞必須
 - ファイル名は kebab-case + `use-` 接頭辞(`use-canvas-pointer.ts` のように)。
-  **2026-10-12 時点で `src` の `hooks` フォルダの下の98本は全て kebab-case + `use-` 接頭辞であり、この形式を維持する** `[hook-file-naming]`
+  **2026-10-12 時点で `src` の `hooks` フォルダの下の115本は全て kebab-case + `use-` 接頭辞であり、この形式を維持する** `[hook-file-naming]`
 - Props / 戻り値の型はファイル上部に定義する
 - **フックのファイルには `use` 関数とその型だけを置く。** フックでない関数・定数(しきい値1つでも)は一番近い
   `utils` フォルダへ、`localStorage` などの保存の読み書きは `src/lib/` へ出す。置き場の規則と実例は
