@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
 import type { PointerEvent as ReactPointerEvent } from 'react'
+import { LONG_PRESS_DURATION, MOVE_THRESHOLD } from '@/utils/gesture/detect-long-press'
 
 // 500ms の長押し判定だけを持つ。何が起きるかは呼び出し側が決める。
 // 通常 click との二重発火は呼び出し側が consumeFired() で消費する。
@@ -7,9 +8,6 @@ import type { PointerEvent as ReactPointerEvent } from 'react'
 // 元は +FAB 専用(components/AdminAddFab/hooks/use-fab-long-press.ts)だったが、
 // 仕様 §05-1 の「管理者がチーム枠・家具を長押しで編集セッションへ入る」も同じ判定を使う。
 // 使い手が2箇所を超えたのでルート hooks/ へ引き上げた — 同じ概念に2つ目のしきい値を作らないため
-const LONG_PRESS_DURATION = 500
-// pointermove の x/y 差分がこれを超えたら長押しを取り消す
-const MOVE_THRESHOLD = 10
 
 export type UseLongPressParams = {
   onLongPress: () => void

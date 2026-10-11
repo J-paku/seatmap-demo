@@ -14,6 +14,12 @@ import {
   computeFlickVelocity,
   type VelocitySample,
 } from '@/utils/gesture/swipe-velocity'
+import {
+  COMMIT_SLOP,
+  SNAP_TRANSITION,
+  driveTransform,
+  releaseTransform,
+} from '@/utils/gesture/dismiss-sheet'
 
 interface UseSwipeToDismissOptions {
   onDismiss: () => void
@@ -58,28 +64,6 @@ interface ArmedState {
   gateBlocked: boolean
   // data-drag-handle 起点か。ハンドルは閉じるための持ち手なので離指で距離を問わず閉じる
   fromHandle: boolean
-}
-
-// 確定前の「様子見」を許容する遊び幅(px)
-const COMMIT_SLOP = 10
-
-// 追従を解いて元位置へ戻すときの transition
-const SNAP_TRANSITION = 'transform 0.2s ease-out'
-
-// シート要素へ命令的に transform を反映(instant=true でスナップし transition を殺す)
-function driveTransform(node: HTMLElement | null, transform: string, instant: boolean): void {
-  if (!node) return
-  if (instant) node.style.transition = 'none'
-  node.style.transform = transform
-}
-
-// 追従を打ち切り、アニメーション付きで元位置へ戻す。React の再レンダー任せにせず
-// ここで DOM を確定させる — 直前のレンダーと同じ style オブジェクトになった場合
-// React は書き込みを省き、命令的に書いた transform がそのまま残るため
-function releaseTransform(node: HTMLElement | null): void {
-  if (!node) return
-  node.style.transition = SNAP_TRANSITION
-  node.style.transform = ''
 }
 
 export function useSwipeToDismiss({

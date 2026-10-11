@@ -1,10 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { jstClockLabel } from '@/utils/format'
-
-// 新規スケジュール取得後の再ボタン活性化までの秒数(原本の正確な値は未取得のためデモ既定値)
-const REFRESH_COOLDOWN_SECONDS = 10
-const FETCH_MIN_MS = 300
-const FETCH_JITTER_MS = 300
+import { FETCH_JITTER_MS, FETCH_MIN_MS, REFRESH_COOLDOWN_SECONDS } from '@/utils/refresh-schedule'
 
 type ScheduleRefresh = {
   isRefreshing: boolean

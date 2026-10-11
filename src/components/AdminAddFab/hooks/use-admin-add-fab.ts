@@ -4,12 +4,10 @@ import type {
   PointerEvent as ReactPointerEvent,
   RefObject,
 } from 'react'
+import { MENU_ITEM_SELECTOR } from '../utils/add-fab-constants'
 import { useBodyScrollLock } from '@/hooks/use-body-scroll-lock'
 import { useLongPress } from '@/hooks/use-long-press'
 import { triggerHaptic } from '@/utils/haptic'
-
-// メニュー項目の実体。ロービングタブの移動対象をこれで数える
-const MENU_ITEM_SELECTOR = '[role=menuitem]'
 
 export type UseAdminAddFabParams = {
   onSelectTeam: () => void

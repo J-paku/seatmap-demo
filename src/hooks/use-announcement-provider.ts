@@ -1,64 +1,16 @@
 // アナウンスメント・プロバイダーの状態管理ロジックを一括処理するフック
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { SetStateAction } from 'react'
+import { TOAST_HIDE_DELAY, normalizeAnnouncement } from '@/utils/normalize-announcement'
+import type { ToastTone } from '@/utils/normalize-announcement'
 
-export type ToastTone = 'info' | 'success' | 'warning' | 'error'
+// トーストの色味の型は AnnouncementToast がこのフックから読むので、移した先から通す
+export type { ToastTone }
 
 export interface AnnouncementContextValue {
   message: string
   setMessage: (value: SetStateAction<string>) => void
   announce: (message: string) => void
-}
-
-const TOAST_HIDE_DELAY = 2600
-
-function normalizeAnnouncement(rawMessage: string): { message: string; tone: ToastTone } {
-  const trimmed = rawMessage.trim()
-  if (!trimmed) {
-    return { message: '', tone: 'info' }
-  }
-
-  const tagMatch = trimmed.match(/^\[(success|warning|error|info)\]\s*/i)
-  if (tagMatch) {
-    const tone = tagMatch[1].toLowerCase() as ToastTone
-    const message = trimmed.replace(/^\[(success|warning|error|info)\]\s*/i, '')
-    return { message, tone }
-  }
-
-  const errorKeywords = [
-    'できません',
-    '失敗',
-    'エラー',
-    '重な',
-    '狭すぎ',
-    'オフライン',
-    '権限がない',
-    '確認してください',
-    'エリア外',
-  ]
-  if (errorKeywords.some(keyword => trimmed.includes(keyword))) {
-    return { message: trimmed, tone: 'error' }
-  }
-
-  const warningKeywords = ['選択してください', 'ありません', '解除しました']
-  if (warningKeywords.some(keyword => trimmed.includes(keyword))) {
-    return { message: trimmed, tone: 'warning' }
-  }
-
-  const successKeywords = [
-    '追加しました',
-    '削除しました',
-    '変更しました',
-    '入れ替えました',
-    '挿入しました',
-    '移動しました',
-    '選択しました',
-  ]
-  if (successKeywords.some(keyword => trimmed.includes(keyword))) {
-    return { message: trimmed, tone: 'success' }
-  }
-
-  return { message: trimmed, tone: 'info' }
 }
 
 export function useAnnouncementProvider() {

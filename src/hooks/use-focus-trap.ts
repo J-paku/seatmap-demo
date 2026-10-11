@@ -1,11 +1,8 @@
 import { useEffect } from 'react'
 import type { RefObject } from 'react'
+import { FOCUSABLE } from '@/utils/trap-focus'
 
 // Tab 循環フォーカストラップ(3箇所の複製を統合)。ESC 処理や初期フォーカスは各呼び出し側の責務
-// リンク・非無効ボタン・非無効入力欄・テキストエリア・セレクト・明示 tabindex を対象とする最も広い定義
-const FOCUSABLE =
-  'a[href],button:not([disabled]),input:not([disabled]),textarea,select,[tabindex]:not([tabindex="-1"])'
-
 export const useFocusTrap = (active: boolean, panelRef: RefObject<HTMLElement | null>): void => {
   useEffect(() => {
     if (!active) return
