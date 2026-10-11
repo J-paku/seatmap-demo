@@ -53,16 +53,14 @@ export const TeamOverlay = ({
 }: Props) => {
   const bodyRef = useRef<HTMLDivElement>(null)
   const isCompactMobile = useIsCompactMobile()
-  const { loading, clickLocked, syncedAtMs, syncCooldown, isSyncing, retrySync } = useOverlaySession(
-    payload !== null,
-    bodyRef
-  )
+  const { loading, clickLocked, syncedAtMs, syncCooldown, isSyncing, retrySync } =
+    useOverlaySession(payload !== null, bodyRef)
   // STEP D3: 編集の開始・保存・キャンセル・一括配置の結果はここから唯一のLiveRegion(a11y全体で
   // 共有するAnnouncementProvider)へ流す。TeamOverlay専用のLiveRegionは新設しない
   const { announce } = useGlobalAnnouncement()
 
   const teamSeats = useMemo(
-    () => (payload ? seats.filter((s) => s.teamId === payload.teamId) : []),
+    () => (payload ? seats.filter(s => s.teamId === payload.teamId) : []),
     [seats, payload]
   )
   const editMode = useOverlayEditMode()
@@ -74,7 +72,10 @@ export const TeamOverlay = ({
   })
   // 判定基準は utils/seat-occupancy.ts に一本化(存在しない社員IDを参照する座席まで
   // 数えてしまい、空席なのに N名と出る不整合を防ぐ)
-  const occupiedCount = useMemo(() => countOccupiedSeats(teamSeats, employeeById), [teamSeats, employeeById])
+  const occupiedCount = useMemo(
+    () => countOccupiedSeats(teamSeats, employeeById),
+    [teamSeats, employeeById]
+  )
 
   // STEP B1: 編集中セルの選択(席か空セルのどちらか1件だけ)。編集モードを抜けると自動で消える
   const seatSelection = useSeatSelection(editMode.isEditMode)
@@ -138,7 +139,10 @@ export const TeamOverlay = ({
   // grid差分適用口をそのまま渡す。§07-2: ゴミ箱投下(このフック内部のタッチ経路+後段の
   // TrashDropZoneのマウス経路、両方がこの1つの引数を呼ぶ)は即時削除ではなく確認要求
   // (requestSeatDeleteAtCell)へ差し替え、§06-2セルの削除ボタンと同じ確認モーダルへ合流させる
-  const seatDrag = useSeatDrag({ moveSeat: editMode.moveSeat, removeSeatAtCell: requestSeatDeleteAtCell })
+  const seatDrag = useSeatDrag({
+    moveSeat: editMode.moveSeat,
+    removeSeatAtCell: requestSeatDeleteAtCell,
+  })
 
   // 下スワイプで閉じるのは Compact だけの挙動。内部スクロールが上端かどうかの判定は
   // フック側(computeScrollGate)がイベント経路から遡って行うため bodyRef は渡さない
@@ -167,7 +171,7 @@ export const TeamOverlay = ({
     replayNonce: tourReplayNonce,
     autoStart: false,
   })
-  const handleHelp = useCallback(() => setTourReplayNonce((count) => count + 1), [])
+  const handleHelp = useCallback(() => setTourReplayNonce(count => count + 1), [])
 
   if (!payload) return null
 
@@ -177,7 +181,7 @@ export const TeamOverlay = ({
   return (
     <div
       className={`${styles.wrap}${isCompactMobile ? ` ${styles.isCompact}` : ''}`}
-      onClick={(e) => {
+      onClick={e => {
         // ラッパー余白クリックで閉じる(パネル自身のクリックは stopPropagation)
         if (e.target === e.currentTarget) guardedClose()
       }}
@@ -197,7 +201,7 @@ export const TeamOverlay = ({
           transition: dragStyle.transition,
           willChange: dragStyle.willChange,
         }}
-        onClick={(e) => {
+        onClick={e => {
           e.stopPropagation()
           // ヒット表示はその席自身のクリック以外で解除する。座席以外(空白・ヘッダー・
           // ミニマップ等)をクリックした時に消えなかったのが元の不具合。ヒット席自身の
@@ -208,7 +212,10 @@ export const TeamOverlay = ({
           }
           // 編集中はセル(席・空セルどちらも data-seat-grid-cell を持つ)以外のタップで選択解除する。
           // グリッド余白・オーバーレイ余白のどちらもこの1箇所で拾える
-          if (editMode.isEditMode && !(e.target as HTMLElement).closest(`[${SEAT_GRID_CELL_ATTR}]`)) {
+          if (
+            editMode.isEditMode &&
+            !(e.target as HTMLElement).closest(`[${SEAT_GRID_CELL_ATTR}]`)
+          ) {
             seatSelection.clearSelection()
           }
         }}

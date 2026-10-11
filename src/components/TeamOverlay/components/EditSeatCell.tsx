@@ -110,7 +110,7 @@ export const EditSeatCell = ({
           type='button'
           className={`${styles.rotationGrip} ${styles.seatDeleteGrip}`}
           aria-label='座席を削除'
-          onClick={(e) => {
+          onClick={e => {
             e.stopPropagation()
             requestSeatDelete(seat.id)
           }}

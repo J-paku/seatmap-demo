@@ -60,21 +60,24 @@ export const useOverlaySeatDelete = ({
   // チーム(=このオーバーレイ自身)であり、社員個人の部署とは別概念のため使わない
   const seatDeleteConfirm = useMemo<SeatDeleteConfirmContent | null>(() => {
     if (!deleteRequestSeatId) return null
-    const seat = draftAppliedSeats.find((s) => s.id === deleteRequestSeatId)
+    const seat = draftAppliedSeats.find(s => s.id === deleteRequestSeatId)
     if (!seat) return null
-    const employee = seat.employeeId ? employeeById.get(seat.employeeId) ?? null : null
-    return { employeeName: employee ? employee.name : null, department: employee ? employee.team : null }
+    const employee = seat.employeeId ? (employeeById.get(seat.employeeId) ?? null) : null
+    return {
+      employeeName: employee ? employee.name : null,
+      department: employee ? employee.team : null,
+    }
   }, [deleteRequestSeatId, draftAppliedSeats, employeeById])
 
   // §07-2 2段階削除: 在席1席は配属解除だけ(グリッドのセルはそのまま=形状不変)。
   // 空席1席はグリッドから席そのものを取り除く。セル位置は下書き反映済みの seatGrid から引く
   const confirmSeatDelete = useCallback(() => {
     if (!deleteRequestSeatId) return
-    const seat = draftAppliedSeats.find((s) => s.id === deleteRequestSeatId)
+    const seat = draftAppliedSeats.find(s => s.id === deleteRequestSeatId)
     if (seat && seat.employeeId !== null) {
       editMode.draft.assignEmployee(deleteRequestSeatId, null)
     } else {
-      const positioned = seatGrid.positionedSeats.find((p) => p.seat.id === deleteRequestSeatId)
+      const positioned = seatGrid.positionedSeats.find(p => p.seat.id === deleteRequestSeatId)
       if (positioned) editMode.removeSeatAtCell({ row: positioned.row, col: positioned.col })
     }
     setDeleteRequestSeatId(null)

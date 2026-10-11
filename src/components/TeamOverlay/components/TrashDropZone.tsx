@@ -22,7 +22,11 @@ export type TrashDropZoneProps = {
   onDrop: () => void
 }
 
-export const TrashDropZone = ({ isVisible, isOver: isOverExternal = false, onDrop }: TrashDropZoneProps) => {
+export const TrashDropZone = ({
+  isVisible,
+  isOver: isOverExternal = false,
+  onDrop,
+}: TrashDropZoneProps) => {
   const anchorRef = useRef<HTMLDivElement>(null)
   const [center, setCenter] = useState<{ top: number; left: number } | null>(null)
   const [isMouseOver, setIsMouseOver] = useState(false)
@@ -83,7 +87,10 @@ export const TrashDropZone = ({ isVisible, isOver: isOverExternal = false, onDro
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
           >
-            <span className={`material-symbols-outlined ${styles.trashZoneIcon}`} aria-hidden='true'>
+            <span
+              className={`material-symbols-outlined ${styles.trashZoneIcon}`}
+              aria-hidden='true'
+            >
               delete
             </span>
           </div>

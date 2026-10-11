@@ -90,7 +90,9 @@ export const useSeatDraftState = (): SeatDraftState => {
   const [assignmentsOverride, setAssignmentsOverride] = useState<Map<string, string>>(new Map())
   const [addedSeats, setAddedSeats] = useState<Seat[]>([])
   const [removedSeatIds, setRemovedSeatIds] = useState<Set<string>>(new Set())
-  const [rotationOverrides, setRotationOverrides] = useState<Map<string, Seat['rotation']>>(new Map())
+  const [rotationOverrides, setRotationOverrides] = useState<Map<string, Seat['rotation']>>(
+    new Map()
+  )
   const [moveOrigins, setMoveOrigins] = useState<Map<string, string>>(new Map())
   const [movedSeatIds, setMovedSeatIds] = useState<Set<string>>(new Set())
   // §06-2: フリーアドレス設定の差分。null=差分なし
@@ -117,7 +119,7 @@ export const useSeatDraftState = (): SeatDraftState => {
   const addSeat = useCallback((seat: Omit<Seat, 'id'>): Seat => {
     draftIdCounterRef.current += 1
     const draft: Seat = { ...seat, id: `${DRAFT_SEAT_ID_PREFIX}${draftIdCounterRef.current}` }
-    setAddedSeats((prev) => [...prev, draft])
+    setAddedSeats(prev => [...prev, draft])
     return draft
   }, [])
 
@@ -126,16 +128,16 @@ export const useSeatDraftState = (): SeatDraftState => {
   // 同じ判定基準を再利用できるよう分けておく
   const applyAssignment = useCallback(
     (seatId: string, employeeId: string | null) => {
-      if (addedSeats.some((s) => s.id === seatId)) {
-        setAddedSeats((prev) => prev.map((s) => (s.id === seatId ? { ...s, employeeId } : s)))
+      if (addedSeats.some(s => s.id === seatId)) {
+        setAddedSeats(prev => prev.map(s => (s.id === seatId ? { ...s, employeeId } : s)))
         return
       }
       const value = employeeId === null ? '' : employeeId
       // 保存値と同じ割当へ戻ったら差分を積まずに落とす。積んだままだと、行き来して元に戻しただけの
       // 差し引きゼロが「変更あり」として残り、保存ボタンが押せてしまう
-      const savedSeat = seatSourcesRef.current.saved.find((s) => s.id === seatId)
+      const savedSeat = seatSourcesRef.current.saved.find(s => s.id === seatId)
       const isSameAsSaved = savedSeat !== undefined && (savedSeat.employeeId ?? '') === value
-      setAssignmentsOverride((prev) => {
+      setAssignmentsOverride(prev => {
         if (isSameAsSaved) {
           if (!prev.has(seatId)) return prev
           const next = new Map(prev)
@@ -154,7 +156,7 @@ export const useSeatDraftState = (): SeatDraftState => {
   // moveOriginsの記録だけを落とす。移動先から社員が外れた後の記録は「戻す先」を指さないため、
   // 残すと後続の削除・再割当で無関係な人を元席へ送ってしまう
   const forgetMoveOrigin = useCallback((destSeatId: string) => {
-    setMoveOrigins((prev) => {
+    setMoveOrigins(prev => {
       if (!prev.has(destSeatId)) return prev
       const next = new Map(prev)
       next.delete(destSeatId)
@@ -170,7 +172,7 @@ export const useSeatDraftState = (): SeatDraftState => {
     (destSeatId: string, nextEmployeeId: string | null): boolean => {
       const originSeatId = moveOrigins.get(destSeatId)
       if (!originSeatId) return false
-      const movedEmployeeId = addedSeats.find((s) => s.id === destSeatId)?.employeeId ?? null
+      const movedEmployeeId = addedSeats.find(s => s.id === destSeatId)?.employeeId ?? null
       const restores = movedEmployeeId !== null && movedEmployeeId !== nextEmployeeId
       if (restores) applyAssignment(originSeatId, movedEmployeeId)
       forgetMoveOrigin(destSeatId)
@@ -184,24 +186,24 @@ export const useSeatDraftState = (): SeatDraftState => {
       restoreMoveOrigin(seatId, null)
       // 下書き追加そのものを消す場合は removedSeatIds に積まず、追加を取り消すだけにする
       // (保存済みレイアウトに存在しない id を削除差分として残さないため)
-      if (addedSeats.some((s) => s.id === seatId)) {
-        setAddedSeats((prev) => prev.filter((s) => s.id !== seatId))
+      if (addedSeats.some(s => s.id === seatId)) {
+        setAddedSeats(prev => prev.filter(s => s.id !== seatId))
         return
       }
-      setRemovedSeatIds((prev) => {
+      setRemovedSeatIds(prev => {
         if (prev.has(seatId)) return prev
         const next = new Set(prev)
         next.add(seatId)
         return next
       })
       // 削除する席の割当・回転差分は意味を失うので一緒に畳む(同じ席へ二重に差分を残さない)
-      setAssignmentsOverride((prev) => {
+      setAssignmentsOverride(prev => {
         if (!prev.has(seatId)) return prev
         const next = new Map(prev)
         next.delete(seatId)
         return next
       })
-      setRotationOverrides((prev) => {
+      setRotationOverrides(prev => {
         if (!prev.has(seatId)) return prev
         const next = new Map(prev)
         next.delete(seatId)
@@ -218,16 +220,17 @@ export const useSeatDraftState = (): SeatDraftState => {
   const assignEmployee = useCallback(
     (seatId: string, employeeId: string | null) => {
       const { resolved } = seatSourcesRef.current
-      const targetSeat = resolved.find((s) => s.id === seatId) ?? null
+      const targetSeat = resolved.find(s => s.id === seatId) ?? null
       // 同じ人を入れ直すだけなら何もしない(リデューサー冒頭の早期returnと同じ)
       if (targetSeat !== null && targetSeat.employeeId === employeeId) return
       // moveOrigins の移動先が上書きされる時だけ、先に元の座席へ配属を戻してから適用を進める
       const restored = restoreMoveOrigin(seatId, employeeId)
       // その社員が下書き反映後に座っている席。元席を空け、移動先に居た人はそこへ入れ替える
-      const fromSeat = employeeId === null ? null : buildSeatByEmployee(resolved).get(employeeId) ?? null
+      const fromSeat =
+        employeeId === null ? null : (buildSeatByEmployee(resolved).get(employeeId) ?? null)
       if (fromSeat && fromSeat.id !== seatId) {
         // 移動先に居た人が既に元席へ戻されている場合、ここで置き直すと同じ人が2席に居ることになる
-        const displaced = restored ? null : targetSeat?.employeeId ?? null
+        const displaced = restored ? null : (targetSeat?.employeeId ?? null)
         // 自分から出ていく席なので、その席のmoveOrigins(戻す先の記録)はもう用を成さない
         forgetMoveOrigin(fromSeat.id)
         applyAssignment(fromSeat.id, displaced)
@@ -239,14 +242,14 @@ export const useSeatDraftState = (): SeatDraftState => {
 
   const rotateSeat = useCallback(
     (seatId: string, rotation: Seat['rotation']) => {
-      if (addedSeats.some((s) => s.id === seatId)) {
-        setAddedSeats((prev) => prev.map((s) => (s.id === seatId ? { ...s, rotation } : s)))
+      if (addedSeats.some(s => s.id === seatId)) {
+        setAddedSeats(prev => prev.map(s => (s.id === seatId ? { ...s, rotation } : s)))
         return
       }
       // 割当と同じく、保存値と同じ角度へ戻ったら差分を落とす(4回回して一周した時に変更ありとしない)
-      const savedSeat = seatSourcesRef.current.saved.find((s) => s.id === seatId)
+      const savedSeat = seatSourcesRef.current.saved.find(s => s.id === seatId)
       const isSameAsSaved = savedSeat !== undefined && savedSeat.rotation === rotation
-      setRotationOverrides((prev) => {
+      setRotationOverrides(prev => {
         if (isSameAsSaved) {
           if (!prev.has(seatId)) return prev
           const next = new Map(prev)
@@ -283,7 +286,7 @@ export const useSeatDraftState = (): SeatDraftState => {
   // 元の座席(originSeatId)を対応づける。moveOrigins自体はchangeCountに数えない
   // (実際の変更はaddedSeats/assignmentsOverride側に既に計上されているため、二重計上を避ける)
   const recordMoveOrigin = useCallback((destSeatId: string, originSeatId: string) => {
-    setMoveOrigins((prev) => {
+    setMoveOrigins(prev => {
       const next = new Map(prev)
       next.set(destSeatId, originSeatId)
       return next
@@ -294,7 +297,7 @@ export const useSeatDraftState = (): SeatDraftState => {
   // 同じ形)。中身が同じなら同じMap/Set参照を保つ他の差分と同様、内容が変わらない限り新しい
   // Setに差し替えない(不要な再レンダーを避ける)
   const syncMovedSeatIds = useCallback((ids: Set<string>) => {
-    setMovedSeatIds((prev) => (isSameIdSet(prev, ids) ? prev : ids))
+    setMovedSeatIds(prev => (isSameIdSet(prev, ids) ? prev : ids))
   }, [])
 
   const clearDraft = useCallback(() => {

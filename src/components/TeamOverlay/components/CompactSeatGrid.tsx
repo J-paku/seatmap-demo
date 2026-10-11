@@ -2,7 +2,12 @@ import { useEffect, useRef, useState } from 'react'
 import type { RefObject } from 'react'
 import { EditSeatCell } from './EditSeatCell'
 import { EmptyGridCell } from './EmptyGridCell'
-import { GRID_HEADER_TRACK_PX, GridEdgeAddButtons, GridRemoveHeaders, hasRemovableBand } from './GridEdgeControls'
+import {
+  GRID_HEADER_TRACK_PX,
+  GridEdgeAddButtons,
+  GridRemoveHeaders,
+  hasRemovableBand,
+} from './GridEdgeControls'
 import { ScrollHint } from './ScrollHint'
 import { SeatActionOverlay } from './SeatActionOverlay'
 import { ViewSeatCell } from './ViewSeatCell'
@@ -111,12 +116,19 @@ export const CompactSeatGrid = ({
 
   // ヒントのタップで 1 列ぶんだけ滑らかに送る
   const nudge = (direction: -1 | 1) => {
-    scrollRef.current?.scrollBy({ left: direction * (cellWidth + COMPACT_SEAT_GAP_PX), behavior: 'smooth' })
+    scrollRef.current?.scrollBy({
+      left: direction * (cellWidth + COMPACT_SEAT_GAP_PX),
+      behavior: 'smooth',
+    })
   }
 
   return (
     <div className={`${styles.gridwrap}${isEditMode ? ` ${styles.hasEdgeAdd}` : ''}`}>
-      <div ref={scrollRef} className={`${styles.grid} ${styles.isCompact}${loading ? ` ${styles.isLoading}` : ''}`} aria-busy={loading}>
+      <div
+        ref={scrollRef}
+        className={`${styles.grid} ${styles.isCompact}${loading ? ` ${styles.isLoading}` : ''}`}
+        aria-busy={loading}
+      >
         <div
           className={styles.gridInner}
           style={{
@@ -130,17 +142,22 @@ export const CompactSeatGrid = ({
           }}
         >
           {grid.positionedSeats.map(({ seat, row, col }) => {
-            const employee = seat.employeeId ? employeeById.get(seat.employeeId) ?? null : null
-            const status: PresenceStatus = employee ? presenceMap.get(employee.id) ?? 'present' : 'present'
+            const employee = seat.employeeId ? (employeeById.get(seat.employeeId) ?? null) : null
+            const status: PresenceStatus = employee
+              ? (presenceMap.get(employee.id) ?? 'present')
+              : 'present'
             const isHit = highlightSeatId === seat.id
             const dimmed = spotlight && !isHit
-            const isDropTarget = isEditMode && hoverCell !== null && hoverCell.row === row && hoverCell.col === col
+            const isDropTarget =
+              isEditMode && hoverCell !== null && hoverCell.row === row && hoverCell.col === col
             return (
               <div
                 key={seat.id}
-                className={`${isDropTarget ? styles.dropTarget : ''}${
-                  isInsertedCell(row, col, grid.rows, grid.cols) ? ` ${styles.isInserted}` : ''
-                }`.trim() || undefined}
+                className={
+                  `${isDropTarget ? styles.dropTarget : ''}${
+                    isInsertedCell(row, col, grid.rows, grid.cols) ? ` ${styles.isInserted}` : ''
+                  }`.trim() || undefined
+                }
                 style={{
                   gridRow: row + 1 + rowOffset,
                   gridColumn: col + 1 + colOffset,
@@ -186,21 +203,30 @@ export const CompactSeatGrid = ({
                 )}
                 {/* STEP C1: 選択中の席にだけ操作ピルを重ねる。空席/在席でラベルが変わる */}
                 {isEditMode && isSeatSelected(seat.id) && (
-                  <SeatActionOverlay variant='seat' hasEmployee={employee !== null} onAssign={() => onAssignSeat(seat.id)} />
+                  <SeatActionOverlay
+                    variant='seat'
+                    hasEmployee={employee !== null}
+                    onAssign={() => onAssignSeat(seat.id)}
+                  />
                 )}
               </div>
             )
           })}
           {/* 空セルは編集中だけ埋まる(use-seat-layout-compose 参照)。表示モードでは常に空配列 */}
           {isEditMode &&
-            (grid.emptyCells ?? []).map((cell) => {
-              const isDropTarget = hoverCell !== null && hoverCell.row === cell.row && hoverCell.col === cell.col
+            (grid.emptyCells ?? []).map(cell => {
+              const isDropTarget =
+                hoverCell !== null && hoverCell.row === cell.row && hoverCell.col === cell.col
               return (
                 <div
                   key={`empty-${cell.row}-${cell.col}`}
-                  className={`${isDropTarget ? styles.dropTarget : ''}${
-                    isInsertedCell(cell.row, cell.col, grid.rows, grid.cols) ? ` ${styles.isInserted}` : ''
-                  }`.trim() || undefined}
+                  className={
+                    `${isDropTarget ? styles.dropTarget : ''}${
+                      isInsertedCell(cell.row, cell.col, grid.rows, grid.cols)
+                        ? ` ${styles.isInserted}`
+                        : ''
+                    }`.trim() || undefined
+                  }
                   style={{
                     gridRow: cell.row + 1 + rowOffset,
                     gridColumn: cell.col + 1 + colOffset,
@@ -210,13 +236,20 @@ export const CompactSeatGrid = ({
                   {...cellMouseDropProps}
                 >
                   {/* §06-2: 空セルタップ=即追加(1段階)。選択→ピルタップの中間状態は経由しない */}
-                  <EmptyGridCell variant={isFirstSeatGrid ? 'firstSeat' : 'default'} onAdd={() => onAddSeat(cell)} />
+                  <EmptyGridCell
+                    variant={isFirstSeatGrid ? 'firstSeat' : 'default'}
+                    onAdd={() => onAddSeat(cell)}
+                  />
                 </div>
               )
             })}
           {/* STEP B4: 空行・空列のヘッダにだけ出す削除ボタン(ヘッダー行・列トラックの分は上でオフセット済み) */}
           {hasGridEdgeControls && editGrid && (
-            <GridRemoveHeaders grid={editGrid} onRemoveRow={onRemoveRow} onRemoveCol={onRemoveCol} />
+            <GridRemoveHeaders
+              grid={editGrid}
+              onRemoveRow={onRemoveRow}
+              onRemoveCol={onRemoveCol}
+            />
           )}
         </div>
       </div>

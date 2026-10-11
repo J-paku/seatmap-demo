@@ -51,9 +51,9 @@ const normalizeDraftIntoLayout = (
   // (1) 座標確定: グリッド全セルを均一ピッチの絶対座標へ直列化する(仮ID・確定IDは区別しない)
   const positions = serializeSeatGrid(grid)
   // (2) 削除席を結果配列から除く
-  const survivors = positions.filter((p) => !draft.removedSeatIds.has(p.seatId))
-  const positionById = new Map(survivors.map((p) => [p.seatId, p]))
-  const addedIds = new Set(draft.addedSeats.map((s) => s.id))
+  const survivors = positions.filter(p => !draft.removedSeatIds.has(p.seatId))
+  const positionById = new Map(survivors.map(p => [p.seatId, p]))
+  const addedIds = new Set(draft.addedSeats.map(s => s.id))
 
   let next = layout
 
@@ -76,17 +76,26 @@ const normalizeDraftIntoLayout = (
     if (!p) continue
     const beforeCount = next.seats.length
     next = applyLayoutAction(next, { type: 'seat-add', teamId, x: p.x, y: p.y })
-    if (next.seats.length > beforeCount) finalIdByDraftId.set(seat.id, next.seats[next.seats.length - 1].id)
+    if (next.seats.length > beforeCount)
+      finalIdByDraftId.set(seat.id, next.seats[next.seats.length - 1].id)
   }
 
   // (4) 割当を反映する。既存座席はassignmentsOverride、追加座席は下書き自身が持つemployeeIdから
   for (const [seatId, value] of draft.assignmentsOverride) {
-    next = applyLayoutAction(next, { type: 'seat-assign-employee', seatId, employeeId: value === '' ? null : value })
+    next = applyLayoutAction(next, {
+      type: 'seat-assign-employee',
+      seatId,
+      employeeId: value === '' ? null : value,
+    })
   }
   for (const seat of draft.addedSeats) {
     const finalId = finalIdByDraftId.get(seat.id)
     if (finalId && seat.employeeId) {
-      next = applyLayoutAction(next, { type: 'seat-assign-employee', seatId: finalId, employeeId: seat.employeeId })
+      next = applyLayoutAction(next, {
+        type: 'seat-assign-employee',
+        seatId: finalId,
+        employeeId: seat.employeeId,
+      })
     }
   }
 
@@ -99,7 +108,7 @@ const normalizeDraftIntoLayout = (
   if (rotationById.size > 0) {
     next = {
       ...next,
-      seats: next.seats.map((s) => {
+      seats: next.seats.map(s => {
         const rotation = rotationById.get(s.id)
         return rotation === undefined ? s : { ...s, rotation }
       }),
@@ -121,7 +130,7 @@ const normalizeDraftIntoLayout = (
     const freeAddressEnabled = draft.freeAddressOverride
     next = applyLayoutAction(next, {
       type: 'team-replace-all',
-      teams: next.teams.map((t) => (t.id === teamId ? { ...t, freeAddressEnabled } : t)),
+      teams: next.teams.map(t => (t.id === teamId ? { ...t, freeAddressEnabled } : t)),
     })
   }
 
@@ -160,7 +169,12 @@ export type UseSeatCommitResult = {
 
 const EMPTY_COMMIT_RESULT: SeatCommitResult = { dedupedEmployeeIds: [] }
 
-export const useSeatCommit = ({ teamId, grid, draft, isGridChanged }: UseSeatCommitParams): UseSeatCommitResult => {
+export const useSeatCommit = ({
+  teamId,
+  grid,
+  draft,
+  isGridChanged,
+}: UseSeatCommitParams): UseSeatCommitResult => {
   const { layout, persistLayout } = useSeatLayout()
   const [isSaving, setIsSaving] = useState(false)
 

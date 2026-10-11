@@ -2,7 +2,11 @@ import { useCallback, useState } from 'react'
 import type { SeatDraftState } from './use-seat-draft-state'
 import type { UseOverlayEditModeResult } from './use-overlay-edit-mode'
 import { buildSeatByEmployee } from '@/components/EmployeeAssignSheet/hooks/use-employee-assign'
-import { addRow as addGridRow, findFirstEmptyCell, placeSeat as placeSeatInGrid } from '@/utils/layout/seat-grid-draft'
+import {
+  addRow as addGridRow,
+  findFirstEmptyCell,
+  placeSeat as placeSeatInGrid,
+} from '@/utils/layout/seat-grid-draft'
 import type { SeatGridDraft } from '@/utils/layout/seat-grid-draft'
 import { DEFAULT_SEAT_HEIGHT, DEFAULT_SEAT_WIDTH } from '@/utils/layout/seat-relayout'
 import type { Employee, Seat } from '@/types'
@@ -69,9 +73,9 @@ const selectBulkEmployees = (
   employees: Employee[],
   selectedEmployeeIds: string[] | null
 ): Employee[] => {
-  if (selectedEmployeeIds === null) return employees.filter((e) => e.teamId === teamId)
+  if (selectedEmployeeIds === null) return employees.filter(e => e.teamId === teamId)
   const selected = new Set(selectedEmployeeIds)
-  return employees.filter((e) => selected.has(e.id))
+  return employees.filter(e => selected.has(e.id))
 }
 
 const buildBulkAssignPlan = (
@@ -91,7 +95,7 @@ const buildBulkAssignPlan = (
     if (currentSeat && currentSeat.teamId === teamId) continue
     targets.push({ employee, originSeatId: currentSeat ? currentSeat.id : null })
   }
-  const movers = targets.filter((t) => t.originSeatId !== null)
+  const movers = targets.filter(t => t.originSeatId !== null)
   const newcomerCount = targets.length - movers.length
   return {
     teamId,
@@ -103,8 +107,9 @@ const buildBulkAssignPlan = (
             title: `${movers.length}名をこのチームへ移動しますか？`,
             body: '以下の社員は他の座席に配置済みです。複製せず、現在の座席を空けてこのチームへ移動します。',
             // 場所は出さない(§07-4と同じく生の座席IDをUIへ出さない方針)。名前と部署だけを並べる
-            moverLabels: movers.map((t) => `${t.employee.name} (${t.employee.team})`),
-            newcomerNote: newcomerCount > 0 ? `未配属の新規${newcomerCount}名も併せて配置します。` : null,
+            moverLabels: movers.map(t => `${t.employee.name} (${t.employee.team})`),
+            newcomerNote:
+              newcomerCount > 0 ? `未配属の新規${newcomerCount}名も併せて配置します。` : null,
           }
         : null,
   }

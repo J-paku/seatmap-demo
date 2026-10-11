@@ -94,7 +94,7 @@ export const useOverlayEditWiring = ({
   // 唯一の名前の出所で、ここで座席IDから接頭辞を切り出すような二つ目の判定基準は作らない
   const { layout } = useSeatLayout()
   const teamNameById = useMemo(
-    () => new Map((layout?.teams ?? []).map((team) => [team.id, team.name])),
+    () => new Map((layout?.teams ?? []).map(team => [team.id, team.name])),
     [layout]
   )
 
@@ -102,7 +102,8 @@ export const useOverlayEditWiring = ({
   // 唯一の出所で、既定値(false)の穴埋めは lib/layout-persistence.ts の loadStoredLayout が
   // 済ませている。ここでは読めなかった時(種データ由来でキーを持たない)だけ false へ倒す
   const savedFreeAddressEnabled = useMemo(
-    () => (layout?.teams ?? []).find((team) => team.id === payload?.teamId)?.freeAddressEnabled ?? false,
+    () =>
+      (layout?.teams ?? []).find(team => team.id === payload?.teamId)?.freeAddressEnabled ?? false,
     [layout, payload]
   )
 
@@ -161,9 +162,15 @@ export const useOverlayEditWiring = ({
       return
     }
     if (isCompactMobile) {
-      const target = bodyRef.current?.querySelector<HTMLElement>(`[data-seat-id="${justAddedSeatId}"]`)
+      const target = bodyRef.current?.querySelector<HTMLElement>(
+        `[data-seat-id="${justAddedSeatId}"]`
+      )
       const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-      target?.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'nearest', inline: 'center' })
+      target?.scrollIntoView({
+        behavior: reduced ? 'auto' : 'smooth',
+        block: 'nearest',
+        inline: 'center',
+      })
     }
     const timer = window.setTimeout(() => {
       clearSelection()

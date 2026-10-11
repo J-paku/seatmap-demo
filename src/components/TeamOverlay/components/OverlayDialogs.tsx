@@ -1,5 +1,8 @@
 import type { UseBulkAssignResult } from '../hooks/use-bulk-assign'
-import type { AssignConfirmContent, SeatDeleteConfirmContent } from '../hooks/use-overlay-edit-wiring'
+import type {
+  AssignConfirmContent,
+  SeatDeleteConfirmContent,
+} from '../hooks/use-overlay-edit-wiring'
 import { buildTeamDeleteConfirmMessage, ConfirmDialog } from '@/components/edit/ConfirmDialog'
 import { DeleteConfirmDialog } from '@/components/edit/DeleteConfirmDialog'
 import { EmployeeAssignSheet } from '@/components/EmployeeAssignSheet'
@@ -130,7 +133,7 @@ export const OverlayDialogs = ({
             {bulkAssign.pendingPlan.confirm.body}
             {/* §07-5: 対象一覧は最大高160pxでスクロール */}
             <span className={e.editDialogList}>
-              {bulkAssign.pendingPlan.confirm.moverLabels.map((label) => (
+              {bulkAssign.pendingPlan.confirm.moverLabels.map(label => (
                 <span key={label} className={e.editDialogListItem}>
                   {label}
                 </span>

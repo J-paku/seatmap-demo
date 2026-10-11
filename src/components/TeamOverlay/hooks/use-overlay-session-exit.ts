@@ -56,12 +56,15 @@ export const useOverlaySessionExit = ({
   // isSaving中の二重押下はここで弾く
   const handleSaveEdit = useCallback(() => {
     if (seatCommit.isSaving) return
-    void seatCommit.commit().then((result) => {
+    void seatCommit.commit().then(result => {
       editMode.cancel()
       // §06-5: 重複配属を畳んだ時は警告を優先する。トーストは1本しか出せない(後勝ちで上書き
       // される)ため、成功と警告を続けて流さず、どちらか一方だけを出す
-      const dedupeWarnings = result.dedupedEmployeeIds.map((employeeId) =>
-        TOAST_MESSAGES.ASSIGN_DEDUPED.replace('{name}', employeeById.get(employeeId)?.name ?? employeeId)
+      const dedupeWarnings = result.dedupedEmployeeIds.map(employeeId =>
+        TOAST_MESSAGES.ASSIGN_DEDUPED.replace(
+          '{name}',
+          employeeById.get(employeeId)?.name ?? employeeId
+        )
       )
       if (dedupeWarnings.length > 0) {
         announce(`[warning]${dedupeWarnings.join(' ')}`)

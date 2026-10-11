@@ -21,7 +21,11 @@ export const useDraftAppliedSeats = (allSeats: Seat[], draft: SeatDraftState): S
       // ②割当上書きを適用。上書きが無ければ resolveEffectiveEmployeeId は savedEmployeeId を
       // そのまま返すため、その場合は元の seat 参照をそのまま積む(新規オブジェクトを作らない)
       const effectiveEmployeeId = resolveEffectiveEmployeeId(seat.id, seat.employeeId)
-      kept.push(effectiveEmployeeId === seat.employeeId ? seat : { ...seat, employeeId: effectiveEmployeeId })
+      kept.push(
+        effectiveEmployeeId === seat.employeeId
+          ? seat
+          : { ...seat, employeeId: effectiveEmployeeId }
+      )
     }
     // ③追加席を足す
     return addedSeats.length > 0 ? [...kept, ...addedSeats] : kept

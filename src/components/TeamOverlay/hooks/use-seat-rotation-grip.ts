@@ -31,7 +31,7 @@ const CLOCKWISE_NEXT: Record<Seat['rotation'], Seat['rotation']> = {
 const angleToRotation = (dx: number, dy: number): Seat['rotation'] => {
   const screenAngleDeg = (Math.atan2(dy, dx) * 180) / Math.PI
   const normalized = ((screenAngleDeg % 360) + 360) % 360
-  const continuous = ((90 - normalized) % 360 + 360) % 360
+  const continuous = (((90 - normalized) % 360) + 360) % 360
   const index = Math.round(continuous / 90) % ROTATION_VALUES.length
   return ROTATION_VALUES[index]
 }
@@ -77,7 +77,13 @@ export const useSeatRotationGrip = ({
     e.stopPropagation()
     triggerHaptic('light')
     safeSetPointerCapture(e.currentTarget, e.pointerId)
-    stateRef.current = { kind: 'active', pointerId: e.pointerId, startX: e.clientX, startY: e.clientY, dragging: false }
+    stateRef.current = {
+      kind: 'active',
+      pointerId: e.pointerId,
+      startX: e.clientX,
+      startY: e.clientY,
+      dragging: false,
+    }
   }, [])
 
   const handlePointerMove = useCallback(

@@ -91,9 +91,13 @@ export const GridRemoveHeaders = ({ grid, onRemoveRow, onRemoveCol }: RemoveHead
   return (
     <>
       {Array.from({ length: rows }, (_, row) => row)
-        .filter((row) => isRowEmpty(grid, row))
-        .map((row) => (
-          <div key={`row-header-${row}`} className={styles.gridHeader} style={{ gridRow: row + 2, gridColumn: 1 }}>
+        .filter(row => isRowEmpty(grid, row))
+        .map(row => (
+          <div
+            key={`row-header-${row}`}
+            className={styles.gridHeader}
+            style={{ gridRow: row + 2, gridColumn: 1 }}
+          >
             <button
               type='button'
               className={styles.edgeRemove}
@@ -107,9 +111,13 @@ export const GridRemoveHeaders = ({ grid, onRemoveRow, onRemoveCol }: RemoveHead
           </div>
         ))}
       {Array.from({ length: cols }, (_, col) => col)
-        .filter((col) => isColEmpty(grid, col))
-        .map((col) => (
-          <div key={`col-header-${col}`} className={styles.gridHeader} style={{ gridRow: 1, gridColumn: col + 2 }}>
+        .filter(col => isColEmpty(grid, col))
+        .map(col => (
+          <div
+            key={`col-header-${col}`}
+            className={styles.gridHeader}
+            style={{ gridRow: 1, gridColumn: col + 2 }}
+          >
             <button
               type='button'
               className={styles.edgeRemove}

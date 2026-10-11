@@ -34,17 +34,28 @@ const nearestIndex = (centers: number[], v: number): number => {
 
 // 座席データはフロア絶対座標しか持たないため、ここで行列インデックスを起こす
 export const buildSeatGrid = (seats: Seat[]): SeatGrid => {
-  if (seats.length === 0) return { positionedSeats: [], seatByGridCell: new Map(), rows: 0, cols: 0 }
+  if (seats.length === 0)
+    return { positionedSeats: [], seatByGridCell: new Map(), rows: 0, cols: 0 }
 
   const avgW = seats.reduce((sum, s) => sum + s.width, 0) / seats.length
   const avgH = seats.reduce((sum, s) => sum + s.height, 0) / seats.length
-  const colCenters = clusterAxis(seats.map((s) => s.x), avgW * 0.6)
-  const rowCenters = clusterAxis(seats.map((s) => s.y), avgH * 0.6)
+  const colCenters = clusterAxis(
+    seats.map(s => s.x),
+    avgW * 0.6
+  )
+  const rowCenters = clusterAxis(
+    seats.map(s => s.y),
+    avgH * 0.6
+  )
 
   const positionedSeats = seats
-    .map((seat) => ({ seat, row: nearestIndex(rowCenters, seat.y), col: nearestIndex(colCenters, seat.x) }))
+    .map(seat => ({
+      seat,
+      row: nearestIndex(rowCenters, seat.y),
+      col: nearestIndex(colCenters, seat.x),
+    }))
     .sort((a, b) => a.row - b.row || a.col - b.col)
 
-  const seatByGridCell = new Map(positionedSeats.map((p) => [gridCellKey(p.row, p.col), p.seat]))
+  const seatByGridCell = new Map(positionedSeats.map(p => [gridCellKey(p.row, p.col), p.seat]))
   return { positionedSeats, seatByGridCell, rows: rowCenters.length, cols: colCenters.length }
 }

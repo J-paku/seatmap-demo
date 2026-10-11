@@ -15,7 +15,13 @@ type Props = {
 const PADDING_TOP_COMPACT = 28
 const PADDING_TOP_DESKTOP = 12
 
-export const TeamOverlayHeader = ({ teamName, teamColor, occupiedCount, isCompactMobile, onClose }: Props) => (
+export const TeamOverlayHeader = ({
+  teamName,
+  teamColor,
+  occupiedCount,
+  isCompactMobile,
+  onClose,
+}: Props) => (
   <header
     className={styles.header}
     style={{

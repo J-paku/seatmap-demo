@@ -127,15 +127,27 @@ export const useOverlayEditMode = (): UseOverlayEditModeResult => {
 
   // grid が無い(未編集)間は何もしない共通ガード。呼び出し側に null 分岐を作らせない
   const updateGrid = useCallback((update: (current: SeatGridDraft) => SeatGridDraft) => {
-    setGrid((prev) => (prev ? update(prev) : prev))
+    setGrid(prev => (prev ? update(prev) : prev))
   }, [])
 
-  const handleAddRow = useCallback((edge: 'top' | 'bottom') => updateGrid((g) => addRow(g, edge)), [updateGrid])
-  const handleAddCol = useCallback((edge: 'left' | 'right') => updateGrid((g) => addCol(g, edge)), [updateGrid])
-  const handleRemoveRow = useCallback((row: number) => updateGrid((g) => removeRow(g, row)), [updateGrid])
-  const handleRemoveCol = useCallback((col: number) => updateGrid((g) => removeCol(g, col)), [updateGrid])
+  const handleAddRow = useCallback(
+    (edge: 'top' | 'bottom') => updateGrid(g => addRow(g, edge)),
+    [updateGrid]
+  )
+  const handleAddCol = useCallback(
+    (edge: 'left' | 'right') => updateGrid(g => addCol(g, edge)),
+    [updateGrid]
+  )
+  const handleRemoveRow = useCallback(
+    (row: number) => updateGrid(g => removeRow(g, row)),
+    [updateGrid]
+  )
+  const handleRemoveCol = useCallback(
+    (col: number) => updateGrid(g => removeCol(g, col)),
+    [updateGrid]
+  )
   const handlePlaceSeat = useCallback(
-    (cell: GridCell, seatId: string) => updateGrid((g) => placeSeat(g, cell, seatId)),
+    (cell: GridCell, seatId: string) => updateGrid(g => placeSeat(g, cell, seatId)),
     [updateGrid]
   )
   // 削除対象の席id(下書き追加席なら仮id)をgridから先に読んでからセルを空にし、draftへも
@@ -146,13 +158,13 @@ export const useOverlayEditMode = (): UseOverlayEditModeResult => {
   const removeSeatAtCell = useCallback(
     (cell: GridCell) => {
       const seatId = grid?.cells[cell.row]?.[cell.col] ?? null
-      updateGrid((g) => clearSeat(g, cell))
+      updateGrid(g => clearSeat(g, cell))
       if (seatId) draft.removeSeat(seatId)
     },
     [grid, updateGrid, draft.removeSeat]
   )
   const handleMoveSeat = useCallback(
-    (from: GridCell, to: GridCell) => updateGrid((g) => moveSeat(g, from, to)),
+    (from: GridCell, to: GridCell) => updateGrid(g => moveSeat(g, from, to)),
     [updateGrid]
   )
 
@@ -163,7 +175,7 @@ export const useOverlayEditMode = (): UseOverlayEditModeResult => {
   // 値が動かなくなればこの効果は再レンダーを起こさず収束する
   useEffect(() => {
     if (!grid || !baselineGrid) return
-    const addedSeatIds = new Set(draft.addedSeats.map((s) => s.id))
+    const addedSeatIds = new Set(draft.addedSeats.map(s => s.id))
     draft.syncMovedSeatIds(computeMovedSeatIds(grid, baselineGrid, addedSeatIds))
   }, [grid, baselineGrid, draft.addedSeats, draft.syncMovedSeatIds])
 
@@ -177,7 +189,8 @@ export const useOverlayEditMode = (): UseOverlayEditModeResult => {
     () => ({
       isEditMode,
       grid,
-      isGridChanged: grid !== null && baselineGrid !== null && !isSameSeatGridDraft(grid, baselineGrid),
+      isGridChanged:
+        grid !== null && baselineGrid !== null && !isSameSeatGridDraft(grid, baselineGrid),
       enterEditMode,
       cancel,
       addRow: handleAddRow,

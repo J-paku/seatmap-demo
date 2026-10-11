@@ -45,7 +45,8 @@ const resolveSeatIdFromElement = (el: Element | null): string | null => {
 // ゴミ箱ゾーン(TrashDropZone)の上に乗っているかをdata属性から判定する。
 // TrashDropZoneはSeatMapPortal経由でbody直下に描かれるためReactツリーを跨げず、
 // elementFromPointで得たDOMから直接判定する必要がある
-const resolveIsOverTrashZone = (el: Element | null): boolean => !!el?.closest(`[${TRASH_DROP_ZONE_ATTR}]`)
+const resolveIsOverTrashZone = (el: Element | null): boolean =>
+  !!el?.closest(`[${TRASH_DROP_ZONE_ATTR}]`)
 
 // タッチ側の内部状態機械。pending(長押し待ち)→dragging(確定)の一方向遷移
 type TouchDragState =
@@ -96,7 +97,10 @@ export type UseSeatDragResult = {
   }
 }
 
-export const useSeatDrag = ({ moveSeat, removeSeatAtCell }: UseSeatDragOptions): UseSeatDragResult => {
+export const useSeatDrag = ({
+  moveSeat,
+  removeSeatAtCell,
+}: UseSeatDragOptions): UseSeatDragResult => {
   const [draggingCell, setDraggingCell] = useState<GridCell | null>(null)
   const [hoverCell, setHoverCell] = useState<GridCell | null>(null)
   const [touchGhostPosition, setTouchGhostPosition] = useState<SeatDragGhostPosition | null>(null)
@@ -202,12 +206,22 @@ export const useSeatDrag = ({ moveSeat, removeSeatAtCell }: UseSeatDragOptions):
       const cell = resolveCellFromElement(e.currentTarget)
       if (!cell) return
       safeSetPointerCapture(e.currentTarget, e.pointerId)
-      dragStateRef.current = { kind: 'pending', pointerId: e.pointerId, cell, startX: e.clientX, startY: e.clientY }
+      dragStateRef.current = {
+        kind: 'pending',
+        pointerId: e.pointerId,
+        cell,
+        startX: e.clientX,
+        startY: e.clientY,
+      }
       longPressTimerRef.current = window.setTimeout(() => {
         longPressTimerRef.current = null
         const pending = dragStateRef.current
         if (pending.kind !== 'pending' || pending.pointerId !== e.pointerId) return
-        dragStateRef.current = { kind: 'dragging', pointerId: pending.pointerId, cell: pending.cell }
+        dragStateRef.current = {
+          kind: 'dragging',
+          pointerId: pending.pointerId,
+          cell: pending.cell,
+        }
         setDraggingCell(pending.cell)
         const point = { x: pending.startX, y: pending.startY }
         latestPointRef.current = point

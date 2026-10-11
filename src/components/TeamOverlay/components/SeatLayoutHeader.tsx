@@ -108,7 +108,9 @@ export const SeatLayoutHeader = ({
     </button>
   )
 
-  const helpNode = !isEditMode && onHelp && <GuideButton ariaLabel='座席配置ガイド' onClick={onHelp} />
+  const helpNode = !isEditMode && onHelp && (
+    <GuideButton ariaLabel='座席配置ガイド' onClick={onHelp} />
+  )
 
   // data-coach はコーチマークツアーの固定フックなので付け替えない
   const enterEditNode = !isEditMode && onEnterEdit && (
@@ -176,7 +178,10 @@ export const SeatLayoutHeader = ({
   }
 
   return (
-    <div className={styles.seatHead} style={{ paddingLeft: sidePadding, paddingRight: sidePadding }}>
+    <div
+      className={styles.seatHead}
+      style={{ paddingLeft: sidePadding, paddingRight: sidePadding }}
+    >
       <span className={styles.seatHeadLead}>
         {titleNode}
         {chipNode}

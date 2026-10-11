@@ -45,14 +45,23 @@ const relativeToneClass = (lastUpdatedMs: number, nowMs: number): string => {
   return styles.syncRelativeExpired
 }
 
-export const ScheduleSyncBadge = ({ isLoading, lastUpdatedMs, cooldown, onRetry, sidePadding }: Props) => {
+export const ScheduleSyncBadge = ({
+  isLoading,
+  lastUpdatedMs,
+  cooldown,
+  onRetry,
+  sidePadding,
+}: Props) => {
   // 相対表記は1分ごとに描き直す。取得中と未取得の間は表示自体が無いので時計を止める
   const nowMs = useQuantizedClock(!isLoading && lastUpdatedMs !== null)
   const isRetryDisabled = isLoading || cooldown > 0
 
   return (
     <>
-      <div className={styles.syncBadge} style={{ paddingLeft: sidePadding, paddingRight: sidePadding }}>
+      <div
+        className={styles.syncBadge}
+        style={{ paddingLeft: sidePadding, paddingRight: sidePadding }}
+      >
         <span className={`icon-msr-filled ${styles.syncBadgeIcon}`} aria-hidden='true'>
           {isLoading ? 'sync' : 'verified'}
         </span>

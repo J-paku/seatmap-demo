@@ -25,11 +25,20 @@ export const useSeatHighlightAnimation = (
     }
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
     const scrollTimer = window.setTimeout(() => {
-      const target = scrollRef.current?.querySelector<HTMLElement>(`[data-seat-id="${highlightSeatId}"]`)
-      target?.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'nearest', inline: 'center' })
+      const target = scrollRef.current?.querySelector<HTMLElement>(
+        `[data-seat-id="${highlightSeatId}"]`
+      )
+      target?.scrollIntoView({
+        behavior: reduced ? 'auto' : 'smooth',
+        block: 'nearest',
+        inline: 'center',
+      })
     }, SCROLL_DELAY_MS)
     setGlowing(true)
-    const glowTimer = window.setTimeout(() => setGlowing(false), reduced ? GLOW_REDUCED_MS : GLOW_MS)
+    const glowTimer = window.setTimeout(
+      () => setGlowing(false),
+      reduced ? GLOW_REDUCED_MS : GLOW_MS
+    )
     return () => {
       window.clearTimeout(scrollTimer)
       window.clearTimeout(glowTimer)

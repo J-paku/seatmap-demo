@@ -11,5 +11,8 @@ export const SEAT_LAYOUT_TOUR_STORAGE_KEY = 'seatmap_coach_seatlayout'
 // centerOnShow は使わない
 export const SEAT_LAYOUT_TOUR_STEPS: readonly TourStep[] = [
   { selector: '[data-seat-id]', text: '座席をタップすると社員の詳細が見られます' },
-  { selector: '[data-coach="overlay-edit"]', text: 'この鉛筆ボタンから座席の配置替えや配属の編集ができます' },
+  {
+    selector: '[data-coach="overlay-edit"]',
+    text: 'この鉛筆ボタンから座席の配置替えや配属の編集ができます',
+  },
 ]

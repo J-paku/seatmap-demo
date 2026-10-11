@@ -50,8 +50,14 @@ const cropWindow = (
 ): MinimapRect => {
   const w = Math.max(1, Math.min(viewBox.width, viewBox.width * ZOOM_OUT_FACTOR))
   const h = Math.max(1, Math.min(viewBox.height, viewBox.height * ZOOM_OUT_FACTOR))
-  const center = currentArea ? centerOf(currentArea) : { x: viewBox.width / 2, y: viewBox.height / 2 }
-  return clampRectToViewBox({ x: center.x - w / 2, y: center.y - h / 2, w, h }, viewBox.width, viewBox.height)
+  const center = currentArea
+    ? centerOf(currentArea)
+    : { x: viewBox.width / 2, y: viewBox.height / 2 }
+  return clampRectToViewBox(
+    { x: center.x - w / 2, y: center.y - h / 2, w, h },
+    viewBox.width,
+    viewBox.height
+  )
 }
 
 // viewBox が無いフロア向けのフォールバック。描く対象を全て囲んでから余白を足す。
@@ -62,9 +68,11 @@ const boundingWindow = (
   currentArea: MinimapArea | null
 ): MinimapRect => {
   const rects: MinimapRect[] = [
-    ...areas.map((a) => ({ x: a.x, y: a.y, w: a.w, h: a.h })),
-    ...furniture.map((f) => ({ x: f.x, y: f.y, w: f.width, h: f.height })),
-    ...(currentArea ? [{ x: currentArea.x, y: currentArea.y, w: currentArea.w, h: currentArea.h }] : []),
+    ...areas.map(a => ({ x: a.x, y: a.y, w: a.w, h: a.h })),
+    ...furniture.map(f => ({ x: f.x, y: f.y, w: f.width, h: f.height })),
+    ...(currentArea
+      ? [{ x: currentArea.x, y: currentArea.y, w: currentArea.w, h: currentArea.h }]
+      : []),
   ]
   const box = boundingBoxOf(rects)
   if (!box) return EMPTY_BOUNDS
@@ -78,15 +86,23 @@ const boundingWindow = (
   }
 }
 
-export const useMinimapData = ({ areas, furniture, currentArea, viewBox }: Options): MinimapData => {
+export const useMinimapData = ({
+  areas,
+  furniture,
+  currentArea,
+  viewBox,
+}: Options): MinimapData => {
   // サイズ 0 の家具は描いても見えないうえ最小寸法の下駄だけが残るので、ここで落とす
   const drawFurniture = useMemo(
-    () => furniture.filter((f) => f.width > 0 && f.height > 0),
+    () => furniture.filter(f => f.width > 0 && f.height > 0),
     [furniture]
   )
 
   const worldBounds = useMemo(
-    () => (viewBox ? cropWindow(viewBox, currentArea) : boundingWindow(areas, drawFurniture, currentArea)),
+    () =>
+      viewBox
+        ? cropWindow(viewBox, currentArea)
+        : boundingWindow(areas, drawFurniture, currentArea),
     [viewBox, currentArea, areas, drawFurniture]
   )
 

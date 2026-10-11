@@ -1,4 +1,9 @@
-import { MINIMAP_MIN_SIZE_PX, minimapLabelStyle, singleLineLabel, truncateLabel } from '../utils/minimap-label'
+import {
+  MINIMAP_MIN_SIZE_PX,
+  minimapLabelStyle,
+  singleLineLabel,
+  truncateLabel,
+} from '../utils/minimap-label'
 import type { MinimapData } from '../hooks/use-minimap-data'
 import type { MinimapRect } from '../type'
 import type { MinimapArea, MinimapFurniture } from '@/types'
@@ -23,7 +28,10 @@ const boxStyle = (bounds: MinimapRect, x: number, y: number, w: number, h: numbe
 const FacilityBox = ({ item, bounds }: { item: MinimapFurniture; bounds: MinimapRect }) => {
   const label = minimapLabelStyle(item.width / bounds.w, item.height / bounds.h)
   return (
-    <span className={styles.miniFac} style={boxStyle(bounds, item.x, item.y, item.width, item.height)}>
+    <span
+      className={styles.miniFac}
+      style={boxStyle(bounds, item.x, item.y, item.width, item.height)}
+    >
       <span className={`icon-msr-filled ${styles.miniFacIcon}`}>meeting_room</span>
       <span className={styles.miniFacName} style={{ fontSize: label.fontSize }}>
         {truncateLabel(item.name, label.maxChars)}
@@ -61,7 +69,7 @@ export const MinimapFigure = ({ data, currentIdPrefix }: Props) => {
   return (
     <div className={styles.miniFrame} aria-hidden='true'>
       <span className={styles.miniGrid} />
-      {drawFurniture.map((item) =>
+      {drawFurniture.map(item =>
         item.kind === 'facility' ? (
           <FacilityBox key={item.id} item={item} bounds={worldBounds} />
         ) : (
@@ -78,7 +86,7 @@ export const MinimapFigure = ({ data, currentIdPrefix }: Props) => {
           <span className={styles.miniCrossH} style={{ top: `${currentCenter.yRate * 100}%` }} />
         </>
       )}
-      {drawAreas.map((area) => (
+      {drawAreas.map(area => (
         <AreaBox
           key={area.idPrefix}
           area={area}

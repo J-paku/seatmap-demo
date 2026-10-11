@@ -28,7 +28,7 @@ const resolveCellSeat = (
   rotationOverrides: SeatDraftState['rotationOverrides']
 ): Seat | null => {
   if (removedSeatIds.has(seatId)) return null
-  const base = addedSeats.find((s) => s.id === seatId) ?? teamSeats.find((s) => s.id === seatId)
+  const base = addedSeats.find(s => s.id === seatId) ?? teamSeats.find(s => s.id === seatId)
   if (!base) return null
   // STEP D1: 回転の差分はrotationOverridesにしか載らない。下書き追加席はrotateSeatがaddedSeats
   // 自身を直接書き換えるためbaseが既に最新で、上書きが無ければbase.rotationをそのまま使う
@@ -54,7 +54,14 @@ const buildEditingSeatGrid = (
     for (let col = 0; col < grid.cells[row].length; col += 1) {
       const seatId = grid.cells[row][col]
       const seat = seatId
-        ? resolveCellSeat(seatId, teamSeats, addedSeats, removedSeatIds, resolveEffectiveEmployeeId, rotationOverrides)
+        ? resolveCellSeat(
+            seatId,
+            teamSeats,
+            addedSeats,
+            removedSeatIds,
+            resolveEffectiveEmployeeId,
+            rotationOverrides
+          )
         : null
       if (!seat) {
         emptyCells.push({ row, col })
@@ -65,18 +72,44 @@ const buildEditingSeatGrid = (
     }
   }
 
-  return { positionedSeats, seatByGridCell, rows: grid.cells.length, cols: grid.cells[0]?.length ?? 0, emptyCells }
+  return {
+    positionedSeats,
+    seatByGridCell,
+    rows: grid.cells.length,
+    cols: grid.cells[0]?.length ?? 0,
+    emptyCells,
+  }
 }
 
-export const useSeatLayoutCompose = ({ teamSeats, isEditMode, grid, draft }: UseSeatLayoutComposeParams): SeatGrid => {
+export const useSeatLayoutCompose = ({
+  teamSeats,
+  isEditMode,
+  grid,
+  draft,
+}: UseSeatLayoutComposeParams): SeatGrid => {
   const { addedSeats, removedSeatIds, resolveEffectiveEmployeeId, rotationOverrides } = draft
 
   // grid と差分4種が変わった時だけ組み立て直す。draft オブジェクト自体は呼び出し側で
   // 毎レンダー新規生成されるため依存に入れない(入れると下流の Map/配列が毎回作り直しになる)
   return useMemo(() => {
     if (isEditMode && grid) {
-      return buildEditingSeatGrid(grid, teamSeats, addedSeats, removedSeatIds, resolveEffectiveEmployeeId, rotationOverrides)
+      return buildEditingSeatGrid(
+        grid,
+        teamSeats,
+        addedSeats,
+        removedSeatIds,
+        resolveEffectiveEmployeeId,
+        rotationOverrides
+      )
     }
     return { ...buildSeatGrid(teamSeats), emptyCells: [] }
-  }, [isEditMode, grid, teamSeats, addedSeats, removedSeatIds, resolveEffectiveEmployeeId, rotationOverrides])
+  }, [
+    isEditMode,
+    grid,
+    teamSeats,
+    addedSeats,
+    removedSeatIds,
+    resolveEffectiveEmployeeId,
+    rotationOverrides,
+  ])
 }

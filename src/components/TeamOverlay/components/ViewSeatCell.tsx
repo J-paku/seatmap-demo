@@ -1,5 +1,9 @@
 import { useRef } from 'react'
-import type { MouseEvent as ReactMouseEvent, PointerEvent as ReactPointerEvent, RefObject } from 'react'
+import type {
+  MouseEvent as ReactMouseEvent,
+  PointerEvent as ReactPointerEvent,
+  RefObject,
+} from 'react'
 import { useEmployeeAvatar } from '@/hooks/use-employee-avatar'
 import { PixelAvatar } from '@/components/PixelAvatar'
 import { compactNameFontSize, getCompactNameLabel } from '../utils/compact-name'
@@ -81,7 +85,10 @@ export const ViewSeatCell = ({
     // 空席はボタン化しない。スポットライト中は空席も落とす
     // (ここを外すと空席だけが最前面の明るさで残り、ヒット席より目立ってしまう。Desktop 側は同じ要素なので既に落ちている)
     return (
-      <div data-seat-id={seat.id} className={`${styles.cell} ${styles.isEmpty}${dimmed ? ` ${styles.isDimmed}` : ''}`}>
+      <div
+        data-seat-id={seat.id}
+        className={`${styles.cell} ${styles.isEmpty}${dimmed ? ` ${styles.isDimmed}` : ''}`}
+      >
         <span className={styles.cellName}>空席</span>
       </div>
     )
@@ -110,7 +117,9 @@ export const ViewSeatCell = ({
       <span className={styles.cellDept}>{teamName}</span>
       <span className={styles.cellStatus}>
         <span className={styles.cellStatusdot} style={{ background: PRESENCE_COLOR[status] }} />
-        <span style={{ color: PRESENCE_COLOR[status] }}>{loading ? '取得中…' : PRESENCE_LABEL[status]}</span>
+        <span style={{ color: PRESENCE_COLOR[status] }}>
+          {loading ? '取得中…' : PRESENCE_LABEL[status]}
+        </span>
       </span>
       {isHit && <span className={styles.hit}>HIT</span>}
     </button>

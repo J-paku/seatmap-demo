@@ -123,7 +123,7 @@ export const useOverlayAssign = ({
   // 対象席は seatGrid(差分反映済み)から引く。判定基準を二重に持たないため、下書き追加席・
   // 割当上書きの解決は use-seat-layout-compose 側の1本にそのまま委ねる
   const assignTargetSeat = useMemo(
-    () => seatGrid.positionedSeats.find((p) => p.seat.id === assignSeatId)?.seat ?? null,
+    () => seatGrid.positionedSeats.find(p => p.seat.id === assignSeatId)?.seat ?? null,
     [seatGrid, assignSeatId]
   )
 
@@ -165,17 +165,27 @@ export const useOverlayAssign = ({
     // 「今どこに座っているか」も「配属先に誰が居るか」も下書き反映済みの座席から引く。
     // 保存済みの座席を見ると同一セッション中の配属が確認文言へ反映されない
     const fromSeat = buildSeatByEmployee(draftAppliedSeats).get(employee.id) ?? null
-    const targetSeat = draftAppliedSeats.find((seat) => seat.id === assignSeatId) ?? null
+    const targetSeat = draftAppliedSeats.find(seat => seat.id === assignSeatId) ?? null
     const occupantId = targetSeat?.employeeId ?? null
-    const occupant = occupantId !== null && occupantId !== employee.id ? employeeById.get(occupantId) ?? null : null
+    const occupant =
+      occupantId !== null && occupantId !== employee.id
+        ? (employeeById.get(occupantId) ?? null)
+        : null
     return buildAssignConfirmContent({
       employeeName: employee.name,
-      fromTeamName: fromSeat ? teamNameById.get(fromSeat.teamId) ?? UNKNOWN_TEAM_NAME : null,
+      fromTeamName: fromSeat ? (teamNameById.get(fromSeat.teamId) ?? UNKNOWN_TEAM_NAME) : null,
       toTeamName: payload.teamName,
       occupantName: occupant ? occupant.name : null,
       isSameTeam: fromSeat !== null && fromSeat.teamId === payload.teamId,
     })
-  }, [assignConfirmEmployeeId, assignSeatId, payload, employeeById, draftAppliedSeats, teamNameById])
+  }, [
+    assignConfirmEmployeeId,
+    assignSeatId,
+    payload,
+    employeeById,
+    draftAppliedSeats,
+    teamNameById,
+  ])
 
   const confirmAssignSelect = useCallback(() => {
     if (assignConfirmEmployeeId) handleAssignSelect(assignConfirmEmployeeId)

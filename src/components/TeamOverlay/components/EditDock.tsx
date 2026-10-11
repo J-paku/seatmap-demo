@@ -17,7 +17,12 @@ type Props = {
 
 export const EditDock = ({ changeCount, hasChanges, isSaving, onSave, onCancel }: Props) => (
   <div className={styles.dock} role='group' aria-label='編集ツールバー'>
-    <button type='button' className={styles.dockCancel} aria-label='編集をキャンセル' onClick={onCancel}>
+    <button
+      type='button'
+      className={styles.dockCancel}
+      aria-label='編集をキャンセル'
+      onClick={onCancel}
+    >
       <span className='material-symbols-outlined' aria-hidden='true'>
         close
       </span>
@@ -30,7 +35,10 @@ export const EditDock = ({ changeCount, hasChanges, isSaving, onSave, onCancel }
       onClick={onSave}
     >
       {isSaving && (
-        <span className={`material-symbols-outlined ${styles.dockSaveIcon} ${styles.isSpinning}`} aria-hidden='true'>
+        <span
+          className={`material-symbols-outlined ${styles.dockSaveIcon} ${styles.isSpinning}`}
+          aria-hidden='true'
+        >
           sync
         </span>
       )}

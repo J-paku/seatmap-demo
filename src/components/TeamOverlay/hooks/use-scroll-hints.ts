@@ -23,11 +23,12 @@ const isSameHints = (a: ScrollHints, b: ScrollHints): boolean =>
   a.hasOverflow === b.hasOverflow && a.atStart === b.atStart && a.atEnd === b.atEnd
 
 // scrollWidth / clientWidth / scrollLeft を実測し、scroll・コンテナリサイズ・列数変化のたびに測り直す
-export const useScrollHints = (
-  ref: RefObject<HTMLElement | null>,
-  cols: number
-): ScrollHints => {
-  const [hints, setHints] = useState<ScrollHints>({ hasOverflow: false, atStart: true, atEnd: true })
+export const useScrollHints = (ref: RefObject<HTMLElement | null>, cols: number): ScrollHints => {
+  const [hints, setHints] = useState<ScrollHints>({
+    hasOverflow: false,
+    atStart: true,
+    atEnd: true,
+  })
 
   // 依存配列なし = 毎コミット後に同期再測定。セル幅などの非同期更新でリレンダーした直後の実 DOM を拾う。
   // 変化なしなら前回オブジェクトを返すので無限レンダーにはならない([ref] を渡すと初回しか測れなくなる)
@@ -36,7 +37,7 @@ export const useScrollHints = (
     const el = ref.current
     if (!el) return
     const next = readHints(el)
-    setHints((prev) => (isSameHints(prev, next) ? prev : next))
+    setHints(prev => (isSameHints(prev, next) ? prev : next))
   })
 
   useEffect(() => {
@@ -44,7 +45,7 @@ export const useScrollHints = (
     if (!el) return
     const measure = () => {
       const next = readHints(el)
-      setHints((prev) => (isSameHints(prev, next) ? prev : next))
+      setHints(prev => (isSameHints(prev, next) ? prev : next))
     }
     el.addEventListener('scroll', measure, { passive: true })
     const observer = new ResizeObserver(measure)
