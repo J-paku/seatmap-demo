@@ -2,17 +2,19 @@ import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from '
 import type { RefObject } from 'react'
 import {
   deleteCustomLayout,
-  loadDefaultLayoutId,
   loadLayoutMetas,
   saveCustomLayout,
   saveDefaultLayoutId,
   saveLayoutMetas,
 } from '@/lib/layout-persistence'
+import { getStoredLayouts, readStoredLayouts } from '@/lib/read-stored-layouts'
+import type { StoredLayouts } from '@/lib/read-stored-layouts'
 import { createEmptyLayout, createLayoutId } from '@/utils/layout/layout-id'
 import { useLayoutSource } from '@/contexts/layout-source-context'
 import { useGlobalAnnouncement } from '@/contexts/announcement-context'
 import { floorNameOf } from '@/utils/floors'
 import type { LayoutMeta } from '@/types'
+import { getServerStoredLayouts, subscribeStoredLayouts } from '../utils/subscribe-stored-layouts'
 
 export type UseLayoutSwitcherResult = {
   isOpen: boolean
@@ -30,33 +32,6 @@ export type UseLayoutSwitcherResult = {
   cancelDelete: () => void
   confirmDelete: () => void
 }
-
-// 一覧とデフォルトIDは常にlocalStorageへ書いてから状態へ写す関係なので、2つで1組として扱う
-type StoredLayouts = {
-  layoutMetas: LayoutMeta[]
-  defaultLayoutId: string | null
-}
-
-const readStoredLayouts = (): StoredLayouts => ({
-  layoutMetas: loadLayoutMetas(),
-  defaultLayoutId: loadDefaultLayoutId(),
-})
-
-// getSnapshotは呼ぶたびに同じ参照を返す必要があるので、最初の1回だけ読んで保持する
-let storedLayoutsSnapshot: StoredLayouts | null = null
-const getStoredLayouts = (): StoredLayouts => {
-  if (!storedLayoutsSnapshot) storedLayoutsSnapshot = readStoredLayouts()
-  return storedLayoutsSnapshot
-}
-
-// 静的書き出しHTMLは「カスタム0件・デフォルト未設定」で焼かれている。初回クライアント描画を
-// それに揃えないとトグル名やカウンターがHTMLと食い違い、React 19が例外#418を出す
-const EMPTY_STORED_LAYOUTS: StoredLayouts = { layoutMetas: [], defaultLayoutId: null }
-const getServerStoredLayouts = (): StoredLayouts => EMPTY_STORED_LAYOUTS
-
-// 起動直後の値は後から変わらないので購読先が無い。以降の変更は保存後の読み直しが受け持つ
-const noop = (): void => undefined
-const subscribeStoredLayouts = (): (() => void) => noop
 
 // アイランドの開閉・一覧の読み込み・選択と作成の操作を持つ。展開パネルの中身の描画自体は
 // STEP4のコンポーネント側が担うためここでは持たない

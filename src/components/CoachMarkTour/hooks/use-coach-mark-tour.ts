@@ -1,5 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { markSeen, readSeen } from '@/lib/persist-tour-seen'
 import type { TourBranch, TourStep } from '../utils/tour-steps'
+
+// 移す前の import 先を使い続けている呼び出し側(SeatMapView の hooks)のために再公開する
+export { isTourPlaying } from '../utils/is-tour-playing'
+export { readSeen } from '@/lib/persist-tour-seen'
 
 // コーチマークの汎用進行エンジン。分岐の有無・自動再生の可否・再生トリガーは呼び出し側が渡す。
 // ステップの中身(文言・セレクタ)は一切知らず、渡された対象をそのまま表示するだけ
@@ -35,31 +40,6 @@ export type CoachMarkTourState = {
   // 既読化せずに閉じる。編集モード退出など画面都合で畳む場合に使う。
   // 一度も操作していないツアーを既読扱いにしないため、次に活性化条件を満たせば再び自動再生される
   collapse: () => void
-}
-
-// 「再生中」= 分岐カードが立っているか、ステップが立っている状態。
-// 表示判定(FABの可否・ツアー層の重複防止)が同じ式を2箇所で持たないようここに置く
-export const isTourPlaying = (tour: Pick<CoachMarkTourState, 'isBranching' | 'step'>): boolean =>
-  tour.isBranching || tour.step !== null
-
-// 既読判定。SSR では常に既読扱いにして自動表示を止める。localStorage 参照が例外を投げる
-// 環境では未読扱いにして再生は続ける。値は旧表記 'true' も既読とみなす(null でなければ既読)
-export const readSeen = (storageKey: string): boolean => {
-  if (typeof window === 'undefined') return true
-  try {
-    return window.localStorage.getItem(storageKey) !== null
-  } catch {
-    return false
-  }
-}
-
-const markSeen = (storageKey: string): void => {
-  if (typeof window === 'undefined') return
-  try {
-    window.localStorage.setItem(storageKey, '1')
-  } catch {
-    // 保存できなくても再生は続ける
-  }
 }
 
 export const useCoachMarkTour = ({
