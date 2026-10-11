@@ -1,6 +1,6 @@
 # TeamOverlay — 画面仕様
 
-対象は `components/TeamOverlay/`。チーム箱クリックで開く大型モーダル(座席グリッド Desktop/Compact・
+対象は `src/components/TeamOverlay/`。チーム箱クリックで開く大型モーダル(座席グリッド Desktop/Compact・
 横スクロールヒント・ミニマップ・HIT表示)を扱う。キャンバス側(チーム箱・パンズーム・`.sr-only` ミラー
 レイヤー)の仕様は `docs/seat-map/` を見る。社員詳細(EmployeeDetail)の中身もこの文書の対象外 —
 「座席クリックで社員詳細が開く」という境界までしか扱わない。
@@ -33,7 +33,7 @@
 
 ## 2. Desktop / Compact 分岐
 
-境界は 760px(`hooks/use-compact-mobile.ts:5` `COMPACT_MOBILE_QUERY`)。`matchMedia` のみで判定し
+境界は 760px(`src/components/TeamOverlay/hooks/use-compact-mobile.ts:5` `COMPACT_MOBILE_QUERY`)。`matchMedia` のみで判定し
 `pointerType` やタッチ有無は見ない — **TeamOverlay の唯一の分岐スイッチ**であり、ウィンドウを狭めた
 PC も完全にモバイル表示になる(`use-compact-mobile.ts:3-4` のコメント)。
 
@@ -44,16 +44,16 @@ PC も完全にモバイル表示になる(`use-compact-mobile.ts:3-4` のコメ
 
 ## 3. 座席グリッド
 
-座席データは絶対座標(x, y)しか持たない。`buildSeatGrid`(`utils/seat-grid.ts:36-50`)が座標をクラス
-タリングして行列インデックスを起こす。クラスタ許容差は幅/高さ平均の0.6倍(`utils/seat-grid.ts:41-42`)
+座席データは絶対座標(x, y)しか持たない。`buildSeatGrid`(`src/components/TeamOverlay/utils/seat-grid.ts:36-50`)が座標をクラス
+タリングして行列インデックスを起こす。クラスタ許容差は幅/高さ平均の0.6倍(`src/components/TeamOverlay/utils/seat-grid.ts:41-42`)
 — 編集で多少座標がずれても同じ行/列として扱うため。
 
 両グリッドは props が共通(`type.ts:75-85` `SeatGridProps`)だが、描画・入力・スクロール戦略は完全に
-別実装(`components/SeatGridFrame.tsx`)。
+別実装(`src/components/TeamOverlay/components/SeatGridFrame.tsx`)。
 
-### Desktop(`components/DesktopSeatGrid.tsx`)
+### Desktop(`src/components/TeamOverlay/components/DesktopSeatGrid.tsx`)
 
-- 列幅固定 180px、gap 10px(`utils/seat-grid.ts:6-7`)
+- 列幅固定 180px、gap 10px(`src/components/TeamOverlay/utils/seat-grid.ts:6-7`)
 - `seatByGridCell` を row×col で全走査し、座席の無いセルは描かない(`DesktopSeatGrid.tsx:44-47`)
 - カードは横並び(アバター左・テキスト右)・フルネーム・`seat.rotation` から椅子の向きを算出
   (`SeatCard.tsx:22-27`)
@@ -62,19 +62,19 @@ PC も完全にモバイル表示になる(`use-compact-mobile.ts:3-4` のコメ
 - クリックは `onClick` 直結。スポットライト中(他席をハイライト中)に dimmed 席を押すと HIT 解除、
   それ以外は `onSeatClick`(`DesktopSeatGrid.tsx:63-70`)
 
-### Compact(`components/CompactSeatGrid.tsx`)
+### Compact(`src/components/TeamOverlay/components/CompactSeatGrid.tsx`)
 
 - 列幅は可変。6列(`COMPACT_VISIBLE_COLS`)がコンテナ幅にちょうど収まる幅を `ResizeObserver` で実測
   (`CompactSeatGrid.tsx:22-40`)
 - `positionedSeats` を row×col の全走査ではなくそのまま `map`(`CompactSeatGrid.tsx:76`)
 - セルは縦積み(アバター上・テキスト下)・姓のみ・椅子なし・回転非表示(`ViewSeatCell.tsx:9-10`)
-- 姓の切り出しは `utils/display-utils` の `getCompactNameLabel` を再 export するだけで、Compact
+- 姓の切り出しは `src/utils/display-utils.ts` の `getCompactNameLabel` を再 export するだけで、Compact
   専用の別実装は持たない。元は同名関数がここにも別実装として存在し、あちらだけが Garoon 名の「;所属」
-  接尾辞を落とし損ねていた事故があったため一本化した(`utils/compact-name.ts:3-6`)。コード
+  接尾辞を落とし損ねていた事故があったため一本化した(`src/components/TeamOverlay/utils/compact-name.ts:3-6`)。コード
   コメントは「同じ概念の判定基準を2つ持たない(docs/pitfalls.md 4番)」と根拠を残しているが、
   リポジトリローカルの `docs/pitfalls.md` は現状3項目までしか無く4番は存在しない —
   該当するのは規約の写し `docs/conventions/03-pitfalls.md` 4番「同一概念の二重判定基準」と見られる
-- フォントサイズは 8〜13px 可変。ASCII 9文字以上→8px、和名5文字以上→12px(`utils/compact-name.ts:9-13`)
+- フォントサイズは 8〜13px 可変。ASCII 9文字以上→8px、和名5文字以上→12px(`src/components/TeamOverlay/utils/compact-name.ts:9-13`)
 - 空席は `<div>`(ボタン化しない)。スポットライト中は空席も dimmed で落とす —
   ここを外すと空席だけが最前面の明るさで残り、ヒット席より目立ってしまう
   (`ViewSeatCell.tsx:79-86` のコメント)
@@ -86,7 +86,7 @@ PC も完全にモバイル表示になる(`use-compact-mobile.ts:3-4` のコメ
 
 ## 4. 横スクロールヒント
 
-`components/ScrollHint.tsx`。Desktop / Compact 共用の1コンポーネントで、`onNudge` の有無だけで
+`src/components/TeamOverlay/components/ScrollHint.tsx`。Desktop / Compact 共用の1コンポーネントで、`onNudge` の有無だけで
 表示専用 / ボタンが切り替わる。
 
 - `onNudge` 無し: `<span aria-hidden>`。ポインタを取らず読み上げからも外す(`ScrollHint.tsx:14-21`)
@@ -96,14 +96,14 @@ PC も完全にモバイル表示になる(`use-compact-mobile.ts:3-4` のコメ
 - 端に達した側(`atStart` / `atEnd`)は **DOM から消さず** `is-faded` クラス + `disabled` 属性を付与
   してフェードアウトする(アンマウントしない、`ScrollHint.tsx:26-30` とグリッド側コメント)
 - overflow 判定(`hasOverflow` / `atStart` / `atEnd`)は `scrollWidth` / `clientWidth` / `scrollLeft`
-  の実測(`hooks/use-scroll-hints.ts`)。scroll・コンテナリサイズ・列数変化のたびに測り直す
+  の実測(`src/components/TeamOverlay/hooks/use-scroll-hints.ts`)。scroll・コンテナリサイズ・列数変化のたびに測り直す
 
-背景は `color-mix(in srgb, var(--glass-bg) 45%, transparent)`(`styles/team-overlay-modal.css:296`)。
-`--glass-bg` 自体のアルファがライトテーマで 0.78(`styles/tokens.css:47`)のため、実効アルファは
-0.78×0.45 ≈ 0.35。`backdrop-filter: blur(6px) saturate(120%)`(同297行)。
+背景は `color-mix(in srgb, var(--glass-bg) 45%, transparent)`(`src/components/TeamOverlay/team-overlay-modal.module.css` の `.hint`)。
+`--glass-bg` 自体のアルファがライトテーマで 0.78(`src/styles/tokens.css:57`)のため、実効アルファは
+0.78×0.45 ≈ 0.35。`backdrop-filter: blur(6px) saturate(120%)`(同じ `.hint`)。
 
-CSS 特異度の順序依存: `.is-faded` は `.is-button` と同じ特異度のため、CSS ファイル内で `.is-button`
-より **後** に宣言しないと効かない(`styles/team-overlay-modal.css:325-327` のコメント「後方宣言で
+CSS 特異度の順序依存: `.hint.isFaded` は `.hint.isButton` と同じ特異度のため、CSS ファイル内で `.hint.isButton`
+より **後** に宣言しないと効かない(`src/components/TeamOverlay/team-overlay-modal.module.css` の `.hint.isFaded` の直前のコメント「後方宣言で
 優先(順序依存)」)。
 
 Desktop は以前(commit `e5fa2de` 以前)ヒントが表示専用だった。列幅 180px 固定のため狭い画面ではヒット
@@ -116,7 +116,7 @@ Compact と同じ実測ベースのフックで追従させるためボタン化
 として渡ってくるだけ(所有関係の詳細は `architecture.md` 5-6)。
 
 - ヒット席へは開いてから 360ms 後(クリックロック解除に合わせる)にスクロール追従し、prefers-reduced-
-  motion なら `behavior: 'auto'`、それ以外は `'smooth'`(`hooks/use-seat-highlight-animation.ts:11,26-29`)。
+  motion なら `behavior: 'auto'`、それ以外は `'smooth'`(`src/components/TeamOverlay/hooks/use-seat-highlight-animation.ts:11,26-29`)。
   遅らせる理由が2つ重なっている: (1) 子の effect は親より先に走るので、遅延無しだと親
   `useOverlaySession` の `bodyRef.scrollTop = 0` に打ち消される (2) パネル自身が拡大アニメーション中で、
   変形中の祖先の下では smooth スクロールの着地点がずれる(同ファイル7-10行のコメント)
@@ -137,14 +137,14 @@ Compact と同じ実測ベースのフックで追従させるためボタン化
 
 ## 6. ミニマップ
 
-`components/Minimap.tsx` + `MinimapFigure.tsx`。オーバーレイ本文の折りたたみ式セクションで、座席
+`src/components/TeamOverlay/components/Minimap.tsx` + `MinimapFigure.tsx`。オーバーレイ本文の折りたたみ式セクションで、座席
 グリッドの下に置く**表示専用**(画面隅に常駐するナビゲーション用ミニマップではない。タップしても
 移動しない、`Minimap.tsx:7-8`)。
 
 ### 開閉
 
 既定は**展開**。開閉状態は `localStorage['seatmap::minimap-open']` に保存し、別チームを開いても
-引き継ぐ(`hooks/use-minimap-collapse.ts:3`)。保存値が無ければ展開、`'false'` なら折りたたみ
+引き継ぐ(`src/components/TeamOverlay/hooks/use-minimap-collapse.ts:3`)。保存値が無ければ展開、`'false'` なら折りたたみ
 (`use-minimap-collapse.ts:7-11`)。
 
 commit `dc7c990` で既定を閉→開に変更した。変更前は「オーバーレイを開いた瞬間に主役(座席グリッド)が
@@ -162,13 +162,13 @@ commit `dc7c990` で既定を閉→開に変更した。変更前は「オーバ
   (「〇〇のフロア内の位置を示す図です」)だけを読ませる(`Minimap.tsx:34,47`、`MinimapFigure.tsx:5-6,60`)
 - 切り取り窓(`worldBounds`)は現在チームを中心に viewBox×(100/35)倍で取り、viewBox の内側へ
   クランプする。窓が viewBox より大きければ全域に退化する — このデモの 1600×1154 はその状態で、
-  会議室まで含めてフロア全体が入る(`hooks/use-minimap-data.ts:9-10,43-45`)
+  会議室まで含めてフロア全体が入る(`src/components/TeamOverlay/hooks/use-minimap-data.ts:9-10,43-45`)
 - viewBox が無いフロア向けのフォールバックは、描画対象を全て囲む bounding box に余白(辺の4%、
   最低24px)を足す(`use-minimap-data.ts:56-77`)
 - 現在地の十字線は窓が viewBox 内へクランプされる結果、端のチームでは中心が 0.5 にならない。0〜1
   にクランプして枠外へ飛ばないようにする(`use-minimap-data.ts:92-93`)
 - ラベルは枠に対する幅/高さ比で文字数(9/11/14)とフォントサイズ(8/9/10px)を3段階で決め、超過分は
-  `…` で詰める(`utils/minimap-label.ts:9-17`)。最小描画サイズは2px(潰れると矩形自体が見えなく
+  `…` で詰める(`src/components/TeamOverlay/utils/minimap-label.ts:9-17`)。最小描画サイズは2px(潰れると矩形自体が見えなく
   なるための下駄、`minimap-label.ts:3-4`)
 - `Minimap` 自体は `memo` 化されており、オーバーレイ側のスクロール・ハイライト状態の更新では
   再描画されない(`Minimap.tsx:56-57`)
@@ -193,10 +193,10 @@ Compact の空席セルは非 disabled な `<div>`(`ViewSeatCell.tsx:79-86`)で 
 5節のパネル判定に普通に乗り解除される。Desktop だけが disabled ボタンの click 非発火という
 ブラウザ挙動に引っかかっていた。
 
-**修正**: `styles/team-overlay-modal.css` の `.team-ovl-card.is-empty` に `pointer-events: none` を
+**修正**: `src/components/TeamOverlay/team-overlay-modal.module.css` の `.card.isEmpty`(当時のグローバル CSS では `.team-ovl-card.is-empty`)に `pointer-events: none` を
 追加し、クリックを素通しさせて背後のグリッド枠(`data-seat-id` を持たない `<div>`)に当てる。ハンドラ
 側(`index.tsx`)は無変更 — `closest('[data-seat-id]')` が `null` を返し `highlightSeatId` と不一致
 になるため、既存の解除ロジックがそのまま働く。
 
-この修正は CSS 側だけで成立しており、`.team-ovl-card.is-empty` のルールを後から編集すると挙動が
+この修正は CSS 側だけで成立しており、`.card.isEmpty` のルールを後から編集すると挙動が
 静かに壊れ得る。検証手段としての位置づけは `testing.md` 3 を見る。

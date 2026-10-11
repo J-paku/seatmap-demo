@@ -11,20 +11,25 @@
 
 - 関数名は `use` 接頭辞必須
 - ファイル名は kebab-case + `use-` 接頭辞(`use-canvas-pointer.ts` のように)。
-  **リポジトリ全体のフックファイル85本を確認済み。全て kebab-case + `use-` 接頭辞であり、この形式を維持する** `[hook-file-naming]`
+  **2026-10-12 時点で `src` の `hooks` フォルダの下の98本は全て kebab-case + `use-` 接頭辞であり、この形式を維持する** `[hook-file-naming]`
 - Props / 戻り値の型はファイル上部に定義する
-- コンポーネント専用フックは `components/<Name>/hooks/` へ。2箇所以上で使われたら
-  ルート直下の `hooks/` へ昇格する
+- **フックのファイルには `use` 関数とその型だけを置く。** フックでない関数・定数(しきい値1つでも)は一番近い
+  `utils` フォルダへ、`localStorage` などの保存の読み書きは `src/lib/` へ出す。置き場の規則と実例は
+  `docs/structure.md` 4.、決めた理由は `docs/decisions/0005-hooks-hold-only-use.md`
+- `hooks` フォルダに単体テストを置かない。どのテストでも `renderHook` を使わない(`npm run test:boundary` が落とす)。
+  フックの振る舞いは E2E が見る
+- コンポーネント専用フックは `src/components/<Name>/hooks/` へ。2箇所以上で使われたら
+  `src/hooks/` へ昇格する
 - 1本のフックを複数責務で分割する時は下記 3.3。**フォルダ化しても `index.ts` は作らない**
-- データ取得フック(`useEmployees` 等)は `hooks/use-mock-data.ts` に置く。取得層(`lib/mock-loader.ts`)
-  とは分離しており、例外なく「フックは常に `hooks/`」原則に従う
+- データ取得フック(`useEmployees` 等)は `src/hooks/use-mock-data.ts` に置く。取得層(`src/lib/mock-loader.ts`)
+  とは分離しており、例外なく「フックは常に `hooks` フォルダ」原則に従う
 
 ## 2. コンポーネント規則
 
-- `index.tsx` は組み立てのみ。ロジックはフックへ委譲する(`SeatMapCanvas/index.tsx` が模範)
-- 200行超 **かつ** 複数責務なら `components/<Name>/` へ分割。単一責務のまま長いだけなら分割しない
+- `index.tsx` は組み立てのみ。ロジックはフックへ委譲する(`src/components/SeatMapCanvas/index.tsx` が模範)
+- 200行超 **かつ** 複数責務なら `src/components/<Name>/` へ分割。単一責務のまま長いだけなら分割しない
 - 分割時の構造と `index.tsx` の薄さの基準は下記 3.2
-- ローカルに `lib/` は作らない。外部接続は必ずルートの `lib/` に集約する
+- コンポーネントの中に `lib` フォルダは作らない。外部接続は必ず `src/lib/` に集約する
 
 ## 3. SRP 分割パターン
 
@@ -37,19 +42,20 @@
 2. **切り出し先は種類で自動的に決まる。** 迷う余地を残さない
    | 切り出すもの | 行き先 |
    |--------------|--------|
-   | JSX を返す | `components/` |
-   | `use` で始まり React 機能を呼ぶ | `hooks/` |
-   | 副作用のない計算・定数 | `utils/` |
+   | JSX を返す | `components` フォルダ |
+   | `use` で始まり React 機能を呼ぶ | `hooks` フォルダ |
+   | 副作用のない計算・定数 | `utils` フォルダ |
    | 型だけ | `type.ts`(サブフォルダを作らず平坦に置く) |
 3. **元のファイルに残るのは配線だけ。** 状態・計算・分岐が残っているなら切り出しが足りない
-4. **2箇所以上から使われ始めたらルート直下へ昇格。** ローカルに複製しない
+4. **2箇所以上から使われ始めたら `src/` 直下の同じ種類のフォルダへ昇格。** ローカルに複製しない
 
 ### 3.2 コンポーネント — `<Name>/index.tsx` パターン
 
 コンポーネントのフォルダは **公開物がちょうど1つ**(そのコンポーネント)なので、入口を `index.tsx` にする。
 呼び出し側は `@/components/AvatarCustomizer` とだけ書き、内部構造を知らなくてよい。
 
-模範例 `components/AvatarCustomizer/`:
+形の例(2026-08 時点の `src/components/AvatarCustomizer/`。今は `sections` フォルダを持つ別の形に変わったが、
+入口を薄く保つ形の例として当時の姿を残す):
 
 ```
 components/AvatarCustomizer/
@@ -131,10 +137,11 @@ import { useLayoutHistory } from '@/hooks/use-layout-editor/use-layout-history'
 `docs/conventions/01-authoring.md` 4. を参照。ここでは結論だけ持つ。
 
 命名は `[hook-file-naming]` の対象のまま。**フォルダ名・フォルダ内の全ファイルとも kebab-case +
-`use-` 接頭辞**にする(`hooks/layout-editor/` のように接頭辞を落とさない)。
+`use-` 接頭辞**にする(フォルダを `layout-editor` のように名付けて接頭辞を落とさない)。
 
-> 既にフォルダ化されたフックとして `hooks/use-layout-editor/`(3本、上記の実例そのもの)がある。
-> ルート `hooks/` は単一ファイル18本+フォルダ化3本の計21本、コンポーネント専用は64本、計85本。
+> フォルダ化したフックの実物は `src/hooks/use-layout-editor/`(入口 `use-layout-editor.ts` と
+> `use-edit-session.ts`・`use-error-toast.ts`)と `src/hooks/use-ghost-placement/`。上の Bad / Good の
+> 中身は形の例で、実物のファイル名とは違う。
 
 ## 4. コードスタイル
 
@@ -147,6 +154,7 @@ import { useLayoutHistory } from '@/hooks/use-layout-editor/use-layout-history'
 | フックファイル命名 | kebab-case + `use-` 接頭辞 | `[hook-file-naming]` |
 | コメント言語 | 日本語のみ・最小限 | `[comment-language]` |
 | ベンダープレフィックス手書き禁止 | `-webkit-` 等を手で書かない(自動付与される。詳細は `docs/pitfalls.md`) | `[css-manual-vendor-prefix]` |
-| 色リテラル禁止 | `styles/**` に `#rrggbb`・`rgb()` を書かない。色は `tokens.css` のみ(`docs/styling.md` 参照) | `[css-color-literal]` |
+| 色リテラル禁止 | `src/styles/**` に `#rrggbb`・`rgb()` を書かない。色は `tokens.css` のみ(`docs/styling.md` 参照) | `[css-color-literal]` |
+| 書式 | Prettier(`.prettierrc`。J-paku.github.io と同じ設定)。`npm run format` で整える(`docs/decisions/0002-prettier.md`) | `npm run format:check` |
 
 各 `[rule-id]` の on/off は `.claude/code-rules.json` を参照。

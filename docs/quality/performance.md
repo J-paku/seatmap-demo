@@ -43,7 +43,7 @@ accessibility・best-practices・seo は9回とも100。
 ゲートの画面は Material Symbols Rounded を読む(`src/pages/_document.tsx` で全軸を要求するので
 woff2 1本が 5,272KiB、優先度 VeryHigh)。Lighthouse の既定のシミュレーションは、
 **実際の初回描画より前に取得が終わった VeryHigh の要求**を FCP の依存に数え、低速4G 換算で計り直す
-(`@paulirish/trace_engine` の `lantern/metrics/FirstContentfulPaint.js`)。
+(`@paulirish/trace_engine` の lantern/metrics/FirstContentfulPaint.js。このリポジトリの外のパッケージ)。
 
 | 実際の初回描画 | フォントの取得完了 | 換算後の FCP | performance |
 |---|---|---|---|

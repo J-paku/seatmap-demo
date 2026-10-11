@@ -1,13 +1,13 @@
 # TeamOverlay — 構成・データフロー
 
-対象は `components/TeamOverlay/`。フォルダ構造は `docs/authoring.md` 5.2 の `<Name>/index.tsx` パターン
+対象は `src/components/TeamOverlay/`。フォルダ構造は `docs/authoring.md` 5.2 の `<Name>/index.tsx` パターン
 に準拠する(公開物はちょうど1つ = `TeamOverlay` コンポーネント自身)。画面仕様は `spec.md`、検証手段は
 `testing.md` を見る。
 
 ## 1. フォルダ構成
 
 ```
-components/TeamOverlay/
+src/components/TeamOverlay/
 ├─ index.tsx                     組み立てのみ。開閉配線・HIT クリア判定
 ├─ type.ts                       このツリー全体で共有する型(平坦)
 ├─ components/
@@ -72,13 +72,13 @@ components/TeamOverlay/
 |---|---|
 | `seat-grid.ts` | グリッド寸法定数(列幅・gap・パディング)と、絶対座標→行列インデックスへの変換 |
 | `anchor-origin.ts` | クリックしたバウンダリ中心からの拡大原点(`transform-origin`)計算 |
-| `compact-name.ts` | Compact 氏名ラベル切り出し(`utils/display-utils` へ委譲)とフォントサイズ計算 |
+| `compact-name.ts` | Compact 氏名ラベル切り出し(`src/utils/display-utils.ts` へ委譲)とフォントサイズ計算 |
 | `minimap-label.ts` | ミニマップラベルの文字数・フォントサイズ・省略記号処理 |
 
 ## 5. props の流れ
 
 `TeamOverlay` 自身は `payload` / `highlightSeatId` を**状態として持たない**。両方とも呼び出し元
-`components/SeatMapView` の `useTeamSeatFocus`(`components/SeatMapView/hooks/use-team-seat-focus.ts`)
+`src/components/SeatMapView/` の `useTeamSeatFocus`(`src/components/SeatMapView/hooks/use-team-seat-focus.ts`)
 が `useState` で保持し、props として渡ってくるだけ(`type.ts:43-57` `TeamOverlayProps`)。
 
 ```
@@ -95,7 +95,7 @@ SeatMapView
       minimapAreas / minimapFurniture / minimapTeamArea / minimapViewBox
    />
 ```
-(`components/SeatMapView/index.tsx:198-211`)
+(`src/components/SeatMapView/index.tsx:198-211`)
 
 起動元は2系統で、`highlightSeatId` の有無だけが違う:
 
@@ -107,7 +107,7 @@ SeatMapView
 
 `payload.rect` はキャンバス側(`docs/seat-map/` の対象)が測定した DOMRect をそのまま使う
 (`use-team-seat-focus.ts:43`)。座席クリックは `onSeatClick` を経由して `useDetailPanel().openSeatDetail`
-に渡り、社員詳細(EmployeeDetail、別ドメイン)を開く(`components/SeatMapView/index.tsx:48,204`)。
+に渡り、社員詳細(EmployeeDetail、別ドメイン)を開く(`src/components/SeatMapView/index.tsx:48,204`)。
 TeamOverlay はこの先に踏み込まない。
 
 ## 6. 状態がどこに住むか
@@ -152,7 +152,7 @@ props (areas, furniture, currentArea, viewBox)
 ```
 
 `Minimap` は `memo` 化されており、オーバーレイ側のスクロール・ハイライト状態の更新では再描画されない
-(`components/Minimap.tsx:56-57`)。props(area/furniture/currentArea/viewBox)が変わらない限り、
+(`src/components/TeamOverlay/components/Minimap.tsx:56-57`)。props(area/furniture/currentArea/viewBox)が変わらない限り、
 同じチームを開いている間は座席側の頻繁な状態変化から隔離されている。
 
 ## 9. HIT 解除判定は実装上2箇所にある

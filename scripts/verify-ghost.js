@@ -220,14 +220,15 @@
   if (labelled.length === 1) {
     ck('アンカーが枠自身または層の内側にある', labelled[0] === frame || layer.contains(labelled[0]))
   }
-  // run-all-checks.mjs のゴースト到達判定はこのセレクタを待つ。宣言済み仕様の矛盾#1は
+  // E2E(tests/edit-anchors.spec.ts の reachGhostPlacement)のゴースト到達判定はこのセレクタを待つ
+  // (移す前の運転台 run-all-checks.mjs から引き継いだ)。宣言済み仕様の矛盾#1は
   // 「読み上げ名はポインタを受ける枠が持ち、role は img にしない(子孫が支援技術から消えるため)」
-  // 側で決着させ、ランナーの waitForSelector を同じ変更で [data-ghost="frame"] へ移した。
-  // 判定の意図(ランナーの到達セレクタが生きているか)と件数は変えていない
+  // 側で決着させ、到達の waitForSelector を同じ変更で [data-ghost="frame"] へ移した。
+  // 判定の意図(E2E の到達セレクタが生きているか)と件数は変えていない
   ck(
-    'run-all-checks.mjs の到達セレクタ([data-ghost="frame"])が生きている',
+    'E2E の到達セレクタ([data-ghost="frame"])が生きている',
     q('[data-ghost="frame"]').length === 1,
-    'このセレクタを変えるなら run-all-checks.mjs の reachGhostPlacement も同時に直すこと'
+    'このセレクタを変えるなら tests/edit-anchors.spec.ts の reachGhostPlacement も同時に直すこと'
   )
 
   // ---- 4. 幾何: 画面寸法 = 論理寸法 × 現在倍率 ----

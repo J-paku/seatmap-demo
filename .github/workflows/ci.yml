@@ -26,6 +26,9 @@ jobs:
           node-version: '22'
           cache: npm
       - run: npm ci
+      # 文書のリンク・参照パス・npm run 名・孤児・E2E 一覧を確かめる(scripts/check-docs.mjs)
+      - name: Docs check
+        run: npm run docs:check
       - name: Typecheck
         run: npm run typecheck
       - name: Lint

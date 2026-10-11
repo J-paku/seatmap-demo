@@ -1,74 +1,93 @@
 # structure.md — 置き場所の判断規則(seatmap-demo 固有)
 
 技術非依存の配置判断フローチャート・分割基準の考え方は `docs/conventions/01-authoring.md` を参照。
-本書はこのスタック(Next.js Pages Router + React)での実際の配置(実例)だけを持つ。
-**新しいファイルを作る前に必ず読む。**
+本書はこのスタック(Next.js Pages Router + React)での配置の規則と、代表的な実例だけを持つ。
+**新しいファイルを作る前に必ず読む。** ファイルを全部は並べない(動かすたびに古くなるため)。全体は `git ls-files src` で見る。
 
 ## 1. フォルダ構成
 
-実際の配置(2026-08-01 時点)。
+ソースは `src/` の下、それ以外(モック・E2E・スクリプト・文書・設定)はルートに置く(`docs/decisions/0001-linux-disk-and-src.md`)。
 
 ```
 seatmap-demo/
-├─ pages/                       Next.js ルート定義専用。Head + プロバイダのみ
-│  ├─ _app.tsx
-│  ├─ _document.tsx
-│  └─ index.tsx                 画面本体は持たない。components/SeatMapView へ委譲
-├─ components/
-│  ├─ SeatMapView/               画面ルート
-│  │  ├─ index.tsx               組み立てのみ
-│  │  ├─ type.ts
-│  │  ├─ components/             AppHeader.tsx / EditDialogs.tsx / EditModeLayer.tsx
-│  │  └─ hooks/                  use-edit-dialogs.ts / use-layout-save.ts / use-seat-map-data.ts
-│  ├─ SeatMapCanvas/              ← 分割の模範例。index.tsx が最薄
-│  │  ├─ index.tsx               組み立てのみ。ロジックは全て hooks へ委譲
-│  │  ├─ type.ts
-│  │  ├─ components/             TeamAreaLayer.tsx / EditObjectLayer.tsx
-│  │  ├─ hooks/                  use-canvas-pointer.ts / use-viewport.ts / use-edit-drag.ts 等9本
-│  │  └─ utils/                  anim-step.ts / canvas-metrics.ts / gesture-math.ts 等
-│  ├─ TeamOverlay/ EmployeeDirectory/ EmployeeDetail/ AvatarCustomizer/ SwipeDateStage/
-│  │                             同型構造(index.tsx + type.ts + components/ + hooks/ + utils/)。
-│  │                             TeamOverlay/components/OverlayDialogs.tsxは配属シート+確認ダイアログ群の集約先
-│  ├─ TeamCategorySheet/ TeamImportSheet/ FacilityPickerModal/
-│  │                             単一シート/モーダルをindex.tsx+専用cssモジュールのフォルダに閉じる軽量版
-│  │                             (type.ts/hooks/は持たない。TeamImportSheetのみutils/を持つ)
-│  ├─ edit/                      編集モード専用の単発コンポーネント群。フォルダ化はしていない
-│  └─ *.tsx                      単一責務のまま短い共通部品(SheetHandle.tsx / ZoomControls.tsx 等)
-├─ contexts/                     Context + Provider(detail-panel-context.tsx / seat-delete-context.tsx 等)
-├─ hooks/                        2箇所以上から使われ昇格したフック(単一ファイル18本+フォルダ化した
-│                                use-layout-editor/ 3本(use-edit-session.ts 等)の計21本)
-├─ lib/                          アプリ外部との接続
-│                                (fetch-mock.ts / mock-loader.ts / layout-persistence.ts / avatar-persistence.ts /
-│                                 garoon/facilities.ts / seat/ 配下のお気に入り永続化)
-├─ utils/                        純関数(layout/geometry.ts / layout/seat-shape.ts / layout/team-create-grid.ts /
-│                                 layout/spiral-placement.ts / layout/team-import.ts / avatar/ / gesture/ /
-│                                 presence.ts / employee-search.ts 等)
-├─ types/                        型定義(index.ts)
-├─ mocks/                        座標を含む全モック JSON。座標のコードへのハードコード禁止の根拠
-├─ styles/                       CSS。globals.css が @import で列挙(並び順=カスケード順)
-│                                tokens.css だけが色の定義場所。書き分けは docs/styling.md → 手動ベンダープレフィックス禁止は pitfalls.md
-├─ scripts/                      verify-s1.js(実行中の画面で検証) / generate-mocks.mjs
-├─ docs/                         structure.md(本書) / authoring.md / styling.md / pitfalls.md
-└─ .claude/                      code-rules.json(自動検査設定)
+├─ src/
+│  ├─ pages/        Next.js のルート定義だけ(_app.tsx・_document.tsx・index.tsx)。画面本体は持たない
+│  ├─ components/   UI。画面ルートは SeatMapView/。フォルダにしたコンポーネントは index.tsx が入口(5.)
+│  ├─ contexts/     Context + Provider
+│  ├─ hooks/        2か所以上が使うフック。use 関数とその型だけ(4.)
+│  ├─ lib/          アプリの外との入出力(2.)
+│  ├─ utils/        副作用を外へ残さない純粋関数・定数(2.)
+│  ├─ types/        型定義だけ
+│  └─ styles/       グローバル CSS 4本。tokens.css だけが色の定義場所(docs/styling.md)
+├─ mocks/           座標を含む全モック JSON。座標をコードに書かない根拠(@mocks で読む。3.)
+├─ tests/           Playwright の E2E(*.spec.ts)と共通の手順(*.helpers.ts)
+├─ scripts/         画面へ注入する判定 verify-*.js・モック生成・門の対象選び・テストの境界と文書の検査
+├─ public/          静的ファイル(favicon・ロゴ)
+├─ docs/            文書。決定の記録は docs/decisions/、検証の手順は docs/agents/verification.md
+└─ .claude/         code-rules.json(自動検査の設定)。worktrees の下は .gitignore 済み
 ```
+
+`src/lib/`・`src/utils/`・コンポーネントの `utils` の `.ts` は、置いた時点でファイル別カバレッジ100%と変異テスト100%の対象になる
+(規則の正本は `scripts/gate-targets.mjs`、理由は `docs/decisions/0004-extreme-constraints.md`)。
 
 ## 2. `lib` / `utils` の境目 — このリポジトリの実例
 
-判定基準そのものは `docs/conventions/01-authoring.md` を参照(「アプリの外に出るか」)。以下は本リポジトリでの適用結果。
+判定基準そのものは `docs/conventions/01-authoring.md` を参照(「アプリが閉じても残る側へ出るか」)。
 
-| 置き場 | ファイル | 理由 |
-|--------|----------|------|
-| `lib/` | `fetch-mock.ts` | 擬似APIレイヤー(遅延付きの取得) |
-| `lib/` | `mock-loader.ts` | シード・キャッシュ入出力(SWR フック本体は `hooks/use-mock-data.ts`) |
-| `lib/` | `layout-persistence.ts` | localStorage への読み書き |
-| `lib/` | `avatar-persistence.ts` | localStorage への読み書き |
-| `utils/` | `layout/geometry.ts` | 座標変換の計算だけ |
-| `utils/` | `presence.ts` | 予定配列 → 在席状態の導出だけ |
-| `utils/` | `employee-search.ts` | 検索用の文字列正規化(`normalizeSearchText`)だけ |
+`src/lib/` は外との入出力だけを置く。2026-10-12 時点の `src/lib/` の中身(テストを除く):
 
-> `lib/` に純関数を置かない。`utils/` に fetch や localStorage を書かない。
+| ファイル | 外とのやり取り |
+|---|---|
+| `src/lib/fetch-mock.ts` | 擬似 API(静的 JSON を遅延付きで返す) |
+| `src/lib/mock-loader.ts` | シードの読み込みと localStorage のキャッシュ。モックの JSON を `@mocks` で読む唯一の場所(テストを除く。SWR のフックは `src/hooks/use-mock-data.ts`) |
+| `src/lib/garoon/` | Garoon の境界(施設のモック `facilities.ts`、組織・予定の境界の型 `org.ts`・`schedule.ts`)。実接続へ切り替えるときはここを差し替える |
+| `src/lib/layout-persistence.ts`・`src/lib/read-stored-layouts.ts` | 編集したレイアウトの保存と読み出し(localStorage) |
+| `src/lib/avatar-persistence.ts` | アバターの上書きの保存 |
+| `src/lib/persist-theme.ts`・`src/lib/persist-tour-seen.ts`・`src/lib/store-minimap-collapse.ts` | テーマ・ガイドの既読・ミニマップの開閉の保存 |
+| `src/lib/seat/` | お気に入り(社員・部署)の保存 |
+| `src/lib/session-auth.ts` | ログインゲートの通過の印(sessionStorage) |
+| `src/lib/write-clipboard.ts` | クリップボードへの書き込み |
 
-## 3. import alias
+`src/utils/` の代表例:
 
-- 兄弟 `./` / 同じツリー内 `../` / ツリーを跨ぐ `@/`
-- ツリーを跨ぐ時は `@/hooks/...` `@/utils/...` のように置き場が分かる形で書く
+| ファイル | 理由 |
+|---|---|
+| `src/utils/layout/geometry.ts` | 座標変換の計算だけ |
+| `src/utils/presence.ts` | 予定の配列 → 在席状態の導出だけ |
+| `src/utils/employee-search.ts` | 検索用の文字列の正規化だけ |
+| `src/utils/apply-background-inert.ts`・`src/utils/detect-reduced-motion.ts` | DOM・`matchMedia` に触れるが、ページを閉じれば消える一時的な作用なので utils |
+
+> `src/lib/` に純関数を置かない。`utils` に fetch や localStorage を書かない。コンポーネントの中に `lib` は作らない。
+
+## 3. import の別名
+
+- 兄弟は `./`、同じツリーの中は `../`、ツリーを跨ぐときは `@/`(= `src/`)
+- ツリーを跨ぐときは `@/hooks/...` `@/utils/...` のように置き場が分かる形で書く
+- ルートの `mocks/` の JSON は `@mocks/...` で読む(今はテストを除くと `src/lib/mock-loader.ts` だけ)
+- 別名は `tsconfig.json` の `paths` と `vitest.config.ts` の `alias` の両方に張る(片方だけだとテストか型検査が全滅する)
+
+## 4. フックのファイルの規則
+
+- `hooks` フォルダの下には `use-` で始まる kebab-case のファイルだけを置く。フォルダにしたフックは `index.ts` を作らず、
+  フォルダと同じ名前のファイルを入口にする(実物: `src/hooks/use-layout-editor/use-layout-editor.ts`)
+- **フックのファイルには `use` 関数とその型だけを置く。** フックでない関数・定数は、しきい値1つでも外へ出す
+  (`docs/decisions/0005-hooks-hold-only-use.md`)
+
+  | 出すもの | 行き先 |
+  |---|---|
+  | 1つのコンポーネントだけが使う関数・定数 | そのコンポーネントの `utils`(例: `src/components/TeamOverlay/utils/`) |
+  | 複数のコンポーネントが使う関数・定数 | `src/utils/` |
+  | localStorage・sessionStorage・クリップボードなどの読み書き | `src/lib/` |
+
+- 2か所以上が使うようになったら `src/` 直下へ上げる(フックは `src/hooks/`、関数・定数は `src/utils/`・`src/lib/`)。写しを残さない
+- `hooks` フォルダに単体テストを置かない。どのテストでも `renderHook` を使わない(`npm run test:boundary` が落とす)。
+  フックの振る舞いは E2E が見る
+
+## 5. コンポーネントのフォルダ
+
+- 分ける基準(200行超かつ複数責務)と `index.tsx` の薄さの基準は `docs/authoring.md` 2.・3.
+- フォルダにしたコンポーネントは `src/components/<Name>/` に `index.tsx`(組み立てだけ)・`type.ts`・`components`・`hooks`・`utils` を置く。
+  代表例は `src/components/SeatMapView/`(画面ルート)・`src/components/SeatMapCanvas/`・`src/components/TeamOverlay/`
+- 1枚のシート・モーダルだけのものは `index.tsx` と専用の CSS Modules だけの軽い形(例: `src/components/TeamCategorySheet/`)
+- `src/components/edit/` は編集モード専用の単発コンポーネント群で、フォルダにはしていない
+- 単一責務で短い共通部品は `src/components/` 直下に1ファイルで置く(例: `src/components/ZoomControls.tsx`)

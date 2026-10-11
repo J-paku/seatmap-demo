@@ -57,8 +57,11 @@ const LINK = /\[[^\]]*\]\(((?:[^()\s]|\([^()]*\))+)(?:\s+"[^"]*")?\)/g
 const CODE_SPAN = /`([^`\n]+)`/g
 const NPM_RUN = /npm run ([\w:.-]+)/g
 const EXTENSIONS = 'ts|tsx|mjs|js|cjs|css|md|json|html|yml|yaml|png|svg|sh'
-// 拡張子の後ろの `:12-34`・`:名前`・`#見出し` は外して、ファイルの実在だけを見る
-const PATH_WITH_SUFFIX = new RegExp(`^(.+\\.(?:${EXTENSIONS}))(?:[:#][^\\s/]*)?$`)
+// パスの部分に使える文字。glob・プレースホルダ・空白・区切りの入ったものはパスとみなさない
+const PATH_CHARS = '[^\\s{}*<>,|]'
+// 拡張子の後ろの `:12-34`・`:10-13,20`・`:名前`・`#見出し` は外して、ファイルの実在だけを見る
+const FILE_REF = new RegExp(`^(${PATH_CHARS}+\\.(?:${EXTENSIONS}))(?:[:#][^\\s/]*)?$`)
+const DIR_REF = new RegExp(`^${PATH_CHARS}+/$`)
 
 const toPosix = p => p.split(path.sep).join('/')
 const lineOf = (raw, index) => raw.slice(0, index).split('\n').length
@@ -73,15 +76,13 @@ const isUncheckable = relative =>
 // コードスパンの中身を、リポジトリ相対の参照パスへ直す。参照パスとみなさないものは undefined。
 // 条件は「/ を含み、末尾が / か拡張子」。URL・絶対パス・ホーム(~)・glob・プレースホルダ・空白入りは外す
 const toPathRef = value => {
-  if (/^(?:\/|#|~)/.test(value) || value.includes('://')) return undefined
-  if (/[{}*<>,\s|]/.test(value) || !value.includes('/')) return undefined
+  if (/^(?:\/|#|~)/.test(value) || value.includes('://') || !value.includes('/')) return undefined
   const resolved = value.startsWith('@/')
     ? `src/${value.slice(2)}`
     : value.startsWith('@mocks/')
       ? `mocks/${value.slice(7)}`
       : value
-  if (resolved.endsWith('/')) return resolved
-  return PATH_WITH_SUFFIX.exec(resolved)?.[1]
+  return DIR_REF.test(resolved) ? resolved : FILE_REF.exec(resolved)?.[1]
 }
 
 // 1文書の検査。exists はリポジトリ相対のパスが実在するか、scripts は package.json の scripts。
@@ -164,8 +165,9 @@ const selfTest = () => {
   }
   const doc = [
     '[ある](b.md) [見出し付き](b.md#節) [外](https://example.com) [無い](missing.md)',
-    '`src/x.ts` `src/x.ts:12-34` `src/x.ts:名前` `@/x.ts` `@mocks/m.json` `src/` `src/y.ts`',
-    '`~/outside/z.md` `out/index.html` `src/**/*.ts` `npm run build && x` `/mnt/c/x.ts` `a/b`',
+    '`src/x.ts` `src/x.ts:12-34` `src/x.ts:10-13,20` `src/x.ts:名前` `@/x.ts` `@mocks/m.json` `src/`',
+    '`~/outside/z.md` `out/index.html` `src/**/*.ts` `npm run build && x` `/mnt/c/x.ts` `a/b` `a,b/c.ts`',
+    '`src/y.ts` `src/z.ts:1,2`',
     'npm run ok と npm run nope',
     '```',
     '[囲みの中](fenced-missing.md) `src/fenced-missing.ts`',
@@ -189,8 +191,9 @@ const selfTest = () => {
   const got = [...main.failures, ...convention.failures, ...e2e, ...orphans.map(o => `孤児 ${o}`)]
   const expected = [
     'docs/a.md:1: リンク先が無い: missing.md',
-    'docs/a.md:2: 参照パスが無い: src/y.ts',
-    'docs/a.md:4: package.json に無いコマンド: npm run nope',
+    'docs/a.md:4: 参照パスが無い: src/y.ts',
+    'docs/a.md:4: 参照パスが無い: src/z.ts:1,2',
+    'docs/a.md:5: package.json に無いコマンド: npm run nope',
     'docs/conventions/c.md:1: リンク先が無い: missing.md',
     'docs/e.md:1: 一覧に無い spec: tests/b.spec.ts',
     'docs/e.md:1: 一覧にあるが実在しない spec: tests/gone.spec.ts',

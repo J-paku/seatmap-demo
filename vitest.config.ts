@@ -11,8 +11,8 @@ const FULL_COVERAGE = { statements: 100, branches: 100, functions: 100, lines: 1
 
 // src の import はツリーを跨ぐと `@/`、モックの JSON は `@mocks` の alias で書く(docs/structure.md 3.)。
 // テストもその import を通るので、tsconfig.json の paths と同じ alias をここにも張る(無いとテストが全滅する)
-// watch モードは使わない: このリポジトリは /mnt/c 上にあり inotify が効かない
-// (ファイル変更に対しイベント0件を実測済み)ため、`vitest run` の単発実行のみを想定する
+// npm の scripts は `vitest run` の単発実行だけを置く。/mnt/c にあった頃は inotify が効かず watch モードが
+// 使えなかったが、2026-10-12 に Linux 側のディスクへ移したのでその制約は無い(docs/decisions/0001-linux-disk-and-src.md)
 export default defineConfig({
   resolve: {
     alias: {

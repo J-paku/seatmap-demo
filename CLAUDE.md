@@ -5,13 +5,25 @@
 読む不変ルール・完了条件・コミット規則だけを持つ。それ以外(仕様書・実装規則・スタイル・検証手順・
 事故事例の在り処)は `AGENTS.md` を開く。
 
+## 方針: extreme constraints
+
+**人はコードを読んでレビューしない。** 代わりに制約(テスト・検査)を極端に多く置き、すべて通ったものを信頼する
+(`docs/decisions/0004-extreme-constraints.md`)。
+
+- 「完了」はレビューではなく、すべての門を通ったことで言う(下の完了条件)
+- 制約を下げない。下限を下げる・テストを消す・門の対象から外す・テストの境界(`hooks` フォルダに単体テストを
+  置かない・`renderHook` を使わない)を変えるには ADR(`docs/decisions/`)が要る。上げる方向は ADR 無しでよい
+
 ## 不変ルール(違反したら即中断して報告)
 
 1. **キャンバスに個人座席カードを描かない。** キャンバス = 通路線 + チーム箱 + 家具/会議室。座席は `.sr-only` ミラーレイヤーにのみ置く
 2. 個人カード(アバター・氏名・在席状態)は**チームオーバーレイモーダルの中だけ**でレンダーする
 3. 座標は全て `mocks/*.json` から来る。コードへの座標ハードコード禁止
-4. DOM フック固定: チーム箱インタラクション面 = `data-team-id`、パンズームレイヤー = `data-canvas-transform-layer="true"`、会議室 = `data-furniture-id` + `data-facility="true"`。検証スクリプトがこのフックに依存する
+4. DOM フック固定: チーム箱インタラクション面 = `data-team-id`、パンズームレイヤー = `data-canvas-transform-layer="true"`、会議室 = `data-furniture-id` + `data-facility="true"`。検証スクリプトと E2E がこのフックに依存する
 5. 1段階 = 1セッション。指定された仕様書以外は開かない
+6. **新しいロジックは純粋関数(`src/lib/`・`src/utils/`・コンポーネントの `utils`)に置く。** そこはファイル別カバレッジ100%・
+   変異テスト100%の門に自動で入る。フックのファイルには `use` 関数とその型だけを置く(定数も外へ出す。
+   `docs/decisions/0005-hooks-hold-only-use.md`)。`hooks` フォルダに単体テストを置かず、どのテストでも `renderHook` を使わない
 
 ## ローカルサーバーとポート(固定)
 
@@ -20,23 +32,30 @@
 | 用途 | ポート | 起動する主体 |
 |---|---|---|
 | dev サーバー(`npm run dev`) | **3000** | ユーザーのみ。エージェントは起動せず、既に上がっている 3000 に接続する |
-| 静的検証(`npm run build` の `out/` を配信) | **4173** | エージェント。ただし既に LISTEN 中なら再利用する |
+| E2E・静的検証(`out/` を `npx serve` で配信) | **4173** | E2E(`playwright.config.ts` の `webServer`)が自分で上げて止める。既に LISTEN 中なら再利用する |
 
-- 起動前に `ss -ltn | grep -E ':3000|:4173'` で確認する。LISTEN していれば**新しく起動しない**
-- 使えない・応答しない場合は別ポートへ逃げない。その事実を報告して指示を仰ぐ
-- 検証スクリプトに URL をハードコードしない。`BASE_URL` を引数か環境変数で受け、既定値だけを上記のポートにする
-- 受入検証は dev(3000)ではなく静的配信(4173)で行う。この repo は `/mnt/c` 上にあり inotify が効かないため
-  (ファイル変更2回に対しイベント0件を実測)、dev サーバーは古いバンドルを配り続ける
+- 起動前に `ss -ltn | grep -E ':3000|:4173'` で確認する
+- E2E は走る前に、4173 が配っているのがこのチェックアウトの `out/` かを照合し、違えば止まる。別のチェックアウト・
+  セッションが 4173 を握っているときは、そのサーバを止めるか `E2E_PORT`(例: 4199)で E2E のポートを分ける。
+  それ以外の用途で別ポートへ逃げない。応答しない場合はその事実を報告して指示を仰ぐ
+- 受入検証は dev(3000)ではなく `npm run build` の `out/` に対して行う。配信版(GitHub Pages)と同じ静的書き出しを
+  検査するため(`docs/decisions/0001-linux-disk-and-src.md`)
 
 ```bash
-npm run build && python3 -m http.server 4173 --directory out
+npm run build && npm run test:e2e
 ```
 
 ## 完了条件(全て満たして初めて「完了」と言える)
 
-- `npx tsc --noEmit` 通過
-- `scripts/verify-s1.js` を実行中の画面で走らせて `verdict: "PASS"`
-- プッシュ後 GitHub Pages 配信版でも同じスクリプトが PASS
+何を走らせるかの詳細は `docs/agents/verification.md`。
+
+- `npm run verify` 通過(docs:check → lint → typecheck → format:check → test:coverage → test:boundary → knip → build)
+- `npm run test:e2e` 通過(手元の `out/`。反復中は spec を絞り、push の前に全体を1回)
+- 純粋モジュールかそのテストを変えたら `npm run test:mutation` 通過(生き残り0。全体の `-- --force` は週1回)
+- 文書を変えたら `npm run docs:check` 通過
+- push 後、CI(`.github/workflows/ci.yml`)が全部緑
+- 配信後、配信版でも E2E が通る: `E2E_BASE_URL=https://j-paku.github.io/seatmap-demo/ npx playwright test`。
+  配信版を開くのは E2E の spec だけにする(計測の GoatCounter に数えさせない。spec は遮断と `skipgc` の二重で止めている)
 - 自動検査フックの挙動(`.claude/code-rules.json` の設定・グローバルエンジンの挙動)を変えたら、
   設定と文書を一組で更新するまで完了ではない。フックは「何が弾かれるか」の唯一の実体なので、
   設定と文書がずれると、書く側は弾かれてから初めて規則を知る
@@ -47,7 +66,8 @@ npm run build && python3 -m http.server 4173 --directory out
 
 **形式**: `<type>: <日本語の要約>` + 本文は箇条書き(日本語・簡潔)
 
-- **type**: `feat`(機能追加) / `fix`(バグ修正) / `hotfix`(緊急修正) / `refactor`(リファクタ)
+- **type**: `feat`(機能追加) / `fix`(バグ修正) / `hotfix`(緊急修正) / `refactor`(リファクタ) / `docs`(文書) /
+  `test`(テスト) / `chore`(道具・設定・依存) / `ci`(CI) / `perf`(性能)
 - 要約は1行・日本語。本文は `- ` の箇条書きで変更点だけ
 - **AI署名を付けない**: `Co-Authored-By` も `Claude-Session` も書かない
 

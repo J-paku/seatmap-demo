@@ -11,7 +11,7 @@
 |------|---------------|---------------|
 | Tailwind ユーティリティ | `EmployeeDirectory/**` `AvatarCustomizer/**` `AppHeader` `a11y/**` | **既に Tailwind で書かれたツリーの中**に部品を足す時 |
 | コンポーネント隣の CSS Modules | 上記以外のほぼ全て(キャンバス・詳細パネル・編集モード・オーバーレイ等) | **既定はこれ**。迷ったらこちら |
-| `styles/` 残留グローバル | 下の4ファイルのみ | 複数ツリーが横断参照するユーティリティか、色トークンの定義 |
+| `src/styles/` 残留グローバル | 下の4ファイルのみ | 複数ツリーが横断参照するユーティリティか、色トークンの定義 |
 
 判定は「**その親コンポーネントがどちらで書かれているか**」で決める。同じツリー内で混ぜると、
 片方を直しても効かない箇所が生まれて原因追跡が難しくなる。
@@ -19,7 +19,7 @@
 ### CSS Modules の置き方
 
 - ファイルは**所有コンポーネントのフォルダ直下**に置き、ファイル名は kebab-case
-  (`components/TeamOverlay/team-overlay-modal.module.css`)
+  (`src/components/TeamOverlay/team-overlay-modal.module.css`)
 - クラスのキーは camelCase。`className={styles.seatCard}`
 - 状態の付け外しは三項で連結する
   ```tsx
@@ -29,9 +29,9 @@
   `Record` マップで解決する(`ScrollHint` の `SIDE_CLASS`、`SeatDirectionMarker` の `EDGE_CLASS` が実例)
 - 複数のコンポーネントが同じモジュールを使う時は**モジュールを多重 import する**。クラスを複製しない
   (`TeamOverlay` 配下の20ファイルが1本のモジュールを共有している)
-- 型宣言は `types/css-modules.d.ts` にある。ファイルを足しても追加作業は要らない
+- 型宣言は `src/types/css-modules.d.ts` にある。ファイルを足しても追加作業は要らない
 
-### `styles/` に残した4ファイルと、その理由
+### `src/styles/` に残した4ファイルと、その理由
 
 | ファイル | 残す理由 |
 |---|---|
@@ -59,7 +59,7 @@
 
 ## 2. 色は必ずトークン経由
 
-CSS に色リテラル(`#rrggbb` / `rgba()`)を書かない。**`styles/tokens.css` が唯一の定義場所**。
+CSS に色リテラル(`#rrggbb` / `rgba()`)を書かない。**`src/styles/tokens.css` が唯一の定義場所**。
 これは CSS Modules でも残留グローバルでも同じ。
 
 理由: リテラルで書くと `dracula` などのテーマで浮く。テーマ別ブロックで一括で切り替わるのは
@@ -70,7 +70,7 @@ CSS に色リテラル(`#rrggbb` / `rgba()`)を書かない。**`styles/tokens.c
   (`--color-scrim`)。「テーマに依らないから直書き」は認めない
 - 色を薄める/濃める計算の相手側もトークンにする(`--color-band-highlight`)
 
-**例外**: `utils/avatar/**` `utils/team-colors.ts` のようにアバターパレット・チーム色を
+**例外**: `src/utils/avatar/**` `src/utils/team-colors.ts` のようにアバターパレット・チーム色を
 **データとして**持つ TS ファイルは対象外。これは配色定義ではなくコンテンツである。
 
 ## 3. 使われなくなったクラスは消す
@@ -87,7 +87,8 @@ CSS に色リテラル(`#rrggbb` / `rgba()`)を書かない。**`styles/tokens.c
 
 ## 4. 検証ハネスのセレクタ
 
-`~/dev/.seatmap-port` の Playwright スクリプトは**平文クラス名で要素を掴んではいけない**。
+E2E(`tests/`)・画面へ注入する検証スクリプト(`scripts/verify-*.js`)・リポジトリ外の `~/dev/.seatmap-port` の
+Playwright スクリプトは、どれも**平文クラス名で要素を掴んではいけない**。
 モジュール化されたクラスは `<ファイル>-module__<ハッシュ>__<キー>` になり、ハッシュはビルドごとに変わりうる。
 
 優先順に使う:

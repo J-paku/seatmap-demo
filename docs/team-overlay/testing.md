@@ -1,9 +1,13 @@
 # TeamOverlay — 受入条件と確認手段
 
-検証スクリプトは `~/dev/.seatmap-port/`(このリポジトリの外、未コミット)に常設。Playwright
-(`playwright-core`)で実ブラウザを操作する。**dev サーバーではなくビルド成果物への配信に対して実行
-する**(`docs/conventions/03-pitfalls.md` 9番、`docs/pitfalls.md` 3番 — WSL の `/mnt/c` では dev サーバー
-のファイル監視が取りこぼし、古いバンドルを配り続けることがあるため)。
+**このドメイン固有の検証はまだ E2E(`tests/`)に入っていない。** リポジトリの E2E の3本はキャンバス側
+(`docs/seat-map/testing.md`)で、チームオーバーレイは編集アンカーの到達(`tests/edit-anchors.spec.ts` の
+オーバーレイの2状態)までしか見ない。下のスクリプトは `~/dev/.seatmap-port/`(このリポジトリの外、未コミット)に
+あり、Playwright(`playwright-core`)で実ブラウザを操作する。CI では走らず、手で走らせる。
+
+**dev サーバーではなくビルド成果物の配信に対して走らせる**(配信版と同じ静的書き出しを見るため。リポジトリが
+`/mnt/c` にあった頃は dev サーバーのファイル監視が取りこぼし、古いバンドルを配り続けたこともある。
+`docs/conventions/03-pitfalls.md` 9番)。
 
 実行例: `node check-scrollhint.mjs <baseUrl>`
 
@@ -21,7 +25,7 @@
 
 ## 2. 既知の矛盾 — ミニマップ既定値(`check-minimap.mjs` は現行仕様と食い違う)
 
-`hooks/use-minimap-collapse.ts:7-11` の現行ソースは「保存値が無ければ展開(true)」— commit
+`src/components/TeamOverlay/hooks/use-minimap-collapse.ts:7-11` の現行ソースは「保存値が無ければ展開(true)」— commit
 `dc7c990` で確定した仕様(`spec.md` 6節)。
 
 これに対し検証スクリプト側の記述は割れている。
@@ -42,10 +46,10 @@
 
 ## 3. Desktop 空席クリックと HIT 解除(実測で決着済み・回帰しやすい箇所)
 
-`components/TeamOverlay/components/SeatCard.tsx:32-38` の Desktop 空席カードは `<button disabled>`
+`src/components/TeamOverlay/components/SeatCard.tsx:32-38` の Desktop 空席カードは `<button disabled>`
 として描かれる。disabled なフォームコントロールはブラウザが `click` を一切ディスパッチしないため、
 素朴な実装のままだとパネル側の highlightSeatId/onClearHighlight ハンドラ
-(`components/TeamOverlay/index.tsx:168-171`)にイベントが届かない —
+(`src/components/TeamOverlay/index.tsx:168-171`)にイベントが届かない —
 **ソースレビューだけでは発見できない**類のギャップで、実ブラウザでの capture 段リスナー計測で初めて
 `clickEventFired: 0件` として確認できた(`check-hit-clear.mjs` case3)。
 
@@ -58,7 +62,7 @@
 | 空席カード | **解除されなかった**(修正前) | 解除 |
 | パネル余白 / ヘッダー / ミニマップ | 解除 | 解除 |
 
-**修正**: `components/TeamOverlay/team-overlay-modal.module.css` の `.card.isEmpty` に
+**修正**: `src/components/TeamOverlay/team-overlay-modal.module.css` の `.card.isEmpty` に
 `pointer-events: none` を追加し(コメント付き、CSS 側にのみ存在)、クリックを素通しして背後の
 グリッド枠(`data-seat-id` を持たない `<div>`)に当てる。ハンドラ側は無変更。
 
@@ -75,7 +79,7 @@
 
 | 項目 | 理由 |
 |---|---|
-| CSS 特異度の順序依存(`.hint.isFaded` が `.hint.isButton` より後に宣言されている必要がある、`components/TeamOverlay/team-overlay-modal.module.css:383-393`) | 3スクリプトいずれも「見た目のフェード有無」しか見ておらず、宣言順そのものは検査していない。宣言順を入れ替えて `.hint.isFaded` が効かなくなることを確認する専用チェックは無い |
+| CSS 特異度の順序依存(`.hint.isFaded` が `.hint.isButton` より後に宣言されている必要がある、`src/components/TeamOverlay/team-overlay-modal.module.css:383-393`) | 3スクリプトいずれも「見た目のフェード有無」しか見ておらず、宣言順そのものは検査していない。宣言順を入れ替えて `.hint.isFaded` が効かなくなることを確認する専用チェックは無い |
 | WKWebView の合成クリック無視(`ViewSeatCell.tsx:71-72`) | 実 Safari の iOS WKWebView 実機以外では再現できない。Playwright(Chromium)では検証不能 |
 | StrictMode 二重書き込み回避(`use-minimap-collapse.ts:25-26`) | 開発ビルド固有の挙動で、本番ビルド配信に対する検証では観測できない |
 | 横スクロールヒントの `nudge` 量が実際に1列分か | `check-scrollhint.mjs` は `scrollLeft` の増減方向のみ見ており、移動量そのものの一致は見ていない |
@@ -83,6 +87,6 @@
 
 ## 5. 完了条件との関係
 
-`CLAUDE.md` の完了条件(`npx tsc --noEmit` 通過・`scripts/verify-s1.js` を実行中の画面で PASS・
-プッシュ後 GitHub Pages 配信版でも同スクリプト PASS)はリポジトリ共通でありこのドメイン固有ではない。
-本書のスクリプトはそれに加えて TeamOverlay ドメイン固有の受入条件を担う、位置づけとして併記する。
+完了の条件(`npm run verify`・E2E・変異テスト・push 後の CI と配信版の E2E。`docs/agents/verification.md`)は
+リポジトリ共通でありこのドメイン固有ではない。本書のスクリプトはそれに加えて TeamOverlay ドメイン固有の
+受入条件を担う、位置づけとして併記する。E2E へ移すまでは、門を通っても本書の受入条件は確かめていない。

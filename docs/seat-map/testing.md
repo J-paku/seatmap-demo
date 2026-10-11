@@ -2,10 +2,11 @@
 
 ## 1. `scripts/verify-s1.js`
 
-`CLAUDE.md` の完了条件が名指しする検証スクリプト。ブラウザの実行中の画面(devtools コンソール、
-または後述の Playwright ハーネス経由)へ丸ごと貼って実行する IIFE で、DOM を直接見て
+キャンバスの不変条件を見る判定スクリプト。E2E(3章の `tests/edit-anchors.spec.ts`)が画面状態を作ってから
+注入する。devtools のコンソールへ丸ごと貼っても走る IIFE で、DOM を直接見て
 `{ verdict: 'PASS'|'FAIL', pass, fail }` を返す。ユニットテストではなく**実測**であり、
-`npx tsc --noEmit` はこの代わりにならない(`docs/pitfalls.md` 3番)。
+型検査はこの代わりにならない(`docs/pitfalls.md` 3番)。
+E2E の全体の一覧と走らせ方は `docs/agents/verification.md`。
 
 以下、`scripts/verify-s1.js` が呼ぶ10件の `ck(...)` 判定(ソース内出現順)と、それぞれが本ドメイン
 (座席マップキャンバス)のどの不変ルール/挙動に対応するかの対照表。スクリプト自身のコメントは
@@ -40,7 +41,7 @@
 
 これらは `~/dev/.seatmap-port/`(セッションごとに使い捨てで作る Playwright ハーネス置き場、
 本リポジトリの一部ではない)側に個別スクリプトがあるものと、**その場でも作られていないもの**が
-混在する。下の4章に現存するスクリプトを棚卸しする。「検証されているように見えて実は
+混在する。下の5章に現存するスクリプトを棚卸しする。「検証されているように見えて実は
 1回も実測されていない」を避けるため、無いものは無いと書く。
 
 ## 2. `scripts/verify-edit-anchors.js`
@@ -86,30 +87,29 @@
 
 `overlay-edit` の「条件付き」項目と `直前の変更を戻す` は、そのチーム/操作の状態次第で存在しないの
 が正常なため、無ければ `fail` ではなく `skip` に積む。一方で `座席を削除` と
-`フリーアドレス設定`(role=switch)は §08-4 に明記されたアンカーだが**現時点で実装が無い**ため、
-`overlay-edit` 状態に到達すれば毎回 `fail` に落ちる(理由は `fail` の detail に記す)。同様に
-`ghost-placement` でリサイズ可能なゴースト(施設の移動モード)に到達すると `サイズを変更` も
-`fail` に落ちる。これらは検査を通すために項目を外すのではなく、次ラウンドの実装対象として
-`fail` に残す方針。
+`フリーアドレス設定`(role=switch)は §08-4 に明記されたアンカーで、書いた当時は実装が無く `fail` に
+残していた。2026-10-12 の時点ではどちらも実装がある(`src/components/edit/SeatActionBar.tsx`・
+`src/components/TeamOverlay/components/SeatLayoutHeader.tsx`)。`ghost-placement` のリサイズハンドル
+(`サイズを変更`)は、ハンドルが出ていれば8個と読み上げ名を検査し、出ていなければ `skip` に積む。
+検査を通すために項目を外さない方針は変わらない。E2E(3章)はどの状態でも `fail` が0件であることを求める。
 
 ### 実行方法
 
-`verify-s1.js` と同じくブラウザの実行中の画面(devtools コンソール、または Playwright で
-`page.evaluate(src)`)へソースを丸ごと渡して実行する。コーチマークが初回訪問時に画面を覆う点も
-`verify-s1.js` と同じ(`localStorage` の `seatmap_coach_*` を事前に `'1'` にしておく)。
+E2E では `tests/edit-anchors.spec.ts` が `page.evaluate` で注入する(3章)。手で確かめるときは devtools の
+コンソールへソースを丸ごと貼る。そのときは初回訪問のコーチマークが画面を覆うので、`localStorage` の
+`seatmap_coach_*` を事前に `'1'` にしておく。
 
-## 3. `scripts/run-all-checks.mjs`
+## 3. `tests/edit-anchors.spec.ts`(旧 `run-all-checks.mjs`)
 
-`verify-s1.js` と `verify-edit-anchors.js` を `BASE_URL` 対象へ画面状態ごとに注入し、まとめて判定
-するリポジトリ管理下のランナー。以前は本書と `architecture.md` がこのファイル名を参照していたが
-実体が `scripts/` に無く、`~/dev/.seatmap-port/`(4章参照)へセッションのたびに一回性のハーネスを
-作っては捨てていた(このギャップは複数のセッションで独立に確認されている)。そのギャップを埋める
-ために追加した。
+`verify-s1.js` と `verify-edit-anchors.js` を画面状態ごとに注入して判定する E2E。以前はリポジトリ管理下の
+ランナー `run-all-checks.mjs` がこの役で、さらにその前は `~/dev/.seatmap-port/`(5章)へセッションのたびに
+一回性のハーネスを作っては捨てていた。2026-10-12 にランナーを Playwright の E2E へ移して消した
+(判定の数は移す前と同じ60件。`docs/decisions/0003-playwright-e2e.md`)。
 
 ### 巡回する状態
 
-`verify-edit-anchors.js` の `state` 判定と1対1で対応する5状態を、状態ごとに新しいページを開いて
-順に到達する(前の状態の副作用を持ち込まないため、状態を跨いでページを使い回さない)。
+`verify-edit-anchors.js` の `state` 判定と1対1で対応する5状態を、状態ごとに1テスト・新しいページで
+到達する(前の状態の副作用を持ち込まないため、状態を跨いでページを使い回さない)。
 
 | `state` | 表示名 | 到達手順(要約) |
 |---|---|---|
@@ -126,56 +126,53 @@
 
 ### 到達失敗・状態不一致の扱い
 
-状態に到達できなかった場合(セレクタが見つからない・タイムアウト等)は、その状態を
-`checkedAnchors: 0` の `PASS` にはせず、`fail: 1` を持つ明示的な `FAIL` として扱う。
-`verify-edit-anchors.js` が判定した `state` が狙った状態と一致しない場合も同様に `FAIL` にする
-(例: `ghost-placement` へ到達しようとして実際には `edit-session` のまま止まっていた、といった
-取り違えを検出するため)。「0件検査して黙って通過する」を避ける方針は `verify-edit-anchors.js`
-自身の設計(2章)と同じ(`02-verifying.md` 6章)。
-
-### 終了コード
-
-- `0` — 全状態 `PASS`
-- `1` — いずれかの状態が `FAIL`(到達失敗・状態不一致を含む)
-- `2` — ハーネス自体のエラー(対象への接続不能、Playwright 未解決、検証スクリプト読み込み失敗)
+- 状態に到達できない(セレクタが出ない)と、到達の待ちが時間切れになってそのテストが落ちる
+- `verify-edit-anchors.js` が判定した `state` が狙った状態と違えば落とす(例: `ghost-placement` へ向かった
+  つもりで `edit-session` のまま止まっていた、といった取り違えを検出するため)
+- 判定を1件も下していなければ落とす(`tests/seatmap.helpers.ts` の `recordChecked`)。「0件検査して黙って
+  通過する」を避ける方針は `verify-edit-anchors.js` 自身の設計(2章)と同じ(`02-verifying.md` 6章)
 
 ### 実行方法
 
 ```bash
-npm run build && python3 -m http.server 4173 --directory out   # 未起動なら
-node scripts/run-all-checks.mjs                                 # 既定 http://localhost:4173/
-BASE_URL=https://<user>.github.io/<repo>/ node scripts/run-all-checks.mjs
+npm run build                                           # E2E は out/ を見る
+npx playwright test tests/edit-anchors.spec.ts          # out/ を 4173 で配って走らせる
+E2E_BASE_URL=https://j-paku.github.io/seatmap-demo/ npx playwright test tests/edit-anchors.spec.ts
 ```
 
-`BASE_URL` は第1引数でも環境変数でも渡せる。両方省略時の既定値だけを、ローカル静的配信の
-固定ポート(`CLAUDE.md` の「ローカルサーバーとポート(固定)」章、4173)に合わせている。
+配信のポート・配信物の照合・計測(GoatCounter)の遮断は全 spec 共通で、`docs/agents/verification.md` にある。
 
-### Playwright はこのリポジトリに無い
+### 画面を開く前に撒くキー
 
-`package.json` に依存として追加しない方針のため、既定では隣の `J-paku.github.io` リポジトリの
-`node_modules` を借りる(`PLAYWRIGHT_NODE_MODULES` 環境変数で上書き可能)。ESM は `NODE_PATH` を
-見ないため `createRequire` で CJS 解決している。見つからない場合は対処法を出力したうえで終了
-コード2で止まる(黙って素通りしない)。
+- 初回訪問のコーチマーク(全画面オーバーレイ)がクリックを奪うので、`localStorage` の `seatmap_coach_*` を
+  `'1'` にしてから開く。キーはハードコードせず、`src/` の `.ts`/`.tsx` を走査して `seatmap_coach_[A-Za-z0-9_]+`
+  に一致する文字列を集める(`src/components/CoachMarkTour/utils/tour-steps.ts` の既読キー一覧と同じ情報源)。
+  ツアーが増えても spec 側の変更は要らない
+- ログインゲートの通過の印を sessionStorage に撒く。キーは `src/lib/session-auth.ts` の定義をソースから読む
+- どちらも `tests/seatmap.helpers.ts` の `test` がどの context にも敷く
 
-### コーチマーク既読キーの取得
+## 4. ほかの E2E
 
-初回訪問のコーチマーク(全画面オーバーレイ)がクリックを奪う対策として、`localStorage` の
-`seatmap_coach_*` キーを事前に `'1'` にしてから開く。キーはハードコードせず、リポジトリ内の
-`.ts`/`.tsx` を走査して `seatmap_coach_[A-Za-z0-9_]+` にマッチする文字列を集める
-(`components/CoachMarkTour/utils/tour-steps.ts` の既読キー一覧表と同じ情報源)。新しいツアーが
-増えて `_STORAGE_KEY` 定数が追加されても、このランナー側の変更は不要。
+| spec | 見るもの | 移す前 |
+|---|---|---|
+| `tests/ghost-placement.spec.ts` | ゴースト配置の3シナリオ(新規配置・掴み直し・配置中のセッション終了)で `scripts/verify-ghost.js` を局面ごとに注入する。最後に全シナリオの `skip` を突き合わせ、どの局面でも実測されなかった判定が残れば落とす(このためファイルの中だけ serial) | `run-ghost-checks.mjs`(判定数は同じ361件) |
+| `tests/offscreen-indicator.spec.ts` | 全チームエリアが画面外に出たときだけ端に出る「チームへ移動」ボタンの出現・外観・クリックでの復帰と、通路だけが見える位置での出現 | `verify-offscreen-indicator.mjs`(判定数は同じ18件) |
 
-## 4. `~/dev/.seatmap-port/` の関連スクリプト
+到達手順と実測の道具は `tests/ghost.helpers.ts`。オフスクリーンインジケーターの検出力は、
+`use-offscreen-team-indicator.ts` の通路を除く行を消して再ビルドすると通路だけの位置のテストが落ちることで見る
+(spec の冒頭の注釈)。
+
+## 5. `~/dev/.seatmap-port/` の関連スクリプト(E2E に入っていないもの)
 
 このディレクトリはリポジトリ外(検証用の使い捨てスクリプト置き場)。本ドメインに関係するものだけ
 挙げる。`check-hit2.mjs` `check-desktop-hit.mjs` `check-minimap.mjs` 等、サイドバー検索や
 `.team-ovl-*` セレクタを中心に検証するスクリプトは、`.my-seat-button` 等キャンバス側の要素を
 経由していても実質チームオーバーレイの内部検証のため対象外——`docs/team-overlay/` 側の管轄。
-`run-all-checks.mjs` はこの一覧から外した(3章の通りリポジトリ管理下へ昇格したため)。
+`run-all-checks.mjs` はこの一覧から外した(3章の通り E2E へ移したため)。
 
 | スクリプト | 検証内容 | 本ドメインとの関係 |
 |---|---|---|
-| `check-legacy-layout.mjs` | `furniture` キーを持たない旧形式の保存レイアウトを実際に `localStorage` へ書いてから新コードで読ませ、`[data-team-id]` `[data-facility="true"]` `[data-canvas-transform-layer="true"]` が生きていること、チーム箱を開けることを見る | `lib/layout-persistence.ts` の `furniture ?? []` 既定値埋めが実際に効くかの実測。新しいブラウザでは再現しない経路をあえて踏む(`check-legacy-layout.mjs:1-2` のコメント、`docs/pitfalls.md` 2番と同系統) |
+| `check-legacy-layout.mjs` | `furniture` キーを持たない旧形式の保存レイアウトを実際に `localStorage` へ書いてから新コードで読ませ、`[data-team-id]` `[data-facility="true"]` `[data-canvas-transform-layer="true"]` が生きていること、チーム箱を開けることを見る | `src/lib/layout-persistence.ts` の `furniture ?? []` 既定値埋めが実際に効くかの実測。新しいブラウザでは再現しない経路をあえて踏む(`check-legacy-layout.mjs:1-2` のコメント、`docs/pitfalls.md` 2番と同系統) |
 | `measure-reset.mjs` | ズームボタンの「リセット」ボタンの `font-size`/`white-space`/文字幅/行数をフォントサイズ別に実測 | `spec.md` 2章のズームボタン。CSS 特異度の衝突(既存 `.zoom-controls button` 規則が新規クラスの `font-size` だけ勝つ)を「症状」ではなく computed 値で判定する目的。過去に発生した具体事故は `docs/conventions/03-pitfalls.md` 6番参照 |
 | `check-hit.mjs` | `.my-seat-button` クリック前後でキャンバスの `transform` が変化しないこと(`transformBefore === transformAfter`)、リセットボタンの折り返し実測 | 「自分の席」ボタン(`MySeatButton`)がキャンバス操作コマンドを一切呼ばないという境界部分の実測。同スクリプトは HIT 表示・スポットライトも見ているが、そちらは **チームオーバーレイ側の検証範囲**(`docs/team-overlay/` 参照) |
 
@@ -183,14 +180,15 @@ BASE_URL=https://<user>.github.io/<repo>/ node scripts/run-all-checks.mjs
 再実行したい場合はスクリプト内の対象 URL(`process.argv[2]` 等)と DOM セレクタが現在のコードと
 一致しているか先に確認すること(`docs/conventions/02-verifying.md` 6章「検証対象確認」)。
 
-## 5. 実行環境の注意
+## 6. 実行環境の注意
 
-- `verify-s1.js` は「ローカル」と「プッシュ後の GitHub Pages 配信版」の両方で `PASS` して初めて
-  完了(`CLAUDE.md` 完了条件)。ローカル `PASS` だけで完了と言わない
-- ローカルで確かめる際は dev サーバーではなくビルド成果物(`npm run build` の静的出力)に対して
-  実行する。`/mnt/c` 配下では Turbopack のファイル監視が取りこぼし、ソースを戻しても古いバンドルが
-  配られ続けたまま検証が「落ちないテスト」になった実例がある(`docs/conventions/03-pitfalls.md` 9番)
-- 新しく検証コード(Playwright スクリプト等)を書いたときは、修正を一時的に外す/期待値を反転させる
+- E2E は「手元の `out/`」と「push 後の GitHub Pages 配信版」(`E2E_BASE_URL`)の両方で通って初めて
+  完了(`docs/agents/verification.md` の完了の条件)。ローカルの PASS だけで完了と言わない
+- 手元では dev サーバーではなくビルド成果物(`npm run build` の `out/`)に対して走らせる。配信版と同じ
+  静的書き出しを検査するため。リポジトリが `/mnt/c` にあった頃は Turbopack のファイル監視が取りこぼし、
+  ソースを戻しても古いバンドルが配られ続けたまま検証が「落ちないテスト」になった実例もある
+  (`docs/conventions/03-pitfalls.md` 9番。今は Linux 側のディスクにある。`docs/decisions/0001-linux-disk-and-src.md`)
+- 新しく検証コード(spec・注入スクリプト)を書いたときは、修正を一時的に外す/期待値を反転させる
   などで意図的に一度 `FAIL` させ、検出力があることを確認してから採用する
   (`docs/conventions/02-verifying.md` 9章、`check-hit-clear.mjs` の `FALSIFY` 環境変数がこの実例)
 

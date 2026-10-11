@@ -71,13 +71,13 @@ flowchart LR
 
 ## データ連携
 
-モックデータだが、取得境界は Garoon API に合わせて設計している(`lib/garoon/`)。
+モックデータだが、取得境界は Garoon API に合わせて設計している(`src/lib/garoon/`)。
 
 - 予定: REST `GET /api/v1/schedule/events`。対象期間・対象者を絞った問い合わせが基本で、ページングの負担が実用範囲に収まるため
 - 組織: SOAP(Base API)で一括取得。REST の組織APIは1リクエストの件数上限があり全組織取得にページングが要るため、組織のみSOAPを採用
-- 施設: REST(`GET /api/v1/schedule/facilities`。詳細は `lib/garoon/facilities.ts`)
+- 施設: REST(`GET /api/v1/schedule/facilities`。詳細は `src/lib/garoon/facilities.ts`)
 
-実接続へ切り替える場合は、`lib/garoon/` のモック境界を差し替えるだけで成立する構成にしている。
+実接続へ切り替える場合は、`src/lib/garoon/` のモック境界を差し替えるだけで成立する構成にしている。
 
 ## 設計で迷った3点
 
@@ -112,9 +112,9 @@ SWR の裏側で `localStorage` にキャッシュを持っていますが、バ
 
 「会議室が同じ時間帯に二重予約されていない」はコードの分岐ではなくデータ側の条件なので、型検査でも画面確認でも検出できません。
 
-そのため検証スクリプトを3つ用意しています。実行中の画面を判定するもの、モックデータの整合性を見るもの、配布物を確認するものです。ローカルで PASS しただけでは完了とせず、GitHub Pages の配信版でも同じスクリプトを走らせて確認しています。
+そのため検証を3系統に分けています。画面は Playwright の E2E が画面状態を作ってから判定スクリプトを注入して確かめ、モックデータの整合性と配布物はそれぞれ専用のスクリプトで見ます。ローカルで PASS しただけでは完了とせず、GitHub Pages の配信版にも同じ E2E を走らせて確認しています。
 
-判定ロジック(在席状態の解決・氏名の正規化・会議室の占有判定)は純関数として切り出し、ユニットテストで検証しています。上記の3つのスクリプトは、それとは別系統の検証です。
+判定ロジック(在席状態の解決・氏名の正規化・会議室の占有判定)は純関数として切り出し、ユニットテストで検証しています。純関数の置き場のファイルは1つずつカバレッジ100%と変異テスト100%を門に置き、人がコードを読む代わりに、テストが本当に欠陥を落とせることを機械に確かめさせています。
 
 </details>
 
@@ -126,15 +126,15 @@ SWR の裏側で `localStorage` にキャッシュを持っていますが、バ
 | キャッシュ | SWR + シード指紋による自動無効化 |
 | ジェスチャ | ピンチズーム / ポインタ状態機械(TAP 8px・ダブルタップ 300ms・長押し 220ms) |
 | レイアウト編集 | 管理者が画面上で配置を更新。座標は全て JSON 側にあり、配置換えで開発者の手を借りない |
-| 検証 | ユニットテスト(Vitest)+ 画面・データ・配布物の3ハーネス |
-| CI | typecheck / lint / test / build を直列 + knip を独立ジョブ |
+| 検証 | ユニットテスト(Vitest。純関数の置き場はファイル別カバレッジ100%・変異テスト100%)+ Playwright の E2E + データ・配布物の検査 |
+| CI | typecheck / lint / 書式 / カバレッジ / テストの置き場 / 変異テスト / build / E2E / Lighthouse を直列 + knip を独立ジョブ |
 | 配信 | 静的 export + GitHub Pages(basePath 切り替え) |
 | データ | モック生成器 + 整合性検査 |
-| 文書 | `AGENTS.md` による文書ルーティング |
+| 文書 | `AGENTS.md` による文書ルーティング・決定の記録(ADR)・文書の参照の検査 |
 
 ## 技術スタック(本リポジトリの実測)
 
-Next.js 16.2.12(Pages Router) / React 19.2.4 / TypeScript 5.9.3 / Tailwind CSS 4.3.3 / SWR 2.4.2 / ESLint 9.39.5 / knip 6.32.0 / Vitest 4.1.10
+Next.js 16.2.12(Pages Router) / React 19.2.4 / TypeScript 5.9.3 / Tailwind CSS 4.3.3 / SWR 2.4.2 / ESLint 9.39.5 / Prettier 3.9.10 / knip 6.32.0 / Vitest 4.1.11 / Stryker 10.0.0 / Playwright 1.64.0
 
 <details>
 <summary>画面キャプチャ</summary>
@@ -153,18 +153,20 @@ Next.js 16.2.12(Pages Router) / React 19.2.4 / TypeScript 5.9.3 / Tailwind CSS 4
 <br>
 
 ```bash
-npm run typecheck                            # tsc --noEmit
-npm run lint                                 # ESLint
-npm test                                     # Vitest
-npm run knip                                 # 未使用検出(独立ジョブ)
+npm run verify                               # docs:check・lint・typecheck・format:check・test:coverage・test:boundary・knip・build を順に
+npm run test:e2e                             # Playwright の E2E(build した out/ を 4173 で配る)
+npm run test:mutation                        # 変異テスト(既定は変わった変異体だけ。全体は -- --force)
+npm run format                               # Prettier で整形
+npm run docs:check                           # 文書のリンク・参照パスが実在するか
 node scripts/verify-schedule-facility.mjs    # 会議室の二重予約・定員超過を検査
+E2E_BASE_URL=https://j-paku.github.io/seatmap-demo/ npx playwright test   # 配信版に E2E
 ```
 
-`scripts/verify-s1.js` は実行中の画面で走らせて `verdict: "PASS"` を確認します。
+画面の判定(`scripts/verify-s1.js` など)は、E2E(`tests/`)が画面状態を作ってから注入します。何をいつ走らせるかと完了の条件は `docs/agents/verification.md` にあります。
 
 knip を独立ジョブにしているのは、実装の途中でまだ配線していないモジュールがあると失敗する時期があり、それで型やビルドの結果まで隠れると、検査全体を見なくなってしまうためです。
 
-ユニットテストは Vitest で実行しています。画面・データ・配布物のハーネスは、それとは別系統の検証です。
+純関数の置き場(`src/lib/`・`src/utils/`・コンポーネントの `utils`)のファイルは、ファイルごとにカバレッジ100%と変異テスト100%を門に置いています(`docs/decisions/0004-extreme-constraints.md`)。
 
 </details>
 
@@ -178,23 +180,28 @@ npm install
 npm run dev                      # http://localhost:3000
 npm run build                    # 静的export(out/ を生成)
 GITHUB_PAGES=true npm run build  # Pages 向け basePath 付きビルド
+npx playwright install chromium  # E2E のブラウザ(初回だけ)
 ```
 
 アクセス解析(GoatCounter)は `NEXT_PUBLIC_GOATCOUNTER_URL`(例: `https://<code>.goatcounter.com/count`)を設定したビルドでだけ有効になります。配信ワークフローはリポジトリの Actions 変数 `GOATCOUNTER_URL` からこれを渡し、未設定なら計測スクリプトは出力されません。
 
 ```text
-pages/       ルーティングエントリ。ページ単位の組み立てのみ
-components/  UIコンポーネント(マップ・各種パネル・編集UI)
-contexts/    Context + Provider
-hooks/       共通フック
-lib/         通信・副作用層(モックfetch・永続化)
-utils/       副作用のない純粋関数・定数
-mocks/       モックデータ(社員・チーム・座席・予定・会議室)
-scripts/     モック生成・検証スクリプト
-docs/        画面仕様・アーキテクチャ・検証手順
+src/
+  pages/       ルーティングエントリ。ページ単位の組み立てのみ
+  components/  UIコンポーネント(マップ・各種パネル・編集UI)
+  contexts/    Context + Provider
+  hooks/       共通フック(use 関数とその型だけ)
+  lib/         外との入出力(モック取得・保存・クリップボード)
+  utils/       副作用のない純粋関数・定数
+  types/       型定義
+  styles/      グローバル CSS と色トークン
+mocks/         モックデータ(社員・チーム・座席・予定・会議室)。@mocks で読む
+tests/         Playwright の E2E
+scripts/       モック生成・画面へ注入する判定・門の対象選び・文書の検査
+docs/          画面仕様・アーキテクチャ・検証手順・決定の記録
 ```
 
-作業ルール(コミット規約・実装規約)は `CLAUDE.md` と `AGENTS.md` を参照してください。
+作業ルール(コミット規約・完了条件)は `CLAUDE.md`、文書の入口は `AGENTS.md`、検査の走らせ方は `docs/agents/verification.md`、置き場所の規則は `docs/structure.md`、決定の理由は `docs/decisions/README.md` を参照してください。
 
 </details>
 
