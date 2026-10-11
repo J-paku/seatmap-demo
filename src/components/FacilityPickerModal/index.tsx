@@ -63,7 +63,7 @@ export const FacilityPickerModal = ({ isOpen, placedFacilityIds, onSelect, onClo
   const visible = useMemo(() => {
     const normalized = normalizeSearchText(query)
     if (normalized.length === 0) return sorted
-    return sorted.filter((facility) => normalizeSearchText(facility.name).includes(normalized))
+    return sorted.filter(facility => normalizeSearchText(facility.name).includes(normalized))
   }, [sorted, query])
 
   const placed = useMemo(() => new Set(placedFacilityIds), [placedFacilityIds])
@@ -101,7 +101,7 @@ export const FacilityPickerModal = ({ isOpen, placedFacilityIds, onSelect, onClo
               placeholder='施設名で検索...'
               aria-label='施設名で検索'
               value={query}
-              onChange={(e) => setQuery(e.target.value)}
+              onChange={e => setQuery(e.target.value)}
               // isOpen が false のとき null を返す構造なので、開くたびにマウントし直されて毎回効く。
               // このモーダルのフォーカストラップは Tab 循環しか行わず初期フォーカスを設定しないため、
               // これが無いと焦点は <body> に落ち、モバイルではキーボードも上がらない
@@ -123,8 +123,10 @@ export const FacilityPickerModal = ({ isOpen, placedFacilityIds, onSelect, onClo
           </div>
           <div className={styles.list}>
             {sorted.length === 0 && <p className={styles.empty}>施設が登録されていません</p>}
-            {sorted.length > 0 && visible.length === 0 && <p className={styles.empty}>施設が見つかりません</p>}
-            {visible.map((facility) => {
+            {sorted.length > 0 && visible.length === 0 && (
+              <p className={styles.empty}>施設が見つかりません</p>
+            )}
+            {visible.map(facility => {
               const isPlaced = placed.has(facility.facilityId)
               return (
                 <button

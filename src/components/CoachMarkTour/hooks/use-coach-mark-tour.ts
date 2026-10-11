@@ -77,14 +77,15 @@ export const useCoachMarkTour = ({
   const [targetRect, setTargetRect] = useState<DOMRect | null>(null)
   const prevReplayNonceRef = useRef(replayNonce)
 
-  const step = isOpen && chosenSteps && stepIndex < chosenSteps.length ? chosenSteps[stepIndex] : null
+  const step =
+    isOpen && chosenSteps && stepIndex < chosenSteps.length ? chosenSteps[stepIndex] : null
   const isBranching = isOpen && branch !== undefined && chosenSteps === null
 
   // 開始(分岐カードへ戻すか、直列ステップの先頭から積み直す)。
   // マウント時自動再生・replayNonce 再生のどちらからも呼ぶ共通処理
   const openTour = useCallback(() => {
     setIsOpen(true)
-    setChosenSteps(branch ? null : steps ?? [])
+    setChosenSteps(branch ? null : (steps ?? []))
     setStepIndex(0)
     setTargetRect(null)
   }, [branch, steps])
@@ -149,8 +150,8 @@ export const useCoachMarkTour = ({
       },
       [branch]
     ),
-    next: useCallback(() => setStepIndex((current) => current + 1), []),
-    prev: useCallback(() => setStepIndex((current) => Math.max(current - 1, 0)), []),
+    next: useCallback(() => setStepIndex(current => current + 1), []),
+    prev: useCallback(() => setStepIndex(current => Math.max(current - 1, 0)), []),
     close: useCallback(() => {
       markSeen(storageKey)
       setIsOpen(false)

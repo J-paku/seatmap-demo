@@ -29,11 +29,11 @@ export const FurniturePickerModal = ({ isOpen, onSelect, onClose }: Props) => {
       material='glass'
       onClose={onClose}
     >
-      {FURNITURE_LIBRARY_GROUPS.map((group) => (
+      {FURNITURE_LIBRARY_GROUPS.map(group => (
         <section key={group.label} className={styles.furnPickGroup}>
           <h3 className={styles.furnPickGroupTitle}>{group.label}</h3>
           <div className={styles.furnPickGrid}>
-            {group.kinds.map((kind) => (
+            {group.kinds.map(kind => (
               <button
                 key={kind}
                 type='button'

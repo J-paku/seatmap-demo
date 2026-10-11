@@ -13,15 +13,21 @@ type Props = {
 }
 
 // 選択日の予約一覧。進行中/終了済み/次は現在時刻に対する概念なので本日のみ付ける
-export const FacilityScheduleCard = ({ meetings, employees, nowMin, isTodaySelected, attendee }: Props) => {
+export const FacilityScheduleCard = ({
+  meetings,
+  employees,
+  nowMin,
+  isTodaySelected,
+  attendee,
+}: Props) => {
   const empById = useEmployeeMap(employees)
   const sorted = [...meetings].sort((a, b) => a.startMin - b.startMin)
   // 次の予約 = まだ始まっていない最初の1件。本日以外は該当なし
-  const nextId = isTodaySelected ? sorted.find((m) => m.startMin > nowMin)?.id : undefined
+  const nextId = isTodaySelected ? sorted.find(m => m.startMin > nowMin)?.id : undefined
 
   return (
     <ul className={styles.facRows}>
-      {sorted.map((meeting) => (
+      {sorted.map(meeting => (
         <FacilityScheduleRow
           key={meeting.id}
           meeting={meeting}

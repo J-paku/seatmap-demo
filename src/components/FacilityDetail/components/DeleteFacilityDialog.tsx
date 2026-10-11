@@ -24,7 +24,7 @@ export const DeleteFacilityDialog = ({ facilityName, isDeleting, onConfirm, onCa
         role='dialog'
         aria-modal='true'
         aria-label='施設削除の確認'
-        onClick={(e) => e.stopPropagation()}
+        onClick={e => e.stopPropagation()}
       >
         <p className={e.editDialogMessage}>この施設を削除しますか？</p>
         <p className={styles.facDeleteDesc}>
@@ -36,7 +36,7 @@ export const DeleteFacilityDialog = ({ facilityName, isDeleting, onConfirm, onCa
           className={styles.facDeleteInput}
           value={typed}
           placeholder={CONFIRM_WORD}
-          onChange={(e) => setTyped(e.target.value)}
+          onChange={e => setTyped(e.target.value)}
           aria-label='削除確認の入力'
         />
         <div className={e.editDialogActions}>

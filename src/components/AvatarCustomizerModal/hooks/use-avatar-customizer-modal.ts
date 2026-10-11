@@ -36,7 +36,7 @@ export function useAvatarCustomizerModal({
   const [isReady, setIsReady] = useState(false)
   // 実物はログインユーザーのキャッシュから表示名を取るが、デモは本人がモック固定なのでそこから解決する
   const { data: employees } = useEmployees()
-  const currentUserName = employees?.find((e) => e.id === SELF_EMPLOYEE_ID)?.name
+  const currentUserName = employees?.find(e => e.id === SELF_EMPLOYEE_ID)?.name
 
   useEffect(() => {
     if (!isOpen) {

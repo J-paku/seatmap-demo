@@ -49,8 +49,8 @@ const filterCandidateEmployees = (
   seatByEmployee: Map<string, Seat>
 ): Employee[] => {
   const isSearching = query.trim().length > 0
-  if (!isSearching) return employees.filter((employee) => !seatByEmployee.has(employee.id))
-  return employees.filter((employee) => matchesEmployeeQuery(employee, query))
+  if (!isSearching) return employees.filter(employee => !seatByEmployee.has(employee.id))
+  return employees.filter(employee => matchesEmployeeQuery(employee, query))
 }
 
 // §06-4: ソート 未配属→チーム→名前→ID
@@ -80,15 +80,15 @@ const buildDepartmentGroups = (
   }
 
   const names = Array.from(grouped.keys()).sort((a, b) => a.localeCompare(b, 'ja'))
-  const favorites = names.filter((name) => favoriteDepartments.has(name))
-  const rest = names.filter((name) => !favoriteDepartments.has(name))
+  const favorites = names.filter(name => favoriteDepartments.has(name))
+  const rest = names.filter(name => !favoriteDepartments.has(name))
   const ordered = [...favorites, ...rest]
   const pinned =
     currentDepartment && ordered.includes(currentDepartment)
-      ? [currentDepartment, ...ordered.filter((name) => name !== currentDepartment)]
+      ? [currentDepartment, ...ordered.filter(name => name !== currentDepartment)]
       : ordered
 
-  return pinned.map((department) => ({
+  return pinned.map(department => ({
     department,
     candidates: grouped.get(department) ?? [],
   }))
@@ -119,7 +119,7 @@ export const useEmployeeAssign = (
   const candidates = useMemo<AssignCandidate[]>(() => {
     const base = filterCandidateEmployees(employees, query, seatByEmployee)
     return sortCandidates(
-      base.map((employee) => {
+      base.map(employee => {
         const seatedAt = seatByEmployee.get(employee.id)?.id ?? null
         return {
           employee,
@@ -133,7 +133,7 @@ export const useEmployeeAssign = (
   // 現在チーム名(対象席が属するチーム)。部門ツリーの絶対先頭・一括取込の対象部署ラベルに使う
   const currentDepartment = useMemo(() => {
     if (!targetSeat) return null
-    const member = employees.find((employee) => employee.teamId === targetSeat.teamId)
+    const member = employees.find(employee => employee.teamId === targetSeat.teamId)
     return member ? departmentOf(member) : null
   }, [employees, targetSeat])
 
@@ -144,12 +144,12 @@ export const useEmployeeAssign = (
 
   // 検索中は該当部門(=departmentGroupsに残っている部門)を強制展開する。解除で手動状態へ戻す
   const expandedDepartments = useMemo(() => {
-    if (isSearching) return new Set(departmentGroups.map((group) => group.department))
+    if (isSearching) return new Set(departmentGroups.map(group => group.department))
     return manualExpanded
   }, [isSearching, departmentGroups, manualExpanded])
 
   const toggleDepartment = (department: string) => {
-    setManualExpanded((prev) => {
+    setManualExpanded(prev => {
       const next = new Set(prev)
       if (next.has(department)) next.delete(department)
       else next.add(department)
@@ -160,7 +160,7 @@ export const useEmployeeAssign = (
   // STEP C3: 部署一括配置ボタンの押下可否。対象席のチームに社員が1人もいなければボタンを
   // 出しても何も起きないため、ここで判定しておく(実際の一括配置処理はuse-bulk-assignへ寄せる)
   const canBulkAssign = useMemo(
-    () => targetSeat !== null && employees.some((employee) => employee.teamId === targetSeat.teamId),
+    () => targetSeat !== null && employees.some(employee => employee.teamId === targetSeat.teamId),
     [employees, targetSeat]
   )
 
@@ -168,9 +168,9 @@ export const useEmployeeAssign = (
   // needsConfirmはbulk側では使わない(§07-5の一括移動確認はuse-bulk-assign側の管轄)ため常にfalse
   const bulkMembers = useMemo<AssignCandidate[]>(() => {
     if (!targetSeat) return []
-    const members = employees.filter((employee) => employee.teamId === targetSeat.teamId)
+    const members = employees.filter(employee => employee.teamId === targetSeat.teamId)
     return sortCandidates(
-      members.map((employee) => ({
+      members.map(employee => ({
         employee,
         seatedAt: seatByEmployee.get(employee.id)?.id ?? null,
         needsConfirm: false,

@@ -1,8 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import {
-  readFavoriteDepartments,
-  writeFavoriteDepartments,
-} from '@/lib/seat/favorite-departments'
+import { readFavoriteDepartments, writeFavoriteDepartments } from '@/lib/seat/favorite-departments'
 import { readFavoriteIds, writeFavoriteIds } from '@/lib/seat/favorite-employees'
 
 type FavoritesInitialization = 'lazy' | 'effect'

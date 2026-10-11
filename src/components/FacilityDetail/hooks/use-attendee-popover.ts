@@ -26,7 +26,10 @@ const measure = (meetingId: string, rect: DOMRect, isSticky: boolean): AttendeeP
     top: flipped ? rect.top - GAP_PX : rect.bottom + GAP_PX,
     right: Math.max(MIN_RIGHT_PX, window.innerWidth - rect.right),
     flipped,
-    availableHeight: Math.max(flipped ? rect.top - FLIPPED_TOP_MARGIN_PX : spaceBelow, MIN_HEIGHT_PX),
+    availableHeight: Math.max(
+      flipped ? rect.top - FLIPPED_TOP_MARGIN_PX : spaceBelow,
+      MIN_HEIGHT_PX
+    ),
     maxWidthPx: window.innerWidth < NARROW_VIEWPORT_PX ? narrowWidth : MAX_WIDTH_PX,
     isSticky,
   }
@@ -76,7 +79,7 @@ export const useAttendeePopover = () => {
   const onToggle = useCallback(
     (meetingId: string, anchor: HTMLElement) => {
       clearCloseTimer()
-      setState((prev) =>
+      setState(prev =>
         prev && prev.meetingId === meetingId && prev.isSticky
           ? null
           : measure(meetingId, anchor.getBoundingClientRect(), true)

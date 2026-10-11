@@ -46,7 +46,10 @@ export const FacilityHoverCard = ({ facility, state, empById, rect }: Props) => 
     : Math.min(window.innerHeight - GAP_PX, rect.bottom + GAP_PX)
 
   return (
-    <div className={styles.facHover} style={{ left, top, transform: above ? 'translateY(-100%)' : 'none' }}>
+    <div
+      className={styles.facHover}
+      style={{ left, top, transform: above ? 'translateY(-100%)' : 'none' }}
+    >
       <div className={styles.facHoverHead}>
         <span className={`material-symbols-outlined ${styles.facHoverIcon}`}>meeting_room</span>
         <span className={styles.facHoverName}>{facility.name}</span>
@@ -63,13 +66,19 @@ export const FacilityHoverCard = ({ facility, state, empById, rect }: Props) => 
             {minToHHMM(state.current.startMin)}-{minToHHMM(state.current.endMin)}
           </div>
           <div className={styles.facHoverLine}>
-            <span className={`material-symbols-outlined ${styles.facHoverMetaIcon}`} aria-hidden='true'>
+            <span
+              className={`material-symbols-outlined ${styles.facHoverMetaIcon}`}
+              aria-hidden='true'
+            >
               person
             </span>
             主催: {nameOf(state.current.organizerId)}
           </div>
           <div className={styles.facHoverLine}>
-            <span className={`material-symbols-outlined ${styles.facHoverMetaIcon}`} aria-hidden='true'>
+            <span
+              className={`material-symbols-outlined ${styles.facHoverMetaIcon}`}
+              aria-hidden='true'
+            >
               groups
             </span>
             {state.current.participantIds.length}名

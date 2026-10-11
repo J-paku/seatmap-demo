@@ -1,5 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
-import type { KeyboardEvent as ReactKeyboardEvent, PointerEvent as ReactPointerEvent, RefObject } from 'react'
+import type {
+  KeyboardEvent as ReactKeyboardEvent,
+  PointerEvent as ReactPointerEvent,
+  RefObject,
+} from 'react'
 import { useBodyScrollLock } from '@/hooks/use-body-scroll-lock'
 import { useLongPress } from '@/hooks/use-long-press'
 import { triggerHaptic } from '@/utils/haptic'
@@ -80,7 +84,7 @@ export const useAdminAddFab = ({
     if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return
     e.preventDefault()
     const items = menuItems()
-    const current = items.findIndex((item) => item === document.activeElement)
+    const current = items.findIndex(item => item === document.activeElement)
     const delta = e.key === 'ArrowDown' ? 1 : -1
     items[(current + delta + items.length) % items.length]?.focus()
   }
@@ -101,7 +105,7 @@ export const useAdminAddFab = ({
   // 長押しが発火した直後の click はここで消費する。それ以外は通常のメニュー開閉トグル
   const onClick = () => {
     if (longPress.consumeFired()) return
-    setIsMenuOpen((open) => !open)
+    setIsMenuOpen(open => !open)
   }
 
   // 各項目は必ず先にメニューを閉じてから本処理を呼ぶ。逆順だと

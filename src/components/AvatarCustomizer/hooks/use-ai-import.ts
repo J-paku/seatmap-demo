@@ -3,10 +3,7 @@
 import { useCallback, useState, type ChangeEvent } from 'react'
 import { useGlobalAnnouncement } from '@/contexts/announcement-context'
 import { TOAST_MESSAGES } from '@/utils/toast-messages'
-import {
-  parseAiImportedConfig,
-  type AvatarImportError,
-} from '@/utils/avatar/avatar-import-parser'
+import { parseAiImportedConfig, type AvatarImportError } from '@/utils/avatar/avatar-import-parser'
 import type { PartsAvatarConfig, PixelsAvatarConfig } from '@/types'
 import { resolveAvatarImportErrorMessage } from '../utils/avatar-import-messages'
 

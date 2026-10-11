@@ -25,14 +25,14 @@ export const useEmployeeDetailTarget = ({ seatId, employeeId }: Params): Result 
   const seats = layout?.seats
 
   // 座席経路は座席→社員、人物経路は社員を直接引く
-  const seatFromId = seatId ? seats?.find((s) => s.id === seatId) ?? null : null
+  const seatFromId = seatId ? (seats?.find(s => s.id === seatId) ?? null) : null
   const employeeFromSeat = seatFromId?.employeeId
-    ? employees?.find((e) => e.id === seatFromId.employeeId) ?? null
+    ? (employees?.find(e => e.id === seatFromId.employeeId) ?? null)
     : null
-  const employeeFromId = employeeId ? employees?.find((e) => e.id === employeeId) ?? null : null
+  const employeeFromId = employeeId ? (employees?.find(e => e.id === employeeId) ?? null) : null
 
   const employee = seatId ? employeeFromSeat : employeeFromId
-  const team = employee ? teams?.find((t) => t.id === employee.teamId) ?? null : null
+  const team = employee ? (teams?.find(t => t.id === employee.teamId) ?? null) : null
 
   return {
     employee,

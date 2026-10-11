@@ -14,7 +14,15 @@ type Props = {
   onCopy: (field: ContactField, value: string) => void
 }
 
-export const ContactRow = ({ field, icon, copyLabel, displayValue, copyValue, isCopied, onCopy }: Props) => (
+export const ContactRow = ({
+  field,
+  icon,
+  copyLabel,
+  displayValue,
+  copyValue,
+  isCopied,
+  onCopy,
+}: Props) => (
   <div className={styles.contactRow}>
     <span className={`material-symbols-outlined ${styles.contactIcon}`}>{icon}</span>
     <span className={styles.contactValue}>{displayValue}</span>

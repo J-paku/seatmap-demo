@@ -20,7 +20,7 @@ export const getCardPlacementStyle = (rect: DOMRect): CSSProperties => {
   return {
     left: Math.min(
       Math.max(rect.left + rect.width / 2, CARD_EDGE_MARGIN_PX),
-      window.innerWidth - CARD_EDGE_MARGIN_PX,
+      window.innerWidth - CARD_EDGE_MARGIN_PX
     ),
     top: {
       below: rect.bottom + CARD_GAP_PX,

@@ -1,10 +1,7 @@
 // アバターカスタマイザの組立hook — パーツ構成・AIプロンプト・AI取り込みの3責務を束ね、
 // AI自由ピクセル (importedPixels) とパーツ構成の優先順位を決めて有効 config を確定する
 import { useCallback, useState, type ChangeEvent } from 'react'
-import {
-  QUICK_START_PRESETS,
-  type QuickStartKind,
-} from '@/utils/avatar/avatar-customizer-options'
+import { QUICK_START_PRESETS, type QuickStartKind } from '@/utils/avatar/avatar-customizer-options'
 import { deriveInitialParts } from '@/utils/avatar/avatar-initial-state'
 import type { PartsAvatarConfig, PixelAvatarConfig, PixelsAvatarConfig } from '@/types'
 import {

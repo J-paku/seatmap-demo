@@ -61,7 +61,7 @@ export function EmployeeDirectory({
     replayNonce: tourReplayNonce,
     autoStart: false,
   })
-  const onHelp = useCallback(() => setTourReplayNonce((count) => count + 1), [])
+  const onHelp = useCallback(() => setTourReplayNonce(count => count + 1), [])
 
   // アバターカスタマイザモーダルの開閉状態
   const [isAvatarCustomizerOpen, setIsAvatarCustomizerOpen] = useState(false)
@@ -156,10 +156,7 @@ export function EmployeeDirectory({
                 className='flex shrink-0 items-center pr-2'
               >
                 <div className='min-w-0 flex-1' data-coach='directory-search'>
-                  <DirectorySearchInput
-                    query={searchQuery}
-                    onQueryChange={setSearchQuery}
-                  />
+                  <DirectorySearchInput query={searchQuery} onQueryChange={setSearchQuery} />
                 </div>
                 {/* ヘルプボタン — ? アイコンでガイドツアー再生。共通化した GuideButton の基準実物 */}
                 <GuideButton ariaLabel='ディレクトリガイド' onClick={onHelp} />

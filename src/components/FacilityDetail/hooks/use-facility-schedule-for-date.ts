@@ -44,7 +44,7 @@ export const useFacilityScheduleForDate = ({
   const { today } = useSelectedDate()
   const todayKey = jstDateKey(today)
   const seed = useMemo(() => seedMeetings ?? [], [seedMeetings])
-  const employeeIds = useMemo(() => (employees ?? []).map((e) => e.id), [employees])
+  const employeeIds = useMemo(() => (employees ?? []).map(e => e.id), [employees])
 
   const [meetings, setMeetings] = useState<FacilityMeeting[]>([])
   const [isLoading, setIsLoading] = useState(false)

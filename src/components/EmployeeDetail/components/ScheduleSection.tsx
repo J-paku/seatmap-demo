@@ -39,7 +39,9 @@ export const ScheduleSection = ({
 }: Props) => (
   <section className={styles.scheduleSection}>
     <div className={styles.scheduleSectionLabel}>
-      <span className={`material-symbols-outlined ${styles.scheduleSectionIcon}`}>calendar_today</span>
+      <span className={`material-symbols-outlined ${styles.scheduleSectionIcon}`}>
+        calendar_today
+      </span>
       <span className={styles.scheduleSectionTitle}>スケジュール</span>
       <span className={styles.scheduleSectionHairline} />
     </div>
@@ -47,7 +49,12 @@ export const ScheduleSection = ({
     <DateNavigator />
 
     <div className={styles.scheduleSwipeWrap}>
-      <SwipeDateStage cardKey={dateKey} onSwipePrevDay={onSwipePrevDay} onSwipeNextDay={onSwipeNextDay} fill>
+      <SwipeDateStage
+        cardKey={dateKey}
+        onSwipePrevDay={onSwipePrevDay}
+        onSwipeNextDay={onSwipeNextDay}
+        fill
+      >
         <ScheduleCard
           events={events}
           facilityNames={facilityNames}

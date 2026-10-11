@@ -8,9 +8,7 @@ interface GaroonLogoutBarProps {
   onGaroonLogout?: () => void
 }
 
-export function GaroonLogoutBar({
-  onGaroonLogout,
-}: GaroonLogoutBarProps) {
+export function GaroonLogoutBar({ onGaroonLogout }: GaroonLogoutBarProps) {
   const [isLogoutConfirmOpen, setIsLogoutConfirmOpen] = useState(false)
 
   const handleLogoutClick = useCallback(() => {

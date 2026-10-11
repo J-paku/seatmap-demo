@@ -15,12 +15,14 @@ const lightHaptic = () => {
 
 // 04: 日付ラベル・前日/翌日ボタン・カレンダー起動・今日に戻るを束ねるバー
 export const DateNavigator = () => {
-  const { date, today, isToday, goToPrevDay, goToNextDay, goToToday, setDateImmediate } = useSelectedDate()
+  const { date, today, isToday, goToPrevDay, goToNextDay, goToToday, setDateImmediate } =
+    useSelectedDate()
   const [calendarOpen, setCalendarOpen] = useState(false)
   const triggerRef = useRef<HTMLButtonElement>(null)
 
   const weekday = jstWeekday(date)
-  const labelColorClass = weekday === 0 ? styles.dateLabelSun : weekday === 6 ? styles.dateLabelSat : ''
+  const labelColorClass =
+    weekday === 0 ? styles.dateLabelSun : weekday === 6 ? styles.dateLabelSat : ''
 
   const handlePrev = () => {
     lightHaptic()
@@ -52,11 +54,14 @@ export const DateNavigator = () => {
           className={styles.dateLabelBtn}
           onClick={() => {
             lightHaptic()
-            setCalendarOpen((v) => !v)
+            setCalendarOpen(v => !v)
           }}
         >
           {date.y !== today.y && <span className={styles.dateYearChip}>{date.y}年</span>}
-          <span key={`${date.y}-${date.m}-${date.d}`} className={`${styles.dateLabelText} ${labelColorClass}`}>
+          <span
+            key={`${date.y}-${date.m}-${date.d}`}
+            className={`${styles.dateLabelText} ${labelColorClass}`}
+          >
             {formatLabel(date)}
           </span>
           <span className={styles.dateCalendarIcon} aria-hidden='true'>

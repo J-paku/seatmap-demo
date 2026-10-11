@@ -23,7 +23,8 @@ const ConditionalStackTop = ({ stacked, children }: { stacked: boolean; children
 
 // 03: 詳細パネル群のオーケストレーター(社員は施設の上へスタック・スタック=予定)
 export const DetailPanels = ({ onFacilityDeleted, onGoToSeat, showSeatUnsetNotice }: Props) => {
-  const { seatDetailId, personDetailId, facilityDetailId, scheduleDetailId, closeTop } = useDetailPanel()
+  const { seatDetailId, personDetailId, facilityDetailId, scheduleDetailId, closeTop } =
+    useDetailPanel()
   const { data: facilities } = useFacilities()
   const { data: schedules } = useSchedules()
 
@@ -44,8 +45,8 @@ export const DetailPanels = ({ onFacilityDeleted, onGoToSeat, showSeatUnsetNotic
 
   if (!anyOpen) return null
 
-  const facility = facilityDetailId ? facilities?.find((f) => f.id === facilityDetailId) : null
-  const scheduleEv = scheduleDetailId ? schedules?.find((s) => s.id === scheduleDetailId) : null
+  const facility = facilityDetailId ? facilities?.find(f => f.id === facilityDetailId) : null
+  const scheduleEv = scheduleDetailId ? schedules?.find(s => s.id === scheduleDetailId) : null
 
   // 描画順(下→上)は detail-panel-context.tsx の DETAIL_PANEL_LAYER_ORDER
   // (facility → employee → schedule)が正。closeTop もそこから同じ順を辿って畳むため、
@@ -66,7 +67,12 @@ export const DetailPanels = ({ onFacilityDeleted, onGoToSeat, showSeatUnsetNotic
       {(seatDetailId || personDetailId) && (
         // 施設詳細(参加者ポップオーバー)から開いた時は施設の上へ重ねる(stackTop 段)
         <ConditionalStackTop stacked={facilityDetailId !== null}>
-          <SheetShell title='社員詳細' variant='employee' active={scheduleDetailId === null} onClose={closeTop}>
+          <SheetShell
+            title='社員詳細'
+            variant='employee'
+            active={scheduleDetailId === null}
+            onClose={closeTop}
+          >
             <EmployeeDetail
               seatId={seatDetailId}
               employeeId={personDetailId}
@@ -80,7 +86,12 @@ export const DetailPanels = ({ onFacilityDeleted, onGoToSeat, showSeatUnsetNotic
         // stackTop(施設→社員の段)とは別の stackSchedule 段を使う。社員が施設の上に
         // スタック中でも予定を確実に最前面へ出すため(sheet.module.css 参照)
         <div className={styles.stackSchedule}>
-          <SheetShell title={scheduleTitleLabel(scheduleEv)} variant='schedule' active onClose={closeTop}>
+          <SheetShell
+            title={scheduleTitleLabel(scheduleEv)}
+            variant='schedule'
+            active
+            onClose={closeTop}
+          >
             <ScheduleDetail eventId={scheduleDetailId} />
           </SheetShell>
         </div>

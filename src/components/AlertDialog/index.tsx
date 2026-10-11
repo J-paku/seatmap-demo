@@ -32,8 +32,8 @@ export const AlertDialog = ({ isOpen, icon, title, body, confirmLabel, onClose }
         aria-modal='true'
         aria-labelledby={titleId}
         aria-describedby={bodyId}
-        onClick={(e) => e.stopPropagation()}
-        onKeyDown={(e) => {
+        onClick={e => e.stopPropagation()}
+        onKeyDown={e => {
           if (e.key !== 'Escape') return
           // 詳細パネル側の ESC ハンドラへ届かせない(カードまで一緒に閉じてしまう)
           e.stopPropagation()

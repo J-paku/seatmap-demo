@@ -23,13 +23,19 @@ export const ScheduleRow = ({ event, facilityName, onOpenEvent }: Props) => {
         </span>
         {isMasked && (
           <>
-            <span className={`material-symbols-outlined ${styles.scheduleLock}`} style={{ fontSize: 14 }} aria-hidden='true'>
+            <span
+              className={`material-symbols-outlined ${styles.scheduleLock}`}
+              style={{ fontSize: 14 }}
+              aria-hidden='true'
+            >
               lock
             </span>
             <span className='sr-only'>非公開</span>
           </>
         )}
-        <span className={`${styles.scheduleTitle}${isMasked ? ` ${styles.isMasked}` : ''}`}>{scheduleTitleLabel(event)}</span>
+        <span className={`${styles.scheduleTitle}${isMasked ? ` ${styles.isMasked}` : ''}`}>
+          {scheduleTitleLabel(event)}
+        </span>
         {shownFacilityName && (
           <span className={styles.scheduleFacility}>
             <span className='material-symbols-outlined' style={{ fontSize: 14 }} aria-hidden='true'>

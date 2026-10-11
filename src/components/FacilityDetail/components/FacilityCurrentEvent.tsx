@@ -18,8 +18,8 @@ export const FacilityCurrentEvent = ({ meeting, nowMin, employees }: Props) => {
   const organizer = empById.get(meeting.organizerId)
   // participantIds は登録者を含む出席者全員。参加者欄は登録者を除いた人だけを出す
   const participants = meeting.participantIds
-    .filter((id) => id !== meeting.organizerId)
-    .map((id) => empById.get(id))
+    .filter(id => id !== meeting.organizerId)
+    .map(id => empById.get(id))
     .filter((employee): employee is Employee => employee != null)
 
   return (
@@ -52,7 +52,7 @@ export const FacilityCurrentEvent = ({ meeting, nowMin, employees }: Props) => {
           </span>
         </div>
         <div className={styles.facCurrentPartsList}>
-          {participants.map((employee) => (
+          {participants.map(employee => (
             <PersonRow key={employee.id} employee={employee} onClick={openPersonDetail} />
           ))}
         </div>

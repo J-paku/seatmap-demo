@@ -11,7 +11,12 @@ type Props = {
 }
 
 // デモでは電話帳ボタンを常に出すため、バーが空になる分岐は起きない
-export const ActionBar = ({ employeeName, onRegisterContact, onGoToSeat, showSeatUnsetNotice }: Props) => (
+export const ActionBar = ({
+  employeeName,
+  onRegisterContact,
+  onGoToSeat,
+  showSeatUnsetNotice,
+}: Props) => (
   <div className={styles.profileActionBar}>
     <button
       type='button'
@@ -39,7 +44,10 @@ export const ActionBar = ({ employeeName, onRegisterContact, onGoToSeat, showSea
         }}
       >
         座席へ移動
-        <span className={`material-symbols-outlined ${styles.profileActionIcon}`} aria-hidden='true'>
+        <span
+          className={`material-symbols-outlined ${styles.profileActionIcon}`}
+          aria-hidden='true'
+        >
           chevron_right
         </span>
       </button>

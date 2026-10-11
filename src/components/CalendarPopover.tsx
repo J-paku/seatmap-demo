@@ -76,18 +76,18 @@ export const CalendarPopover = ({ anchorRef, selected, today, onSelect, onClose 
 
   const goPrevMonth = () => {
     if (viewMonth === 1) {
-      setViewYear((y) => y - 1)
+      setViewYear(y => y - 1)
       setViewMonth(12)
     } else {
-      setViewMonth((m) => m - 1)
+      setViewMonth(m => m - 1)
     }
   }
   const goNextMonth = () => {
     if (viewMonth === 12) {
-      setViewYear((y) => y + 1)
+      setViewYear(y => y + 1)
       setViewMonth(1)
     } else {
-      setViewMonth((m) => m + 1)
+      setViewMonth(m => m + 1)
     }
   }
 
@@ -102,20 +102,36 @@ export const CalendarPopover = ({ anchorRef, selected, today, onSelect, onClose 
       aria-label='日付選択カレンダー'
     >
       <div className={styles.calendarHeader}>
-        <button type='button' className={styles.calendarNavBtn} onClick={goPrevMonth} aria-label='前月' disabled={mode === 'year'}>
+        <button
+          type='button'
+          className={styles.calendarNavBtn}
+          onClick={goPrevMonth}
+          aria-label='前月'
+          disabled={mode === 'year'}
+        >
           ‹
         </button>
-        <button type='button' className={styles.calendarHeaderLabel} onClick={() => setMode(mode === 'day' ? 'year' : 'day')}>
+        <button
+          type='button'
+          className={styles.calendarHeaderLabel}
+          onClick={() => setMode(mode === 'day' ? 'year' : 'day')}
+        >
           {viewYear}年{viewMonth}月
         </button>
-        <button type='button' className={styles.calendarNavBtn} onClick={goNextMonth} aria-label='翌月' disabled={mode === 'year'}>
+        <button
+          type='button'
+          className={styles.calendarNavBtn}
+          onClick={goNextMonth}
+          aria-label='翌月'
+          disabled={mode === 'year'}
+        >
           ›
         </button>
       </div>
 
       {mode === 'year' ? (
         <div className={styles.calendarYearGrid}>
-          {yearGrid.map((y) => (
+          {yearGrid.map(y => (
             <button
               key={y}
               type='button'
@@ -143,7 +159,7 @@ export const CalendarPopover = ({ anchorRef, selected, today, onSelect, onClose 
             ))}
           </div>
           <div className={styles.calendarDayGrid}>
-            {grid.map((cell) => {
+            {grid.map(cell => {
               const weekday = jstWeekday(cell)
               const inMonth = cell.m === viewMonth
               const isSelected = isSameJstDate(cell, selected)

@@ -38,7 +38,12 @@ export const ProfileCard = ({
   return (
     <div className={styles.profileCard}>
       <div className={styles.profileBand}>
-        <PresenceBadge visible={isBadgeVisible} isLoading={isScheduleLoading} isOccupied status={status} />
+        <PresenceBadge
+          visible={isBadgeVisible}
+          isLoading={isScheduleLoading}
+          isOccupied
+          status={status}
+        />
         <div className={styles.profileAvatarFrame}>
           <PixelAvatar config={avatar} size={52} />
         </div>

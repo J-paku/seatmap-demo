@@ -90,7 +90,7 @@ export const AdminAddFab = ({ onSelectTeam, onSelectFacility, onEditLayout }: Pr
         onPointerLeave={fabHandlers.onPointerLeave}
         onPointerCancel={fabHandlers.onPointerCancel}
         onClick={fabHandlers.onClick}
-        onContextMenu={(e) => e.preventDefault()}
+        onContextMenu={e => e.preventDefault()}
       >
         <span className={`icon-msr-filled ${styles.adminFabIcon}`} aria-hidden='true'>
           add

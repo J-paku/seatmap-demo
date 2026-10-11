@@ -35,7 +35,8 @@ export function SettingsPanel({
   const isViewingCustomLayout = source.type === 'custom'
   // リセット行のラベルに出す対象フロア名。公式表示中は表示中フロア、カスタム表示中は
   // (リセット自体が無効化されるため)既定フロア名を出す
-  const resetFloorName = source.type === 'official' ? floorNameOf(source.floorId) : floorNameOf(DEFAULT_FLOOR_ID)
+  const resetFloorName =
+    source.type === 'official' ? floorNameOf(source.floorId) : floorNameOf(DEFAULT_FLOOR_ID)
 
   const handleRefresh = useCallback(() => {
     triggerHaptic('medium')
@@ -175,7 +176,10 @@ export function SettingsPanel({
             sync_alt
           </span>
           <span className='text-sm flex-1'>予定連携</span>
-          <span className='flex flex-col items-end gap-0.5 text-sm' style={{ color: 'var(--color-text-muted)' }}>
+          <span
+            className='flex flex-col items-end gap-0.5 text-sm'
+            style={{ color: 'var(--color-text-muted)' }}
+          >
             <span className='flex items-center gap-1.5'>
               <span aria-hidden='true' style={{ color: 'var(--color-success)' }}>
                 ●
@@ -196,9 +200,7 @@ export function SettingsPanel({
       </div>
 
       {/* パネル右下: Garoonログアウト導線 */}
-      <GaroonLogoutBar
-        onGaroonLogout={onGaroonLogout}
-      />
+      <GaroonLogoutBar onGaroonLogout={onGaroonLogout} />
     </div>
   )
 }

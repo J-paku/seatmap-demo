@@ -33,14 +33,20 @@ export const FacilityPanelHeader = ({ facilityName, status, isTodaySelected, onC
           disabled={isRefreshing || cooldown > 0}
           onClick={refresh}
         >
-          <span className={`icon-msr-filled ${styles.facRefreshIcon}${isRefreshing ? ` ${styles.isRefreshing}` : ''}`} aria-hidden='true'>
+          <span
+            className={`icon-msr-filled ${styles.facRefreshIcon}${isRefreshing ? ` ${styles.isRefreshing}` : ''}`}
+            aria-hidden='true'
+          >
             refresh
           </span>
           {cooldown > 0 && <span className={styles.facRefreshCooldown}>{cooldown}s</span>}
         </button>
         <div className={styles.facPanelRight}>
           {isTodaySelected && (
-            <span className={styles.facBadge} style={{ background: color.bg, color: color.text, borderColor: color.border }}>
+            <span
+              className={styles.facBadge}
+              style={{ background: color.bg, color: color.text, borderColor: color.border }}
+            >
               {FACILITY_STATUS_LABEL[status]}
             </span>
           )}

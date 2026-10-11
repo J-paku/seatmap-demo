@@ -13,7 +13,14 @@ type Props = {
   onHover?: (payload: FacilityHoverPayload | null) => void
 }
 
-export const FacilityBlock = ({ facility, counterScale, onSelect, state, lod = 'detail', onHover }: Props) => {
+export const FacilityBlock = ({
+  facility,
+  counterScale,
+  onSelect,
+  state,
+  lod = 'detail',
+  onHover,
+}: Props) => {
   // 11: 通路は会議室コードパスから完全除外(data-facility無し・クリック無し・破線コリドー表示のみ)
   if (facility.kind === 'aisle') {
     const isVertical = facility.height > facility.width
@@ -22,9 +29,17 @@ export const FacilityBlock = ({ facility, counterScale, onSelect, state, lod = '
         className={styles.aisleBlock}
         data-kind='aisle'
         data-furniture-id={facility.id}
-        style={{ left: facility.x, top: facility.y, width: facility.width, height: facility.height }}
+        style={{
+          left: facility.x,
+          top: facility.y,
+          width: facility.width,
+          height: facility.height,
+        }}
       >
-        <span className={styles.aisleLabel} style={{ transform: isVertical ? 'rotate(90deg)' : undefined }}>
+        <span
+          className={styles.aisleLabel}
+          style={{ transform: isVertical ? 'rotate(90deg)' : undefined }}
+        >
           ── 通路 ──
         </span>
       </div>
@@ -43,8 +58,9 @@ export const FacilityBlock = ({ facility, counterScale, onSelect, state, lod = '
       role='button'
       tabIndex={-1}
       onClick={() => onSelect(facility.id)}
-      onPointerEnter={(e) => {
-        if (isMeeting && e.pointerType === 'mouse') onHover?.({ facilityId: facility.id, rect: e.currentTarget.getBoundingClientRect() })
+      onPointerEnter={e => {
+        if (isMeeting && e.pointerType === 'mouse')
+          onHover?.({ facilityId: facility.id, rect: e.currentTarget.getBoundingClientRect() })
       }}
       onPointerLeave={() => onHover?.(null)}
       style={{

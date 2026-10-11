@@ -23,7 +23,13 @@ export const CoachMarkTour = ({ tour }: Props) => {
     // onClick を付けないだけで、.layer の pointer-events: auto がクリックを受け止めて
     // 背後の要素へ通さない(ブロックのみ)
     return (
-      <div className={styles.layer} role='dialog' aria-modal='true' aria-label='操作ガイド' data-coach-tour='true'>
+      <div
+        className={styles.layer}
+        role='dialog'
+        aria-modal='true'
+        aria-label='操作ガイド'
+        data-coach-tour='true'
+      >
         <div className={styles.scrim} />
         <div className={`${styles.card} ${styles.isCentered}`}>
           <p className={styles.question}>{branch.title}</p>
@@ -74,7 +80,12 @@ export const CoachMarkTour = ({ tour }: Props) => {
         // ここが受け止めて(.layer へ伝播して)次へ進む
         <div
           className={styles.spotlight}
-          style={{ left: rect.left - 6, top: rect.top - 6, width: rect.width + 12, height: rect.height + 12 }}
+          style={{
+            left: rect.left - 6,
+            top: rect.top - 6,
+            width: rect.width + 12,
+            height: rect.height + 12,
+          }}
         />
       ) : (
         // 対象が無いステップはスポットライトを出さず、全面ダイム+中央カードにする
@@ -83,7 +94,7 @@ export const CoachMarkTour = ({ tour }: Props) => {
       <div
         className={rect ? styles.card : `${styles.card} ${styles.isCentered}`}
         style={rect ? getCardPlacementStyle(rect) : undefined}
-        onClick={(event) => event.stopPropagation()}
+        onClick={event => event.stopPropagation()}
       >
         {/* ドットは装飾なので支援技術からは隠し、段数は .sr-only のテキストで読ませる */}
         <span className='sr-only'>{`${tour.stepIndex + 1} / ${tour.stepCount}`}</span>

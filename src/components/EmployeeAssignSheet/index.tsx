@@ -142,7 +142,7 @@ export const EmployeeAssignSheet = ({
     bulkMembers,
     currentDepartment,
   } = useEmployeeAssign(employees, seats, seat, isTargetSeatEmpty)
-  const occupant = seat?.employeeId ? employeeById.get(seat.employeeId) ?? null : null
+  const occupant = seat?.employeeId ? (employeeById.get(seat.employeeId) ?? null) : null
 
   const [isBulkMode, setIsBulkMode] = useState(initialBulkMode)
   const [selectedBulkIds, setSelectedBulkIds] = useState<Set<string>>(new Set())
@@ -158,7 +158,7 @@ export const EmployeeAssignSheet = ({
   }
 
   const toggleBulkMember = (employeeId: string) => {
-    setSelectedBulkIds((prev) => {
+    setSelectedBulkIds(prev => {
       const next = new Set(prev)
       if (next.has(employeeId)) next.delete(employeeId)
       else next.add(employeeId)
@@ -167,9 +167,9 @@ export const EmployeeAssignSheet = ({
   }
 
   const toggleBulkDepartmentAll = () => {
-    setSelectedBulkIds((prev) => {
-      const allIds = bulkMembers.map((candidate) => candidate.employee.id)
-      const allSelected = allIds.length > 0 && allIds.every((id) => prev.has(id))
+    setSelectedBulkIds(prev => {
+      const allIds = bulkMembers.map(candidate => candidate.employee.id)
+      const allSelected = allIds.length > 0 && allIds.every(id => prev.has(id))
       return allSelected ? new Set() : new Set(allIds)
     })
   }
@@ -216,7 +216,7 @@ export const EmployeeAssignSheet = ({
             </button>
           </div>
           <div className={styles.assignList}>
-            {bulkMembers.map((candidate) => (
+            {bulkMembers.map(candidate => (
               <BulkMemberRow
                 key={candidate.employee.id}
                 employee={candidate.employee}
@@ -225,7 +225,9 @@ export const EmployeeAssignSheet = ({
                 onToggle={() => toggleBulkMember(candidate.employee.id)}
               />
             ))}
-            {bulkMembers.length === 0 && <p className={styles.assignEmpty}>該当する社員がいません</p>}
+            {bulkMembers.length === 0 && (
+              <p className={styles.assignEmpty}>該当する社員がいません</p>
+            )}
           </div>
           <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
             <button type='button' className='pixel-btn' style={{ flex: 1 }} onClick={exitBulkMode}>
@@ -251,7 +253,7 @@ export const EmployeeAssignSheet = ({
             placeholder='名前・カナ・部署・社員番号で検索'
             aria-label='社員を検索'
             value={query}
-            onChange={(e) => setQuery(e.target.value)}
+            onChange={e => setQuery(e.target.value)}
             autoFocus
           />
           {onBulkAssign && canBulkAssign && (
@@ -270,10 +272,13 @@ export const EmployeeAssignSheet = ({
             </button>
           )}
           <div className={styles.assignList}>
-            {departmentGroups.map((group) => {
+            {departmentGroups.map(group => {
               const isExpanded = expandedDepartments.has(group.department)
               return (
-                <div key={group.department} style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                <div
+                  key={group.department}
+                  style={{ display: 'flex', flexDirection: 'column', gap: 4 }}
+                >
                   <button
                     type='button'
                     className={styles.assignRow}
@@ -292,7 +297,7 @@ export const EmployeeAssignSheet = ({
                     </span>
                   </button>
                   {isExpanded &&
-                    group.candidates.map((candidate) => (
+                    group.candidates.map(candidate => (
                       <CandidateRow
                         key={candidate.employee.id}
                         employee={candidate.employee}
@@ -309,7 +314,9 @@ export const EmployeeAssignSheet = ({
                 </div>
               )
             })}
-            {departmentGroups.length === 0 && <p className={styles.assignEmpty}>該当する社員がいません</p>}
+            {departmentGroups.length === 0 && (
+              <p className={styles.assignEmpty}>該当する社員がいません</p>
+            )}
           </div>
         </>
       )}

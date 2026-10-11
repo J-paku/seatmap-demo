@@ -26,7 +26,8 @@ export const FacilityDetail = ({ facilityId, onDeleted }: Props) => {
   const { data: facilities } = useFacilities()
   const { data: meetings } = useFacilityMeetings()
   const { data: employees } = useEmployees()
-  const { date, debouncedDate, isTodaySelected, goToPrevDay, goToNextDay, goToToday } = useSelectedDate()
+  const { date, debouncedDate, isTodaySelected, goToPrevDay, goToNextDay, goToToday } =
+    useSelectedDate()
   const { seatDetailId, personDetailId, closeTop } = useDetailPanel()
   // 社員カードがスタックされ本パネルが隠れている間は非アクティブ。DetailPanels が
   // SheetShell へ渡す active 相当の判定(seatDetailId===null && personDetailId===null)を
@@ -36,12 +37,12 @@ export const FacilityDetail = ({ facilityId, onDeleted }: Props) => {
   const popover = useAttendeePopover()
   const remove = useFacilityDelete({
     facilityId,
-    facilityName: facilities?.find((f) => f.id === facilityId)?.name ?? '',
+    facilityName: facilities?.find(f => f.id === facilityId)?.name ?? '',
     onDeleted,
     onClose: closeTop,
   })
 
-  const facility = facilities?.find((f) => f.id === facilityId)
+  const facility = facilities?.find(f => f.id === facilityId)
 
   const { meetings: scheduleMeetings, isLoading: isFetchLoading } = useFacilityScheduleForDate({
     facilityId: facility?.facilityId ?? '',
@@ -61,7 +62,7 @@ export const FacilityDetail = ({ facilityId, onDeleted }: Props) => {
   const nowMin = now.getHours() * 60 + now.getMinutes()
   const state: FacilityState = deriveFacilityState(facility, meetings ?? [], nowMin)
   const popoverMeeting = popover.state
-    ? scheduleMeetings.find((m) => m.id === popover.state?.meetingId)
+    ? scheduleMeetings.find(m => m.id === popover.state?.meetingId)
     : undefined
 
   return (
@@ -72,7 +73,9 @@ export const FacilityDetail = ({ facilityId, onDeleted }: Props) => {
         isTodaySelected={isTodaySelected}
         onClose={closeTop}
       />
-      {facility.capacity != null && <span className={styles.facCap}>定員{facility.capacity}名</span>}
+      {facility.capacity != null && (
+        <span className={styles.facCap}>定員{facility.capacity}名</span>
+      )}
 
       {isTodaySelected && state.current && (
         <FacilityCurrentEvent meeting={state.current} nowMin={nowMin} employees={employees ?? []} />
@@ -86,7 +89,11 @@ export const FacilityDetail = ({ facilityId, onDeleted }: Props) => {
         nowMin={nowMin}
         isLoading={isScheduleLoading}
         isTodaySelected={isTodaySelected}
-        attendee={{ onEnter: popover.onEnter, onLeave: popover.onLeave, onToggle: popover.onToggle }}
+        attendee={{
+          onEnter: popover.onEnter,
+          onLeave: popover.onLeave,
+          onToggle: popover.onToggle,
+        }}
         onSwipePrevDay={goToPrevDay}
         onSwipeNextDay={goToNextDay}
       />

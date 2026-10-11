@@ -34,11 +34,7 @@ const ACTION_BTN_COMPACT: CSSProperties = {
   borderRadius: 8,
 }
 
-export function ActionsSection({
-  handleReset,
-  handleSave,
-  compact = false,
-}: ActionsSectionProps) {
+export function ActionsSection({ handleReset, handleSave, compact = false }: ActionsSectionProps) {
   const btnBase = compact ? ACTION_BTN_COMPACT : ACTION_BTN_BASE
   return (
     <div style={ACTIONS_STYLE}>

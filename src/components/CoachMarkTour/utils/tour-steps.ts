@@ -55,8 +55,16 @@ export const EDIT_TOUR_BRANCH: TourBranch = {
       label: '部署(テーブル)',
       description: '部署の区画を動かす手順を見ます',
       steps: [
-        { selector: '[data-team-id]', text: '動かしたい部署(テーブル)をタップして選びます', centerOnShow: true },
-        { selector: '[data-team-id]', text: 'そのままドラッグして、好きな位置へ動かせます', centerOnShow: true },
+        {
+          selector: '[data-team-id]',
+          text: '動かしたい部署(テーブル)をタップして選びます',
+          centerOnShow: true,
+        },
+        {
+          selector: '[data-team-id]',
+          text: 'そのままドラッグして、好きな位置へ動かせます',
+          centerOnShow: true,
+        },
         {
           selector: '[data-team-id]',
           text: 'テーブルの大きさは中の座席数で自動的に決まります。枠を直接ドラッグして拡大・縮小はできません',

@@ -40,7 +40,12 @@ export const FacilityScheduleSection = ({
     <>
       <DateNavigator />
       <div className={styles.facSwipeWrap}>
-        <SwipeDateStage cardKey={dateKey} onSwipePrevDay={onSwipePrevDay} onSwipeNextDay={onSwipeNextDay} fill>
+        <SwipeDateStage
+          cardKey={dateKey}
+          onSwipePrevDay={onSwipePrevDay}
+          onSwipeNextDay={onSwipeNextDay}
+          fill
+        >
           {meetings.length > 0 && (
             <FacilityScheduleCard
               meetings={meetings}
@@ -51,7 +56,9 @@ export const FacilityScheduleSection = ({
             />
           )}
           {meetings.length === 0 && !isLoading && (
-            <p className={styles.facEmpty}>{isTodaySelected ? '本日の予約はありません' : '予約はありません'}</p>
+            <p className={styles.facEmpty}>
+              {isTodaySelected ? '本日の予約はありません' : '予約はありません'}
+            </p>
           )}
           {isLoading && (
             <div

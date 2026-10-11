@@ -9,11 +9,7 @@ interface GaroonFooterProps {
   onAvatarClick?: () => void
 }
 
-export function GaroonFooter({
-  onSettingsClick,
-  displayName,
-  onAvatarClick,
-}: GaroonFooterProps) {
+export function GaroonFooter({ onSettingsClick, displayName, onAvatarClick }: GaroonFooterProps) {
   const myAvatarConfig = useMyAvatarConfig()
   const subColor = 'var(--color-text-muted)'
   return (

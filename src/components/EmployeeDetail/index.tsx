@@ -22,19 +22,23 @@ type Props = EmployeeDetailProps
 export const EmployeeDetail = ({ seatId, employeeId, onGoToSeat, showSeatUnsetNotice }: Props) => {
   const { data: schedules, error: scheduleError } = useSchedules()
   const { data: facilities } = useFacilities()
-  const { date, debouncedDate, isTodaySelected, goToPrevDay, goToNextDay, goToToday } = useSelectedDate()
+  const { date, debouncedDate, isTodaySelected, goToPrevDay, goToNextDay, goToToday } =
+    useSelectedDate()
   const nowMs = useQuantizedClock(isTodaySelected)
   const { openScheduleDetail } = useDetailPanel()
   const { isRefreshing, cooldown, lastUpdatedLabel, refresh } = useScheduleRefresh()
 
-  const { employee, team, isVacantSeat, isMissingSeat } = useEmployeeDetailTarget({ seatId, employeeId })
+  const { employee, team, isVacantSeat, isMissingSeat } = useEmployeeDetailTarget({
+    seatId,
+    employeeId,
+  })
   const avatarConfig = useEmployeeAvatar(employee)
 
   // debouncedDate 当日分の予定に絞って時刻順に並べる
   const mySchedules = useMemo(() => {
     const key = jstDateKey(debouncedDate)
     return (schedules ?? [])
-      .filter((s) => employee && s.employeeId === employee.id && jstKeyFromIso(s.start) === key)
+      .filter(s => employee && s.employeeId === employee.id && jstKeyFromIso(s.start) === key)
       .sort((a, b) => a.start.localeCompare(b.start))
   }, [schedules, employee, debouncedDate])
 

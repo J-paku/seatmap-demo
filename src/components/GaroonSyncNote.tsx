@@ -19,7 +19,10 @@ const GAROON_BRAND_WORD = 'Garoon'
 const [garoonNotePrefix, garoonNoteSuffix] = GAROON_SYNC_NOTE_TEXT.split(GAROON_BRAND_WORD)
 
 export const GaroonSyncNote = ({ className, style }: Props) => (
-  <p className={className ? `${styles.garoonSyncNote} ${className}` : styles.garoonSyncNote} style={style}>
+  <p
+    className={className ? `${styles.garoonSyncNote} ${className}` : styles.garoonSyncNote}
+    style={style}
+  >
     {garoonNotePrefix}
     <span className={styles.brand}>{GAROON_BRAND_WORD}</span>
     {garoonNoteSuffix}
