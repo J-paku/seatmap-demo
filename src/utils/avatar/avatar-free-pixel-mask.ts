@@ -38,7 +38,6 @@ const TRANSPARENT_KEY = '.'
 interface MaskFillStats {
   totalCells: number
   transparentCells: number
-  opaquePercent: number
 }
 
 // マスク領域内のセルを配列化して列挙
@@ -71,11 +70,7 @@ function countMaskTransparency(
     if (isTransparent) transparentCells++
   }
 
-  return {
-    totalCells,
-    transparentCells,
-    opaquePercent: totalCells > 0 ? ((totalCells - transparentCells) / totalCells) * 100 : 0,
-  }
+  return { totalCells, transparentCells }
 }
 
 // マスク領域を指定キーで強制充填する — rows を新規配列で返す(in-place 改変しない)

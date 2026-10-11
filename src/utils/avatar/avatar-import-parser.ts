@@ -132,7 +132,7 @@ const parsePartsConfig = (raw: JsonObject): AvatarImportResult => {
     skin,
     outfit: outfitColor,
     outfitDark,
-    ...(outfitAlt ? { outfitAlt } : {}),
+    outfitAlt,
     ...(accessoryColor ? { accessory: accessoryColor } : {}),
   }
 
