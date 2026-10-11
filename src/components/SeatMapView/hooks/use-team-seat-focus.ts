@@ -14,7 +14,7 @@ type Options = {
   onFailure: (reason: FocusFailure) => void
 }
 
-type TeamSeatFocus = {
+export type TeamSeatFocus = {
   payload: TeamOverlayPayload | null
   highlightSeatId: string | null
   focusSeat: (seat: Seat) => void

@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import type { LayoutEditor } from '../type'
+import { placedFacilityIdsOf } from '../utils/list-placed-facilities'
 import { deriveFacilityState } from '@/utils/facility-status'
 import type { FacilityState } from '@/utils/facility-status'
 import {
@@ -16,10 +17,14 @@ import type { Employee, PresenceStatus, SeatLayout } from '@/types'
 
 // 表示に必要なデータの合成。編集モード中は在席状態を凍結し、レイアウトも編集中のものへ切り替える
 
-type SeatMapData = {
+export type SeatMapData = {
   ready: boolean
   employeeById: Map<string, Employee>
+  // サイドバーと配属シートへ渡す社員の配列
+  directoryEmployees: Employee[]
   effectiveLayout: SeatLayout | undefined
+  // §03-3: 施設ピッカーの配置済み判定へ渡す施設IDの一覧
+  placedFacilityIds: string[]
   effectivePresenceMap: Map<string, PresenceStatus>
   facilityStateById: Map<string, FacilityState>
 }
@@ -35,6 +40,8 @@ export const useSeatMapData = (editor: LayoutEditor): SeatMapData => {
 
   // アバターの上書きは AvatarsContext(ownerCode キー)が持つため、ここでは素の社員を配るだけ
   const employeeById = useMemo(() => new Map((employees ?? []).map(e => [e.id, e])), [employees])
+  // 移植版サイドバーは社員配列を直接受け取る
+  const directoryEmployees = useMemo(() => [...employeeById.values()], [employeeById])
 
   // debouncedDate 当日分のイベントに絞ってから在席判定
   const schedulesForDate = useMemo(() => {
@@ -67,6 +74,7 @@ export const useSeatMapData = (editor: LayoutEditor): SeatMapData => {
     () => (editor.isEditMode ? (editor.editingLayout ?? layout) : layout),
     [editor.isEditMode, editor.editingLayout, layout]
   )
+  const placedFacilityIds = useMemo(() => placedFacilityIdsOf(effectiveLayout), [effectiveLayout])
 
   // 会議室状態(今日表示中のみ現在時刻で導出。他日は連携有無だけ)
   const nowMin = useMemo(() => {
@@ -92,7 +100,9 @@ export const useSeatMapData = (editor: LayoutEditor): SeatMapData => {
   return {
     ready: Boolean(layout && employees && schedules),
     employeeById,
+    directoryEmployees,
     effectiveLayout,
+    placedFacilityIds,
     effectivePresenceMap,
     facilityStateById,
   }

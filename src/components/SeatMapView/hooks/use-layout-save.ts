@@ -13,7 +13,7 @@ import type { StoredSeatLayout } from '@/types'
 // 07: 「完了」「キャンセル」「レイアウトをリセット」の保存まわり
 // 05-6: 楽観ロック(カスタムレイアウトのみ)と、保存成功トーストの「元に戻す」もここへ集約する
 
-type LayoutSave = {
+export type LayoutSave = {
   isSaving: boolean
   saveToast: string | null
   // 保存成功トースト表示中(TOAST_MS の間)だけ true。「元に戻す」ボタンの表示可否に使う

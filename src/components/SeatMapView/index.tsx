@@ -1,39 +1,37 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { AppHeader } from './components/AppHeader'
 import { EditDialogs } from './components/EditDialogs'
 import { EditModeLayer } from './components/EditModeLayer'
 import { PlacementSheets } from './components/PlacementSheets'
 import { SeatAssignDialogs } from './components/SeatAssignDialogs'
 import { useAdminFabVisibility } from './hooks/use-admin-fab-visibility'
+import { useCanvasHandle } from './hooks/use-canvas-handle'
 import { useEditDialogs } from './hooks/use-edit-dialogs'
+import { useEditSessionEnd } from './hooks/use-edit-session-end'
+import { useEditSessionStart } from './hooks/use-edit-session-start'
+import { useGhostDelete } from './hooks/use-ghost-delete'
 import { useLayoutSave } from './hooks/use-layout-save'
 import { useMinimapPayload } from './hooks/use-minimap-payload'
+import { useObjectDelete } from './hooks/use-object-delete'
 import { useObjectPlacement } from './hooks/use-object-placement'
+import { usePlacementEntries } from './hooks/use-placement-entries'
 import { useSeatAssign } from './hooks/use-seat-assign'
+import { useSeatBulkActions } from './hooks/use-seat-bulk-actions'
 import { useSeatMapData } from './hooks/use-seat-map-data'
 import { useSeatMapTours } from './hooks/use-seat-map-tours'
-import { useTeamSeatFocus } from './hooks/use-team-seat-focus'
+import { useSeatNavigation } from './hooks/use-seat-navigation'
+import { useSurfaceState } from './hooks/use-surface-state'
 import { useTransientNotice } from './hooks/use-transient-notice'
-import type { FocusFailure } from './type'
-import { placedMessageOf, recentOf, undoChipRequestOf } from './utils/build-undo-chip'
-import { facilityDeletedMessage, focusFailureMessage } from './utils/compose-notice-message'
-import { seatOfEmployee } from './utils/find-employee-seat'
+import { facilityDeletedMessage } from './utils/compose-notice-message'
 import { findHoverFacility } from './utils/find-hover-facility'
-import { canDeleteGhost, isDeleteConfirmOpen } from './utils/judge-ghost-delete'
-import { placedFacilityIdsOf } from './utils/list-placed-facilities'
 import { AdminAddFab } from '@/components/AdminAddFab'
 import { DetailPanels } from '@/components/DetailPanels'
 import { EmployeeDirectory } from '@/components/EmployeeDirectory'
 import { FacilityHoverCard } from '@/components/FacilityHoverCard'
-import type { FacilityHoverPayload } from '@/components/FacilityHoverCard'
-import type { GhostRequest } from '@/components/GhostPlacementLayer'
 import { GuideButton } from '@/components/GuideButton'
 import { LayoutSwitcher } from '@/components/LayoutSwitcher'
 import { CoachMarkTour } from '@/components/CoachMarkTour'
 import { LiveRegion } from '@/components/a11y/components/LiveRegion'
 import { SeatMapCanvas } from '@/components/SeatMapCanvas'
-import type { SeatMapCanvasHandle } from '@/components/SeatMapCanvas'
-import type { RecentPlacement } from '@/components/SeatMapCanvas/type'
 import { TeamOverlay } from '@/components/TeamOverlay'
 import { EditErrorToast } from '@/components/edit/EditErrorToast'
 import { useDetailPanel } from '@/contexts/detail-panel-context'
@@ -42,17 +40,13 @@ import { useTheme } from '@/hooks/use-theme'
 import { SELF_EMPLOYEE_ID } from '@/utils/demo-identity'
 import { TOAST_MESSAGES } from '@/utils/toast-messages'
 import { useLayoutEditor } from '@/hooks/use-layout-editor/use-layout-editor'
-import { rectOfRef } from '@/utils/layout/layout-objects'
-import type { Rect } from '@/utils/layout/rect'
-import type { Employee, LayoutObjectRef } from '@/types'
 import styles from '@/components/seatmap.module.css'
 
 // 座席マップ画面の組み立て。データ合成・保存・ダイアログ状態・操作ガイドはそれぞれのフックが持ち、
 // ここは配線と面の並べ方だけを持つ
 
 export const SeatMapView = () => {
-  const { openSeatDetail, openPersonDetail, openFacilityDetail, personDetailId, closeAll } =
-    useDetailPanel()
+  const { openSeatDetail, openFacilityDetail, personDetailId } = useDetailPanel()
   const { layout } = useSeatLayout()
   const { themeMode, setTheme } = useTheme()
   // アバター編集モーダルは移植版 EmployeeDirectory が内包する(設定パネル・フッターのアバターから開く)
@@ -61,152 +55,58 @@ export const SeatMapView = () => {
   const editor = useLayoutEditor(layout)
   // 05: 座席未設定(防御分岐)などの一時通知
   const { notice: unassignedNotice, showNotice } = useTransientNotice()
-  const { ready, employeeById, effectiveLayout, effectivePresenceMap, facilityStateById } =
-    useSeatMapData(editor)
-  // 移植版サイドバーは社員配列を直接受け取る
-  const directoryEmployees = useMemo(() => [...employeeById.values()], [employeeById])
+  const data = useSeatMapData(editor)
+  const {
+    ready,
+    employeeById,
+    directoryEmployees,
+    effectiveLayout,
+    placedFacilityIds,
+    effectivePresenceMap,
+    facilityStateById,
+  } = data
   const save = useLayoutSave(editor)
-  const canvasRef = useRef<SeatMapCanvasHandle>(null)
-
-  // 追加・削除の直後は対象の直下へ「元に戻す」チップを出す。
-  // 座標は論理(viewBox)のまま渡す — 画面座標への投影はチップ側が毎フレーム行い、
-  // 表示中にパン・ズームしても対象の下辺に貼り付いたまま追従する
-  const showUndoChipAt = useCallback(
-    (
-      rect: Rect,
-      message: string,
-      frame: Rect | null = null,
-      recent: RecentPlacement | null = null
-    ) => {
-      canvasRef.current?.showUndoChipAt(undoChipRequestOf(rect, message, frame, recent))
-    },
-    []
-  )
-
-  // 閲覧モードのまま置き始めた時だけ編集セッションを起こす。既に編集中なら何もしない
-  // (enterEditMode はワーキングコピーと undo スタックを作り直すので、二度呼ぶと編集内容が消える)
-  const ensureEditSession = useCallback(() => {
-    if (!editor.isEditMode) editor.enterEditMode()
-  }, [editor])
-
-  // 配置と掴み直しで文言を変える。対象の種別は配置フロー側だけが知っている
-  const handlePlaced = useCallback(
-    (rect: Rect, target: GhostRequest['target']) => {
-      showUndoChipAt(rect, placedMessageOf(target), null, recentOf(target, rect))
-    },
-    [showUndoChipAt]
-  )
-
+  const { canvasRef, showUndoChipAt, handlePlaced, centerOnSelector } = useCanvasHandle()
+  const ensureEditSession = useEditSessionStart(editor)
   const placement = useObjectPlacement(editor, {
     onPlaced: handlePlaced,
     onEnsureEditMode: ensureEditSession,
   })
-
-  // 削除の実行はここに集約する。ダイアログ経由(会議室・チーム)も即時(家具)も同じ後始末を通す。
-  // チームだけ発行口が違う(所属座席ごと消えるため object-delete では扱えない)
-  const handleDeleteObject = useCallback(
-    (ref: LayoutObjectRef) => {
-      const rect = effectiveLayout ? rectOfRef(effectiveLayout, ref) : null
-      if (ref.kind === 'team') editor.deleteTeam(ref.id)
-      else editor.deleteObject(ref)
-      if (rect) showUndoChipAt(rect, '削除しました', rect)
-      // 削除が成立した時だけゴーストを畳む。確認を開いた時点では畳まない —
-      // 確認をやめた利用者が、動かした位置のゴーストへそのまま戻れるようにする
-      if (placement.isActive) placement.cancel()
-    },
-    [editor, effectiveLayout, showUndoChipAt, placement.isActive, placement.cancel]
-  )
-
+  const handleDeleteObject = useObjectDelete({ editor, effectiveLayout, showUndoChipAt, placement })
   const dialogs = useEditDialogs(editor, employeeById, { onDeleteObject: handleDeleteObject })
-
-  // 05-3: セッション中のチーム枠タップ = 移動ゴースト。実体はその場に残り、「配置」で初めて動く
-  // (locked / fixedLayout のチームは startReposition が理由つきで弾く)
-  const handleTeamTap = useCallback(
-    (teamId: string) => placement.startReposition({ kind: 'team', id: teamId }),
-    [placement.startReposition]
+  const { handleSeatEnlarge, bulkDeleteSeatIds, setBulkDeleteSeatIds, confirmBulkDelete } =
+    useSeatBulkActions(editor)
+  const { handleSessionCancel, handleSessionFinish } = useEditSessionEnd(placement, save)
+  const { isGhostDeletable, isGhostDeleting, handleGhostDelete } = useGhostDelete(
+    placement,
+    dialogs
   )
-
-  // 05-4:「大型」= shape:'executive' の一括適用。バーが持つ形状はこれ1つなのでここで固定する
-  const handleSeatEnlarge = useCallback(
-    (seatIds: string[]) => editor.reshapeSeats(seatIds, 'executive'),
-    [editor]
-  )
-
-  // 05-4: 2席以上の一括削除。件数つきの確認を挟んでから1アクションで消す(undo 1回で戻る)。
-  // 1席のときは既存の単独確認(dialogs.requestSeatDelete)がそのまま受ける
-  const [bulkDeleteSeatIds, setBulkDeleteSeatIds] = useState<string[] | null>(null)
-  const confirmBulkDelete = useCallback(() => {
-    if (bulkDeleteSeatIds) editor.deleteSeats(bulkDeleteSeatIds)
-    setBulkDeleteSeatIds(null)
-  }, [bulkDeleteSeatIds, editor])
-
-  // 配置フローはセッションの内側にある。ゴーストを畳まずにセッションだけ閉じると、
-  // 読み取り専用の地図の上に暗幕とゴーストだけが残り、× 以外の逃げ道が無くなる
-  const handleSessionCancel = useCallback(() => {
-    placement.cancel()
-    save.cancel()
-  }, [placement.cancel, save.cancel])
-
-  const handleSessionFinish = useCallback(() => {
-    placement.cancel()
-    save.finish()
-  }, [placement.cancel, save.finish])
-
-  // 04-4: 移動ゴーストの削除ボタン。ゴーストを畳んでから既存の削除経路へ渡す
-  // (会議室は確認ダイアログ・チームは §07-3 のタイプ確認・家具は即時)
-  const ghostDeleteRef = placement.repositioningRef
-  const isGhostDeletable = canDeleteGhost(ghostDeleteRef)
-  // 削除確認が開いている間 = 削除処理中とみなす。新しい state を作らずダイアログの開閉から導く —
-  // 導ければ、閉じ忘れでフラグが立ちっぱなしになる経路が生まれない
-  const isGhostDeleting = isDeleteConfirmOpen(dialogs.deleteObjectTarget, dialogs.deleteTeamTarget)
-  const handleGhostDelete = useCallback(() => {
-    if (!ghostDeleteRef) return
-    // ここでセッションを畳まない。畳むのは handleDeleteObject の中、削除が成立した後だけ
-    dialogs.requestObjectDelete(ghostDeleteRef)
-  }, [ghostDeleteRef, dialogs.requestObjectDelete])
   // 操作ガイド4本(編集・メイン・チーム・家具)の活性化はフックへ寄せる。
   // 出し分けが画面の組み立てに散ると「どのガイドがいつ出るか」が読めなくなる
-  const centerOnSelector = useCallback(
-    (selector: string) => canvasRef.current?.centerOnSelector(selector),
-    []
-  )
   const tours = useSeatMapTours({
     isEditMode: editor.isEditMode,
     centerOnSelector,
     placementTargetType: placement.request?.target.type,
   })
-  const handleSelectTeam = useCallback(() => {
-    tours.beginTeamFlow()
-    placement.selectCategory('team')
-  }, [tours.beginTeamFlow, placement.selectCategory])
-  const handleSelectFacility = useCallback(() => {
-    tours.beginFacilityFlow()
-    placement.openCategory()
-  }, [tours.beginFacilityFlow, placement.openCategory])
+  const { handleTeamTap, handleSelectTeam, handleSelectFacility } = usePlacementEntries(
+    placement,
+    tours
+  )
   // 配属の結果はライブリージョンとトーストへ同じ文言を流す(実装を二重化しない)
   const assign = useSeatAssign({ editor, employeeById, onDone: message => showNotice(message) })
-
-  const [isDirectoryOpen, setIsDirectoryOpen] = useState(false)
-  const [hoverFacility, setHoverFacility] = useState<FacilityHoverPayload | null>(null)
-  // レイアウト切り替えアイランドの展開状態。開いている間は左下FABを隠す
-  const [isLayoutSwitcherOpen, setIsLayoutSwitcherOpen] = useState(false)
-  // 編集セッション中に選ばれている座席数。1席以上でFABを隠す(一括操作バーと重なるため)。
-  // useState のセッタは参照が安定なので、memo 済みキャンバスの再描画は増えない
-  const [selectedSeatCount, setSelectedSeatCount] = useState(0)
-
-  const handleFocusFailure = useCallback(
-    (reason: FocusFailure) => {
-      showNotice(focusFailureMessage(reason))
-    },
-    [showNotice]
-  )
-
-  // 10: チームバウンダリのタップ、および検索・自分の席からのヒット表示を束ねる
-  const focus = useTeamSeatFocus({
-    layout: effectiveLayout,
-    canvasRef,
-    onFailure: handleFocusFailure,
-  })
+  const surface = useSurfaceState()
+  const {
+    isDirectoryOpen,
+    setIsDirectoryOpen,
+    hoverFacility,
+    setHoverFacility,
+    isLayoutSwitcherOpen,
+    setIsLayoutSwitcherOpen,
+    selectedSeatCount,
+    setSelectedSeatCount,
+  } = surface
+  const nav = useSeatNavigation({ effectiveLayout, canvasRef, showNotice, surface })
+  const { focus, personSeat, handleDirectoryEmployeeSelect, handleGoToSeat, handleGoToMySeat } = nav
   // オーバーレイ内ミニマップ用のフロア情報(開いているチームが決まってから組み立てる)
   const minimap = useMinimapPayload(effectiveLayout, focus.payload?.teamId ?? null)
   // 左下 FAB の可否。条件が増えても組み立てが太らないよう判定はフックへ寄せる
@@ -220,42 +120,6 @@ export const SeatMapView = () => {
     selectedSeatCount: editor.isEditMode ? selectedSeatCount : 0,
     isLayoutSwitcherOpen,
   })
-
-  // サイドバーで押された社員はまずカードで見せる。座席へ飛ぶかどうかはカードのCTAが決める
-  const handleDirectoryEmployeeSelect = useCallback(
-    (employee: Employee) => {
-      openPersonDetail(employee.id)
-    },
-    [openPersonDetail]
-  )
-
-  // 人物詳細を開いている社員の席。引けない社員にはCTAを出さず「座席未設定」を見せる
-  const personSeat = useMemo(
-    () => seatOfEmployee(effectiveLayout, personDetailId),
-    [personDetailId, effectiveLayout]
-  )
-
-  // §03-3 配置済み判定の材料。予定システムの施設ID(Facility.facilityId)を持つ分だけが
-  // Garoon マスタと突き合わせられる(レイアウト上の Facility.id とは別物)
-  const placedFacilityIds = useMemo(() => placedFacilityIdsOf(effectiveLayout), [effectiveLayout])
-
-  // カードの「座席へ移動」。畳んでから飛ばす — 逆順だとオーバーレイの上にシートの暗幕が残る
-  const handleGoToSeat = useCallback(() => {
-    if (!personSeat) return
-    closeAll()
-    setIsDirectoryOpen(false)
-    focus.focusSeat(personSeat)
-  }, [personSeat, closeAll, focus.focusSeat, setIsDirectoryOpen])
-
-  // 「自分の席」ボタン。検索と同じ focusSeat を通し、分岐はここ(席の引き当て)だけに持つ
-  const handleGoToMySeat = useCallback(() => {
-    const seat = seatOfEmployee(effectiveLayout, SELF_EMPLOYEE_ID)
-    if (!seat) {
-      showNotice('座席未設定')
-      return
-    }
-    focus.focusSeat(seat)
-  }, [effectiveLayout, focus.focusSeat, showNotice])
 
   return (
     <div className={styles.seatMapPage}>
