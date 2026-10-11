@@ -6,7 +6,7 @@ import { useScheduleRefresh } from '@/hooks/use-schedule-refresh'
 // オーバーレイを開いた直後のふるまい(ローディング擬似・クリックロック・スクロール位置戻し)と、
 // 同期バッジが出すスケジュール取得状態。PC / モバイルで分岐しない共通処理
 
-type OverlaySession = {
+export type OverlaySession = {
   // 本文のスクロール領域。開くたびに先頭へ戻すのでここで持ち、本文の要素の ref に渡す
   bodyRef: RefObject<HTMLDivElement | null>
   loading: boolean
