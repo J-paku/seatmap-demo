@@ -17,7 +17,15 @@ type Props = {
   onDelete?: () => void
 }
 
-export const GhostActionBar = ({ label, blocked, mode, isDeleting, onConfirm, onCancel, onDelete }: Props) => {
+export const GhostActionBar = ({
+  label,
+  blocked,
+  mode,
+  isDeleting,
+  onConfirm,
+  onCancel,
+  onDelete,
+}: Props) => {
   const handleConfirm = () => {
     // disabled とここでの二重ガード。blocked 中は確定処理に一切入らない
     if (blocked) return

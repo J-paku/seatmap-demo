@@ -30,7 +30,11 @@ export const ObjectActionBar = ({
   onToggleLabel,
   onDelete,
 }: Props) => (
-  <div className={e.seatActionBar} style={{ left: x, top: y }} onClick={(event) => event.stopPropagation()}>
+  <div
+    className={e.seatActionBar}
+    style={{ left: x, top: y }}
+    onClick={event => event.stopPropagation()}
+  >
     <span className={e.seatActionCount}>{name}</span>
     <button
       type='button'

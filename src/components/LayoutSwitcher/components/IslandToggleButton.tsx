@@ -17,7 +17,7 @@ type Props = {
 export const IslandToggleButton = ({ source, layoutMetas, isOpen, panelId, onToggle }: Props) => {
   const isCustom = source.type === 'custom'
   const currentName = isCustom
-    ? (layoutMetas.find((meta) => meta.layoutId === source.layoutId)?.layoutName ??
+    ? (layoutMetas.find(meta => meta.layoutId === source.layoutId)?.layoutName ??
       floorNameOf(DEFAULT_FLOOR_ID))
     : floorNameOf(source.floorId)
 

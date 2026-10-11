@@ -126,7 +126,7 @@ export const useLayoutSwitcher = (): UseLayoutSwitcherResult => {
   const selectCustom = useCallback(
     (layoutId: string) => {
       if (setCustom(layoutId)) {
-        const meta = layoutMetas.find((m) => m.layoutId === layoutId)
+        const meta = layoutMetas.find(m => m.layoutId === layoutId)
         announce(`[info]${meta?.layoutName ?? ''}に切り替えました`)
       }
       close()
@@ -167,7 +167,7 @@ export const useLayoutSwitcher = (): UseLayoutSwitcherResult => {
         announce('[info]デフォルト設定を解除しました')
         return
       }
-      const meta = layoutMetas.find((m) => m.layoutId === layoutId)
+      const meta = layoutMetas.find(m => m.layoutId === layoutId)
       saveDefaultLayoutId(layoutId)
       syncFromStorage()
       announce(`[success]次回から「${meta?.layoutName ?? ''}」を最初に表示します`)
@@ -178,7 +178,7 @@ export const useLayoutSwitcher = (): UseLayoutSwitcherResult => {
   // 削除確認ダイアログの対象を立てる。実削除はconfirmDeleteの確定操作でのみ行う
   const requestDelete = useCallback(
     (layoutId: string) => {
-      const meta = layoutMetas.find((m) => m.layoutId === layoutId)
+      const meta = layoutMetas.find(m => m.layoutId === layoutId)
       if (!meta) return
       setDeleteTarget(meta)
     },

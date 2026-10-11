@@ -67,7 +67,12 @@ export const TeamArea = ({
     onBoundaryOpen(team.id, e.currentTarget.getBoundingClientRect())
   }
 
-  const inner = { x: area.x + ISLAND_INSET, y: area.y + ISLAND_INSET, w: area.w - ISLAND_INSET * 2, h: area.h - ISLAND_INSET * 2 }
+  const inner = {
+    x: area.x + ISLAND_INSET,
+    y: area.y + ISLAND_INSET,
+    w: area.w - ISLAND_INSET * 2,
+    h: area.h - ISLAND_INSET * 2,
+  }
   const dot = colorEntry.background
   const teamNameFont = clamp(Math.round(inner.w * 0.095), 44, 72)
   const countFont = clamp(Math.round(teamNameFont * 0.72), 30, 52)
@@ -80,11 +85,47 @@ export const TeamArea = ({
   return (
     <>
       {/* 床カード */}
-      <div style={{ position: 'absolute', left: inner.x, top: inner.y, width: inner.w, height: inner.h, borderRadius: 16, background: 'var(--color-surface-elevated)', opacity: 0.95, pointerEvents: 'none' }} />
+      <div
+        style={{
+          position: 'absolute',
+          left: inner.x,
+          top: inner.y,
+          width: inner.w,
+          height: inner.h,
+          borderRadius: 16,
+          background: 'var(--color-surface-elevated)',
+          opacity: 0.95,
+          pointerEvents: 'none',
+        }}
+      />
       {/* 上部カラーバー */}
-      <div style={{ position: 'absolute', left: area.x + 10, top: area.y + 8, width: Math.max(0, area.w - 16), height: topBarH, borderRadius: topBarR, background: dot, opacity: 0.95, pointerEvents: 'none' }} />
+      <div
+        style={{
+          position: 'absolute',
+          left: area.x + 10,
+          top: area.y + 8,
+          width: Math.max(0, area.w - 16),
+          height: topBarH,
+          borderRadius: topBarR,
+          background: dot,
+          opacity: 0.95,
+          pointerEvents: 'none',
+        }}
+      />
       {/* 左辺カラーバー */}
-      <div style={{ position: 'absolute', left: area.x + 8, top: area.y + 20, width: leftBarW, height: Math.max(0, area.h - 32), borderRadius: 2, background: dot, opacity: leftBarOpacity, pointerEvents: 'none' }} />
+      <div
+        style={{
+          position: 'absolute',
+          left: area.x + 8,
+          top: area.y + 20,
+          width: leftBarW,
+          height: Math.max(0, area.h - 32),
+          borderRadius: 2,
+          background: dot,
+          opacity: leftBarOpacity,
+          pointerEvents: 'none',
+        }}
+      />
       {/* インタラクション面 */}
       <div
         role='button'
@@ -98,11 +139,11 @@ export const TeamArea = ({
           setPressed(false)
           if (canLongPress) longPress.handlers.onPointerLeave()
         }}
-        onPointerDown={(e) => {
+        onPointerDown={e => {
           if (!isEditMode) setPressed(true)
           if (canLongPress) longPress.handlers.onPointerDown(e)
         }}
-        onPointerMove={(e) => {
+        onPointerMove={e => {
           if (canLongPress) longPress.handlers.onPointerMove(e)
         }}
         onPointerUp={() => {
@@ -134,7 +175,14 @@ export const TeamArea = ({
       >
         {/* ラベル板(ネオブルータル) */}
         <div
-          onPointerDown={isEditMode ? (e) => { e.stopPropagation(); onLabelEditPointerDown?.(team.id, e) } : undefined}
+          onPointerDown={
+            isEditMode
+              ? e => {
+                  e.stopPropagation()
+                  onLabelEditPointerDown?.(team.id, e)
+                }
+              : undefined
+          }
           style={{
             display: 'grid',
             gridTemplateColumns: '14px 1fr auto',
@@ -148,10 +196,31 @@ export const TeamArea = ({
           }}
         >
           <div style={{ background: dot }} />
-          <div style={{ padding: '13px 18px', fontWeight: 800, lineHeight: 1.1, color: '#111827', fontSize: teamNameFont, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+          <div
+            style={{
+              padding: '13px 18px',
+              fontWeight: 800,
+              lineHeight: 1.1,
+              color: '#111827',
+              fontSize: teamNameFont,
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+            }}
+          >
             {team.name}
           </div>
-          <div style={{ padding: '13px 18px', fontWeight: 900, color: '#ffffff', background: dot, fontSize: countFont, display: 'flex', alignItems: 'center' }}>
+          <div
+            style={{
+              padding: '13px 18px',
+              fontWeight: 900,
+              color: '#ffffff',
+              background: dot,
+              fontSize: countFont,
+              display: 'flex',
+              alignItems: 'center',
+            }}
+          >
             {presentCount}名
           </div>
         </div>

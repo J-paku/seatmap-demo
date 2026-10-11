@@ -7,11 +7,11 @@ import { FLOOR_SEEDS } from '@/lib/mock-loader'
 import { FLOORS } from '@/utils/floors'
 import type { TeamImportSource } from '@/utils/layout/team-import'
 
-export const OFFICIAL_TEAM_IMPORT_SOURCES: TeamImportSource[] = FLOORS.flatMap((floor) => {
+export const OFFICIAL_TEAM_IMPORT_SOURCES: TeamImportSource[] = FLOORS.flatMap(floor => {
   const seed = FLOOR_SEEDS[floor.floorId]
   // 所属判定の正本は seat.teamId(DECISION D1)。idPrefix では引かない
-  return seed.teams.map((team) => ({
+  return seed.teams.map(team => ({
     team,
-    seats: seed.seats.filter((seat) => seat.teamId === team.id),
+    seats: seed.seats.filter(seat => seat.teamId === team.id),
   }))
 })

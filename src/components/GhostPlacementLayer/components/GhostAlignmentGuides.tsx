@@ -13,14 +13,16 @@ const DOT_CROSS_OFFSET = GUIDE_LINE_WIDTH / 2 - DOT_RADIUS
 
 // 固定外形(半径・色・形)は styles.guideDot(CSS モジュール)側。ここが持つのは毎フレーム実測される位置だけ
 const dotStyle = (axis: SnapGuide['axis'], along: number) =>
-  axis === 'vertical' ? { left: DOT_CROSS_OFFSET, top: along } : { top: DOT_CROSS_OFFSET, left: along }
+  axis === 'vertical'
+    ? { left: DOT_CROSS_OFFSET, top: along }
+    : { top: DOT_CROSS_OFFSET, left: along }
 
 // 線は [start, end] をそのまま描く。両端の延長は既にジオメトリ側(snap-guides)が焼き込んでおり、
 // ここで足すと二重になって線が対象物より長くなる。ドットは延長を除いた実端点 = 線の両端から
 // g.extend 内側に置く(g.extend は画面座標へ写す時に倍率が掛かっているので画面px固定にしない)
 export const GhostAlignmentGuides = ({ guides }: Props) => (
   <>
-    {guides.map((g) => {
+    {guides.map(g => {
       const isVertical = g.axis === 'vertical'
       const length = g.end - g.start
       return (
@@ -37,7 +39,10 @@ export const GhostAlignmentGuides = ({ guides }: Props) => (
           }
         >
           <span className={styles.guideDot} style={dotStyle(g.axis, g.extend - DOT_RADIUS)} />
-          <span className={styles.guideDot} style={dotStyle(g.axis, length - g.extend - DOT_RADIUS)} />
+          <span
+            className={styles.guideDot}
+            style={dotStyle(g.axis, length - g.extend - DOT_RADIUS)}
+          />
         </span>
       )
     })}

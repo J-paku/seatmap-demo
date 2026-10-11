@@ -30,7 +30,7 @@ export const TeamChangeSheet = ({ teams, currentTeamId, colorOf, onSelect, onClo
         role='dialog'
         aria-modal='true'
         aria-label='チーム変更'
-        onClick={(e) => e.stopPropagation()}
+        onClick={e => e.stopPropagation()}
         {...sheetHandlers}
         style={{
           transform: dragStyle.transform,
@@ -40,7 +40,7 @@ export const TeamChangeSheet = ({ teams, currentTeamId, colorOf, onSelect, onClo
       >
         <h3 className={e.editSheetTitle}>チーム変更</h3>
         <div ref={listRef} className={e.editTeamList}>
-          {teams.map((team) => {
+          {teams.map(team => {
             const entry = colorOf(team.id, team.name)
             return (
               <button

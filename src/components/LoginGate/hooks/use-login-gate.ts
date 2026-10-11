@@ -13,11 +13,11 @@ export const useLoginGate = ({ onAuthenticated }: LoginGateProps) => {
   const canSubmit = loginId.trim().length > 0 && password.length > 0
 
   const togglePasswordVisible = useCallback(() => {
-    setPasswordVisible((visible) => !visible)
+    setPasswordVisible(visible => !visible)
   }, [])
 
   const toggleHint = useCallback(() => {
-    setHintOpen((open) => !open)
+    setHintOpen(open => !open)
   }, [])
 
   const handleSubmit = useCallback(

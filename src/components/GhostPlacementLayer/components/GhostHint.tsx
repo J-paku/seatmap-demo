@@ -23,7 +23,11 @@ export const GhostHint = ({ rect, blocked, isDragging, onPointerDown }: Props) =
   const below = rect.top + rect.height + GAP_PX
   // しきい値は隙間を2回数える。1回だと下端でアクションバーの裏へ一瞬もぐってから反転する
   const flipped = rect.top + rect.height + GAP_PX * 2 > window.innerHeight - FLIP_MARGIN_PX
-  const centerX = clamp(rect.left + rect.width / 2, EDGE_CLAMP_PX, window.innerWidth - EDGE_CLAMP_PX)
+  const centerX = clamp(
+    rect.left + rect.width / 2,
+    EDGE_CLAMP_PX,
+    window.innerWidth - EDGE_CLAMP_PX
+  )
   return (
     <div
       className={`${styles.hintBox}${isDragging ? ` ${styles.isDragging}` : ''}`}

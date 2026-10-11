@@ -33,15 +33,11 @@ export const CreateLayoutForm = ({ layoutCount, onCreate }: Props) => {
             type='text'
             className={styles.createInput}
             value={name}
-            onChange={(e) => setName(e.target.value)}
+            onChange={e => setName(e.target.value)}
             maxLength={50}
             placeholder='レイアウト名'
           />
-          <button
-            type='submit'
-            className={styles.createSubmit}
-            aria-label='新しいレイアウトを作成'
-          >
+          <button type='submit' className={styles.createSubmit} aria-label='新しいレイアウトを作成'>
             <span className='icon-msr-filled' aria-hidden='true'>
               add
             </span>

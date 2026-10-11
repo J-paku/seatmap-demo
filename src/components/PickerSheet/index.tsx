@@ -115,7 +115,12 @@ export const PickerSheet = ({
               </span>
             )}
             <h2 className={styles.pickerTitle}>{title}</h2>
-            <button type='button' className={styles.pickerClose} aria-label='閉じる' onClick={closeWithHaptic}>
+            <button
+              type='button'
+              className={styles.pickerClose}
+              aria-label='閉じる'
+              onClick={closeWithHaptic}
+            >
               <span className='icon-msr-thin' aria-hidden='true'>
                 close
               </span>

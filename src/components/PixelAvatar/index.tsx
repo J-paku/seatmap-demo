@@ -26,11 +26,7 @@ const STROKE_OFFSETS: [number, number][] = [
   [STROKE_WIDTH, STROKE_WIDTH],
 ]
 
-export function PixelAvatar({
-  config,
-  size = DEFAULT_SIZE,
-  ariaLabel,
-}: PixelAvatarProps) {
+export function PixelAvatar({ config, size = DEFAULT_SIZE, ariaLabel }: PixelAvatarProps) {
   const { rects, size: gridSize } = usePixelAvatar({ config })
   return (
     <svg

@@ -30,7 +30,7 @@ export const ObjectDeleteDialog = ({ facilityName, onConfirm, onCancel }: Props)
         role='dialog'
         aria-modal='true'
         aria-label='施設削除の確認'
-        onClick={(e) => e.stopPropagation()}
+        onClick={e => e.stopPropagation()}
         {...sheetHandlers}
         style={{
           transform: dragStyle.transform,
@@ -38,7 +38,12 @@ export const ObjectDeleteDialog = ({ facilityName, onConfirm, onCancel }: Props)
           willChange: dragStyle.willChange,
         }}
       >
-        <button type='button' className={e.editDialogClose} aria-label='閉じる' onClick={handleCancel}>
+        <button
+          type='button'
+          className={e.editDialogClose}
+          aria-label='閉じる'
+          onClick={handleCancel}
+        >
           <span className='material-symbols-outlined' aria-hidden='true'>
             close
           </span>
@@ -54,10 +59,18 @@ export const ObjectDeleteDialog = ({ facilityName, onConfirm, onCancel }: Props)
           <strong>{facilityName}</strong>
         </p>
         <div className={e.editDialogActions}>
-          <button type='button' className={`pixel-btn ${e.editDialogCancel}`} onClick={handleCancel}>
+          <button
+            type='button'
+            className={`pixel-btn ${e.editDialogCancel}`}
+            onClick={handleCancel}
+          >
             やめる
           </button>
-          <button type='button' className={`pixel-btn ${e.editDialogConfirm}`} onClick={handleConfirm}>
+          <button
+            type='button'
+            className={`pixel-btn ${e.editDialogConfirm}`}
+            onClick={handleConfirm}
+          >
             削除する
           </button>
         </div>

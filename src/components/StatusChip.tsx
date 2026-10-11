@@ -15,7 +15,10 @@ type PresenceBadgeProps = {
 
 // 在席ステータスのチップ(優先度3: 状態確定時)
 const StatusChip = ({ status }: { status: PresenceStatus }) => (
-  <span className={sdStyles.statusChip} style={{ ['--status-color' as string]: PRESENCE_COLOR[status] }}>
+  <span
+    className={sdStyles.statusChip}
+    style={{ ['--status-color' as string]: PRESENCE_COLOR[status] }}
+  >
     <span className={sdStyles.statusChipDot} />
     {PRESENCE_LABEL[status]}
   </span>
@@ -37,7 +40,9 @@ export const PresenceBadge = ({ visible, isLoading, isOccupied, status }: Presen
       ) : status ? (
         <StatusChip status={status} />
       ) : (
-        <span className={`${sdStyles.statusChip} ${isOccupied ? sdStyles.statusChipInuse : sdStyles.statusChipVacant}`}>
+        <span
+          className={`${sdStyles.statusChip} ${isOccupied ? sdStyles.statusChipInuse : sdStyles.statusChipVacant}`}
+        >
           {isOccupied ? '使用中' : '空席'}
         </span>
       )}

@@ -16,7 +16,6 @@ const CATEGORY_CLASS = {
   vacation: styles.catVacation,
 } as const
 
-
 // 予定詳細(社員詳細の上にスタック)
 export const ScheduleDetail = ({ eventId }: { eventId: string }) => {
   const { data: schedules } = useSchedules()
@@ -25,9 +24,9 @@ export const ScheduleDetail = ({ eventId }: { eventId: string }) => {
   const { data: facilities } = useFacilities()
   const { switchToEmployee } = useDetailPanel()
 
-  const ev = schedules?.find((s) => s.id === eventId)
-  const employee = ev ? employees?.find((e) => e.id === ev.employeeId) : null
-  const team = employee ? teams?.find((t) => t.id === employee.teamId) : null
+  const ev = schedules?.find(s => s.id === eventId)
+  const employee = ev ? employees?.find(e => e.id === ev.employeeId) : null
+  const team = employee ? teams?.find(t => t.id === employee.teamId) : null
   const avatarConfig = useEmployeeAvatar(employee)
   const facilityNameById = useMemo(() => facilityNameByFacilityId(facilities ?? []), [facilities])
   const empById = useEmployeeMap(employees ?? [])
@@ -35,17 +34,23 @@ export const ScheduleDetail = ({ eventId }: { eventId: string }) => {
 
   // 非公開予定は件名だけでなく押さえた会議室も出さない(部屋から会議を辿れてしまう)
   const isMasked = isScheduleMasked(ev)
-  const facilityName = visibleFacilityName(ev, ev.facilityId ? facilityNameById.get(ev.facilityId) : undefined)
+  const facilityName = visibleFacilityName(
+    ev,
+    ev.facilityId ? facilityNameById.get(ev.facilityId) : undefined
+  )
 
   // 会議かつ非公開でなく参加者データがある予定だけ、登録者・参加者ブロックを出す
   // (外出・休暇・非公開・参加者データ無しは従来通り所有者1人行 employeeRow を出す)
   const participantIds = ev.participantIds ?? []
   // employees が未ロード(SWRデータ未着)の間は登録者・参加者ブロックを出さない。schedules が
   // employees より先に resolve するレースで、登録者ラベルだけ出て行が0件になるのを防ぐ
-  const showAttendees = employees != null && ev.category === 'meeting' && !isMasked && participantIds.length > 0
+  const showAttendees =
+    employees != null && ev.category === 'meeting' && !isMasked && participantIds.length > 0
   const organizer = showAttendees && ev.organizerId ? empById.get(ev.organizerId) : undefined
   const participants = showAttendees
-    ? participantIds.map((id) => empById.get(id)).filter((person): person is Employee => person != null)
+    ? participantIds
+        .map(id => empById.get(id))
+        .filter((person): person is Employee => person != null)
     : []
 
   return (
@@ -56,7 +61,9 @@ export const ScheduleDetail = ({ eventId }: { eventId: string }) => {
       </div>
       <div className={styles.detailRow}>
         <span className={styles.detailLabel}>区分</span>
-        <span className={`${styles.categoryChip} ${CATEGORY_CLASS[ev.category]}`}>{CATEGORY_LABEL[ev.category]}</span>
+        <span className={`${styles.categoryChip} ${CATEGORY_CLASS[ev.category]}`}>
+          {CATEGORY_LABEL[ev.category]}
+        </span>
       </div>
       {facilityName && (
         <div className={styles.detailRow}>
@@ -86,7 +93,7 @@ export const ScheduleDetail = ({ eventId }: { eventId: string }) => {
             <div className={styles.detailPartsList}>
               {/* 参加者一覧は登録者を除外しない(FacilityCurrentEvent/AttendeePopoverは除外するが、
                   この予定詳細では登録者も参加者の一人として両方のブロックに出す仕様のため揃えない) */}
-              {participants.map((person) => (
+              {participants.map(person => (
                 <PersonRow key={person.id} employee={person} onClick={switchToEmployee} />
               ))}
             </div>
@@ -94,7 +101,11 @@ export const ScheduleDetail = ({ eventId }: { eventId: string }) => {
         </>
       ) : (
         employee && (
-          <button type='button' className={styles.employeeRow} onClick={() => switchToEmployee(employee.id)}>
+          <button
+            type='button'
+            className={styles.employeeRow}
+            onClick={() => switchToEmployee(employee.id)}
+          >
             <span className={styles.employeeRowAvatar}>
               <PixelAvatar config={avatarConfig} size={40} />
             </span>

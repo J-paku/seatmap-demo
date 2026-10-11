@@ -32,8 +32,7 @@ export function LoginHintContent() {
             <b
               className='font-bold text-[color:var(--color-gate-danger)]'
               style={{
-                background:
-                  'linear-gradient(transparent 55%, var(--color-gate-marker-danger) 55%)',
+                background: 'linear-gradient(transparent 55%, var(--color-gate-marker-danger) 55%)',
               }}
             >
               サイボウズ
@@ -88,8 +87,7 @@ export function LoginHintContent() {
           <span
             className='font-bold text-slate-700'
             style={{
-              background:
-                'linear-gradient(transparent 55%, var(--color-gate-marker-neutral) 55%)',
+              background: 'linear-gradient(transparent 55%, var(--color-gate-marker-neutral) 55%)',
             }}
           >
             PCログイン

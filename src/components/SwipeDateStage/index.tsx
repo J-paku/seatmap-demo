@@ -6,7 +6,13 @@ import styles from '../date-navigator.module.css'
 
 type Props = SwipeDateStageProps
 
-export const SwipeDateStage = ({ cardKey, onSwipePrevDay, onSwipeNextDay, fill, children }: Props) => {
+export const SwipeDateStage = ({
+  cardKey,
+  onSwipePrevDay,
+  onSwipeNextDay,
+  fill,
+  children,
+}: Props) => {
   const { stageRef, cardRef, depthRef, stampPrevRef, stampNextRef, handlers } = useDateSwipe({
     cardKey,
     onSwipePrevDay,
@@ -14,20 +20,37 @@ export const SwipeDateStage = ({ cardKey, onSwipePrevDay, onSwipeNextDay, fill, 
   })
 
   return (
-    <div ref={stageRef} className={`${styles.swipeStage}${fill ? ` ${styles.swipeStageFill}` : ''}`}>
+    <div
+      ref={stageRef}
+      className={`${styles.swipeStage}${fill ? ` ${styles.swipeStageFill}` : ''}`}
+    >
       <div
         ref={depthRef}
         className={styles.swipeDepthCard}
         aria-hidden='true'
         style={{ opacity: 0, transform: 'scale(0.9)' }}
       />
-      <div ref={stampPrevRef} className={`${styles.swipeStamp} ${styles.swipeStampPrev}`} aria-hidden='true' style={{ opacity: 0 }}>
+      <div
+        ref={stampPrevRef}
+        className={`${styles.swipeStamp} ${styles.swipeStampPrev}`}
+        aria-hidden='true'
+        style={{ opacity: 0 }}
+      >
         ‹前日
       </div>
-      <div ref={stampNextRef} className={`${styles.swipeStamp} ${styles.swipeStampNext}`} aria-hidden='true' style={{ opacity: 0 }}>
+      <div
+        ref={stampNextRef}
+        className={`${styles.swipeStamp} ${styles.swipeStampNext}`}
+        aria-hidden='true'
+        style={{ opacity: 0 }}
+      >
         翌日›
       </div>
-      <div ref={cardRef} className={`${styles.swipeFrontCard}${fill ? ` ${styles.swipeFrontCardFill}` : ''}`} {...handlers}>
+      <div
+        ref={cardRef}
+        className={`${styles.swipeFrontCard}${fill ? ` ${styles.swipeFrontCardFill}` : ''}`}
+        {...handlers}
+      >
         {children}
       </div>
     </div>

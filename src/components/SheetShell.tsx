@@ -12,7 +12,6 @@ const VARIANT_CLASS = {
   schedule: styles.schedule,
 } as const
 
-
 export const SEATMAP_BG_ID = 'seatmap-bg-root'
 
 type Props = {
@@ -27,7 +26,14 @@ type Props = {
 
 // シートは中央モーダルになったため、ボトムシートの持ち手(SheetHandle)は置かない。
 // 下スワイプで閉じる挙動は残っており、スクロール最上部からの下方ドラッグで発火する
-export const SheetShell = ({ title, variant, active, onClose, children, headerless = false }: Props) => {
+export const SheetShell = ({
+  title,
+  variant,
+  active,
+  onClose,
+  children,
+  headerless = false,
+}: Props) => {
   const closeBtnRef = useRef<HTMLButtonElement>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
   const backdropRef = useRef<HTMLDivElement>(null)
@@ -117,7 +123,13 @@ export const SheetShell = ({ title, variant, active, onClose, children, headerle
               <h2 id={titleId} className={styles.title}>
                 {title}
               </h2>
-              <button ref={closeBtnRef} type='button' className={styles.close} aria-label='パネルを閉じる' onClick={onClose}>
+              <button
+                ref={closeBtnRef}
+                type='button'
+                className={styles.close}
+                aria-label='パネルを閉じる'
+                onClick={onClose}
+              >
                 ✕
               </button>
             </div>

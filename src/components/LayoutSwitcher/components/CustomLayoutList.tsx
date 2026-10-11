@@ -25,7 +25,7 @@ export const CustomLayoutList = ({
 
   return (
     <div className={styles.customList}>
-      {layoutMetas.map((meta) => (
+      {layoutMetas.map(meta => (
         <CustomLayoutRow
           key={meta.layoutId}
           meta={meta}

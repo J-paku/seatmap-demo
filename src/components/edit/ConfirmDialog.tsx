@@ -121,7 +121,7 @@ export const ConfirmDialog = ({
         role={role}
         aria-modal='true'
         aria-label={ariaLabel}
-        onClick={(e) => e.stopPropagation()}
+        onClick={e => e.stopPropagation()}
         onPointerDown={sheetHandlers.onPointerDown}
         onPointerMove={sheetHandlers.onPointerMove}
         onPointerUp={sheetHandlers.onPointerUp}
@@ -133,14 +133,21 @@ export const ConfirmDialog = ({
         }}
       >
         {onClose && (
-          <button type='button' className={e.editDialogClose} aria-label='閉じる' onClick={handleClose}>
+          <button
+            type='button'
+            className={e.editDialogClose}
+            aria-label='閉じる'
+            onClick={handleClose}
+          >
             <span className='material-symbols-outlined' aria-hidden='true'>
               close
             </span>
           </button>
         )}
         {confirmIcon && (
-          <div className={`${e.editDialogIconBadge} ${variant === 'default' ? e.isDefaultVariant : ''}`}>
+          <div
+            className={`${e.editDialogIconBadge} ${variant === 'default' ? e.isDefaultVariant : ''}`}
+          >
             <span className='material-symbols-outlined' aria-hidden='true'>
               {confirmIcon}
             </span>
@@ -153,14 +160,19 @@ export const ConfirmDialog = ({
             type='text'
             className={e.editDialogTypedInput}
             value={typedValue}
-            onChange={(ev) => setTypedValue(ev.target.value)}
+            onChange={ev => setTypedValue(ev.target.value)}
             placeholder={typedConfirmation.placeholder ?? typedConfirmation.keyword}
             aria-label={`確認のため「${typedConfirmation.keyword}」と入力`}
           />
         )}
         <div className={e.editDialogActions}>
           {!hideCancel && (
-            <button ref={cancelBtnRef} type='button' className={`pixel-btn ${e.editDialogCancel}`} onClick={handleCancel}>
+            <button
+              ref={cancelBtnRef}
+              type='button'
+              className={`pixel-btn ${e.editDialogCancel}`}
+              onClick={handleCancel}
+            >
               {cancelLabel}
             </button>
           )}
@@ -185,7 +197,11 @@ export const ConfirmDialog = ({
 
 // §07-3: チーム削除確認の本文(4行)。TeamOverlay 等の呼び出し側から
 // buildTeamDeleteConfirmMessage(...) の戻り値を ConfirmDialog の message props にそのまま渡す
-export const buildTeamDeleteConfirmMessage = (teamLabel: string, occupiedCount: number, emptyCount: number) => {
+export const buildTeamDeleteConfirmMessage = (
+  teamLabel: string,
+  occupiedCount: number,
+  emptyCount: number
+) => {
   const totalCount = occupiedCount + emptyCount
   return (
     <>

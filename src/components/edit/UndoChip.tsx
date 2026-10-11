@@ -35,7 +35,7 @@ export const UndoChip = ({ x, y, message, showSavedIcon = false, frame, onUndo }
         type='button'
         className={e.editUndoAction}
         aria-label='直前の変更を戻す'
-        onClick={(ev) => {
+        onClick={ev => {
           ev.stopPropagation()
           triggerHaptic('light')
           onUndo()

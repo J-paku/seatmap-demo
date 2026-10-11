@@ -29,8 +29,23 @@ type Props = {
   onDelete?: () => void
 }
 
-export const GhostPlacementLayer = ({ request, placement, isDeleting, onConfirm, onCancel, onDelete }: Props) => {
-  const { screenRect, logicalRect, screenGuides, blocked, screenBlockedRects, isDragging, resizingHandle } = placement
+export const GhostPlacementLayer = ({
+  request,
+  placement,
+  isDeleting,
+  onConfirm,
+  onCancel,
+  onDelete,
+}: Props) => {
+  const {
+    screenRect,
+    logicalRect,
+    screenGuides,
+    blocked,
+    screenBlockedRects,
+    isDragging,
+    resizingHandle,
+  } = placement
   // target.type==='reposition' が「移動モード」。新規配置ではラベルバッジ・削除ボタンを出さない
   const mode = request.target.type === 'reposition' ? 'move' : 'create'
 

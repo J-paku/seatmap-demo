@@ -49,7 +49,12 @@ export const TeamCreatePopover = ({ isOpen, onSubmit, onClose }: Props) => {
   }
 
   return (
-    <PickerSheet isOpen={isOpen} title='新規チームを作成' note='名前と色を決めると配置に進みます' onClose={onClose}>
+    <PickerSheet
+      isOpen={isOpen}
+      title='新規チームを作成'
+      note='名前と色を決めると配置に進みます'
+      onClose={onClose}
+    >
       <div data-team-create-panel='true'>
         <label className={styles.teamNewLabel} htmlFor='team-new-name'>
           チーム名
@@ -59,14 +64,14 @@ export const TeamCreatePopover = ({ isOpen, onSubmit, onClose }: Props) => {
           className={styles.assignSearch}
           placeholder='例: チーム E'
           value={name}
-          onChange={(e) => setName(e.target.value)}
+          onChange={e => setName(e.target.value)}
           onKeyDown={onEnterSubmit}
           autoFocus
         />
 
         <span className={styles.teamNewLabel}>カラー</span>
         <div className={styles.teamNewSwatches}>
-          {PRESET_COLORS.map((preset) => (
+          {PRESET_COLORS.map(preset => (
             <button
               key={preset}
               type='button'
@@ -84,14 +89,14 @@ export const TeamCreatePopover = ({ isOpen, onSubmit, onClose }: Props) => {
             className={styles.teamNewColorInput}
             aria-label='色を選ぶ'
             value={color}
-            onChange={(e) => applyColor(e.target.value)}
+            onChange={e => applyColor(e.target.value)}
           />
           <input
             className={`${styles.assignSearch} ${styles.teamNewHex}${isHexInvalid ? ` ${styles.isInvalid}` : ''}`}
             aria-label='色コード'
             placeholder='#RRGGBB'
             value={hexText}
-            onChange={(e) => onHexChange(e.target.value)}
+            onChange={e => onHexChange(e.target.value)}
             onKeyDown={onEnterSubmit}
             spellCheck={false}
           />

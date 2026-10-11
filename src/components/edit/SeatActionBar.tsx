@@ -54,7 +54,12 @@ export const SeatActionBar = ({
 
   // getBoundingClientRect はビューポート座標なので、追従・フォールバックとも fixed で置く
   const position = anchor
-    ? { position: 'fixed' as const, left: anchor.left, top: anchor.top, transform: 'translate(-50%, -100%)' }
+    ? {
+        position: 'fixed' as const,
+        left: anchor.left,
+        top: anchor.top,
+        transform: 'translate(-50%, -100%)',
+      }
     : {
         position: 'fixed' as const,
         left: '50%',
@@ -68,7 +73,7 @@ export const SeatActionBar = ({
       style={position}
       role='region'
       aria-label={`${count}席を選択中`}
-      onClick={(event) => event.stopPropagation()}
+      onClick={event => event.stopPropagation()}
     >
       <span className={e.seatActionCount}>✓ {count}席 選択中</span>
       {isSingle && (

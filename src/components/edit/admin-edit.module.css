@@ -56,7 +56,6 @@
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-edit-label-fg) 26%, transparent);
 }
 
-
 .editDialogBackdrop {
   position: fixed;
   inset: 0;
@@ -366,7 +365,10 @@
   font-weight: 700;
   white-space: nowrap;
   cursor: pointer;
-  transition: background 140ms ease, color 140ms ease, transform 140ms ease;
+  transition:
+    background 140ms ease,
+    color 140ms ease,
+    transform 140ms ease;
 }
 
 .editRemoteCancel:focus-visible,

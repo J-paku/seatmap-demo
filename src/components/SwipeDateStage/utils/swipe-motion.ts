@@ -20,7 +20,8 @@ export const applyFollowStyles = (refs: SwipeStageRefs, dx: number, transition: 
   if (!card) return
 
   const abs = Math.abs(dx)
-  const resisted = abs <= RESIST_START ? dx : Math.sign(dx) * (RESIST_START + (abs - RESIST_START) * RESIST_FACTOR)
+  const resisted =
+    abs <= RESIST_START ? dx : Math.sign(dx) * (RESIST_START + (abs - RESIST_START) * RESIST_FACTOR)
   const ratio = Math.min(abs / RESIST_START, 1)
   const tilt = (resisted / RESIST_START) * MAX_TILT_DEG
 
@@ -48,7 +49,11 @@ export const applyFollowStyles = (refs: SwipeStageRefs, dx: number, transition: 
 }
 
 // 確定時に画面外へ送り出す
-export const applyExitStyles = (refs: SwipeStageRefs, direction: SwipeDirection, stageWidth: number): void => {
+export const applyExitStyles = (
+  refs: SwipeStageRefs,
+  direction: SwipeDirection,
+  stageWidth: number
+): void => {
   const card = refs.cardRef.current
   if (card) {
     const exitX = direction === 'prev' ? stageWidth : -stageWidth
@@ -65,7 +70,11 @@ export const applyExitStyles = (refs: SwipeStageRefs, direction: SwipeDirection,
 }
 
 // ペイント前に進入開始位置を仕込む。方向が無い(ボタン・カレンダー由来)ときは移動なしのフェード
-export const applyEnterStart = (refs: SwipeStageRefs, direction: SwipeDirection | null, stageWidth: number): void => {
+export const applyEnterStart = (
+  refs: SwipeStageRefs,
+  direction: SwipeDirection | null,
+  stageWidth: number
+): void => {
   const card = refs.cardRef.current
   if (!card) return
   const startX = direction === 'prev' ? -stageWidth : direction === 'next' ? stageWidth : 0

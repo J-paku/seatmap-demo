@@ -8,9 +8,7 @@ interface LiveRegionProps {
 export function LiveRegion({ message }: LiveRegionProps) {
   const { ref } = useLiveRegion(message)
 
-  return (
-    <div ref={ref} role='status' aria-live='polite' aria-atomic='true' className='sr-only' />
-  )
+  return <div ref={ref} role='status' aria-live='polite' aria-atomic='true' className='sr-only' />
 }
 
 // Pages Router の page-without-valid-component 警告回避用ダミー default export

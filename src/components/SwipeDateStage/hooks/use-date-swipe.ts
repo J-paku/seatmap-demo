@@ -35,7 +35,7 @@ type Result = SwipeStageRefs & {
 
 // 直近100msの速度からフリック量を求める
 const flickSpeed = (samples: Array<{ x: number; t: number }>, now: number): number => {
-  const recent = samples.filter((s) => now - s.t <= 100)
+  const recent = samples.filter(s => now - s.t <= 100)
   if (recent.length < 2) return 0
   const a = recent[0]
   const b = recent[recent.length - 1]
@@ -166,6 +166,12 @@ export const useDateSwipe = ({ cardKey, onSwipePrevDay, onSwipeNextDay }: Option
     depthRef,
     stampPrevRef,
     stampNextRef,
-    handlers: { onPointerDown, onPointerMove, onPointerUp, onPointerCancel: finishAsSnapback, onClickCapture },
+    handlers: {
+      onPointerDown,
+      onPointerMove,
+      onPointerUp,
+      onPointerCancel: finishAsSnapback,
+      onClickCapture,
+    },
   }
 }

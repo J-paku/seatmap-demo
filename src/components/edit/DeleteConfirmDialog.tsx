@@ -22,7 +22,14 @@ type Props = {
   locked?: LockedNotice
 }
 
-export const DeleteConfirmDialog = ({ employeeName, onConfirm, onCancel, count, department, locked }: Props) => {
+export const DeleteConfirmDialog = ({
+  employeeName,
+  onConfirm,
+  onCancel,
+  count,
+  department,
+  locked,
+}: Props) => {
   // 下スワイプはキャンセルと同じ扱い(削除確定にはしない)
   const { sheetHandlers, dragStyle } = useSwipeToDismiss({ onDismiss: onCancel })
 
@@ -44,7 +51,7 @@ export const DeleteConfirmDialog = ({ employeeName, onConfirm, onCancel, count, 
           role='dialog'
           aria-modal='true'
           aria-label={lockedMessage}
-          onClick={(e) => e.stopPropagation()}
+          onClick={e => e.stopPropagation()}
           {...sheetHandlers}
           style={{
             transform: dragStyle.transform,
@@ -59,7 +66,11 @@ export const DeleteConfirmDialog = ({ employeeName, onConfirm, onCancel, count, 
           </div>
           <p className={e.editDialogMessage}>{lockedMessage}</p>
           <div className={e.editDialogActions}>
-            <button type='button' className={`pixel-btn ${e.editDialogCancel}`} onClick={handleCancel}>
+            <button
+              type='button'
+              className={`pixel-btn ${e.editDialogCancel}`}
+              onClick={handleCancel}
+            >
               閉じる
             </button>
           </div>
@@ -100,7 +111,7 @@ export const DeleteConfirmDialog = ({ employeeName, onConfirm, onCancel, count, 
         role='dialog'
         aria-modal='true'
         aria-label={title}
-        onClick={(e) => e.stopPropagation()}
+        onClick={e => e.stopPropagation()}
         {...sheetHandlers}
         style={{
           transform: dragStyle.transform,
@@ -108,7 +119,12 @@ export const DeleteConfirmDialog = ({ employeeName, onConfirm, onCancel, count, 
           willChange: dragStyle.willChange,
         }}
       >
-        <button type='button' className={e.editDialogClose} aria-label='閉じる' onClick={handleCancel}>
+        <button
+          type='button'
+          className={e.editDialogClose}
+          aria-label='閉じる'
+          onClick={handleCancel}
+        >
           <span className='material-symbols-outlined' aria-hidden='true'>
             close
           </span>
@@ -121,7 +137,11 @@ export const DeleteConfirmDialog = ({ employeeName, onConfirm, onCancel, count, 
         <p className={e.editDialogTitle}>{title}</p>
         <p className={e.editDialogMessage}>{message}</p>
         <div className={e.editDialogActions}>
-          <button type='button' className={`pixel-btn ${e.editDialogCancel}`} onClick={handleCancel}>
+          <button
+            type='button'
+            className={`pixel-btn ${e.editDialogCancel}`}
+            onClick={handleCancel}
+          >
             やめる
           </button>
           <button

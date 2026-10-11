@@ -14,11 +14,17 @@ type Props = {
   onSelect: (seatId: string, toggle: boolean) => void
 }
 
-export const SeatMirrorLayer = ({ seats, employeeById, teams, selectedSeatIds, onSelect }: Props) => {
+export const SeatMirrorLayer = ({
+  seats,
+  employeeById,
+  teams,
+  selectedSeatIds,
+  onSelect,
+}: Props) => {
   const [activeIndex, setActiveIndex] = useState(0)
   const btnRefs = useRef<Array<HTMLButtonElement | null>>([])
 
-  const teamNameOf = (teamId: string) => teams.find((t) => t.id === teamId)?.name ?? ''
+  const teamNameOf = (teamId: string) => teams.find(t => t.id === teamId)?.name ?? ''
 
   const focusIndex = (index: number) => {
     if (seats.length === 0) return
@@ -40,12 +46,12 @@ export const SeatMirrorLayer = ({ seats, employeeById, teams, selectedSeatIds, o
   return (
     <div className='sr-only' role='group' aria-label='座席一覧'>
       {seats.map((seat, index) => {
-        const employee = seat.employeeId ? employeeById.get(seat.employeeId) ?? null : null
+        const employee = seat.employeeId ? (employeeById.get(seat.employeeId) ?? null) : null
         const label = employee ? `${employee.name}、${teamNameOf(seat.teamId)}` : '空席'
         return (
           <button
             key={seat.id}
-            ref={(el) => {
+            ref={el => {
               btnRefs.current[index] = el
             }}
             type='button'
@@ -53,9 +59,9 @@ export const SeatMirrorLayer = ({ seats, employeeById, teams, selectedSeatIds, o
             aria-label={label}
             aria-pressed={selectedSeatIds ? selectedSeatIds.includes(seat.id) : undefined}
             onFocus={() => setActiveIndex(index)}
-            onKeyDown={(e) => onKeyDown(e, index)}
+            onKeyDown={e => onKeyDown(e, index)}
             // キャンバス余白のクリック(選択解除)へ伝播させない。止めないと選んだ直後に解除される
-            onClick={(e) => {
+            onClick={e => {
               e.stopPropagation()
               onSelect(seat.id, e.shiftKey)
             }}

@@ -60,19 +60,21 @@ export const TeamImportSheet = ({ isOpen, onConfirm, onClose }: Props) => {
   const visible = useMemo(() => {
     const normalized = normalizeSearchText(query)
     if (normalized.length === 0) return OFFICIAL_TEAM_IMPORT_SOURCES
-    return OFFICIAL_TEAM_IMPORT_SOURCES.filter((source) =>
+    return OFFICIAL_TEAM_IMPORT_SOURCES.filter(source =>
       normalizeSearchText(source.team.name).includes(normalized)
     )
   }, [query])
 
   const toggle = useCallback((teamId: string) => {
-    setSelectedIds((prev) => (prev.includes(teamId) ? prev.filter((id) => id !== teamId) : [...prev, teamId]))
+    setSelectedIds(prev =>
+      prev.includes(teamId) ? prev.filter(id => id !== teamId) : [...prev, teamId]
+    )
   }, [])
 
   // 選択順のまま渡す。配置は選択順に画面中央から外へ広がるので、順序が結果に出る
   const confirm = useCallback(() => {
     const selected = selectedIds
-      .map((id) => OFFICIAL_TEAM_IMPORT_SOURCES.find((source) => source.team.id === id))
+      .map(id => OFFICIAL_TEAM_IMPORT_SOURCES.find(source => source.team.id === id))
       .filter((source): source is TeamImportSource => source !== undefined)
     if (selected.length === 0) return
     setQuery('')
@@ -116,14 +118,14 @@ export const TeamImportSheet = ({ isOpen, onConfirm, onClose }: Props) => {
               placeholder='チーム名で検索'
               aria-label='チーム名で検索'
               value={query}
-              onChange={(e) => setQuery(e.target.value)}
+              onChange={e => setQuery(e.target.value)}
             />
           </div>
           <div className={styles.list}>
             {visible.length === 0 ? (
               <p className={styles.empty}>チームが見つかりません</p>
             ) : (
-              visible.map((source) => (
+              visible.map(source => (
                 <label key={source.team.id} className={styles.row}>
                   <input
                     type='checkbox'
@@ -132,7 +134,11 @@ export const TeamImportSheet = ({ isOpen, onConfirm, onClose }: Props) => {
                     onChange={() => toggle(source.team.id)}
                   />
                   {/* チーム色はデザイントークンではなくデータ(mocks の Team.color)なので直接載せる */}
-                  <span className={styles.dot} aria-hidden='true' style={{ background: source.team.color }} />
+                  <span
+                    className={styles.dot}
+                    aria-hidden='true'
+                    style={{ background: source.team.color }}
+                  />
                   <span className={styles.rowName}>{source.team.name}</span>
                   <span className={styles.rowMeta}>{`${source.seats.length}席`}</span>
                 </label>

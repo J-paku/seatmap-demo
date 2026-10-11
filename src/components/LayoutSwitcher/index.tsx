@@ -61,7 +61,7 @@ export const LayoutSwitcher = ({ onExpandedChange }: LayoutSwitcherProps = {}) =
         <div className={styles.panel} id={panelId} inert={!isOpen}>
           <div className={styles.panelInner}>
             <div className={styles.officialList}>
-              {FLOORS.map((floor) => (
+              {FLOORS.map(floor => (
                 <OfficialLayoutButton
                   key={floor.floorId}
                   floor={floor}

@@ -33,10 +33,16 @@ type Props = {
   onClose: () => void
 }
 
-export const ObjectCategorySheet = ({ isOpen, categories, isGaroonConnected, onSelect, onClose }: Props) => (
+export const ObjectCategorySheet = ({
+  isOpen,
+  categories,
+  isGaroonConnected,
+  onSelect,
+  onClose,
+}: Props) => (
   <PickerSheet isOpen={isOpen} title='オブジェクトを追加' onClose={onClose}>
     <div className={styles.objCatList}>
-      {CARDS.filter((card) => categories.includes(card.category)).map((card) => {
+      {CARDS.filter(card => categories.includes(card.category)).map(card => {
         const isDisabled = card.category === 'facility' && !isGaroonConnected
         return (
           <Fragment key={card.category}>

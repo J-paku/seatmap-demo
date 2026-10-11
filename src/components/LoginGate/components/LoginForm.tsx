@@ -40,7 +40,7 @@ export function LoginForm({
           spellCheck={false}
           placeholder='サイボウズ ID'
           value={loginId}
-          onChange={(event) => {
+          onChange={event => {
             onLoginIdChange(event.target.value)
           }}
           className='h-11 w-full rounded-lg border border-slate-300 bg-white px-3 text-[16px] text-slate-900 transition-shadow placeholder:text-slate-400 focus:border-[color:var(--color-gate-primary)] focus:outline-none focus:ring-4 focus:ring-[color:var(--color-gate-primary-ring)] disabled:bg-slate-50 disabled:text-slate-400'
@@ -63,7 +63,7 @@ export function LoginForm({
             autoComplete='current-password'
             placeholder='サイボウズ PW'
             value={password}
-            onChange={(event) => {
+            onChange={event => {
               onPasswordChange(event.target.value)
             }}
             className='h-11 w-full rounded-lg border border-slate-300 bg-white pl-3 pr-11 text-[16px] text-slate-900 transition-shadow placeholder:text-slate-400 focus:border-[color:var(--color-gate-primary)] focus:outline-none focus:ring-4 focus:ring-[color:var(--color-gate-primary-ring)] disabled:bg-slate-50 disabled:text-slate-400'

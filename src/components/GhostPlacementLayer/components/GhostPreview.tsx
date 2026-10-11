@@ -84,11 +84,11 @@ export const GhostPreview = ({
     {/* 衝突中はリサイズハンドルを隠す(§04-2) */}
     {resizable &&
       !blocked &&
-      RESIZE_HANDLES.map((handle) => (
+      RESIZE_HANDLES.map(handle => (
         <span
           key={handle}
           className={`${styles.handle} ${HANDLE_CLASS[handle]}${resizingHandle === handle ? ` ${styles.isActive}` : ''}`}
-          onPointerDown={(e) => onHandlePointerDown(handle, e)}
+          onPointerDown={e => onHandlePointerDown(handle, e)}
           // ポインタ専用の操作なのでフォーカス順には載せない。role='presentation' に戻すと
           // aria-label が捨てられて8個とも無名になる
           role='button'

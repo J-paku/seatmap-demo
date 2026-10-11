@@ -480,7 +480,9 @@
 .pickerPanel:has([data-team-create-panel]) {
   width: min(calc(100vw - 32px), 400px);
   border-radius: 20px;
-  animation: teamNewFadeIn 0.2s ease-out, teamNewExpand 0.3s cubic-bezier(0.2, 0.9, 0.2, 1);
+  animation:
+    teamNewFadeIn 0.2s ease-out,
+    teamNewExpand 0.3s cubic-bezier(0.2, 0.9, 0.2, 1);
 }
 
 /* 640px 未満は共有シェルがボトムシート化するが、本ダイアログは常時この固定カード形状(§02-2) */

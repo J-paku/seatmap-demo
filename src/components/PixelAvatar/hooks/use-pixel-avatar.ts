@@ -7,15 +7,8 @@ import {
   composePixelsAvatarMatrix,
   resolvePixelColorForFree,
 } from '@/utils/avatar/matrices/compose'
-import {
-  buildKuroxxxRects,
-  KUROXXX_GRID_SIZE,
-} from '@/utils/avatar/kuroxxx-easter-egg'
-import type {
-  PartsAvatarConfig,
-  PixelAvatarConfig,
-  PixelsAvatarConfig,
-} from '@/types'
+import { buildKuroxxxRects, KUROXXX_GRID_SIZE } from '@/utils/avatar/kuroxxx-easter-egg'
+import type { PartsAvatarConfig, PixelAvatarConfig, PixelsAvatarConfig } from '@/types'
 
 interface UsePixelAvatarArgs {
   config?: PixelAvatarConfig | null
