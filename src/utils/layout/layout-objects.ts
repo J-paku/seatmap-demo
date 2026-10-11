@@ -2,8 +2,8 @@
 //
 // 「当たり判定と吸着の対象に何が含まれるか」はもともと layout-rules に3つ・sibling-rects に2つ、
 // 計5箇所へ手書きで散っていた。種別が増えたときこの5箇所を全て直さないと、新種別だけが
-// 素通りするのに型エラーは出ない — 無言で壊れる。下の switch に集約し、
-// 種別を足したら case 不足でコンパイルが落ちるようにして取りこぼしを型で塞ぐ。
+// 素通りするのに型エラーは出ない — 無言で壊れる。下の種別キーの Record に集約し、
+// 種別を足したらキー不足でコンパイルが落ちるようにして取りこぼしを型で塞ぐ。
 //
 // ここが答えるのは「どこに何があるか」だけ。ぶつかった時に何が起きるか(座席同士は入れ替え、
 // 会議室とは拒否、チームエリア内は所属変更)はポリシーなので layout-rules 側に残す
@@ -15,25 +15,18 @@ export type LayoutObjectEntry = { id: string; rect: Rect }
 
 const areaRect = (area: Team['area']): Rect => ({ x: area.x, y: area.y, w: area.w, h: area.h })
 
-const entriesOfKind = (layout: SeatLayout, kind: LayoutObjectKind): LayoutObjectEntry[] => {
-  switch (kind) {
-    case 'seat':
-      return layout.seats.map(s => ({ id: s.id, rect: rectOf(s) }))
-    case 'team':
-      return layout.teams.map(t => ({ id: t.id, rect: areaRect(t.area) }))
-    case 'facility':
-      return layout.facilities.map(f => ({ id: f.id, rect: rectOf(f) }))
-    case 'furniture':
-      // 家具だけが rotation を持つ。座席は保存時に幅高さの交換を済ませており、
-      // 会議室(Facility)は rotation フィールドを持たないので、どちらもここへ載せない
-      return layout.furniture.map(f => ({ id: f.id, rect: rotatedRectOf(f) }))
-    default: {
-      // 種別を足してここに case を書き忘れると、この代入がコンパイルエラーになる
-      const exhaustive: never = kind
-      return exhaustive
-    }
-  }
+// 種別を足してここにキーを書き忘れると、Record の型がコンパイルエラーになる
+const ENTRIES_BY_KIND: Record<LayoutObjectKind, (layout: SeatLayout) => LayoutObjectEntry[]> = {
+  seat: layout => layout.seats.map(s => ({ id: s.id, rect: rectOf(s) })),
+  team: layout => layout.teams.map(t => ({ id: t.id, rect: areaRect(t.area) })),
+  facility: layout => layout.facilities.map(f => ({ id: f.id, rect: rectOf(f) })),
+  // 家具だけが rotation を持つ。座席は保存時に幅高さの交換を済ませており、
+  // 会議室(Facility)は rotation フィールドを持たないので、どちらもここへ載せない
+  furniture: layout => layout.furniture.map(f => ({ id: f.id, rect: rotatedRectOf(f) })),
 }
+
+const entriesOfKind = (layout: SeatLayout, kind: LayoutObjectKind): LayoutObjectEntry[] =>
+  ENTRIES_BY_KIND[kind](layout)
 
 // 指定した種別群の矩形を集める。except に一致するものだけ除く(移動中の自分自身)
 export const rectsOfKinds = (

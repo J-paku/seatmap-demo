@@ -122,6 +122,22 @@ describe('applySeatShape', () => {
     expect(result).toBe(seat)
   })
 
+  it('shape が同じでも幅だけ既定サイズから外れていれば(上書きフラグ無し)既定サイズへ戻す', () => {
+    const seat = baseSeat({ shape: 'standard', width: 100, height: 75, rotation: 0 })
+    const result = applySeatShape(seat, 'standard')
+    expect(result).not.toBe(seat)
+    expect(result.width).toBe(105)
+    expect(result.height).toBe(75)
+  })
+
+  it('shape が同じでも高さだけ既定サイズから外れていれば(上書きフラグ無し)既定サイズへ戻す', () => {
+    const seat = baseSeat({ shape: 'standard', width: 105, height: 80, rotation: 0 })
+    const result = applySeatShape(seat, 'standard')
+    expect(result).not.toBe(seat)
+    expect(result.width).toBe(105)
+    expect(result.height).toBe(75)
+  })
+
   it('shape が同じでも回転で幅高さが変わるなら新しい参照を返す', () => {
     const seat = baseSeat({ shape: 'standard', width: 105, height: 75, rotation: 90 })
     const result = applySeatShape(seat, 'standard')

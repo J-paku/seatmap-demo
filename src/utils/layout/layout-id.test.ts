@@ -47,6 +47,24 @@ describe('createLayoutId', () => {
     const id = createLayoutId(existing)
     expect(id).toBe('layout-1')
   })
+
+  it('フォールバック時、2桁以上の連番も数として読む', () => {
+    vi.stubGlobal('crypto', { ...globalThis.crypto, randomUUID: undefined })
+    const existing: LayoutMeta[] = [
+      { layoutId: 'layout-12', layoutName: 'A', updatedAt: '2026-01-01' },
+    ]
+    expect(createLayoutId(existing)).toBe('layout-13')
+  })
+
+  it('フォールバック時、前後に余分な文字が付いたidは形式外として数えない', () => {
+    vi.stubGlobal('crypto', { ...globalThis.crypto, randomUUID: undefined })
+    const existing: LayoutMeta[] = [
+      { layoutId: 'my-layout-50', layoutName: 'A', updatedAt: '2026-01-01' },
+      { layoutId: 'layout-60-copy', layoutName: 'B', updatedAt: '2026-01-02' },
+      { layoutId: 'layout-2', layoutName: 'C', updatedAt: '2026-01-03' },
+    ]
+    expect(createLayoutId(existing)).toBe('layout-3')
+  })
 })
 
 describe('createEmptyLayout', () => {

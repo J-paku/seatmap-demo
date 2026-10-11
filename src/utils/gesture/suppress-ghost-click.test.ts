@@ -61,6 +61,40 @@ describe('suppressGhostClick', () => {
     document.body.removeChild(background)
   })
 
+  it('removes the capture listener with the same capture flag it was added with', () => {
+    // happy-dom は removeEventListener の capture 指定を無視して外してしまうが、
+    // ブラウザは capture が一致しないと外さず、以後の click を全て握りつぶし続ける。
+    // そのため登録と解除の引数を突き合わせる
+    const addSpy = vi.spyOn(document, 'addEventListener')
+    const removeSpy = vi.spyOn(document, 'removeEventListener')
+    const background = document.createElement('div')
+    document.body.appendChild(background)
+
+    suppressGhostClick()
+    dispatchClick(background)
+
+    expect(removeSpy.mock.calls).toEqual(addSpy.mock.calls)
+    expect(removeSpy.mock.calls).toEqual([['click', expect.any(Function), true]])
+
+    addSpy.mockRestore()
+    removeSpy.mockRestore()
+    document.body.removeChild(background)
+  })
+
+  it('leaves no pending timer once the ghost click has been suppressed', () => {
+    vi.useFakeTimers()
+    const background = document.createElement('div')
+    document.body.appendChild(background)
+
+    suppressGhostClick()
+    expect(vi.getTimerCount()).toBe(1)
+    dispatchClick(background)
+
+    expect(vi.getTimerCount()).toBe(0)
+
+    document.body.removeChild(background)
+  })
+
   it('still suppresses a click that arrives just before the window elapses', () => {
     vi.useFakeTimers()
     const background = document.createElement('div')

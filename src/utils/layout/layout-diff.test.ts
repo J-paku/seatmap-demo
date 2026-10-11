@@ -141,6 +141,30 @@ describe('countLayoutChanges', () => {
     expect(countLayoutChanges(baseline, current)).toBe(1)
   })
 
+  it('座席がチーム間を移動し、移動元チームだけが変更されている場合も座席側を除外して1件(チーム分のみ)', () => {
+    const baseline = makeLayout({
+      teams: [
+        makeTeam({ id: 'tA', idPrefix: 'tA', area: { x: 0, y: 0, w: 100, h: 100 } }),
+        makeTeam({ id: 'tB', idPrefix: 'tB', area: { x: 0, y: 0, w: 100, h: 100 } }),
+      ],
+      seats: [makeSeat({ teamId: 'tA' })],
+    })
+    const current = makeLayout({
+      teams: [
+        makeTeam({ id: 'tA', idPrefix: 'tA', area: { x: 50, y: 0, w: 100, h: 100 } }),
+        makeTeam({ id: 'tB', idPrefix: 'tB', area: { x: 0, y: 0, w: 100, h: 100 } }),
+      ],
+      seats: [makeSeat({ teamId: 'tB' })],
+    })
+    expect(countLayoutChanges(baseline, current)).toBe(1)
+  })
+
+  it('チームの追加と削除もそれぞれ1件として数える', () => {
+    const baseline = makeLayout({ teams: [makeTeam({ id: 'tA', idPrefix: 'tA' })] })
+    const current = makeLayout({ teams: [makeTeam({ id: 'tB', idPrefix: 'tB' })] })
+    expect(countLayoutChanges(baseline, current)).toBe(2)
+  })
+
   it('変更されたチームに属する座席と属さない座席が混在する場合、属さない分だけを追加計上する', () => {
     const baseline = makeLayout({
       teams: [

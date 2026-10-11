@@ -8,8 +8,9 @@ import { collectScrollableAncestors } from './scrollable-ancestors'
 // node へ touchstart/touchmove を登録し、解除関数を返す
 export function attachSheetBackgroundGuard(node: HTMLElement): () => void {
   // タッチ起点〜node間のスクロール可能祖先（touchstartで1回算出しジェスチャー単位でキャッシュ。
-  // touchmoveごとのgetComputedStyleによる強制スタイル再計算を避ける）
-  let touchScrollables: HTMLElement[] = []
+  // touchmoveごとのgetComputedStyleによる強制スタイル再計算を避ける）。
+  // touchstart 前はタッチ起点が無いので、起点 null から集めた結果(祖先なし)で始める
+  let touchScrollables = collectScrollableAncestors(null, node)
   // タッチ開始座標（縦横の方向判定用）
   let touchStartX = 0
   let touchStartY = 0

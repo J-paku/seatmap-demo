@@ -84,6 +84,20 @@ describe('computeCompact', () => {
     expect(result.translateX).toBeCloseTo(60, 6)
     expect(result.translateY).toBeCloseTo(43.275, 6)
   })
+
+  it('縦長のコンテナでは幅の比(きつい方)に合わせる', () => {
+    // 幅の比 1000/1600 = 0.625 が高さの比 1 より小さい → compact = 0.53125
+    const result = computeCompact(1000, 1154)
+    expect(result.scale).toBeCloseTo(0.53125, 6)
+    expect(result.translateX).toBeCloseTo(75, 6)
+  })
+
+  it('横長のコンテナでは高さの比(きつい方)に合わせる', () => {
+    // 高さの比 577/1154 = 0.5 が幅の比 1 より小さい → compact = 0.425
+    const result = computeCompact(1600, 577)
+    expect(result.scale).toBeCloseTo(0.425, 6)
+    expect(result.translateY).toBeCloseTo(43.275, 6)
+  })
 })
 
 describe('computeMinScale', () => {

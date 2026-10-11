@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest'
+import { afterEach, describe, it, expect, vi } from 'vitest'
 import { resolveDefaultPresetId } from '@/utils/avatar/default-preset'
 import { PIXEL_AVATAR_PRESETS, DEFAULT_AVATAR_PRESET_ID } from '@/utils/avatar/pixel-avatar-presets'
 
@@ -29,5 +29,25 @@ describe('default-preset', () => {
     const result = resolveDefaultPresetId('seed-1')
     expect(result).toBeDefined()
     expect(typeof result).toBe('string')
+  })
+})
+
+// 実際の表は型で18件が揃うので空にはならない。空の表を差し込んだときの守りだけをここで見る
+describe('プリセット表が空のとき', () => {
+  afterEach(() => {
+    vi.doUnmock('@/utils/avatar/pixel-avatar-presets')
+    vi.resetModules()
+  })
+
+  it('どの seed でも既定のプリセット ID を返す', async () => {
+    vi.resetModules()
+    vi.doMock('@/utils/avatar/pixel-avatar-presets', () => ({
+      PIXEL_AVATAR_PRESETS: {},
+      DEFAULT_AVATAR_PRESET_ID: 'av5',
+    }))
+    const { resolveDefaultPresetId: resolveWithEmptyTable } =
+      await import('@/utils/avatar/default-preset')
+    expect(resolveWithEmptyTable('emp-001')).toBe('av5')
+    expect(resolveWithEmptyTable('')).toBe('av5')
   })
 })

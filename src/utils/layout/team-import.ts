@@ -8,7 +8,6 @@ import { nextSequentialId } from './layout-actions'
 import { rectsOfKinds } from './layout-objects'
 import { placementBlocked, teamAreaOverlaps } from './layout-rules'
 import { rectsIntersect } from './rect'
-import type { Rect } from './rect'
 import { findSpiralSpot } from './spiral-placement'
 import type { PlacementStage } from './spiral-placement'
 import type { Seat, SeatLayout, Team } from '@/types'
@@ -99,9 +98,9 @@ export const buildTeamImportPlan = (
   // 家具は placementBlocked の障害物ではない(§04-4 の非対称は意図的)。
   // §02-3 の①は家具も避けるので、この段でだけ足す
   const furnitureRects = rectsOfKinds(layout, ['furniture'])
-  // 同じ取り込みで先に置いた枠。レイアウトにはまだ載っていないので自前で持つ
-  const placedRects: Rect[] = []
 
+  // 同じ取り込みで先に置いたチームもここに積む。レイアウトにはまだ載っていないので、
+  // 枠同士の重なりはこの配列の area で見る
   const teams: Team[] = []
   const seats: Seat[] = []
   const stages: PlacementStage[] = []
@@ -109,15 +108,18 @@ export const buildTeamImportPlan = (
 
   for (const source of sources) {
     const size = { width: source.team.area.w, height: source.team.area.h }
+    // 置けた時に名乗る id。採番は純計算なので、置けなかった時は takenTeamIds へ積まずに捨てる
+    const id = nextSequentialId(takenTeamIds, 'team-', 2)
     const spot = findSpiralSpot(anchor, size, layout.viewBox, (rect, stage) => {
       // 段に関わらず、同じ取り込みで置いた枠には重ねない。③でもここだけは効かせる
       // (効かせないと強制配置が全件アンカーの同一点へ重なる)
-      if (placedRects.some(placed => rectsIntersect(placed, rect))) return true
+      if (teams.some(placed => rectsIntersect(placed.area, rect))) return true
       // ③強制オフセット配置: 既存物を避けない
       if (stage === 'forced') return false
       // ②チームのみ回避。teamAreaOverlaps はチーム枠を内側インセットせずに見るので
-      // ①よりチーム枠の 4px ぶんだけ厳しいが、設備・家具を落とすぶん全体では緩い
-      if (stage === 'avoid-teams') return teamAreaOverlaps(layout.teams, '', rect)
+      // ①よりチーム枠の 4px ぶんだけ厳しいが、設備・家具を落とすぶん全体では緩い。
+      // 除外する自チームは取り込む枠自身の id(既存に無い新しい id)なので、既存チームは全て見る
+      if (stage === 'avoid-teams') return teamAreaOverlaps(layout.teams, id, rect)
       // ①チーム枠(4px内側インセット)+設備+フロア外 = ゴースト配置と同じ判定 + 家具
       return (
         placementBlocked(layout, null, rect) || furnitureRects.some(r => rectsIntersect(r, rect))
@@ -133,7 +135,6 @@ export const buildTeamImportPlan = (
     takenPrefixes.add(idPrefix)
     const name = uniqueTeamName(source.team.name, takenNames)
     takenNames.add(name)
-    const id = nextSequentialId(takenTeamIds, 'team-', 2)
     takenTeamIds.push(id)
 
     // labelX / labelY は引き継がない。取り込み元の絶対座標なので、移した先では
@@ -153,7 +154,6 @@ export const buildTeamImportPlan = (
       })
     )
     stages.push(spot.stage)
-    placedRects.push(spot.rect)
   }
 
   return { teams, seats, stages, unplacedCount }

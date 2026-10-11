@@ -4,8 +4,9 @@ import type { AccessoryId, FaceId, HairId, OutfitId } from '@/types'
 interface HairPartMeta {
   label: string
   aiDesc: string
-  // hidden: イースターエッグ専用 — 選択肢グループ・AIオプション一覧に出さない
-  group: 'common' | 'male' | 'female' | 'hidden'
+  // null: イースターエッグ専用 — 選択肢グループ・AIオプション一覧に出さない
+  // (どのグループにも入らないことだけが意味を持つので、名前の文字列ではなく null で表す)
+  group: 'common' | 'male' | 'female' | null
 }
 
 interface FacePartMeta {
@@ -39,7 +40,7 @@ const HAIR_REGISTRY: Record<HairId, HairPartMeta> = {
   wavyBangs: { label: '前髪ウェーブ', aiDesc: 'ウェーブ前髪', group: 'female' },
   longStraight: { label: 'センター分けロング', aiDesc: 'ストレートロング', group: 'female' },
   cCurlBob: { label: 'Cカールボブ', aiDesc: 'Cカールボブ', group: 'female' },
-  kuroxxx: { label: 'ヒドル帽', aiDesc: 'クロミ風 (特殊)', group: 'hidden' },
+  kuroxxx: { label: 'ヒドル帽', aiDesc: 'クロミ風 (特殊)', group: null },
 }
 
 const FACE_REGISTRY: Record<FaceId, FacePartMeta> = {

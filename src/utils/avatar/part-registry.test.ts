@@ -9,6 +9,10 @@ import {
   ACCESSORY_OPTIONS,
   OUTFIT_OPTIONS,
 } from './part-registry'
+import { ACCESSORY_MATRICES } from './matrices/accessory-matrices'
+import { FACE_MATRICES } from './matrices/face-matrices'
+import { HAIR_MATRICES } from './matrices/hair-matrices'
+import { OUTFIT_MATRICES } from './matrices/outfit-matrices'
 
 describe('HAIR_LABELS / FACE_LABELS / ACCESSORY_LABELS', () => {
   it('各 ID に対して登録どおりのラベルを返す', () => {
@@ -32,6 +36,14 @@ describe('HAIR_LABELS / FACE_LABELS / ACCESSORY_LABELS', () => {
     expect(Object.keys(HAIR_LABELS)).toHaveLength(21)
     expect(Object.keys(HAIR_LABELS)).toContain('kuroxxx')
   })
+
+  it('髪型・表情・アクセサリーの表示名はどれも空でなく、同じ種類の中で重ならない', () => {
+    for (const labels of [HAIR_LABELS, FACE_LABELS, ACCESSORY_LABELS]) {
+      const names = Object.values(labels)
+      for (const name of names) expect(name).toMatch(/\S/)
+      expect(new Set(names).size).toBe(names.length)
+    }
+  })
 })
 
 describe('HAIR_OPTION_GROUPS', () => {
@@ -41,7 +53,7 @@ describe('HAIR_OPTION_GROUPS', () => {
     expect(HAIR_OPTION_GROUPS.female).toContain('bob')
   })
 
-  it('hidden グループの kuroxxx はどのグループにも属さない', () => {
+  it('隠し髪型の kuroxxx はどのグループにも属さない', () => {
     expect(HAIR_OPTION_GROUPS.common).not.toContain('kuroxxx')
     expect(HAIR_OPTION_GROUPS.male).not.toContain('kuroxxx')
     expect(HAIR_OPTION_GROUPS.female).not.toContain('kuroxxx')
@@ -81,5 +93,17 @@ describe('*_OPTIONS 配列', () => {
     expect(OUTFIT_OPTIONS).toHaveLength(11)
     expect(OUTFIT_OPTIONS[0]).toBe('solid')
     expect(new Set(OUTFIT_OPTIONS).size).toBe(11)
+  })
+})
+
+describe('選択肢と描画用の行列', () => {
+  it('選べる髪型に隠し髪型の kuroxxx を足すと、描ける髪型とちょうど一致する', () => {
+    expect([...HAIR_OPTIONS, 'kuroxxx'].sort()).toEqual(Object.keys(HAIR_MATRICES).sort())
+  })
+
+  it('選べる表情・アクセサリー・衣装は、それぞれ描ける部品とちょうど一致する', () => {
+    expect([...FACE_OPTIONS].sort()).toEqual(Object.keys(FACE_MATRICES).sort())
+    expect([...ACCESSORY_OPTIONS].sort()).toEqual(Object.keys(ACCESSORY_MATRICES).sort())
+    expect([...OUTFIT_OPTIONS].sort()).toEqual(Object.keys(OUTFIT_MATRICES).sort())
   })
 })

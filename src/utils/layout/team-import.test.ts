@@ -266,6 +266,53 @@ describe('buildTeamImportPlan', () => {
     // idPrefix・チームidも重複しない
     expect(first.idPrefix).not.toBe(second.idPrefix)
     expect(first.id).not.toBe(second.id)
+    // 同じ取り込みの中で先に付けた名前とも重ねない
+    expect([first.name, second.name]).toEqual(['Team', 'Team (2)'])
+  })
+
+  it('取り込み元の枠が原点以外にあっても、枠に対する座席の相対位置を保って移す', () => {
+    const source: TeamImportSource = {
+      team: team({ area: { x: 300, y: 400, w: 100, h: 80 } }),
+      seats: [seat({ id: 'src-1', x: 320, y: 415 })],
+    }
+    const plan = buildTeamImportPlan(layout(), [source], { x: 200, y: 200 })
+    // 枠は (150,160) へ。座席は枠の左上から (20,15) の位置を保つ
+    expect(plan.teams[0].area).toEqual({ x: 150, y: 160, w: 100, h: 80 })
+    expect(plan.seats[0]).toMatchObject({ x: 170, y: 175 })
+  })
+
+  it('avoid-teams 段でも既存チームは避け、塞がれたアンカー中心から外した位置へ置く', () => {
+    // 施設がフロア全域を覆って avoid-all は必ず落ちる。既存チームがアンカー中心を塞ぐので、
+    // avoid-teams 段ではそのチームを避けた別の位置へ置く
+    const existing = layout({
+      facilities: [
+        {
+          id: 'fac-01',
+          name: 'Room',
+          kind: 'meeting',
+          x: 0,
+          y: 0,
+          width: 1600,
+          height: 1154,
+        } as Facility,
+      ],
+      teams: [
+        team({
+          id: 'team-01',
+          idPrefix: 'A',
+          name: 'Blocker',
+          area: { x: 150, y: 160, w: 100, h: 80 },
+        }),
+      ],
+    })
+    const source: TeamImportSource = {
+      team: team({ area: { x: 0, y: 0, w: 100, h: 80 } }),
+      seats: [],
+    }
+    const plan = buildTeamImportPlan(existing, [source], { x: 200, y: 200 })
+    expect(plan.stages).toEqual(['avoid-teams'])
+    const placed = plan.teams[0].area
+    expect(rectsIntersect(placed, { x: 150, y: 160, w: 100, h: 80 })).toBe(false)
   })
 
   it('チーム枠がフロアより大きく、どこにも置けなければunplacedCountを積んで何も追加しない', () => {

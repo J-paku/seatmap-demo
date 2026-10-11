@@ -261,7 +261,7 @@ export const resolveAvatarConfig = (
   if (config && config.kind === 'parts') {
     return config
   }
-  if (config && config.kind === 'preset') {
+  if (config?.kind === 'preset') {
     const preset = PIXEL_AVATAR_PRESETS[config.id]
     // 存在しない、または削除された preset id の場合はデフォルトにフォールバック
     if (!preset) {

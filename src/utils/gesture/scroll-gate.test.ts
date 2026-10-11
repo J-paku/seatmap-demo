@@ -88,6 +88,22 @@ describe('computeScrollGate', () => {
     expect(computeScrollGate(currentTarget, currentTarget)).toBe(true)
   })
 
+  it('stops at currentTarget and ignores a mid-scroll ancestor above it', () => {
+    // currentTarget より外側はゲートの対象外(シートの外のスクロールで閉じ操作を止めない)
+    const outer = makeElement({
+      scrollHeight: 300,
+      clientHeight: 100,
+      scrollTop: 20,
+      overflowY: 'auto',
+    })
+    const currentTarget = document.createElement('div')
+    const leaf = document.createElement('span')
+    outer.appendChild(currentTarget)
+    currentTarget.appendChild(leaf)
+    document.body.appendChild(outer)
+    expect(computeScrollGate(leaf, currentTarget)).toBe(false)
+  })
+
   it('returns false when the walk exhausts parentElement without ever reaching currentTarget', () => {
     // Non-blocking so the loop actually walks to a null parent instead of
     // short-circuiting true on the starting node itself.

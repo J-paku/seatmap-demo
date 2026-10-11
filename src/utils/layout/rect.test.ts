@@ -93,6 +93,26 @@ describe('rectsIntersect', () => {
     expect(rectsIntersect(a, b)).toBe(false)
   })
 
+  it('左右の接触は引数の順を入れ替えても非交差', () => {
+    const a: Rect = { x: 0, y: 0, w: 10, h: 10 }
+    const b: Rect = { x: 10, y: 0, w: 10, h: 10 }
+    expect(rectsIntersect(b, a)).toBe(false)
+  })
+
+  it('上下の接触は引数の順に関わらず非交差', () => {
+    const upper: Rect = { x: 0, y: 0, w: 10, h: 10 }
+    const lower: Rect = { x: 0, y: 10, w: 10, h: 10 }
+    expect(rectsIntersect(upper, lower)).toBe(false)
+    expect(rectsIntersect(lower, upper)).toBe(false)
+  })
+
+  it('横は重なっていても縦に離れていれば false(引数の順に関わらず)', () => {
+    const upper: Rect = { x: 0, y: 0, w: 10, h: 10 }
+    const lower: Rect = { x: 5, y: 50, w: 10, h: 10 }
+    expect(rectsIntersect(upper, lower)).toBe(false)
+    expect(rectsIntersect(lower, upper)).toBe(false)
+  })
+
   it('完全に離れている矩形は false', () => {
     const a: Rect = { x: 0, y: 0, w: 10, h: 10 }
     const b: Rect = { x: 100, y: 100, w: 10, h: 10 }
@@ -247,6 +267,21 @@ describe('clampRectToViewBox', () => {
   it('右端が viewBox を超えるなら viewW-w にクランプする', () => {
     const r: Rect = { x: 1590, y: 100, w: 50, h: 50 }
     expect(clampRectToViewBox(r, 1600, 1154)).toEqual({ x: 1550, y: 100, w: 50, h: 50 })
+  })
+
+  it('y が負なら0に、下端が viewBox を超えるなら viewH-h にクランプする', () => {
+    expect(clampRectToViewBox({ x: 100, y: -30, w: 50, h: 50 }, 1600, 1154)).toEqual({
+      x: 100,
+      y: 0,
+      w: 50,
+      h: 50,
+    })
+    expect(clampRectToViewBox({ x: 100, y: 1130, w: 50, h: 50 }, 1600, 1154)).toEqual({
+      x: 100,
+      y: 1104,
+      w: 50,
+      h: 50,
+    })
   })
 
   it('矩形自体が viewBox より大きいと x が負に落ちる(GHOST_MIN_SIZE超の巨大配置の境界動作)', () => {

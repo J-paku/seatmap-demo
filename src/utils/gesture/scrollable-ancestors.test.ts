@@ -76,6 +76,19 @@ describe('collectScrollableAncestors', () => {
     expect(collectScrollableAncestors(leaf, boundary)).toEqual([middle])
   })
 
+  it('skips a non-HTML ancestor (SVG) even when its overflowY is auto', () => {
+    const boundary = document.createElement('div')
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
+    svg.style.overflowY = 'auto'
+    const leaf = document.createElementNS('http://www.w3.org/2000/svg', 'rect')
+    boundary.appendChild(svg)
+    svg.appendChild(leaf)
+    document.body.appendChild(boundary)
+    // SVG 自体はスクロール可能なスタイルを返す。除外しているのは HTMLElement の絞り込みだけ
+    expect(window.getComputedStyle(svg).overflowY).toBe('auto')
+    expect(collectScrollableAncestors(leaf, boundary)).toEqual([])
+  })
+
   it('returns an empty array when start is not an Element', () => {
     const boundary = document.createElement('div')
     const textNode = document.createTextNode('text')

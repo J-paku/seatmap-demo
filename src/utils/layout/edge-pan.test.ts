@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { edgePanDelta } from './edge-pan'
+import { EDGE_PAN_END_EVENT, EDGE_PAN_EVENT, edgePanDelta } from './edge-pan'
 
 // rect: left=0, top=0, right=400, bottom=300 (幅400×高さ300)
 const rect = { left: 0, top: 0, right: 400, bottom: 300 }
@@ -72,5 +72,37 @@ describe('edgePanDelta', () => {
     const result = edgePanDelta({ x: 15, y: 150 }, narrowRect)
     expect(result).not.toBeNull()
     expect(result?.dx).toBeGreaterThan(0)
+  })
+
+  it('矩形の左上が原点でなくても、ゾーンは矩形の辺から測る', () => {
+    const offsetRect = { left: 100, top: 50, right: 500, bottom: 350 }
+    expect(edgePanDelta({ x: 100, y: 200 }, offsetRect)).toEqual({ dx: 18, dy: 0 })
+    expect(edgePanDelta({ x: 300, y: 50 }, offsetRect)).toEqual({ dx: 0, dy: 18 })
+    expect(edgePanDelta({ x: 300, y: 200 }, offsetRect)).toBeNull()
+  })
+
+  it('左ゾーン境界ちょうど(左は不発)でも、狭い矩形で右ゾーンに入っていれば右側が効く', () => {
+    // 幅100: x=56 は fromLeft=0(不発)、fromRight=56-44=12 → dx = -(12/56)*18
+    const narrowRect = { left: 0, top: 0, right: 100, bottom: 300 }
+    const result = edgePanDelta({ x: 56, y: 150 }, narrowRect)
+    expect(result?.dx).toBeCloseTo(-(12 / 56) * 18, 5)
+    expect(result?.dy).toBe(0)
+  })
+
+  it('上ゾーン境界ちょうど(上は不発)でも、低い矩形で下ゾーンに入っていれば下側が効く', () => {
+    const shortRect = { left: 0, top: 0, right: 400, bottom: 100 }
+    const result = edgePanDelta({ x: 200, y: 56 }, shortRect)
+    expect(result?.dx).toBe(0)
+    expect(result?.dy).toBeCloseTo(-(12 / 56) * 18, 5)
+  })
+})
+
+describe('自動パンのイベント名', () => {
+  // window へ流すので、他のライブラリのイベントと混ざらないよう名前空間を付け、
+  // パンと終了を取り違えないよう別の名前にする
+  it('seatmap: の名前空間を持ち、パンと終了で別の名前になる', () => {
+    expect(EDGE_PAN_EVENT).toMatch(/^seatmap:./)
+    expect(EDGE_PAN_END_EVENT).toMatch(/^seatmap:./)
+    expect(EDGE_PAN_EVENT).not.toBe(EDGE_PAN_END_EVENT)
   })
 })

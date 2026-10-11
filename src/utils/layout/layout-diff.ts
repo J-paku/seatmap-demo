@@ -8,7 +8,7 @@
 //   件数 = 変更された家具・会議室の数 + 変更されたチームの数
 //        + 変更された座席のうち「変更されたチームに属さない」ものの数
 // チームが動けば所属座席も一緒に動くので、その分は二重計上しない
-import type { Seat, SeatLayout } from '@/types'
+import type { SeatLayout } from '@/types'
 
 // 差分の単位。レイアウト上のコレクションは全て id を持つ
 type Identified = { id: string }
@@ -37,29 +37,20 @@ const COUNT_ROLES: Record<LayoutCollectionKey, CountRole> = {
 // Object.entries はキーを string へ広げるので、宣言時の型へ戻す
 const COUNT_ROLE_ENTRIES = Object.entries(COUNT_ROLES) as [LayoutCollectionKey, CountRole][]
 
-// 1件分が変わったか。両者は同じ深いコピーから派生し(enterEditMode のクローン →
+// id → 1件分の文字列表現。両者は同じ深いコピーから派生し(enterEditMode のクローン →
 // applyLayoutAction のスプレッド)キー順が保たれるので文字列比較で足りる。
 // 万一キー順がずれても「変わった」側へ倒れるだけで、数え落とし(無言の失敗)にはならない
-const isSameEntity = (before: Identified, after: Identified): boolean =>
-  JSON.stringify(before) === JSON.stringify(after)
+const serializedById = (entities: readonly Identified[]): Map<string, string> =>
+  new Map(entities.map((entity): [string, string] => [entity.id, JSON.stringify(entity)]))
 
-// 追加・削除・内容変更のいずれかに当たる id
+// 追加・削除・内容変更のいずれかに当たる id。片側にしか無い id は undefined との比較になり
+// 必ず「変わった」側へ入る
 const changedIdsOf = (before: readonly Identified[], after: readonly Identified[]): Set<string> => {
-  const afterById = new Map(after.map((entity): [string, Identified] => [entity.id, entity]))
-  const beforeIds = new Set(before.map(entity => entity.id))
-  const changed = new Set<string>()
-  for (const entity of before) {
-    const next = afterById.get(entity.id)
-    if (!next || !isSameEntity(entity, next)) changed.add(entity.id)
-  }
-  for (const entity of after) {
-    if (!beforeIds.has(entity.id)) changed.add(entity.id)
-  }
-  return changed
+  const beforeById = serializedById(before)
+  const afterById = serializedById(after)
+  const allIds = new Set([...beforeById.keys(), ...afterById.keys()])
+  return new Set([...allIds].filter(id => beforeById.get(id) !== afterById.get(id)))
 }
-
-const teamIdBySeatId = (seats: readonly Seat[]): Map<string, string> =>
-  new Map(seats.map((seat): [string, string] => [seat.id, seat.teamId]))
 
 // 変更された座席のうち、変更されたチームに属さないものだけを数える。
 // 所属は baseline・現在のどちらで見ても判定する — チーム跨ぎの移動は
@@ -70,46 +61,38 @@ const seatsOutsideChangedTeams = (
   changedSeatIds: Set<string>,
   changedTeamIds: Set<string>
 ): number => {
-  if (changedTeamIds.size === 0) return changedSeatIds.size
-  const before = teamIdBySeatId(baseline.seats)
-  const after = teamIdBySeatId(current.seats)
-  let count = 0
-  for (const seatId of changedSeatIds) {
-    const beforeTeamId = before.get(seatId)
-    const afterTeamId = after.get(seatId)
-    const belongsToChangedTeam =
-      (beforeTeamId !== undefined && changedTeamIds.has(beforeTeamId)) ||
-      (afterTeamId !== undefined && changedTeamIds.has(afterTeamId))
-    if (!belongsToChangedTeam) count += 1
-  }
-  return count
+  const seatIdsInChangedTeams = new Set(
+    [...baseline.seats, ...current.seats]
+      .filter(seat => changedTeamIds.has(seat.teamId))
+      .map(seat => seat.id)
+  )
+  return [...changedSeatIds].filter(seatId => !seatIdsInChangedTeams.has(seatId)).length
+}
+
+type CountContext = {
+  baseline: SeatLayout
+  current: SeatLayout
+  changedTeamIds: Set<string>
+}
+
+// 役割を足してここにキーを書き忘れると、Record の型がコンパイルエラーになる
+const COUNTERS: Record<CountRole, (changedIds: Set<string>, context: CountContext) => number> = {
+  entity: changedIds => changedIds.size,
+  team: changedIds => changedIds.size,
+  seat: (changedIds, { baseline, current, changedTeamIds }) =>
+    seatsOutsideChangedTeams(baseline, current, changedIds, changedTeamIds),
 }
 
 export const countLayoutChanges = (baseline: SeatLayout, current: SeatLayout): number => {
-  const changedIdsByCollection = new Map<LayoutCollectionKey, Set<string>>()
-  for (const [key] of COUNT_ROLE_ENTRIES) {
-    changedIdsByCollection.set(key, changedIdsOf(baseline[key], current[key]))
-  }
   // 座席側の除外条件になるので先に確定させる
-  const changedTeamIds = changedIdsByCollection.get('teams') ?? new Set<string>()
-
-  let total = 0
-  for (const [key, role] of COUNT_ROLE_ENTRIES) {
-    const changedIds = changedIdsByCollection.get(key) ?? new Set<string>()
-    switch (role) {
-      case 'entity':
-      case 'team':
-        total += changedIds.size
-        break
-      case 'seat':
-        total += seatsOutsideChangedTeams(baseline, current, changedIds, changedTeamIds)
-        break
-      default: {
-        // 役割を足してここに case を書き忘れると、この代入がコンパイルエラーになる
-        const exhaustive: never = role
-        return exhaustive
-      }
-    }
+  const context: CountContext = {
+    baseline,
+    current,
+    changedTeamIds: changedIdsOf(baseline.teams, current.teams),
   }
-  return total
+  return COUNT_ROLE_ENTRIES.reduce(
+    (total, [key, role]) =>
+      total + COUNTERS[role](changedIdsOf(baseline[key], current[key]), context),
+    0
+  )
 }

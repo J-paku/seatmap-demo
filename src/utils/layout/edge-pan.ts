@@ -3,6 +3,7 @@
 // 「1回のドラッグでは今見えている範囲にしか動かせない」制限を外す。
 // rAF 駆動は hooks/use-edge-auto-pan、変換への適用は SeatMapCanvas の
 // useViewportInput が受け持つ(ゴースト層がキャンバスの DOM 木の外にいるため)
+import { clamp } from './geometry'
 
 export const EDGE_PAN_EVENT = 'seatmap:edge-pan'
 export const EDGE_PAN_END_EVENT = 'seatmap:edge-pan-end'
@@ -20,13 +21,16 @@ export const edgePanDelta = (
   pointer: { x: number; y: number },
   rect: { left: number; top: number; right: number; bottom: number }
 ): EdgePanDelta | null => {
-  const speed = (depth: number) => Math.min(depth / ZONE_PX, 1) * MAX_SPEED_PX
+  // ゾーンへの食い込み量 → 速度。ゾーン外(0以下)は0、突き抜けは最大速度で頭打ち
+  const speed = (depth: number) => clamp(depth / ZONE_PX, 0, 1) * MAX_SPEED_PX
   const fromLeft = ZONE_PX - (pointer.x - rect.left)
   const fromRight = ZONE_PX - (rect.right - pointer.x)
   const fromTop = ZONE_PX - (pointer.y - rect.top)
   const fromBottom = ZONE_PX - (rect.bottom - pointer.y)
-  const dx = fromLeft > 0 ? speed(fromLeft) : fromRight > 0 ? -speed(fromRight) : 0
-  const dy = fromTop > 0 ? speed(fromTop) : fromBottom > 0 ? -speed(fromBottom) : 0
+  // 左・上のゾーンを優先し、外れていれば右・下のゾーンぶん逆向きに滑らせる。
+  // 右・下もゾーン外なら速度0。符号反転を「0 -」で書くのは -0 を返さないため
+  const dx = fromLeft > 0 ? speed(fromLeft) : 0 - speed(fromRight)
+  const dy = fromTop > 0 ? speed(fromTop) : 0 - speed(fromBottom)
   if (dx === 0 && dy === 0) return null
   return { dx, dy }
 }
