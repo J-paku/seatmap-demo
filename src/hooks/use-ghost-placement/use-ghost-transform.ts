@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { SEATMAP_BG_ID } from '@/components/SheetShell'
+import { findCanvas, findLayer, readTransform } from '@/utils/layout/read-canvas-transform'
+import type { Transform } from '@/utils/layout/read-canvas-transform'
 import type { Rect } from '@/utils/layout/rect'
 import type { SnapGuide } from '@/utils/layout/snap-guides'
 
@@ -12,8 +13,6 @@ import type { SnapGuide } from '@/utils/layout/snap-guides'
 //
 // 変換の取得にキャンバス内部の ref を使わず DOM 属性を監視するのは、ゴースト層を
 // キャンバスの DOM 木の外へ置くため
-
-type Transform = { scale: number; tx: number; ty: number }
 
 export type GhostTransform = {
   transform: Transform
@@ -30,16 +29,6 @@ export type GhostTransform = {
   toScreenCenter: (rect: Rect) => { x: number; y: number } | null
   toScreenGuides: (guides: SnapGuide[]) => SnapGuide[]
 }
-
-const readTransform = (layer: Element): Transform => {
-  const m = new DOMMatrixReadOnly(getComputedStyle(layer).transform)
-  return { scale: m.a || 1, tx: m.e, ty: m.f }
-}
-
-const findLayer = (): HTMLElement | null =>
-  document.querySelector<HTMLElement>('[data-canvas-transform-layer="true"]')
-
-export const findCanvas = (): HTMLElement | null => document.getElementById(SEATMAP_BG_ID)
 
 type Options = {
   active: boolean

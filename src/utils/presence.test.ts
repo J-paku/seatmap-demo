@@ -80,6 +80,29 @@ describe('computePresenceMap', () => {
     expect(computePresenceMap(schedules, NOW, true).get('e1')).toBe('out')
   })
 
+  it('進行中イベントの並び順に依らず、ランクが最も高いものを返す', () => {
+    const schedules = [event({ id: 'o', category: 'out' }), event({ id: 'm', category: 'meeting' })]
+    expect(computePresenceMap(schedules, NOW, true).get('e1')).toBe('out')
+  })
+
+  it('useNow=falseでも、他の予定と並ぶ終日休暇があればvacation', () => {
+    const schedules = [
+      event({ id: 'm', category: 'meeting' }),
+      event({ id: 'v', isAllDay: true, category: 'vacation' }),
+    ]
+    expect(computePresenceMap(schedules, NOW, false).get('e1')).toBe('vacation')
+  })
+
+  it('終日でも休暇以外の区分(終日の外出)は、終日休暇として扱わない', () => {
+    const schedules = [event({ isAllDay: true, category: 'out' })]
+    expect(computePresenceMap(schedules, NOW, false).get('e1')).toBe('present')
+  })
+
+  it('終日でない休暇は、useNow=falseなら終日休暇として扱わない', () => {
+    const schedules = [event({ isAllDay: false, category: 'vacation' })]
+    expect(computePresenceMap(schedules, NOW, false).get('e1')).toBe('present')
+  })
+
   it('非終日のvacationイベントが進行中ならvacationになる(最高ランク)', () => {
     const schedules = [
       event({ id: 'm', category: 'meeting' }),

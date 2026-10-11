@@ -47,10 +47,10 @@ const parseDateKey = (dateKey: string): JstDate => {
   return { y, m, d }
 }
 
-// 09:00〜17:30の30分刻みの開始候補を列挙する
-const buildSlotStarts = (): number[] => {
+// 長さdurationの会議が17:30までに収まる開始候補(09:00から30分刻み)を列挙する
+const startsFitting = (duration: number): number[] => {
   const starts: number[] = []
-  for (let t = GRID_START_MIN; t < GRID_END_MIN; t += SLOT_MIN) starts.push(t)
+  for (let t = GRID_START_MIN; t + duration <= GRID_END_MIN; t += SLOT_MIN) starts.push(t)
   return starts
 }
 
@@ -101,22 +101,18 @@ export const meetingsForDate = (
   const maxCount = isWeekend ? WEEKEND_MAX_COUNT : WEEKDAY_MAX_COUNT
   const count = pull(maxCount + 1)
 
-  const allStarts = buildSlotStarts()
-  const placed: { startMin: number; endMin: number }[] = []
   const meetings: FacilityMeeting[] = []
 
   for (let i = 0; i < count; i += 1) {
     const duration = DURATION_CANDIDATES[pull(DURATION_CANDIDATES.length)]
-    const candidates = allStarts.filter(
-      s =>
-        s + duration <= GRID_END_MIN &&
-        !placed.some(p => overlaps(s, s + duration, p.startMin, p.endMin))
+    // 置き済みの会議と時間が重ならない開始候補だけを残す
+    const candidates = startsFitting(duration).filter(
+      s => !meetings.some(m => overlaps(s, s + duration, m.startMin, m.endMin))
     )
     if (candidates.length === 0) break
 
     const startMin = candidates[pull(candidates.length)]
     const endMin = startMin + duration
-    placed.push({ startMin, endMin })
 
     const title = TITLE_POOL[pull(TITLE_POOL.length)]
     const organizerId = pickDistinct(employeeIds, 1, pull)[0]

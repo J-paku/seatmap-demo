@@ -15,7 +15,11 @@ import {
   seatOverlapsFixture,
 } from '@/utils/layout/layout-rules'
 import type { EditableObjectKind } from '@/utils/layout/layout-actions'
+import { MSG_FACILITY, MSG_OVERLAP, MSG_SAVING } from '@/utils/layout/layout-edit-messages'
 import type { FurnitureKind, LayoutObjectRef, Seat, SeatLayout, Team } from '@/types'
+
+// use-object-placement がここから読んでいるための中継。呼び出し側を utils へ向け替えたら消す
+export { MSG_OVERLAP } from '@/utils/layout/layout-edit-messages'
 
 // 07-admin-edit: 編集アクションの発行口。セッション管理は useEditSession、
 // 判定規則は utils/layout/layout-rules が持ち、ここは「発行してよいか」を決めるだけ。
@@ -63,10 +67,6 @@ export type UseLayoutEditorApi = {
   importTeams: (teams: Team[], seats: Seat[]) => boolean
   assignEmployee: (seatId: string, employeeId: string | null) => void
 }
-
-const MSG_FACILITY = '設備と重なるため配置できません'
-export const MSG_OVERLAP = 'ここには配置できません'
-const MSG_SAVING = '保存中は操作できません'
 
 export const useLayoutEditor = (sourceLayout: SeatLayout | undefined): UseLayoutEditorApi => {
   // セッションは毎レンダー新しい入れ物を返すので、ここで中身へ分解して以降は個々の値だけを見る

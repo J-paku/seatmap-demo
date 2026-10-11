@@ -1,6 +1,7 @@
 import { useMemo, useRef, useState } from 'react'
 import type { MouseEvent as ReactMouseEvent, PointerEvent as ReactPointerEvent } from 'react'
 import { useEnterAnimation } from './use-enter-animation'
+import { flickSpeed } from '../utils/measure-flick-speed'
 import {
   COMMIT_DISTANCE,
   FLICK_SPEED,
@@ -31,15 +32,6 @@ type SwipeHandlers = {
 // refs はそのままJSXの ref= に渡せるよう個別に返す(まとめ物のプロパティ経由で渡さない)
 type Result = SwipeStageRefs & {
   handlers: SwipeHandlers
-}
-
-// 直近100msの速度からフリック量を求める
-const flickSpeed = (samples: Array<{ x: number; t: number }>, now: number): number => {
-  const recent = samples.filter(s => now - s.t <= 100)
-  if (recent.length < 2) return 0
-  const a = recent[0]
-  const b = recent[recent.length - 1]
-  return (b.x - a.x) / Math.max(1, b.t - a.t)
 }
 
 export const useDateSwipe = ({ cardKey, onSwipePrevDay, onSwipeNextDay }: Options): Result => {

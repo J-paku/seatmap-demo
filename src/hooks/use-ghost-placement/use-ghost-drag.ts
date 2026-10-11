@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { PointerEvent as ReactPointerEvent, RefObject } from 'react'
-import { findCanvas } from './use-ghost-transform'
 import type { GhostTransform } from './use-ghost-transform'
 import { useEdgeAutoPan } from '@/hooks/use-edge-auto-pan'
 import { triggerHaptic } from '@/utils/haptic'
 import { edgePanDelta } from '@/utils/layout/edge-pan'
+import { DRAG_CONFIRM_PX, GHOST_MAX_SIZE } from '@/utils/layout/ghost-drag-limits'
+import { findCanvas } from '@/utils/layout/read-canvas-transform'
 import { clampGhostCenter } from '@/utils/layout/rect'
 import type { Rect } from '@/utils/layout/rect'
 import { resizeRectToPointer } from '@/utils/layout/resize-anchor'
@@ -15,13 +16,6 @@ import type { SnapGuide } from '@/utils/layout/snap-guides'
 // ゴーストを掴んでいる間だけの層。移動ドラッグ・リサイズ・2本目の指への引き渡しを持つ。
 // 座標系(変換とキャンバス矩形)は use-ghost-transform、静止時の位置と描画値は
 // use-ghost-placement が持ち、ここは「掴んでいる間に中心と寸法をどう動かすか」だけを持つ
-
-// 実物由来のゴースト最大辺(viewBox 単位)。最小辺は utils/layout/rect の GHOST_MIN_SIZE
-const GHOST_MAX_SIZE = 2500
-
-// ドラッグ確定の移動量。これ未満は「掴んだだけ」とみなし自動パンを起こさない
-// (編集ドラッグの DRAG_THRESHOLD_PX と同値)
-const DRAG_CONFIRM_PX = 3
 
 type DragState =
   | { kind: 'none' }

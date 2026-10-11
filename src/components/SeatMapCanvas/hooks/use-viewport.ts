@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { useViewportInput } from './use-viewport-input'
+import { TRANSITION_MS } from '../utils/animate-viewport'
 import { stepAnim } from '../utils/anim-step'
 import { prefersReducedMotion } from '../utils/canvas-metrics'
 import type { Anim, Viewport } from '../type'
@@ -17,9 +18,6 @@ import type { Transform } from '@/utils/layout/geometry'
 
 // パン・ズームの変換そのものを持つ。DOM へ直接 transform を当て、再レンダーは
 // ジェスチャー終了時の scaleSnap 更新だけに絞る
-
-// アニメーション付きで移動したあと transition を外すまでの時間
-const TRANSITION_MS = 300
 
 export const useViewport = (): Viewport => {
   const containerRef = useRef<HTMLDivElement>(null)

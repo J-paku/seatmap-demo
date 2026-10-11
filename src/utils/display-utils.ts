@@ -1,12 +1,10 @@
 // 表示系ユーティリティ（名前・時刻・座席ラベルのフォーマット）
 
-const WHITESPACE_RE = /[\s\u3000]+/g
+// 語の区切り(半角・全角の空白)
+const WHITESPACE_RE = /[\s　]/
 
 // コンパクト表示用に名前の先頭語を取得
-export const getCompactNameLabel = (name: string) => {
-  const bareName = name.split(/[;；]/)[0]?.trim() ?? ''
-  if (!bareName) return ''
-
-  const parts = bareName.split(WHITESPACE_RE).filter(Boolean)
-  return parts[0] ?? bareName
-}
+// セミコロン(半角/全角)より前を前後の空白を除いて取り、その最初の語を返す。何も無ければ空文字
+// (split は必ず1要素以上を返すので [0] は常に文字列。前後の空白を除いた後なので最初の語は空白で始まらない)
+export const getCompactNameLabel = (name: string) =>
+  name.split(/[;；]/)[0].trim().split(WHITESPACE_RE)[0]

@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import type { RefObject } from 'react'
 import { isModalOpen } from '../utils/canvas-metrics'
+import { LINE_TO_PX, PINCH_PX_PER_LEVEL, WHEEL_PER_LEVEL } from '../utils/convert-wheel-delta'
 import type { Anim } from '../type'
 import { EDGE_PAN_END_EVENT, EDGE_PAN_EVENT } from '@/utils/layout/edge-pan'
 import type { EdgePanDelta } from '@/utils/layout/edge-pan'
@@ -9,13 +10,6 @@ import type { Transform } from '@/utils/layout/geometry'
 
 // キャンバスへの入力(リサイズ再計測・キーボード ±・ホイール/トラックパッド)を変換モデルへ繋ぐ。
 // 変換そのものは useViewport が持ち、ここは「いつ呼ぶか」だけを担う
-
-// ホイール1ノッチをレベルへ換算する係数
-const WHEEL_PER_LEVEL = 100
-// トラックパッドピンチ: 70px=1レベル
-const PINCH_PX_PER_LEVEL = 70
-// 行スクロール(deltaMode=1)のpx換算
-const LINE_TO_PX = 33
 
 type Options = {
   containerRef: RefObject<HTMLDivElement | null>

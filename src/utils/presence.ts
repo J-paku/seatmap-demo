@@ -1,11 +1,7 @@
 import type { PresenceStatus, ScheduleEvent } from '@/types'
 
-// 同時進行時の優先度(vacation > out > meeting)
-const RANK: Record<'meeting' | 'out' | 'vacation', number> = {
-  vacation: 3,
-  out: 2,
-  meeting: 1,
-}
+// 同時進行時の優先度(vacation > out > meeting)。先頭ほど強い
+const PRIORITY: readonly ScheduleEvent['category'][] = ['vacation', 'out', 'meeting']
 
 // 指定日(その社員の当日イベント)+ now から在席ステータスを判定する
 // isTodaySelected=false のときは「進行中」判定を行わず present 固定(当日以外は現在時刻概念なし)
@@ -17,21 +13,13 @@ const presenceForEmployee = (
   // 優先1: 終日(休暇)があれば終日 vacation
   if (events.some(e => e.isAllDay && e.category === 'vacation')) return 'vacation'
   if (!useNow) return 'present'
-  // 優先2: 進行中イベントのうち最高ランク
-  let best: PresenceStatus = 'present'
-  let bestRank = 0
-  for (const e of events) {
-    const start = Date.parse(e.start)
-    const end = Date.parse(e.end)
-    if (start <= nowMs && nowMs < end) {
-      const r = RANK[e.category]
-      if (r > bestRank) {
-        bestRank = r
-        best = e.category
-      }
-    }
-  }
-  return best
+  // 優先2: 進行中イベントの区分のうち、優先度が最も高いもの
+  const ongoing = new Set(
+    events
+      .filter(e => Date.parse(e.start) <= nowMs && nowMs < Date.parse(e.end))
+      .map(e => e.category)
+  )
+  return PRIORITY.find(category => ongoing.has(category)) ?? 'present'
 }
 
 // 対象日の全イベント + now → employeeId → PresenceStatus の Map

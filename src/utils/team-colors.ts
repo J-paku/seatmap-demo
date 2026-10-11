@@ -19,12 +19,15 @@ const hexToRgb = (hex: string) => {
   }
 }
 
+// WCAG の線形区間(c ≤ 0.03928)は、0〜255 の整数の値では 0〜10(11 未満)に当たる
+const LINEAR_SEGMENT_LIMIT = 11
+
 // sRGB相対輝度(WCAG定義)
 const relativeLuminance = (hex: string) => {
   const { r, g, b } = hexToRgb(hex)
   const channel = (v: number) => {
     const c = v / 255
-    return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4
+    return v < LINEAR_SEGMENT_LIMIT ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4
   }
   return 0.2126 * channel(r) + 0.7152 * channel(g) + 0.0722 * channel(b)
 }
@@ -42,41 +45,33 @@ const contrastRatio = (hexA: string, hexB: string) => {
 const pickForeground = (background: string) => {
   const blackContrast = contrastRatio(background, '#000000')
   const whiteContrast = contrastRatio(background, '#ffffff')
-  return blackContrast >= whiteContrast ? '#000000' : '#ffffff'
+  // 対比の高い方。同じなら黒
+  return Math.max(blackContrast, whiteContrast) === blackContrast ? '#000000' : '#ffffff'
 }
 
-const hslToHex = (h: number, s: number, l: number) => {
-  const sn = s / 100
-  const ln = l / 100
-  const c = (1 - Math.abs(2 * ln - 1)) * sn
+// 未登録チームのフォールバック色の彩度・明度(68%・50%)。
+// 明度50%では HSL の chroma((1 - |2L - 1|) × S)が彩度そのものになる
+const FALLBACK_CHROMA = 68 / 100
+const FALLBACK_LIGHTNESS = 50 / 100
+
+// 0〜255 の整数を2桁の16進へ(0x100 を足して3桁にし、先頭の1を落とす)
+const toHexByte = (value: number) => (0x100 + value).toString(16).slice(1)
+
+// 色相(0以上360未満)→ 彩度68%・明度50%の #rrggbb
+const hueToHex = (h: number) => {
+  const c = FALLBACK_CHROMA
   const x = c * (1 - Math.abs(((h / 60) % 2) - 1))
-  const m = ln - c / 2
-  let r = 0
-  let g = 0
-  let b = 0
-  if (h < 60) {
-    r = c
-    g = x
-  } else if (h < 120) {
-    r = x
-    g = c
-  } else if (h < 180) {
-    g = c
-    b = x
-  } else if (h < 240) {
-    g = x
-    b = c
-  } else if (h < 300) {
-    r = x
-    b = c
-  } else {
-    r = c
-    b = x
-  }
-  const toHex = (v: number) =>
-    Math.round((v + m) * 255)
-      .toString(16)
-      .padStart(2, '0')
+  const m = FALLBACK_LIGHTNESS - c / 2
+  // 色相60度ごとの区間で、r・g・b のどれに c・x・0 を入れるかが決まる
+  const [r, g, b] = [
+    [c, x, 0],
+    [x, c, 0],
+    [0, c, x],
+    [0, x, c],
+    [x, 0, c],
+    [c, 0, x],
+  ][Math.floor(h / 60)]
+  const toHex = (v: number) => toHexByte(Math.round((v + m) * 255))
   return `#${toHex(r)}${toHex(g)}${toHex(b)}`
 }
 
@@ -99,7 +94,7 @@ const deriveEntry = (background: string, index: number): TeamColorEntry => ({
 // 未登録チーム名の決定論的フォールバック色(彩度68%・明度50%固定)
 const fallbackColor = (name: string): string => {
   const hue = hashString(name) % 360
-  return hslToHex(hue, 68, 50)
+  return hueToHex(hue)
 }
 
 // Team[] から レジストリ(teamId→3値)を構築する純粋関数

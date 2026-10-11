@@ -8,7 +8,7 @@ const hiraganaToKatakana = (value: string): string =>
   value.replace(/[ぁ-ゖ]/g, c => String.fromCharCode(c.charCodeAt(0) + 0x60))
 
 export const normalizeSearchText = (value: string): string =>
-  hiraganaToKatakana(value.normalize('NFKC').toLowerCase()).replace(/\s+/g, '')
+  hiraganaToKatakana(value.normalize('NFKC').toLowerCase()).replace(/\s/g, '')
 
 const fieldsOf = (employee: Employee): string[] =>
   [
@@ -20,10 +20,11 @@ const fieldsOf = (employee: Employee): string[] =>
     // §06-4: 検索は名前・チーム・社員IDの部分一致。ここでの「社員ID」は内部合成キー(id)ではなく
     // 利用者が知っている4桁社員番号(ownerCode)を指す
     employee.ownerCode,
-  ].filter((field): field is string => typeof field === 'string' && field.length > 0)
+  ].filter((field): field is string => typeof field === 'string')
 
+// 空の検索語はどの欄にも含まれる扱いになり、全員に一致する(氏名・カナ・部署は必ず文字列なので欄の一覧は空にならない)。
+// 空文字の欄は空でない検索語を含まないので、一致の判定に影響しない
 export const matchesEmployeeQuery = (employee: Employee, query: string): boolean => {
   const normalized = normalizeSearchText(query)
-  if (normalized.length === 0) return true
   return fieldsOf(employee).some(field => normalizeSearchText(field).includes(normalized))
 }

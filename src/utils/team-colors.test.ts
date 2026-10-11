@@ -58,6 +58,18 @@ describe('buildTeamColorRegistry', () => {
     expect(registry.get('dup')?.background).toBe('#000000')
     expect(registry.get('dup')?.index).toBe(1)
   })
+
+  // 黒文字と白文字の対比がほぼ並ぶ色。WCAG の相対輝度の式のどこかがずれると前景が入れ替わる
+  it.each([
+    ['#757575', '#ffffff', '灰色は #757575 までは白文字'],
+    ['#767676', '#000000', '灰色は #767676 からは黒文字'],
+    ['#0a0a0a', '#ffffff', 'ほぼ黒は白文字'],
+    ['#006dfb', '#ffffff', '0x00 のチャンネルを線形の区間で計算する境目の青'],
+    ['#d60bb6', '#000000', '0x0b のチャンネルを冪乗の区間で計算する境目の赤紫'],
+  ])('黒白の境目付近の %s は前景 %s(%s)', (color, foreground) => {
+    const registry = buildTeamColorRegistry([makeTeam({ id: 'team-a', color })])
+    expect(registry.get('team-a')?.foreground).toBe(foreground)
+  })
 })
 
 describe('resolveTeamColor', () => {
@@ -90,6 +102,22 @@ describe('resolveTeamColor', () => {
     const b = resolveTeamColor(registry, 'id-b', '未登録チーム')
     expect(a.background).not.toBe(b.background)
   })
+
+  // 名前のハッシュから決まる色相が、60度ずつの6区間のそれぞれに入る名前を並べる
+  it.each([
+    ['営業部', 17, '#d65a29', '#000000'],
+    ['総務部', 62, '#d0d629', '#000000'],
+    ['広報部', 138, '#29d65d', '#000000'],
+    ['品質保証部', 216, '#296ed6', '#ffffff'],
+    ['未登録チーム', 284, '#a829d6', '#ffffff'],
+    ['チームA', 308, '#d629bf', '#000000'],
+  ])(
+    '未登録の名前 %s(色相 %i 度)は彩度68%・明度50%の %s・前景 %s になる',
+    (name, _hue, background, foreground) => {
+      const result = resolveTeamColor(new Map<string, TeamColorEntry>(), 'unknown-id', name)
+      expect(result).toEqual({ background, foreground, index: 0 })
+    }
+  )
 
   it('フォールバック時の index は呼び出し時点のレジストリサイズを引き継ぐ', () => {
     const registry = buildTeamColorRegistry([

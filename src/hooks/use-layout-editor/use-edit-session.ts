@@ -2,6 +2,7 @@ import { useCallback, useRef, useState } from 'react'
 import { applyLayoutAction } from '@/utils/layout/layout-actions'
 import type { LayoutAction } from '@/utils/layout/layout-actions'
 import { countLayoutChanges } from '@/utils/layout/layout-diff'
+import { UNDO_STACK_LIMIT } from '@/utils/layout/edit-undo-limit'
 import type { SeatLayout } from '@/types'
 
 // 07-admin-edit: 編集セッション(ワーキングコピー・undoスタック・変更数・保存中ロック)。
@@ -12,9 +13,6 @@ import type { SeatLayout } from '@/types'
 // undo チップは出るのに戻らない、という無言の失敗になる。別名にして型で追随させる。
 // applyLayoutAction は常に新しいオブジェクトを返すので、適用前の参照はそのまま履歴として使える
 type UndoEntry = SeatLayout
-
-// undo スタックの上限。超えた分は古い方から捨てる
-const UNDO_STACK_LIMIT = 10
 
 // dispatch の結果種別。'noop'=レイアウト無変化 / 'staged'=ローカル反映済み /
 // 'blocked'=保存中のため拒否。'blocked' を無言で捨てると操作が効いたように見えるので、

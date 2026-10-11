@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { RefObject } from 'react'
+import { DISMISS_MS, isSameView, project } from '../utils/project-undo-chip'
 import type { RecentPlacement, UndoChipRequest, UndoChipView } from '../type'
 import type { Transform } from '@/utils/layout/geometry'
 
@@ -8,10 +9,6 @@ import type { Transform } from '@/utils/layout/geometry'
 // 位置は論理座標(viewBox 単位)のまま持ち、画面座標への投影は描画のたびに行う。
 // 投影を showAt で焼くと、表示中にパン・ズームしたときチップだけが同じピクセルに釘付けになり、
 // 対象が下を滑っていって空きスペースや別のチームを指したまま残る
-
-const DISMISS_MS = 4000
-// 対象下端とチップの隙間。画面px固定で、倍率に依らない(投影の後に足す)
-const ANCHOR_GAP_PX = 10
 
 type UndoChip = {
   // 投影済みの表示位置。非表示なら null
@@ -23,35 +20,6 @@ type UndoChip = {
   showAt: (request: UndoChipRequest) => void
   dismiss: () => void
 }
-
-const project = (req: UndoChipRequest, t: Transform): UndoChipView => ({
-  // ANCHOR_GAP_PX が t.scale の外にあることが要点。掛けると隙間が倍率で伸縮する
-  chip: {
-    x: req.anchor.x * t.scale + t.translateX,
-    y: req.anchor.y * t.scale + t.translateY + ANCHOR_GAP_PX,
-  },
-  frame: req.frame
-    ? {
-        x: req.frame.x * t.scale + t.translateX,
-        y: req.frame.y * t.scale + t.translateY,
-        w: req.frame.w * t.scale,
-        h: req.frame.h * t.scale,
-      }
-    : null,
-})
-
-// 変換が動いていないフレームで再レンダーを起こさない。同じ変換なら数値は完全一致する
-const isSameView = (a: UndoChipView | null, b: UndoChipView): boolean =>
-  a !== null &&
-  a.chip.x === b.chip.x &&
-  a.chip.y === b.chip.y &&
-  (a.frame === null) === (b.frame === null) &&
-  (a.frame === null ||
-    b.frame === null ||
-    (a.frame.x === b.frame.x &&
-      a.frame.y === b.frame.y &&
-      a.frame.w === b.frame.w &&
-      a.frame.h === b.frame.h))
 
 export const useUndoChip = (transformRef: RefObject<Transform>): UndoChip => {
   const [req, setReq] = useState<UndoChipRequest | null>(null)
