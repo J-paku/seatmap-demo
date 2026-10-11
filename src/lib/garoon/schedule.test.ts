@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { GAROON_SCHEDULE_EVENTS_PATH } from './schedule'
 import { GAROON_FACILITY_MASTER } from './facilities'
-import schedulesJson from '../../mocks/schedules.json'
+import schedulesJson from '@mocks/schedules.json'
 
 describe('GAROON_SCHEDULE_EVENTS_PATH', () => {
   it('REST の予定取得エンドポイントのパスを持つ', () => {

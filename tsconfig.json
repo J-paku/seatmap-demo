@@ -17,7 +17,8 @@
     "jsx": "react-jsx",
     "incremental": true,
     "paths": {
-      "@/*": ["./*"]
+      "@/*": ["./src/*"],
+      "@mocks/*": ["./mocks/*"]
     }
   },
   "include": [

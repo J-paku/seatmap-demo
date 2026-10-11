@@ -97,11 +97,11 @@ const COACH_MARK_KEYS = [...findCoachMarkKeys(REPO_ROOT)]
 // キーは lib/session-auth.ts の定義をソースから読む(二重定義にしない)。値は writeSessionAuth と
 // 同じ JSON 形にする — ゲート自体は非 null なら通すが、保存形が違うと読む側で崩れうる ----
 const SESSION_AUTH = (() => {
-  const file = path.join(REPO_ROOT, 'lib/session-auth.ts')
+  const file = path.join(REPO_ROOT, 'src/lib/session-auth.ts')
   if (!existsSync(file)) return null
   const m = readFileSync(file, 'utf8').match(/SESSION_AUTH_KEY\s*=\s*'([^']+)'/)
   if (!m) {
-    console.error('[run-all-checks] lib/session-auth.ts の SESSION_AUTH_KEY を読めません。')
+    console.error('[run-all-checks] src/lib/session-auth.ts の SESSION_AUTH_KEY を読めません。')
     console.error('  対処: 定数名を変えたなら、この抽出正規表現も合わせて直してください。')
     process.exit(2)
   }

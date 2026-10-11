@@ -1,4 +1,5 @@
 import { defineConfig } from 'vitest/config'
+import { fileURLToPath, URL } from 'node:url'
 
 // utils/lib 内部の import は `@/` alias を31件以上使用しており、
 // 未設定だとテストが全滅するため必須で設定する
@@ -7,11 +8,12 @@ import { defineConfig } from 'vitest/config'
 export default defineConfig({
   resolve: {
     alias: {
-      '@': import.meta.dirname,
+      '@': fileURLToPath(new URL('./src', import.meta.url)),
+      '@mocks': fileURLToPath(new URL('./mocks', import.meta.url)),
     },
   },
   test: {
     environment: 'node',
-    include: ['utils/**/*.test.ts', 'lib/**/*.test.ts'],
+    include: ['src/utils/**/*.test.ts', 'src/lib/**/*.test.ts'],
   },
 })

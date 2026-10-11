@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { GAROON_FACILITY_MASTER, isGaroonConnected } from './facilities'
-import facilitiesJson from '../../mocks/facilities.json'
-import facilitiesFloor2Json from '../../mocks/floor-2/facilities.json'
+import facilitiesJson from '@mocks/facilities.json'
+import facilitiesFloor2Json from '@mocks/floor-2/facilities.json'
 
 describe('isGaroonConnected', () => {
   it('DECISION D3: デモは接続済み固定なので常に true を返す', () => {

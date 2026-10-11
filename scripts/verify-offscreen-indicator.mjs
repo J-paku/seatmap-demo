@@ -65,11 +65,11 @@ const COACH_MARK_KEYS = [...findCoachMarkKeys(REPO_ROOT)]
 // ログインゲートがある構成では通過キーを撒いて素通りさせる。キーは lib/session-auth.ts の
 // 定義をソースから読む(二重定義にしない)。ゲートが無い構成では null のまま何もしない
 const SESSION_AUTH_KEY = (() => {
-  const file = path.join(REPO_ROOT, 'lib/session-auth.ts')
+  const file = path.join(REPO_ROOT, 'src/lib/session-auth.ts')
   if (!existsSync(file)) return null
   const m = readFileSync(file, 'utf8').match(/SESSION_AUTH_KEY\s*=\s*'([^']+)'/)
   if (!m) {
-    console.error('[verify-offscreen-indicator] lib/session-auth.ts の SESSION_AUTH_KEY を読めません。')
+    console.error('[verify-offscreen-indicator] src/lib/session-auth.ts の SESSION_AUTH_KEY を読めません。')
     process.exit(2)
   }
   return m[1]

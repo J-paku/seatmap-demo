@@ -82,11 +82,11 @@ const COACH_MARK_KEYS = [...findCoachMarkKeys(REPO_ROOT)]
 
 // ---- 2-2. ログインゲート通過キー(lib/session-auth.ts の定義を読む) ----
 const SESSION_AUTH = (() => {
-  const file = path.join(REPO_ROOT, 'lib/session-auth.ts')
+  const file = path.join(REPO_ROOT, 'src/lib/session-auth.ts')
   if (!existsSync(file)) return null
   const m = readFileSync(file, 'utf8').match(/SESSION_AUTH_KEY\s*=\s*'([^']+)'/)
   if (!m) {
-    console.error('[run-ghost-checks] lib/session-auth.ts の SESSION_AUTH_KEY を読めません。')
+    console.error('[run-ghost-checks] src/lib/session-auth.ts の SESSION_AUTH_KEY を読めません。')
     process.exit(2)
   }
   return { key: m[1], value: JSON.stringify({ loginId: 'E0001' }) }
