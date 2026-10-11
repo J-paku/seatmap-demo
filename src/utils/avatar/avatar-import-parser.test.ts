@@ -66,6 +66,41 @@ describe('parseAiImportedConfig — JSON / kind 分岐の共通経路', () => {
     const result = parseAiImportedConfig(wrapped)
     expect(result).toEqual({ ok: false, error: 'invalidJson' })
   })
+
+  it('フェンスの前にだけ説明文があっても、全体一致しないので剥がさず invalidJson になる', () => {
+    const wrapped = 'ここにコードがあります:\n```json\n' + JSON.stringify(validParts) + '\n```'
+    expect(parseAiImportedConfig(wrapped)).toEqual({ ok: false, error: 'invalidJson' })
+  })
+
+  it('フェンスの後ろにだけ説明文があっても、全体一致しないので剥がさず invalidJson になる', () => {
+    const wrapped = '```json\n' + JSON.stringify(validParts) + '\n```\n以上です'
+    expect(parseAiImportedConfig(wrapped)).toEqual({ ok: false, error: 'invalidJson' })
+  })
+
+  it('1 行で書いたフェンス (改行なし) も中身を剥がしてパースする', () => {
+    const result = parseAiImportedConfig('```' + JSON.stringify(validParts) + '```')
+    expect(result.ok).toBe(true)
+  })
+
+  it('改行と字下げを含む整形済み JSON のフェンスも中身を剥がしてパースする', () => {
+    const fenced = '```json\n' + JSON.stringify(validParts, null, 2) + '\n```'
+    expect(parseAiImportedConfig(fenced).ok).toBe(true)
+  })
+
+  it('フェンス全体の前後にある空白・改行は無視して剥がす', () => {
+    const fenced = '\n  ```json\n' + JSON.stringify(validParts) + '\n```  \n'
+    expect(parseAiImportedConfig(fenced).ok).toBe(true)
+  })
+
+  it('フェンスの中で JSON の後ろに続く全角スペースも取り除いてパースする', () => {
+    const fenced = '```json\n' + JSON.stringify(validParts) + '　\n```'
+    expect(parseAiImportedConfig(fenced).ok).toBe(true)
+  })
+
+  it('対応外の言語名 (yaml) のフェンスは言語名が中身に残るため invalidJson になる', () => {
+    const fenced = '```yaml\n' + JSON.stringify(validParts) + '\n```'
+    expect(parseAiImportedConfig(fenced)).toEqual({ ok: false, error: 'invalidJson' })
+  })
 })
 
 describe('parseAiImportedConfig — kind: parts 経路', () => {
@@ -109,6 +144,11 @@ describe('parseAiImportedConfig — kind: parts 経路', () => {
     expect(result).toEqual({ ok: false, error: 'invalidHair' })
   })
 
+  it('hair が文字列でなく、既存 ID を 1 つだけ入れた配列だと invalidHair を返す', () => {
+    const result = parseAiImportedConfig(JSON.stringify({ ...validParts, hair: ['short'] }))
+    expect(result).toEqual({ ok: false, error: 'invalidHair' })
+  })
+
   it('face が存在しない ID だと invalidFace を返す', () => {
     const result = parseAiImportedConfig(JSON.stringify({ ...validParts, face: 'grumpy' }))
     expect(result).toEqual({ ok: false, error: 'invalidFace' })
@@ -140,6 +180,21 @@ describe('parseAiImportedConfig — kind: parts 経路', () => {
       JSON.stringify({ ...validParts, palette: { ...validParts.palette, skin: 'skyblue' } })
     )
     expect(result).toEqual({ ok: false, error: 'invalidPalette' })
+  })
+
+  it('palette フィールド自体が無いと invalidPalette を返す', () => {
+    const { palette: _palette, ...rest } = validParts
+    const result = parseAiImportedConfig(JSON.stringify(rest))
+    expect(result).toEqual({ ok: false, error: 'invalidPalette' })
+  })
+
+  it('HEX の前に余計な文字があったり 7 桁あったりすると invalidPalette を返す', () => {
+    for (const skin of ['x#F0C49A', '#F0C49A0']) {
+      const result = parseAiImportedConfig(
+        JSON.stringify({ ...validParts, palette: { ...validParts.palette, skin } })
+      )
+      expect(result).toEqual({ ok: false, error: 'invalidPalette' })
+    }
   })
 
   it('palette.outfitAlt を明示指定した場合は deriveOutfitColors で上書きせずそのまま使う', () => {
@@ -225,19 +280,19 @@ describe('parseAiImportedConfig — kind: pixels 経路', () => {
     const result = parseAiImportedConfig(
       JSON.stringify({ ...validPixels, palette: { s: '#F0C49A', bad: 'not-a-color' } })
     )
-    expect(result.ok).toBe(true)
-    if (result.ok && result.config.kind === 'pixels') {
-      expect(result.config.palette).toEqual({ s: '#F0C49A' })
-    }
+    // toStrictEqual で、不正なキーが undefined として残っていないことまで確かめる
+    expect(result).toStrictEqual({
+      ok: true,
+      config: { kind: 'pixels', size: 16, palette: { s: '#F0C49A' }, rows: opaqueRows },
+    })
   })
 
   it('十分に不透明な rows はマスク正規化されずそのまま返る', () => {
     const result = parseAiImportedConfig(JSON.stringify(validPixels))
-    expect(result.ok).toBe(true)
-    if (result.ok && result.config.kind === 'pixels') {
-      expect(result.config.rows).toEqual(opaqueRows)
-      expect(result.config.size).toBe(16)
-    }
+    expect(result).toEqual({
+      ok: true,
+      config: { kind: 'pixels', size: 16, palette: { s: '#F0C49A' }, rows: opaqueRows },
+    })
   })
 
   it('全面透明な rows は顔マスク(row4-9,col4-11)と体マスク(row12-15,col0-15)が自動充填される', () => {

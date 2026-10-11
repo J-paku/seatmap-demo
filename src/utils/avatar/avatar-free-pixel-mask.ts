@@ -29,6 +29,9 @@ const AVATAR_MASK_COORDS = {
   },
 } as const
 
+// 透明セルを表す文字。palette に同じキーがあっても透明として扱う
+const TRANSPARENT_KEY = '.'
+
 // マスク座標の総セル数
 
 // 透明度判定用の集計結果型
@@ -62,8 +65,8 @@ function countMaskTransparency(
   let transparentCells = 0
 
   for (const { row, col } of getMaskCells(mask)) {
-    const char = rows[row]?.[col] ?? '.'
-    const isTransparent = !palette.hasOwnProperty(char) || char === '.'
+    const char = rows[row]?.[col] ?? TRANSPARENT_KEY
+    const isTransparent = !palette.hasOwnProperty(char) || char === TRANSPARENT_KEY
     totalCells++
     if (isTransparent) transparentCells++
   }
@@ -84,10 +87,8 @@ function fillMaskWithKey(
   const filled = rows.map(row => row.split(''))
 
   for (const { row, col } of getMaskCells(mask)) {
-    const char = rows[row]?.[col] ?? '.'
-    // 透明セル(palette 未定義 or '.') のみ充填
-    const isTransparent = !rows[row]?.charAt(col) || char === '.'
-    if (isTransparent) {
+    // '.' のセルと、行が短くて欠けた列だけを充填する (palette に無い文字は残す)
+    if ((rows[row][col] ?? TRANSPARENT_KEY) === TRANSPARENT_KEY) {
       filled[row][col] = fillKey
     }
   }

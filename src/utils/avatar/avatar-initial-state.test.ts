@@ -119,4 +119,32 @@ describe('deriveInitialParts', () => {
     expect(result.hairColor).toBeNull()
     expect(result.outfitColor).toBeNull()
   })
+
+  it('kind:parts で髪色だけが av2 と一致し服色が違う場合は av2 に紐付けず、av1 との差分を色上書きに残す', () => {
+    const av2Palette = PIXEL_AVATAR_PRESETS.av2.palette
+    const result = deriveInitialParts({
+      kind: 'parts',
+      hair: 'short',
+      face: 'slit',
+      outfit: 'solid',
+      palette: { ...av2Palette, outfit: '#123456' },
+    })
+    expect(result.paletteId).toBe('av1')
+    expect(result.hairColor).toBe(av2Palette.hair)
+    expect(result.outfitColor).toBe('#123456')
+  })
+
+  it('kind:parts で服色だけが av2 と一致し髪色が違う場合は av2 に紐付けず、av1 との差分を色上書きに残す', () => {
+    const av2Palette = PIXEL_AVATAR_PRESETS.av2.palette
+    const result = deriveInitialParts({
+      kind: 'parts',
+      hair: 'short',
+      face: 'slit',
+      outfit: 'solid',
+      palette: { ...av2Palette, hair: '#123456' },
+    })
+    expect(result.paletteId).toBe('av1')
+    expect(result.hairColor).toBe('#123456')
+    expect(result.outfitColor).toBe(av2Palette.outfit)
+  })
 })

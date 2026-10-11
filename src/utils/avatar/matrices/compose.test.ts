@@ -179,6 +179,19 @@ describe('upscaleMatrix8to16 — 8x8 → 16x16 の nearest-neighbor 2倍拡大',
     expect(matrix16[12]).toEqual(Array<string>(16).fill('outfit'))
     expect(matrix16[13]).toEqual(Array<string>(16).fill('outfit'))
   })
+
+  it('8x8 に満たない行列でも例外を投げず 16x16 を返し、元に無いセルは空のまま', () => {
+    const matrix16 = upscaleMatrix8to16([['hair']])
+    expect(matrix16).toHaveLength(16)
+    matrix16.forEach((row, y) => {
+      expect(row).toHaveLength(16)
+      row.forEach((cell, x) => {
+        // 元の (0, 0) を広げた左上の 2x2 だけが埋まる
+        if (y < 2 && x < 2) expect(cell).toBe('hair')
+        else expect(cell).toBeFalsy()
+      })
+    })
+  })
 })
 
 describe('composePixelsAvatarMatrix — 16x16 フリーピクセルの直接色解決', () => {
@@ -209,6 +222,33 @@ describe('composePixelsAvatarMatrix — 16x16 フリーピクセルの直接色�
     expect(result[0][0]).toBe('s')
     expect(result[0][1]).toBeNull()
     expect(result[0][15]).toBeNull()
+  })
+
+  it('結果は常に 16x16 で、rows の 16 文字目より後ろは読まない', () => {
+    const rows = Array.from({ length: 16 }, () => 's'.repeat(20))
+    const config: PixelsAvatarConfig = { kind: 'pixels', size: 16, palette: { s: '#F0C49A' }, rows }
+    expect(composePixelsAvatarMatrix(config)).toEqual(
+      Array.from({ length: 16 }, () => Array<string>(16).fill('s'))
+    )
+  })
+
+  it('rows が 16 行に満たなくても例外を投げず、欠けた行は全て null になる', () => {
+    const config: PixelsAvatarConfig = {
+      kind: 'pixels',
+      size: 16,
+      palette: { s: '#F0C49A' },
+      rows: ['s'.repeat(16)],
+    }
+    const result = composePixelsAvatarMatrix(config)
+    expect(result[0]).toEqual(Array<string>(16).fill('s'))
+    expect(result.slice(1)).toEqual(Array.from({ length: 15 }, () => Array<null>(16).fill(null)))
+  })
+
+  it('palette に「.」キーがあっても「.」のセルは null (透明) のまま', () => {
+    const rows = Array.from({ length: 16 }, () => '.'.repeat(16))
+    const palette = { '.': '#FFFFFF' }
+    const result = composePixelsAvatarMatrix({ kind: 'pixels', size: 16, palette, rows })
+    expect(result).toEqual(Array.from({ length: 16 }, () => Array<null>(16).fill(null)))
   })
 })
 
@@ -269,5 +309,11 @@ describe('resolvePixelColorForFree — フリーピクセル用の色解決', ()
 
   it('palette に存在しないキーは "transparent" を返す', () => {
     expect(resolvePixelColorForFree('z', palette)).toBe('transparent')
+  })
+
+  it('palette に「.」や空文字のキーがあっても、「.」と空文字は "transparent" を返す', () => {
+    const withReservedKeys = { ...palette, '.': '#FFFFFF', '': '#FFFFFF' }
+    expect(resolvePixelColorForFree('.', withReservedKeys)).toBe('transparent')
+    expect(resolvePixelColorForFree('', withReservedKeys)).toBe('transparent')
   })
 })

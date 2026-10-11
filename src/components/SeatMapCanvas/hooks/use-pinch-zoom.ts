@@ -1,17 +1,11 @@
 import { useRef } from 'react'
 import { pinchGeometry } from '../utils/gesture-math'
 import type { Point } from '../utils/gesture-math'
+import { OVERSCROLL_HIGH, OVERSCROLL_LOW, TAP_LEVEL, TAP_MS } from '../utils/pinch-zoom-limits'
 import type { Viewport } from '../type'
 import { MAX_SCALE, clamp, scaleToLevel, toLogical } from '@/utils/layout/geometry'
 
 // 2本指のピンチズーム。バウンス範囲まで許容し、離した時に上下限へスプリング復元する
-
-// 2本指タップとみなす接触時間と倍率変動
-const TAP_MS = 250
-const TAP_LEVEL = 0.07
-// バウンスで許容する上下限の緩め幅
-const OVERSCROLL_LOW = 0.8
-const OVERSCROLL_HIGH = 1.2
 
 type PinchZoom = {
   isActive: () => boolean

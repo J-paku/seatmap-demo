@@ -208,7 +208,7 @@ describe('readCache / writeCache', () => {
 })
 
 describe('fetchWithRetry', () => {
-  it('渡したデータをそのまま解決する(実装上 FORCE_FAIL は常に false)', async () => {
+  it('渡したデータをそのまま解決する(既定では失敗を真似ない)', async () => {
     const data = { foo: 'bar' }
     await expect(mod.fetchWithRetry(data)).resolves.toEqual(data)
   })
@@ -236,6 +236,25 @@ describe('fetchWithRetry', () => {
 
     await vi.advanceTimersByTimeAsync(1)
     expect(settled).toHaveBeenCalledWith('x')
+  })
+
+  // 失敗を真似ると、最初の遅れのあと 1s→2s→4s 待つたびに遅れをもう一度挟み、3回やり直してから返す
+  it('forceFail なら 1s→2s→4s の間隔で3回やり直してから解決する', async () => {
+    vi.useFakeTimers()
+    vi.spyOn(Math, 'random').mockReturnValue(0)
+    const setTimeoutSpy = vi.spyOn(globalThis, 'setTimeout')
+    const settled = vi.fn()
+
+    void mod.fetchWithRetry('x', { forceFail: true }).then(settled)
+    // 200 + (1000 + 200) + (2000 + 200) + (4000 + 200) = 7800ms
+    await vi.advanceTimersByTimeAsync(7799)
+    expect(settled).not.toHaveBeenCalled()
+
+    await vi.advanceTimersByTimeAsync(1)
+    expect(settled).toHaveBeenCalledWith('x')
+    expect(setTimeoutSpy.mock.calls.map(([, ms]) => ms)).toEqual([
+      200, 1000, 200, 2000, 200, 4000, 200,
+    ])
   })
 })
 

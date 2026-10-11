@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import type { RefObject } from 'react'
 import type { Facility, Seat, Team } from '@/types'
 import type { Transform } from '@/utils/layout/geometry'
+import { PAD } from '../utils/offscreen-indicator-pad'
 
 type Edge = 'left' | 'right' | 'top' | 'bottom'
 
@@ -19,9 +20,6 @@ type UseOffscreenTeamIndicatorResult = {
   pingPos: OffscreenPingPos | null
   goToNearestTeam: () => void
 }
-
-// 辺の接線方向のはみ出しを抑えるクランプ幅
-const PAD = 24
 
 // 全チームエリアがビューポート外のとき、最近傍チームへのエッジタグ位置を返す
 export const useOffscreenTeamIndicator = (

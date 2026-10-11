@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { PointerEvent as ReactPointerEvent } from 'react'
 import { useUndoChip } from './use-undo-chip'
+import { DRAG_THRESHOLD_PX } from '../utils/edit-drag-threshold'
 import type { PressState, UndoChipRequest, UndoChipView, RecentPlacement, Viewport } from '../type'
 import type { LayoutObjectRef, SeatLayout } from '@/types'
 
@@ -13,9 +14,6 @@ import type { LayoutObjectRef, SeatLayout } from '@/types'
 //
 // 座席そのものはキャンバスに描かれない(CLAUDE.md 不変ルール1・仕様 00-2)。座席位置の編集は
 // チームオーバーレイのグリッド(編集4)が担い、ここが持つのは「どの座席を選んでいるか」だけ
-
-// ドラッグとみなす最小移動量(ゴースト側の DRAG_CONFIRM_PX と同値)
-const DRAG_THRESHOLD_PX = 3
 
 type Options = {
   viewport: Viewport

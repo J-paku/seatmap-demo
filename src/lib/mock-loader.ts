@@ -95,7 +95,6 @@ export const VIEWBOX = { width: VIEWBOX_W, height: VIEWBOX_H }
 
 // キャッシュ+再試行(stale-while-revalidate 模倣)
 const CACHE_PREFIX = 'seatmap::'
-const FORCE_FAIL = false // true で強制失敗→指数バックオフ確認
 const responseDelay = () => 200 + Math.floor(Math.random() * 300)
 
 // シードデータ本体から指紋を計算(手動バージョン定数は持たない。上げ忘れによる同種バグの再発防止)。
@@ -144,10 +143,18 @@ export const writeCache = <T>(name: string, data: T, fingerprint: string): void 
 
 const wait = (ms: number) => new Promise<void>(resolve => setTimeout(resolve, ms))
 
-// 静的データを「遅延つき取得」として返す。FORCE_FAIL 時のみ 1s→2s→4s の指数バックオフで3回再試行
-export const fetchWithRetry = async <T>(data: T): Promise<T> => {
+// forceFail: true で取得の失敗を真似て、指数バックオフの再試行を通す(既定は失敗を真似ない)
+type FetchOptions = {
+  forceFail?: boolean
+}
+
+// 静的データを「遅延つき取得」として返す。forceFail 時のみ 1s→2s→4s の指数バックオフで3回再試行
+export const fetchWithRetry = async <T>(
+  data: T,
+  { forceFail = false }: FetchOptions = {}
+): Promise<T> => {
   await wait(responseDelay())
-  if (!FORCE_FAIL) return data
+  if (!forceFail) return data
   // 強制失敗時: 指数バックオフ(1s→2s→4s)。全滅しても空で死なずデータを返す(原本: 失敗しても空画面)
   for (let attempt = 0; attempt < 3; attempt += 1) {
     await wait(1000 * 2 ** attempt)

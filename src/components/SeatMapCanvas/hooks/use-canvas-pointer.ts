@@ -7,20 +7,17 @@ import type {
 import { usePinchZoom } from './use-pinch-zoom'
 import { averageVelocity, movedBeyond } from '../utils/gesture-math'
 import { isModalOpen } from '../utils/canvas-metrics'
+import {
+  DOUBLE_TAP_DISTANCE,
+  DOUBLE_TAP_MS,
+  INERTIA_MIN_SPEED,
+  TAP_DISTANCE_THRESHOLD,
+  VELOCITY_SAMPLES,
+} from '../utils/canvas-pointer-thresholds'
 import type { Viewport } from '../type'
 
 // 1本指のパン・タップ・慣性。2本指は usePinchZoom へ委譲する。
 // 状態は全て ref に置き、追従中の再レンダーを起こさない
-
-// 10: タップ距離閾値は仕様の8pxに合わせる(3pxだと微振動でタップが潰れる)
-const TAP_DISTANCE_THRESHOLD = 8
-// ダブルタップ判定
-const DOUBLE_TAP_MS = 300
-const DOUBLE_TAP_DISTANCE = 40
-// 慣性を開始する最低速度
-const INERTIA_MIN_SPEED = 1.5
-// 慣性の初速に使う直近フレーム数
-const VELOCITY_SAMPLES = 4
 
 type CanvasPointer = {
   isPanningRef: RefObject<boolean>

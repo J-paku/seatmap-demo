@@ -33,6 +33,27 @@ describe('avatar-customizer-options', () => {
       const kinds = Object.keys(QUICK_START_PRESETS)
       expect(new Set(kinds).size).toBe(kinds.length)
     })
+
+    it('male は短髪・細目・飾りなし・無地 (av1)、female はふんわりボブ・笑顔・飾りなし・無地 (av4) で始まる', () => {
+      expect(QUICK_START_PRESETS).toEqual({
+        male: {
+          hair: 'short',
+          face: 'slit',
+          accessory: 'none',
+          outfit: 'solid',
+          paletteId: 'av1',
+          kind: 'male',
+        },
+        female: {
+          hair: 'softBob',
+          face: 'smile',
+          accessory: 'none',
+          outfit: 'solid',
+          paletteId: 'av4',
+          kind: 'female',
+        },
+      })
+    })
   })
 
   describe('color options', () => {
@@ -80,13 +101,12 @@ describe('avatar-customizer-options', () => {
 
   describe('getExclusiveHairQuickStart', () => {
     it('should return null for shared hairstyles', () => {
-      const result = getExclusiveHairQuickStart('short')
-      expect([null, 'male', 'female']).toContain(result)
+      expect(getExclusiveHairQuickStart('short')).toBeNull()
     })
 
-    it('should return null or a valid quick start kind', () => {
-      const result = getExclusiveHairQuickStart('short')
-      expect(['male', 'female', null]).toContain(result)
+    it('male 専用の髪型 (mohawk) は male、female 専用の髪型 (bob) は female を返す', () => {
+      expect(getExclusiveHairQuickStart('mohawk')).toBe('male')
+      expect(getExclusiveHairQuickStart('bob')).toBe('female')
     })
   })
 })

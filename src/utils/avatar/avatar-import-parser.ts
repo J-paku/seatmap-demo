@@ -79,19 +79,18 @@ const fail = (error: AvatarImportError): AvatarImportResult => ({ ok: false, err
 
 // AI が返した文字列を厳格に検証する。kind 分岐で parts と pixels の2経路対応
 export const parseAiImportedConfig = (source: string): AvatarImportResult => {
-  let raw: JsonValue
+  let raw: JsonValue = null
   try {
     raw = JSON.parse(extractAiImportCode(source)) as JsonValue
   } catch {
-    return fail('invalidJson')
+    // 解析できない文字列は raw = null のまま、下のオブジェクト判定で invalidJson にする
   }
 
   // オブジェクト以外 (配列/数値/null 等) は取り込めない
   if (!isRecord(raw)) return fail('invalidJson')
 
-  // kind による分岐 — parts または pixels
+  // kind による分岐 — parts または pixels (kind が無い・文字列でない場合も invalidKind)
   const kind = asString(raw.kind)
-  if (!kind) return fail('invalidKind')
 
   if (kind === 'parts') {
     return parsePartsConfig(raw)
@@ -106,7 +105,7 @@ export const parseAiImportedConfig = (source: string): AvatarImportResult => {
 const parsePartsConfig = (raw: JsonObject): AvatarImportResult => {
   // 各パーツ: 文字列かつ既存 ID であることを必須とする
   const hairRaw = asString(raw.hair)
-  const hair = hairRaw ? normalizeHairId(hairRaw) : ''
+  const hair = hairRaw ? normalizeHairId(hairRaw) : undefined
   if (!hair || !isHairId(hair)) return fail('invalidHair')
 
   const face = asString(raw.face)
@@ -142,9 +141,8 @@ const parsePartsConfig = (raw: JsonObject): AvatarImportResult => {
 
 // pixels 経路 — 16x16 フリーピクセル + 自動充填正規化
 const parsePixelsConfig = (raw: JsonObject): AvatarImportResult => {
-  // size 検証 — 固定値 16
-  const size = typeof raw.size === 'number' ? raw.size : undefined
-  if (size !== 16) return fail('pixelsInvalidSize')
+  // size 検証 — 固定値 16 (数値の 16 以外はすべて不正)
+  if (raw.size !== 16) return fail('pixelsInvalidSize')
 
   // rows 検証 — 16 個の文字列配列・各 16 文字
   const rowsRaw = asArray(raw.rows)

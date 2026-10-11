@@ -42,31 +42,15 @@ const KUROXXX_ROWS: readonly string[] = [
   '...KKK....KKK...',
 ]
 
+// 同じ文字が横に続く区間 (1 文字以上) を 1 つずつ取り出す
+const SAME_CHAR_RUN = /(.)\1*/g
+
 // 横方向の同色連続を 1 rect にまとめて返す (透明セルで区切る)
-export const buildKuroxxxRects = (): KuroxxxRect[] => {
-  const rects: KuroxxxRect[] = []
-  KUROXXX_ROWS.forEach((row, y) => {
-    let start = -1
-    let prevColor: string | null = null
-    const flush = (endX: number): void => {
-      if (start >= 0 && prevColor) {
-        rects.push({ x: start, y, w: endX - start, color: prevColor })
-      }
-      start = -1
-      prevColor = null
-    }
-    for (let x = 0; x < KUROXXX_GRID_SIZE; x++) {
-      const color = KUROXXX_LEGEND[row[x] ?? '.'] ?? null
-      if (color === prevColor && start >= 0) {
-        continue
-      }
-      flush(x)
-      if (color) {
-        start = x
-        prevColor = color
-      }
-    }
-    flush(KUROXXX_GRID_SIZE)
-  })
-  return rects
-}
+// legend は文字ごとに色が異なるので、同じ文字の連続 = 同じ色の連続になる
+export const buildKuroxxxRects = (): KuroxxxRect[] =>
+  KUROXXX_ROWS.flatMap((row, y) =>
+    Array.from(row.matchAll(SAME_CHAR_RUN)).flatMap(run => {
+      const color = KUROXXX_LEGEND[run[1]]
+      return color ? [{ x: run.index, y, w: run[0].length, color }] : []
+    })
+  )
