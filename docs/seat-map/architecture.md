@@ -6,7 +6,7 @@
 ## 1. コンポーネント/フックの木
 
 ```
-src/components/SeatMapView/index.tsx      画面ルート。組み立てのみ
+src/components/SeatMapView/container.tsx  画面ルート。組み立てのみ
 ├─ hooks/use-seat-map-data.ts             SWR合成データ→表示用に整形(2章)
 ├─ hooks/use-team-seat-focus.ts           座席1件→所属チームのオーバーレイを開く唯一の入口
 ├─ hooks/use-minimap-payload.ts           オーバーレイ内ミニマップ用データの組み立て

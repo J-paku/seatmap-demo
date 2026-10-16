@@ -1,7 +1,7 @@
 import Head from 'next/head'
 import { useRouter } from 'next/router'
 import { LoginGate } from '@/components/LoginGate'
-import { SeatMapView } from '@/components/SeatMapView'
+import { SeatMapView } from '@/components/SeatMapView/container'
 import { DetailPanelProvider } from '@/contexts/detail-panel-context'
 import { SelectedDateProvider } from '@/contexts/selected-date-context'
 import { AvatarsProvider } from '@/contexts/avatars-context'

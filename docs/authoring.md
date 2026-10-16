@@ -54,6 +54,9 @@
 コンポーネントのフォルダは **公開物がちょうど1つ**(そのコンポーネント)なので、入口を `index.tsx` にする。
 呼び出し側は `@/components/AvatarCustomizer` とだけ書き、内部構造を知らなくてよい。
 
+> 例外: コンテナのフォルダ(今は `src/components/SeatMapView/` だけ)は `index.tsx` を置かず、
+> `container.tsx` を入口にする。呼び出し側は `@/components/SeatMapView/container` と書く。
+
 形の例(2026-08 時点の `src/components/AvatarCustomizer/`。今は `sections` フォルダを持つ別の形に変わったが、
 入口を薄く保つ形の例として当時の姿を残す):
 

@@ -12,7 +12,7 @@
 seatmap-demo/
 ├─ src/
 │  ├─ pages/        Next.js のルート定義だけ(_app.tsx・_document.tsx・index.tsx)。画面本体は持たない
-│  ├─ components/   UI。画面ルートは SeatMapView/。フォルダにしたコンポーネントは index.tsx が入口(5.)
+│  ├─ components/   UI。画面ルートは SeatMapView/。フォルダにしたコンポーネントは index.tsx が入口、コンテナのフォルダだけ container.tsx が入口(5.)
 │  ├─ contexts/     Context + Provider
 │  ├─ hooks/        2か所以上が使うフック。use 関数とその型だけ(4.)
 │  ├─ lib/          アプリの外との入出力(2.)
@@ -87,7 +87,9 @@ seatmap-demo/
 
 - 分ける基準(200行超かつ複数責務)と `index.tsx` の薄さの基準は `docs/authoring.md` 2.・3.
 - フォルダにしたコンポーネントは `src/components/<Name>/` に `index.tsx`(組み立てだけ)・`type.ts`・`components`・`hooks`・`utils` を置く。
-  代表例は `src/components/SeatMapView/`(画面ルート)・`src/components/SeatMapCanvas/`・`src/components/TeamOverlay/`
+  代表例は `src/components/SeatMapCanvas/`・`src/components/TeamOverlay/`
+- 例外はコンテナのフォルダ(今は画面ルートの `src/components/SeatMapView/` だけ)。
+  `index.tsx` を置かず `container.tsx` を入口にし、呼び出し側は `@/components/SeatMapView/container` のように `container` まで書く。
 - 1枚のシート・モーダルだけのものは `index.tsx` と専用の CSS Modules だけの軽い形(例: `src/components/TeamCategorySheet/`)
 - `src/components/edit/` は編集モード専用の単発コンポーネント群で、フォルダにはしていない
 - 単一責務で短い共通部品は `src/components/` 直下に1ファイルで置く(例: `src/components/ZoomControls.tsx`)
