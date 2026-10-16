@@ -51,7 +51,8 @@ E2E を置いた経緯は [../decisions/0003-playwright-e2e.md](../decisions/000
 
 1. 上の「commit・push の前」が全部通った(実際に走らせた出力を見た)
 2. push の後、CI(`.github/workflows/ci.yml`。verify のジョブと knip のジョブ)が全部緑
-3. 配信(`.github/workflows/deploy-pages.yml`)の後、配信版に対して E2E が通った:
+3. 配信(`.github/workflows/deploy-pages.yml`)の後、配信版に対して E2E が通った。配信は main への push の ci が成功した後に走り、
+   その ci が検査したコミットを配る(ci が落ちれば配信されない。手で配り直す `workflow_dispatch` だけは ci の結果を見ない):
 
    ```bash
    E2E_BASE_URL=https://j-paku.github.io/seatmap-demo/ npx playwright test

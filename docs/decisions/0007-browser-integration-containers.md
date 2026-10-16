@@ -26,6 +26,7 @@ E2E(`tests/`)はこの段階では変えない
 - フックはカバレッジの分母から外れ(`vitest.config.ts` の `src/**/hooks/**`)、振る舞いは E2E だけが見ていた(0004)。E2E はビルドの後でしか走らない
 - 画面ルートは `src/components/SeatMapView/` の `index.tsx` で、同じフォルダの `hooks` のフックを呼んで子の部品へ渡していた。
   `src/pages/index.tsx` はそれを `@/components/SeatMapView` で読んでいた
+- 配信(`.github/workflows/deploy-pages.yml`)は main への push を引き金にしていて、同じ push の ci(`.github/workflows/ci.yml`)の結果を待たなかった
 - J-paku.github.io は 2026-10-13〜15 に、層をテスティングトロフィーにして統合テストを一番厚くし(0016)、画面をコンテナにして統合テストの単位にし(0017)、
   重なる E2E を統合へ移してフックの全部をファイル別100%にした(0018)
 
@@ -77,11 +78,14 @@ E2E(`tests/`)はこの段階では変えない
 
 今までの規則(`hooks` フォルダの下の単体テスト・`renderHook`)はそのまま見る。
 
-### 門
+### 門と配信
 
 - `npm run verify` の中では、`npm run test:integration` を `test:boundary` の後・`knip` の前に置く
 - ci では Test boundary の後に統合テストを置く。統合テストも E2E と同じ Chromium を使うので、Playwright のブラウザのキャッシュと導入の段を
   Build の後から統合テストの前へ移した
+- 配信の引き金を、main への push から ci の完了(`workflow_run`)へ替えた。ci が成功し、その ci が push で走ったときだけ、
+  ci が検査したコミット(`head_sha`)を配信する。push を直接の引き金にすると ci の結果を待たずに配信され、検査に落ちたコミットも公開されるため
+  (`.github/workflows/deploy-pages.yml` の冒頭の注釈)。手で配り直す(`workflow_dispatch`)ときは ci の結果を見ず、選んだブランチの最新を配信する
 
 ### J-paku.github.io との違い
 
@@ -111,6 +115,7 @@ E2E(`tests/`)はこの段階では変えない
 - 単体のカバレッジの床・ファイル別100%の対象・変異テストの対象は変えていない。ただし CI の変異テストの結果のキャッシュの鍵は
   `package-lock.json`・`stryker.config.mjs`・`vitest.config.ts` の指紋(`.github/workflows/ci.yml`)で、この作業は `package-lock.json`(統合テストの依存を足した)と
   `vitest.config.ts`(注釈を直した)を変えたので、最初の push で全部が走る(0004 の「変異テストの走らせ方」)
+- 配信されるのは、main への push で ci が緑になったコミットだけになった。手で配り直すときだけは ci を通っていないコミットも配信しうる
 - CI の時間への影響は測っていない
 
 ## Alternatives Considered

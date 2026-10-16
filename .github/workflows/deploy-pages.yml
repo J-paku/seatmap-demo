@@ -1,10 +1,16 @@
-# main への push で静的 export をビルドし、gh-pages ブランチへ配信する。
+# main への push を検査した ci が緑になったときだけ、ci が検査したそのコミットで静的 export をビルドし、
+# gh-pages ブランチへ配信する。push を直接の引き金にすると ci の結果を待たずに配信され、検査に落ちた
+# コミットも公開されるので、ci の完了(workflow_run)を引き金にする。
+# 手で配り直す(workflow_dispatch)ときは ci の結果を見ず、選んだブランチの最新コミットを配信する。
 # Pages の配信元は gh-pages ブランチ(legacy build)なので、成果物をそこへ載せ替える。
 # basePath はプロジェクトサイト配信のときだけ必要なので GITHUB_PAGES=true で有効化する。
 name: deploy-pages
 
 on:
-  push:
+  # workflows にはファイル名ではなく ci.yml の name: を書く。branches は ci が走ったブランチ(head_branch)で絞る
+  workflow_run:
+    workflows: [ci]
+    types: [completed]
     branches: [main]
   workflow_dispatch:
 
@@ -19,9 +25,20 @@ concurrency:
 
 jobs:
   deploy:
+    # ci が成功し、かつその ci が push で走ったときだけ配信する。失敗・取り消し・pull_request・手動の ci では配信しない
+    # (pull_request の ci はフォークの main 由来でも head_branch が main になるので、branches の絞り込みだけに頼らない)
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push')
     runs-on: ubuntu-latest
+    # 配信するコミット。workflow_run では github.sha が既定ブランチの最新になり、ci が検査したコミットとずれうるので
+    # ci の head_sha を使う。手で配り直すときは workflow_run が無いので、選んだブランチの最新(github.sha)になる
+    env:
+      DEPLOY_SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.DEPLOY_SHA }}
 
       - uses: actions/setup-node@v4
         with:
@@ -69,5 +86,5 @@ jobs:
             echo '配信物に差分なし。何も push しない'
             exit 0
           fi
-          git commit -m "deploy: ${GITHUB_SHA::7} をビルドして配信する"
+          git commit -m "deploy: ${DEPLOY_SHA::7} をビルドして配信する"
           git push
