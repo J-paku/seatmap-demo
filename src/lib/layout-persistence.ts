@@ -1,5 +1,6 @@
 // 07-admin-edit: 編集レイアウトのlocalStorage永続化(原本のサーバ保存をデモ用に代替)
 // 「保存処理」自体はこのファイルに閉じ、mock-loaderのSWRキャッシュ連携から呼び出す
+import type { LayoutSource } from '@/contexts/layout-source-context'
 import { DEFAULT_FLOOR_ID } from '@/utils/floors'
 import type {
   Facility,
@@ -202,6 +203,18 @@ export const loadCustomLayout = (
     return null
   }
 }
+
+// 表示中のレイアウト(公式ならそのフロア、カスタムならそのid)の保存分を読み直す。保存の直前に
+// 楽観ロックの照合相手を読む口で、公式/カスタムの選び分けを呼び出し側ごとに書かないためにここへ置く。
+// 実在社員id集合を引数で受ける理由は pruneDanglingEmployeeIds の注釈と同じ(集合を持つ
+// utils/collect-employee-ids.ts は lib/mock-loader.ts を import しており、ここから読むと循環参照になる)
+export const loadSourceLayout = (
+  source: LayoutSource,
+  validEmployeeIds: ReadonlySet<string>
+): StoredSeatLayout | null =>
+  source.type === 'official'
+    ? loadStoredLayout(source.floorId, validEmployeeIds)
+    : loadCustomLayout(source.layoutId, validEmployeeIds)
 
 // カスタムレイアウト1件をJSONで保存し、書き込んだ値を返す(返り値の扱いは saveStoredLayout と同じ)
 export const saveCustomLayout = (layoutId: string, layout: SeatLayout): StoredSeatLayout => {

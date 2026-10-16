@@ -4,7 +4,7 @@ import { TOAST_MS } from '../utils/save-layout-constants'
 import { fetchMock } from '@/lib/fetch-mock'
 import { useSeatLayout } from '@/hooks/use-mock-data'
 import { useLayoutSource } from '@/contexts/layout-source-context'
-import { loadCustomLayout, loadStoredLayout } from '@/lib/layout-persistence'
+import { loadSourceLayout } from '@/lib/layout-persistence'
 import { VALID_EMPLOYEE_IDS } from '@/utils/collect-employee-ids'
 import { isCustomSaveConflict, isUpdateConflict } from '@/utils/layout/judge-save-conflict'
 import { FINISH_DELAY_MS } from '@/utils/save-delay'
@@ -49,16 +49,11 @@ export const useLayoutSave = (editor: LayoutEditor): LayoutSave => {
     []
   )
 
-  // 表示中ソース(公式/カスタム)の保存済みレイアウトを読み直す。楽観ロック照合と
-  // 「元に戻す」用スナップショットの両方がここを通る(キー生成・穴埋めロジックの重複を避けるため
-  // lib/layout-persistence.ts の読み込み口をそのまま使う)。実在社員id集合は hooks/use-mock-data.ts の
+  // 表示中ソース(公式/カスタム)の保存済みレイアウトの読み直しは、楽観ロック照合と
+  // 「元に戻す」用スナップショットの両方が lib/layout-persistence.ts の loadSourceLayout を通す
+  // (キー生成・穴埋めロジックの重複を避けるため)。実在社員id集合は hooks/use-mock-data.ts の
   // 読み込みと同じ utils/collect-employee-ids.ts のものを渡す。「元に戻す」は読み直した版をそのまま
   // 書き戻すため、空集合などで誤魔化すと宙ぶらりん社員idの穴埋めが狂う
-  const readCurrentStored = useCallback((): StoredSeatLayout | null => {
-    return source.type === 'official'
-      ? loadStoredLayout(source.floorId, VALID_EMPLOYEE_IDS)
-      : loadCustomLayout(source.layoutId, VALID_EMPLOYEE_IDS)
-  }, [source])
 
   // 保存成功トースト(+「元に戻す」)を出し、TOAST_MS後に自動で消す
   const showSaveToast = useCallback((message: string, undoable: boolean) => {
@@ -82,7 +77,7 @@ export const useLayoutSave = (editor: LayoutEditor): LayoutSave => {
     const run = async () => {
       try {
         await fetchMock(true, FINISH_DELAY_MS)
-        const currentStored = readCurrentStored()
+        const currentStored = loadSourceLayout(source, VALID_EMPLOYEE_IDS)
         // 05-6: カスタムレイアウトだけ楽観ロックを照合する(公式は仕様上競合検知なし)。
         // セッション開始時に保持していたupdatedTime(layoutToSave.updatedTime)と今読み直した値が
         // 食い違えば、別タブが先に上書きしている — ローカル変更を破棄して警告する
@@ -106,13 +101,14 @@ export const useLayoutSave = (editor: LayoutEditor): LayoutSave => {
       // 保存直後にもう一度読み直し、実際に書き込まれたupdatedTimeを「元に戻す」の照合キーにする
       // (persistLayoutも書き込んだ値を返し、そのupdatedTimeはここで読み直す値と同じ。
       // ここは返り値を使わず保存先から読む)
-      lastSavedUpdatedTimeRef.current = readCurrentStored()?.updatedTime ?? null
+      lastSavedUpdatedTimeRef.current =
+        loadSourceLayout(source, VALID_EMPLOYEE_IDS)?.updatedTime ?? null
       editor.endSave()
       editor.finishEdit()
       showSaveToast(TOAST_MESSAGES.SAVE_SUCCESS, previousLayoutRef.current !== null)
     }
     void run()
-  }, [editor, persistLayout, readCurrentStored, showSaveToast, source])
+  }, [editor, persistLayout, showSaveToast, source])
 
   // 05-6:「元に戻す」— 直前の保存で上書きした版を書き戻す。保存トースト表示中だけ意味を持つ
   // (previousLayoutRef はトーストと同時に破棄はしないが、UIの押下導線はcanUndoSaveで閉じる)
@@ -124,7 +120,7 @@ export const useLayoutSave = (editor: LayoutEditor): LayoutSave => {
     const run = async () => {
       try {
         await fetchMock(true, FINISH_DELAY_MS)
-        const currentStored = readCurrentStored()
+        const currentStored = loadSourceLayout(source, VALID_EMPLOYEE_IDS)
         const expectedUpdatedTime = lastSavedUpdatedTimeRef.current
         // 自分がこの保存を書き込んでから、別タブがさらに上書きしていないかを照合する
         if (expectedUpdatedTime !== null && isUpdateConflict(expectedUpdatedTime, currentStored)) {
@@ -143,7 +139,7 @@ export const useLayoutSave = (editor: LayoutEditor): LayoutSave => {
       showSaveToast(TOAST_MESSAGES.UNDO_SUCCESS, false)
     }
     void run()
-  }, [editor, persistLayout, readCurrentStored, showSaveToast])
+  }, [editor, persistLayout, showSaveToast, source])
 
   return {
     isSaving: editor.isSaving,

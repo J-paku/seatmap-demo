@@ -1,5 +1,6 @@
 // @vitest-environment happy-dom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import type { LayoutSource } from '@/contexts/layout-source-context'
 import { DEFAULT_FLOOR_ID } from '@/utils/floors'
 import type { Facility, Furniture, LayoutMeta, Seat, SeatLayout, Team } from '@/types'
 import {
@@ -8,6 +9,7 @@ import {
   loadCustomLayout,
   loadDefaultLayoutId,
   loadLayoutMetas,
+  loadSourceLayout,
   loadStoredLayout,
   saveCustomLayout,
   saveDefaultLayoutId,
@@ -367,6 +369,54 @@ describe('layout-persistence', () => {
       clearStoredLayout(DEFAULT_FLOOR_ID)
 
       expect(loadStoredLayout(DEFAULT_FLOOR_ID, new Set())).toBeNull()
+    })
+  })
+
+  // 保存の直前に楽観ロックの照合相手を読む口。表示中のソースが指す保存分だけを読み、
+  // 別のソースの保存分を代わりに返さない
+  describe('loadSourceLayout は表示中のソースの保存分を読む', () => {
+    // [見出し, 表示中のソース, そのソースの保存分の floorId(どの保存先を読んだかを中身で見分ける)]
+    const sources: [string, LayoutSource, string][] = [
+      ['公式の既定フロア', { type: 'official', floorId: DEFAULT_FLOOR_ID }, DEFAULT_FLOOR_ID],
+      ['公式の追加フロア', { type: 'official', floorId: 'floor-2' }, 'floor-2'],
+      ['カスタム', { type: 'custom', layoutId: 'custom-1' }, 'custom-1'],
+    ]
+
+    const saveAllSources = () => {
+      saveStoredLayout(DEFAULT_FLOOR_ID, makeLayout(DEFAULT_FLOOR_ID))
+      saveStoredLayout('floor-2', makeLayout('floor-2'))
+      saveCustomLayout('custom-1', makeLayout('custom-1'))
+    }
+
+    it.each(sources)('%s の保存分を、保存した版・保存時刻のまま返す', (_label, source, floorId) => {
+      saveAllSources()
+
+      const result = loadSourceLayout(source, new Set(['emp-1']))
+
+      expect(result?.floorId).toBe(floorId)
+      expect(result?.schemaVersion).toBe(1)
+      expect(result?.seats).toEqual([seat1])
+    })
+
+    // 読み込み口と同じく、実在社員id集合に無い社員を指す座席は空席へ戻す(集合を素通しで渡している)
+    it.each(sources)('%s でも、実在社員id集合に無い社員を空席へ戻す', (_label, source) => {
+      saveAllSources()
+
+      expect(loadSourceLayout(source, new Set())?.seats[0].employeeId).toBeNull()
+    })
+
+    it('公式のソースは、カスタムの保存分しか無ければ null を返す', () => {
+      saveCustomLayout('custom-1', makeLayout('custom-1'))
+
+      expect(
+        loadSourceLayout({ type: 'official', floorId: DEFAULT_FLOOR_ID }, new Set())
+      ).toBeNull()
+    })
+
+    it('カスタムのソースは、公式の保存分しか無ければ null を返す', () => {
+      saveStoredLayout(DEFAULT_FLOOR_ID, makeLayout(DEFAULT_FLOOR_ID))
+
+      expect(loadSourceLayout({ type: 'custom', layoutId: 'custom-1' }, new Set())).toBeNull()
     })
   })
 
