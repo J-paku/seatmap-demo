@@ -6,6 +6,7 @@ import { useSeatLayout } from '@/hooks/use-mock-data'
 import { useLayoutSource } from '@/contexts/layout-source-context'
 import { loadCustomLayout, loadStoredLayout } from '@/lib/layout-persistence'
 import { VALID_EMPLOYEE_IDS } from '@/utils/collect-employee-ids'
+import { isCustomSaveConflict, isUpdateConflict } from '@/utils/layout/judge-save-conflict'
 import { FINISH_DELAY_MS } from '@/utils/save-delay'
 import { TOAST_MESSAGES } from '@/utils/toast-messages'
 import type { StoredSeatLayout } from '@/types'
@@ -85,11 +86,7 @@ export const useLayoutSave = (editor: LayoutEditor): LayoutSave => {
         // 05-6: カスタムレイアウトだけ楽観ロックを照合する(公式は仕様上競合検知なし)。
         // セッション開始時に保持していたupdatedTime(layoutToSave.updatedTime)と今読み直した値が
         // 食い違えば、別タブが先に上書きしている — ローカル変更を破棄して警告する
-        if (
-          source.type === 'custom' &&
-          currentStored &&
-          layoutToSave.updatedTime !== currentStored.updatedTime
-        ) {
+        if (isCustomSaveConflict(source, layoutToSave.updatedTime, currentStored)) {
           editor.endSave()
           editor.cancelEdit()
           editor.showError(TOAST_MESSAGES.CONFLICT_UPDATE)
@@ -130,11 +127,7 @@ export const useLayoutSave = (editor: LayoutEditor): LayoutSave => {
         const currentStored = readCurrentStored()
         const expectedUpdatedTime = lastSavedUpdatedTimeRef.current
         // 自分がこの保存を書き込んでから、別タブがさらに上書きしていないかを照合する
-        if (
-          currentStored &&
-          expectedUpdatedTime !== null &&
-          currentStored.updatedTime !== expectedUpdatedTime
-        ) {
+        if (expectedUpdatedTime !== null && isUpdateConflict(expectedUpdatedTime, currentStored)) {
           editor.showError(TOAST_MESSAGES.CONFLICT_UPDATE)
           return
         }
