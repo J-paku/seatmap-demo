@@ -358,6 +358,49 @@ describe('layout-persistence', () => {
     })
   })
 
+  // 呼び出し側(hooks/use-mock-data.ts の persistLayout)は返り値を SWR キャッシュへ入れ、次の
+  // 編集セッションの楽観ロック照合の基準にする。引数の古い updatedTime のままだと、読み直した
+  // 保存分と食い違い、自分の保存を他人の更新と取り違える
+  describe('保存口は書き込んだ値を返す', () => {
+    const SAVED_AT = '2026-10-16T00:00:00.000Z'
+    // 編集開始時に読んだ保存分(古い版・保存時刻を持つ)を編集してそのまま保存する場面
+    const editedLayout: SeatLayout = {
+      ...makeLayout(DEFAULT_FLOOR_ID),
+      schemaVersion: 1,
+      updatedTime: '2026-01-01T00:00:00.000Z',
+    }
+
+    beforeEach(() => {
+      vi.useFakeTimers({ toFake: ['Date'] })
+      vi.setSystemTime(new Date(SAVED_AT))
+    })
+
+    afterEach(() => {
+      vi.useRealTimers()
+    })
+
+    it.each([
+      [
+        'saveStoredLayout',
+        LAYOUT_STORAGE_KEY,
+        () => saveStoredLayout(DEFAULT_FLOOR_ID, editedLayout),
+        () => loadStoredLayout(DEFAULT_FLOOR_ID, new Set(['emp-1'])),
+      ],
+      [
+        'saveCustomLayout',
+        customLayoutKey('custom-1'),
+        () => saveCustomLayout('custom-1', editedLayout),
+        () => loadCustomLayout('custom-1', new Set(['emp-1'])),
+      ],
+    ])('%s は書き込んだのと同じ値を返す', (_label, key, save, load) => {
+      const saved = save()
+
+      expect(saved.updatedTime).toBe(SAVED_AT)
+      expect(saved).toEqual(JSON.parse(window.localStorage.getItem(key) ?? 'null'))
+      expect(load()).toEqual(saved)
+    })
+  })
+
   describe('quota超過(setItemがthrow)', () => {
     it('saveStoredLayout: setItemがthrowするとそのまま呼び出し元へ伝播する(キャッチしない実装)', () => {
       const spy = vi.spyOn(window.localStorage, 'setItem').mockImplementation(() => {
@@ -468,6 +511,16 @@ describe('layout-persistence', () => {
       vi.stubGlobal('window', undefined)
 
       expect(write).not.toThrow()
+    })
+
+    it.each([
+      ['saveStoredLayout', () => saveStoredLayout(DEFAULT_FLOOR_ID, makeLayout(DEFAULT_FLOOR_ID))],
+      ['saveCustomLayout', () => saveCustomLayout('custom-1', makeLayout(DEFAULT_FLOOR_ID))],
+    ])('%s は書かずに、版・保存時刻を打った値を返す', (_label, save) => {
+      vi.stubGlobal('window', undefined)
+
+      expect(save()).toMatchObject({ ...makeLayout(DEFAULT_FLOOR_ID), schemaVersion: 1 })
+      expect(save().updatedTime).toEqual(expect.any(String))
     })
   })
 })

@@ -144,10 +144,16 @@ export const loadStoredLayout = (
   }
 }
 
-// 編集結果のSeatLayout全体をJSONで保存する
-export const saveStoredLayout = (floorId: FloorId, layout: SeatLayout): void => {
-  if (typeof window === 'undefined') return
-  window.localStorage.setItem(officialLayoutKey(floorId), JSON.stringify(stampForSave(layout)))
+// 編集結果のSeatLayout全体をJSONで保存し、書き込んだ値(版・保存時刻を打ち直したもの)を返す。
+// 引数の layout は編集開始時の古い updatedTime のままなので、呼び出し側が表示やキャッシュへ
+// 入れるのはこの返り値にする(引数を入れると、次の楽観ロック照合が自分の保存を他人の更新と取り違える)。
+// window の無い環境(SSR)では書かずに、打った値だけを返す
+export const saveStoredLayout = (floorId: FloorId, layout: SeatLayout): StoredSeatLayout => {
+  const stamped = stampForSave(layout)
+  if (typeof window !== 'undefined') {
+    window.localStorage.setItem(officialLayoutKey(floorId), JSON.stringify(stamped))
+  }
+  return stamped
 }
 
 // 保存分を削除する(設定操作「レイアウトをリセット」から呼び出し、種データへ復帰させる)
@@ -195,10 +201,13 @@ export const loadCustomLayout = (
   }
 }
 
-// カスタムレイアウト1件をJSONで保存する
-export const saveCustomLayout = (layoutId: string, layout: SeatLayout): void => {
-  if (typeof window === 'undefined') return
-  window.localStorage.setItem(customLayoutKey(layoutId), JSON.stringify(stampForSave(layout)))
+// カスタムレイアウト1件をJSONで保存し、書き込んだ値を返す(返り値の扱いは saveStoredLayout と同じ)
+export const saveCustomLayout = (layoutId: string, layout: SeatLayout): StoredSeatLayout => {
+  const stamped = stampForSave(layout)
+  if (typeof window !== 'undefined') {
+    window.localStorage.setItem(customLayoutKey(layoutId), JSON.stringify(stamped))
+  }
+  return stamped
 }
 
 // カスタムレイアウトを削除する。メタ一覧からもエントリを外し、ペイロードキーも消して

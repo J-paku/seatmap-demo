@@ -107,7 +107,8 @@ export const useLayoutSave = (editor: LayoutEditor): LayoutSave => {
         return
       }
       // 保存直後にもう一度読み直し、実際に書き込まれたupdatedTimeを「元に戻す」の照合キーにする
-      // (persistLayoutはstampForSaveが打った新しい版を呼び出し側へ返さないため、ここで実測する)
+      // (persistLayoutも書き込んだ値を返し、そのupdatedTimeはここで読み直す値と同じ。
+      // ここは返り値を使わず保存先から読む)
       lastSavedUpdatedTimeRef.current = readCurrentStored()?.updatedTime ?? null
       editor.endSave()
       editor.finishEdit()

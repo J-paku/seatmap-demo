@@ -2,7 +2,7 @@
 import useSWR from 'swr'
 import { useCallback, useMemo } from 'react'
 import { DEFAULT_FLOOR_ID, floorNameOf } from '@/utils/floors'
-import type { FloorId, SeatLayout } from '@/types'
+import type { FloorId, SeatLayout, StoredSeatLayout } from '@/types'
 import {
   clearStoredLayout,
   loadCustomLayout,
@@ -126,16 +126,21 @@ export const useSeatLayout = () => {
   const layout = override ?? composed
 
   // 完了時: 保存書き込み+SWRキャッシュへ直接反映(再取得を挟まず表示を即時更新)。
-  // カスタム表示中はカスタムの保存先へ書き、LayoutMeta.updatedAt も併せて更新する
+  // カスタム表示中はカスタムの保存先へ書き、LayoutMeta.updatedAt も併せて更新する。
+  // キャッシュへ入れて返すのは引数の next ではなく、保存口が返した書き込み済みの値。
+  // next は編集開始時の古い updatedTime のままなので、それを入れると次の編集セッションの
+  // 楽観ロック照合が自分の保存を他人の更新と取り違える
   const persistLayout = useCallback(
-    async (next: SeatLayout) => {
+    async (next: SeatLayout): Promise<StoredSeatLayout> => {
+      let saved: StoredSeatLayout
       if (source.type === 'official') {
-        saveStoredLayout(floorId, next)
+        saved = saveStoredLayout(floorId, next)
       } else {
-        saveCustomLayout(source.layoutId, next)
+        saved = saveCustomLayout(source.layoutId, next)
         touchLayoutMetaUpdatedAt(source.layoutId)
       }
-      await mutateOverride(next, false)
+      await mutateOverride(saved, false)
+      return saved
     },
     [source, floorId, mutateOverride]
   )
