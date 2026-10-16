@@ -29,7 +29,7 @@ export default defineConfig({
       provider: 'v8',
       enabled: false,
       include: ['src/**/*.{ts,tsx}'],
-      // hooks/ 配下は単体テストを置かない層なので測らない。フックの動きは E2E が見る
+      // hooks/ 配下は単体テストを置かない層なので測らない。フックの動きは E2E と、コンテナが使うフックは統合テスト(vitest.integration.config.ts)が見る
       // (hooks/ にテストを置いていないかは scripts/check-test-boundary.mjs が検査する)
       exclude: [
         'src/**/*.test.{ts,tsx}',

@@ -1,12 +1,14 @@
 @import 'tailwindcss';
 
-/* ダークモードはクラス方式(.dark 配下を dark バリアントとして扱う) */
-@custom-variant dark (&:where(.dark, .dark *));
-
-/* パート別CSS はここに直接 @import で列挙する(CSS バレル禁止・Turbopack 対策) */
+/* パート別CSS はここに直接 @import で列挙する(CSS バレル禁止・Turbopack 対策)。
+   @import は CSS 仕様上、@custom-variant を含む他の規則より前にしか置けない。後ろに置くと
+   Vite の postcss-import が警告して読み込まず、統合テスト(Vitest Browser Mode)でトークンが空になる */
 @import './tokens.css';
 @import './liquid-glass.css';
 @import './icon.css';
+
+/* ダークモードはクラス方式(.dark 配下を dark バリアントとして扱う) */
+@custom-variant dark (&:where(.dark, .dark *));
 
 html,
 body {

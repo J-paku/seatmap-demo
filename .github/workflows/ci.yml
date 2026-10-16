@@ -1,5 +1,5 @@
 # push / PR ごとに検査を走らせる。どれか1つでも落ちたら赤にする門で、すべて通ったものだけを信頼する。
-# 型・Lint・形式・単体テスト・変異テスト・ビルド・E2E・Lighthouse は1ジョブに直列で置く
+# 型・Lint・形式・単体テスト・統合テスト・変異テスト・ビルド・E2E・Lighthouse は1ジョブに直列で置く
 # (前段が落ちたら後段を走らせる意味が無いため。ビルドが無ければ E2E と Lighthouse は測る物が無い)。
 # 未使用検出(knip)は独立ジョブにする — 実装途中の未配線モジュールで赤くなる時期があり、
 # それで型やビルドの結果まで隠れると検査全体が見られなくなる。
@@ -40,9 +40,26 @@ jobs:
       # (基準の正本は vitest.config.ts の coverage.thresholds、ファイル別の対象は scripts/gate-targets.mjs)
       - name: Test with coverage
         run: npm run test:coverage
-      # hooks/ 配下の単体テストと renderHook の混入を落とす
+      # hooks/ 配下の単体テストと renderHook の混入、コンテナ(scripts/container-dirs.mjs)と統合テストの置き場の違反を落とす
       - name: Test boundary
         run: npm run test:boundary
+      # ブラウザ本体は lock ファイルの版ごとに使い回す。OS 側の依存はキャッシュできないので hit でも入れる。
+      # 統合テスト(Vitest Browser Mode)も E2E と同じ Chromium を使うので、その前に入れる
+      - name: Cache Playwright browsers
+        id: playwright-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('package-lock.json') }}
+      - name: Install Playwright Chromium
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
+        run: npx playwright install --with-deps chromium
+      - name: Install Playwright system dependencies
+        if: steps.playwright-cache.outputs.cache-hit == 'true'
+        run: npx playwright install-deps chromium
+      # 統合テスト。ビルド無しで、コンテナを実際の Chromium に描く(設定の正本は vitest.integration.config.ts)
+      - name: Integration test
+        run: npm run test:integration
       # 変異テストは前回の結果(stryker.config.mjs の incrementalFile)を引き継ぎ、変わった変異体だけを走らせる。
       # 鍵に依存・設定の指紋を入れ、どれかが変わると引き継がずに全部を走らせる
       # (incremental は mutate のファイルとテストしか比べず、依存・設定だけの変更では前回の結果を使い回すため)。
@@ -66,19 +83,6 @@ jobs:
       # GITHUB_PAGES も渡さない(basePath 無しの out/ を :4173 の直下で配る)
       - name: Build
         run: npm run build
-      # ブラウザ本体は lock ファイルの版ごとに使い回す。OS 側の依存はキャッシュできないので hit でも入れる
-      - name: Cache Playwright browsers
-        id: playwright-cache
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/ms-playwright
-          key: ${{ runner.os }}-playwright-${{ hashFiles('package-lock.json') }}
-      - name: Install Playwright Chromium
-        if: steps.playwright-cache.outputs.cache-hit != 'true'
-        run: npx playwright install --with-deps chromium
-      - name: Install Playwright system dependencies
-        if: steps.playwright-cache.outputs.cache-hit == 'true'
-        run: npx playwright install-deps chromium
       # 配信は playwright.config.ts の webServer が out/ を :4173 で上げ、終われば止める
       - name: E2E
         run: npm run test:e2e
