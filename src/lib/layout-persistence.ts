@@ -56,10 +56,6 @@ const pruneDanglingEmployeeIds = (seats: Seat[], validEmployeeIds: ReadonlySet<s
     validEmployeeIds.has(String(seat.employeeId)) ? seat : { ...seat, employeeId: null }
   )
 
-// 配列でない古い/壊れた保存分でも落ちないよう、配列と確認できた時だけ写す
-const mapIfArray = <T>(value: T[], fill: (item: T) => T): T[] =>
-  Array.isArray(value) ? value.map(fill) : value
-
 // --- 増設フィールドの既定値埋め(1件分) ---
 // fixedLayout / labelX / labelY は埋めない。「未指定 = 固定グリッド無し / ラベルは area 追従」が
 // それ自体で意味のある状態なので、既定値を入れると意味が変わってしまう
@@ -96,6 +92,12 @@ const fillFurniture = (item: Furniture): Furniture => ({
 //
 // 未知の上位版(別タブの新しいコードが書いた分)は解釈せず null を返すが、キーは消さない。
 // 消すと新しい方のコードから見て保存分が丸ごと失われるため、こちらは読まずに素通りする
+// (上位版の欄の形はこちらには分からないので、この判定を下の .map() より先に置く)。
+//
+// 配列のはずの欄(teams・facilities・seats・furniture)が配列でない保存分は、下の .map() が
+// 投げる。読み込み口はこれをパース失敗と同じ catch で受け、キーごと消して null を返す
+// (配列かを別に確かめる式は置かない。置いても、消したときに .map() が同じく投げて結果が変わらず、
+// 変異テストで生き残る)
 const migrateStoredLayout = (
   parsed: SeatLayout,
   validEmployeeIds: ReadonlySet<string>
@@ -105,12 +107,10 @@ const migrateStoredLayout = (
     ...parsed,
     schemaVersion: SCHEMA_VERSION,
     updatedTime: parsed.updatedTime ?? UNKNOWN_UPDATED_TIME,
-    teams: mapIfArray(parsed.teams, fillTeam),
-    facilities: mapIfArray(parsed.facilities, fillFacility),
-    furniture: mapIfArray(parsed.furniture ?? [], fillFurniture),
-    seats: Array.isArray(parsed.seats)
-      ? pruneDanglingEmployeeIds(parsed.seats, validEmployeeIds).map(fillSeat)
-      : parsed.seats,
+    teams: parsed.teams.map(fillTeam),
+    facilities: parsed.facilities.map(fillFacility),
+    furniture: (parsed.furniture ?? []).map(fillFurniture),
+    seats: pruneDanglingEmployeeIds(parsed.seats, validEmployeeIds).map(fillSeat),
   }
 }
 
@@ -122,7 +122,8 @@ const stampForSave = (layout: SeatLayout): StoredSeatLayout => ({
   updatedTime: new Date().toISOString(),
 })
 
-// 保存済みレイアウトを読み込む。パース失敗時は保存分を破棄してnullを返す(呼び出し側は種データにフォールバック)。
+// 保存済みレイアウトを読み込む。パース失敗時と、配列のはずの欄が配列でない時(migrateStoredLayout が
+// 投げる)は保存分を破棄してnullを返す(呼び出し側は種データにフォールバック)。
 //
 // 配列フィールドを増やしたとき、既に保存済みの古いレイアウトにはそのキーが無い。
 // ここは localStorage を読む唯一の口なので、既定値の穴埋めもここだけで行う。
@@ -184,7 +185,8 @@ export const saveLayoutMetas = (metas: LayoutMeta[]): void => {
 }
 
 // カスタムレイアウト1件を読み込む。穴埋め・防御は loadStoredLayout と同じ migrateStoredLayout を
-// 通す(別々に書くと片方だけ穴埋めを足し忘れ、カスタム表示中だけ壊れる経路ができる)
+// 通す(別々に書くと片方だけ穴埋めを足し忘れ、カスタム表示中だけ壊れる経路ができる)。
+// パース失敗・配列のはずの欄が配列でない保存分の破棄も loadStoredLayout と同じ
 export const loadCustomLayout = (
   layoutId: string,
   validEmployeeIds: ReadonlySet<string>

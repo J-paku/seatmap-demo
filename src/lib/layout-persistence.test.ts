@@ -247,35 +247,22 @@ describe('layout-persistence', () => {
       expect(result?.furniture).toEqual([])
       expect(result?.seats[1].employeeId).toBeNull()
     })
-
-    it('配列でない壊れたseatsフィールドは写さずそのまま通す(クラッシュしない)', () => {
-      const brokenLayout = { ...oldRawLayout, seats: 'not-an-array' }
-      window.localStorage.setItem(LAYOUT_STORAGE_KEY, JSON.stringify(brokenLayout))
-
-      const result = loadStoredLayout(DEFAULT_FLOOR_ID, new Set())
-
-      expect(result).not.toBeNull()
-      expect(result?.seats).toBe('not-an-array')
-    })
-
-    it('配列でない壊れたteams・facilitiesフィールドも写さずそのまま通す', () => {
-      const brokenLayout = {
-        ...oldRawLayout,
-        teams: 'broken-teams',
-        facilities: 'broken-facilities',
-      }
-      window.localStorage.setItem(LAYOUT_STORAGE_KEY, JSON.stringify(brokenLayout))
-
-      const result = loadStoredLayout(DEFAULT_FLOOR_ID, new Set())
-
-      expect(result?.teams).toBe('broken-teams')
-      expect(result?.facilities).toBe('broken-facilities')
-    })
   })
 
   describe('未来バージョンの保存分は読まずに温存する', () => {
     it('schemaVersionが現行より大きい場合はnullを返し、キーは消さない', () => {
       const futureLayout = { ...makeLayout(DEFAULT_FLOOR_ID), schemaVersion: 999, updatedTime: 'x' }
+      window.localStorage.setItem(LAYOUT_STORAGE_KEY, JSON.stringify(futureLayout))
+
+      const result = loadStoredLayout(DEFAULT_FLOOR_ID, new Set())
+
+      expect(result).toBeNull()
+      expect(window.localStorage.getItem(LAYOUT_STORAGE_KEY)).toBe(JSON.stringify(futureLayout))
+    })
+
+    // 上位版の欄の形はこちらのコードには分からない。配列でない欄があっても壊れた保存分とは見なさない
+    it('配列でない欄を持つ上位版も、nullを返してキーは消さない', () => {
+      const futureLayout = { ...makeLayout(DEFAULT_FLOOR_ID), schemaVersion: 999, teams: {} }
       window.localStorage.setItem(LAYOUT_STORAGE_KEY, JSON.stringify(futureLayout))
 
       const result = loadStoredLayout(DEFAULT_FLOOR_ID, new Set())
@@ -311,6 +298,31 @@ describe('layout-persistence', () => {
 
       expect(result).toEqual([])
       expect(window.localStorage.getItem(LAYOUT_METAS_KEY)).toBeNull()
+    })
+  })
+
+  // 配列のはずの欄が配列でないまま写して返すと、利用側の .map() で落ちる
+  describe('配列のはずの欄が配列でない保存分は、パース失敗と同じく破棄する', () => {
+    // 欄(teams・facilities・seats・furniture)× 配列でない値(オブジェクト・文字列・数値)の全組み合わせ
+    const brokenFields = ['teams', 'facilities', 'seats', 'furniture'].flatMap(field =>
+      [{ broken: true }, 'broken', 1].map(value => ({ field, value }))
+    )
+
+    describe.each([
+      ['loadStoredLayout', LAYOUT_STORAGE_KEY, () => loadStoredLayout(DEFAULT_FLOOR_ID, new Set())],
+      [
+        'loadCustomLayout',
+        customLayoutKey('custom-1'),
+        () => loadCustomLayout('custom-1', new Set()),
+      ],
+    ])('%s', (_label, key, load) => {
+      it.each(brokenFields)('$field が $value なら null を返しキーを消す', ({ field, value }) => {
+        const brokenLayout = { ...makeLayout(DEFAULT_FLOOR_ID), [field]: value }
+        window.localStorage.setItem(key, JSON.stringify(brokenLayout))
+
+        expect(load()).toBeNull()
+        expect(window.localStorage.getItem(key)).toBeNull()
+      })
     })
   })
 
