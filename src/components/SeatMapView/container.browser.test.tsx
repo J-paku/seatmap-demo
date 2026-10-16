@@ -30,6 +30,7 @@ import { VALID_EMPLOYEE_IDS } from '@/utils/collect-employee-ids'
 import { DEFAULT_FLOOR_ID } from '@/utils/floors'
 import { TOAST_MESSAGES } from '@/utils/toast-messages'
 import type { SeatLayout } from '@/types'
+import { facilityDeletedMessage } from './utils/compose-notice-message'
 import { MAIN_TOUR_STORAGE_KEY } from './utils/main-tour-steps'
 import { TOAST_MS } from './utils/save-layout-constants'
 import { SeatMapView } from './container'
@@ -206,6 +207,51 @@ const expectEditKept = (overlay: HTMLElement) => {
   expect(save.matches(':disabled')).toBe(false)
 }
 
+// ---- 会議室の削除で使う種と操作 ----
+
+// カスタムレイアウトに置く会議室。会議室の詳細は名前を種データの会議室一覧から引く(hooks/use-mock-data.ts の
+// useFacilities)ので、既定のフロアの種にある会議室をそのまま使う
+const CUSTOM_FACILITY = DEFAULT_FLOOR_SEED.facilities.filter(
+  facility => facility.kind === 'meeting'
+)[0]
+
+// カスタムレイアウトの種に会議室を1つ足したもの。会議室を消しても、アプリが保存し直す値は既定値の穴埋めで
+// この種より長い(保存先を一杯にして書き込みを失敗させるテストが、これを当てにしている)
+const customLayoutWithFacility = (): SeatLayout => ({
+  ...customLayoutSeed(),
+  facilities: [CUSTOM_FACILITY],
+})
+
+// キャンバスの会議室(CLAUDE.md 不変ルール4 の data-furniture-id + data-facility)。描かれていなければ null
+const queryFacilityBlock = () =>
+  document.querySelector<HTMLElement>(
+    `[data-furniture-id="${CUSTOM_FACILITY.id}"][data-facility="true"]`
+  )
+
+// キャンバスの会議室を押して詳細を開き、詳細の「削除」から確認ダイアログへ進んで確認の語を打つ。確定はまだ押さない。
+// 開いた詳細と、確認ダイアログの確定ボタンを返す
+const openFacilityDeleteDialog = async (user: UserEvent) => {
+  const block = queryFacilityBlock()
+  if (block === null) throw new Error(`${CUSTOM_FACILITY.name}がキャンバスに描かれていない`)
+  await user.click(block)
+  const detail = await screen.findByRole('dialog', { name: CUSTOM_FACILITY.name }, WAIT)
+  await user.click(within(detail).getByRole('button', { name: '削除' }))
+  const confirmDialog = screen.getByRole('dialog', { name: '施設削除の確認' })
+  await user.type(within(confirmDialog).getByRole('textbox', { name: '削除確認の入力' }), '削除')
+  const confirmDelete = within(confirmDialog).getByRole('button', { name: '削除' })
+  expect(confirmDelete.matches(':disabled')).toBe(false)
+  return { detail, confirmDelete }
+}
+
+// 削除できなかったあとも、会議室が保存分とキャンバスに残り、会議室の詳細が開いたまま
+const expectFacilityKept = (detail: HTMLElement) => {
+  expect(storedCustomLayout()?.facilities.map(facility => facility.id)).toEqual([
+    CUSTOM_FACILITY.id,
+  ])
+  expect(queryFacilityBlock()).not.toBeNull()
+  expect(screen.getByRole('dialog', { name: CUSTOM_FACILITY.name })).toBe(detail)
+}
+
 // 保存先(localStorage)を本物のまま一杯にする(setItem は差し替えない)。大きな塊から入れ、入らなくなったら半分にして
 // 続け、1文字も入らなくなったら止める。残りはキー1つ分にも満たないので、アプリが保存し直す値(種より長い。
 // customLayoutSeed の注釈)は QuotaExceededError で書けない。入れたキーを返す(テストの後で消すため)
@@ -324,5 +370,63 @@ describe('カスタムレイアウトの保存', () => {
     expect(within(save).getByText('保存')).toBeTruthy()
     expect(storedCustomLayout()).toEqual(beforeSave)
     expectEditKept(overlay)
+  })
+})
+
+describe('カスタムレイアウトの会議室の削除', () => {
+  beforeEach(() => {
+    seedReturningAdmin(customLayoutWithFacility())
+  })
+
+  it('会議室の詳細から削除すると、保存分とキャンバスから会議室が消え、詳細が閉じて削除を知らせる', async () => {
+    const user = userEvent.setup()
+    renderSeatMap()
+    await chooseCustomLayout(user)
+    const { detail, confirmDelete } = await openFacilityDeleteDialog(user)
+
+    await user.click(confirmDelete)
+
+    expect(await findStatus(facilityDeletedMessage(CUSTOM_FACILITY.name))).toBeTruthy()
+    expect(detail.isConnected).toBe(false)
+    expect(queryFacilityBlock()).toBeNull()
+    expect(storedCustomLayout()?.facilities).toEqual([])
+    expect(screen.queryByText(TOAST_MESSAGES.CONFLICT_UPDATE)).toBeNull()
+  })
+
+  it('会議室を削除する前に別のタブが同じレイアウトを保存したら、削除せずに警告し、会議室と詳細を残す', async () => {
+    const user = userEvent.setup()
+    renderSeatMap()
+    await chooseCustomLayout(user)
+    const { detail, confirmDelete } = await openFacilityDeleteDialog(user)
+
+    // 別のタブの管理者が同じカスタムレイアウトを保存し直す(同じ保存先へ、より新しい保存時刻で書かれる)
+    saveCustomLayout(CUSTOM_LAYOUT_ID, customLayoutWithFacility())
+    const otherTabSaved = storedCustomLayout()
+    await user.click(confirmDelete)
+
+    // 直す前は照合せずに上書きし、別のタブの保存を黙って消して会議室を削除していた
+    expect(await findStatus(TOAST_MESSAGES.CONFLICT_UPDATE)).toBeTruthy()
+    expect(storedCustomLayout()).toEqual(otherTabSaved)
+    expectFacilityKept(detail)
+  })
+
+  it('会議室の削除で保存先が一杯で書けなかったら、失敗を知らせ、削除中のまま固まらず、会議室と詳細を残す', async () => {
+    const user = userEvent.setup()
+    renderSeatMap()
+    await chooseCustomLayout(user)
+    const { detail, confirmDelete } = await openFacilityDeleteDialog(user)
+
+    const beforeDelete = storedCustomLayout()
+    const fillerKeys = fillLocalStorage()
+    onTestFinished(() => fillerKeys.forEach(key => window.localStorage.removeItem(key)))
+    await user.click(confirmDelete)
+
+    // 直す前は書き込みの例外で削除中のまま止まり、知らせも出なかった
+    expect(await findStatus(TOAST_MESSAGES.SAVE_FAILED)).toBeTruthy()
+    // 削除中だけ「削除中...」になって押せなくなる確定ボタンが「削除」へ戻り、もう一度押せる
+    expect(confirmDelete.textContent).toBe('削除')
+    expect(confirmDelete.matches(':disabled')).toBe(false)
+    expect(storedCustomLayout()).toEqual(beforeDelete)
+    expectFacilityKept(detail)
   })
 })
