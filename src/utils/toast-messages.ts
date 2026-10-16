@@ -9,7 +9,7 @@ export const TOAST_MESSAGES = {
   // 権限・ネットワーク系
   NETWORK_CHECK: 'ネットワーク接続を確認してください',
   ADMIN_REQUIRED: '編集には管理者権限が必要です',
-  CONFLICT_UPDATE: '他の管理者が更新しました',
+  CONFLICT_UPDATE: '他の管理者が更新しました。再読み込みしてください',
   // §07-6 原文の編集不可文言。ADMIN_REQUIRED とは文言・利用箇所が別(既存キー・文言はどちらも変更しない。
   // 同一概念に2文言残る状態の統合は後続ラウンドの課題)
   EDIT_DISABLED_OFFLINE: 'オフラインのため編集できません',

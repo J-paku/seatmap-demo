@@ -53,7 +53,7 @@ export const useOverlaySessionExit = ({
   // 保存できなかった時の通知。別タブが先に更新していた(conflict)は警告、書き込みの失敗はエラー。
   // どちらも保存されていないので編集モードもオーバーレイも畳まず、編集内容を残す。書き込みの失敗は
   // そのままやり直せる。conflict は画面が別タブの保存分を読み直さないため、再読み込みするまで保存し直しても
-  // 照合が食い違い続ける
+  // 照合が食い違い続ける。警告の文言(TOAST_MESSAGES.CONFLICT_UPDATE)が再読み込みを促す
   const announceSaveFailure = useCallback(
     (failure: SeatSaveFailure) => {
       if (failure === 'conflict') {

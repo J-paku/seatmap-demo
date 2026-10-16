@@ -289,7 +289,7 @@ export type SeatLayout = {
   furniture: Furniture[]
   // 保存フォーマットの版。書き込みは lib/layout-persistence.ts が行う
   schemaVersion?: number
-  // 最終保存時刻(ISO文字列)。楽観ロック(「他の管理者が更新しました」)の照合キー
+  // 最終保存時刻(ISO文字列)。楽観ロック(「他の管理者が更新しました。再読み込みしてください」)の照合キー
   updatedTime?: string
 }
 

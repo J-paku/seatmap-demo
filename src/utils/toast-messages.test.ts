@@ -11,7 +11,7 @@ describe('TOAST_MESSAGES', () => {
   it('権限・ネットワーク系メッセージが期待した文言を持つ', () => {
     expect(TOAST_MESSAGES.NETWORK_CHECK).toBe('ネットワーク接続を確認してください')
     expect(TOAST_MESSAGES.ADMIN_REQUIRED).toBe('編集には管理者権限が必要です')
-    expect(TOAST_MESSAGES.CONFLICT_UPDATE).toBe('他の管理者が更新しました')
+    expect(TOAST_MESSAGES.CONFLICT_UPDATE).toBe('他の管理者が更新しました。再読み込みしてください')
   })
 
   it('編集不可の2文言(オフライン理由/管理者権限理由)は別文言として独立して存在する', () => {

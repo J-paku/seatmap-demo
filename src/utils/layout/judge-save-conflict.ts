@@ -1,7 +1,7 @@
 import type { LayoutSource } from '@/contexts/layout-source-context'
 import type { StoredSeatLayout } from '@/types'
 
-// 05-6: 楽観ロック(「他の管理者が更新しました」)の照合。地図側の保存(use-layout-save)と
+// 05-6: 楽観ロック(「他の管理者が更新しました。再読み込みしてください」)の照合。地図側の保存(use-layout-save)と
 // チームオーバーレイの座席保存(use-seat-commit)と会議室の削除(use-facility-delete)が同じこの判定を使い、
 // 照合の基準を画面ごとに二重に持たない
 
