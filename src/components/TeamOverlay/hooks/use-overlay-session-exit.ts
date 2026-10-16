@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react'
 import type { UseOverlayEditModeResult } from './use-overlay-edit-mode'
 import { useSeatCommit } from './use-seat-commit'
-import type { UseSeatCommitResult } from './use-seat-commit'
+import type { SeatSaveFailure, UseSeatCommitResult } from './use-seat-commit'
 import { TOAST_MESSAGES } from '@/utils/toast-messages'
 import type { Employee, TeamOverlayPayload } from '@/types'
 
@@ -50,6 +50,21 @@ export const useOverlaySessionExit = ({
     isGridChanged: editMode.isGridChanged,
   })
 
+  // 保存できなかった時の通知。別タブが先に更新していた(conflict)は警告、書き込みの失敗はエラー。
+  // どちらも保存されていないので編集モードもオーバーレイも畳まず、編集内容を残す。書き込みの失敗は
+  // そのままやり直せる。conflict は画面が別タブの保存分を読み直さないため、再読み込みするまで保存し直しても
+  // 照合が食い違い続ける
+  const announceSaveFailure = useCallback(
+    (failure: SeatSaveFailure) => {
+      if (failure === 'conflict') {
+        announce(`[warning]${TOAST_MESSAGES.CONFLICT_UPDATE}`)
+        return
+      }
+      announce(`[error]${TOAST_MESSAGES.SAVE_FAILED}`)
+    },
+    [announce]
+  )
+
   // STEP D3: 保存経路はこの1本だけにする(ヘッダー「終了」はもうcommitを兼ねない)。
   // 保存後はeditMode.cancelで編集モードを抜ける — 抜けずに居続けると、既に確定済みの
   // draft.addedSeats/gridがそのまま残り、再度保存を押した時に同じ席を二重追加してしまうため。
@@ -57,6 +72,11 @@ export const useOverlaySessionExit = ({
   const handleSaveEdit = useCallback(() => {
     if (seatCommit.isSaving) return
     void seatCommit.commit().then(result => {
+      // 文字列で返るのは保存できなかった時だけ(SeatSaveFailure)。成功時は結果のオブジェクト
+      if (typeof result === 'string') {
+        announceSaveFailure(result)
+        return
+      }
       editMode.cancel()
       // §06-5: 重複配属を畳んだ時は警告を優先する。トーストは1本しか出せない(後勝ちで上書き
       // される)ため、成功と警告を続けて流さず、どちらか一方だけを出す
@@ -72,7 +92,7 @@ export const useOverlaySessionExit = ({
       }
       announce(`[success]${TOAST_MESSAGES.SAVE_SUCCESS}`)
     })
-  }, [seatCommit, editMode, announce, employeeById])
+  }, [seatCommit, editMode, announce, announceSaveFailure, employeeById])
 
   // 取消(破棄)。ドックのキャンセルボタンとヘッダーの「終了」ボタンの両方から呼ぶ唯一の経路。
   // editMode.cancelは既に確定保存された内容までは打ち消さない(grid/draft/isEditModeの後始末のみ)ため、
@@ -121,7 +141,8 @@ export const useOverlaySessionExit = ({
   const cancelDiscardClose = useCallback(() => setIsDiscardConfirmOpen(false), [])
 
   // §06-6 チーム削除。確定するとレイアウトからチームと所属座席が消えるため、オーバーレイ自体も
-  // 一緒に閉じる(消えたチームの座席グリッドを開いたまま残さない)
+  // 一緒に閉じる(消えたチームの座席グリッドを開いたまま残さない)。保存できなかった時はチームが
+  // 残っているので閉じない
   const [isTeamDeleteConfirmOpen, setIsTeamDeleteConfirmOpen] = useState(false)
   const requestTeamDelete = useCallback(() => setIsTeamDeleteConfirmOpen(true), [])
   const cancelTeamDelete = useCallback(() => setIsTeamDeleteConfirmOpen(false), [])
@@ -130,12 +151,16 @@ export const useOverlaySessionExit = ({
   const confirmTeamDelete = useCallback(() => {
     if (seatCommit.isSaving) return
     setIsTeamDeleteConfirmOpen(false)
-    void seatCommit.deleteTeam().then(() => {
+    void seatCommit.deleteTeam().then(failure => {
+      if (failure) {
+        announceSaveFailure(failure)
+        return
+      }
       editMode.cancel()
       announce(`[success]${TOAST_MESSAGES.DELETE_TEAM_SUCCESS.replace('{name}', teamName)}`)
       onClose()
     })
-  }, [seatCommit, editMode, announce, teamName, onClose])
+  }, [seatCommit, editMode, announce, announceSaveFailure, teamName, onClose])
 
   return {
     seatCommit,

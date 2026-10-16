@@ -9,7 +9,7 @@ import { cleanup, render, screen, waitFor, within } from '@testing-library/react
 import userEvent from '@testing-library/user-event'
 import type { UserEvent } from '@testing-library/user-event'
 import { SWRConfig } from 'swr'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, onTestFinished } from 'vitest'
 // ページのルーター(pages router)が useRouter へ値を配る文脈。ヘッダー(AppHeader)が useRouter で basePath を読む。
 // 公開の入口が無いので、next/router が読むのと同じモジュールを直に指す(別のモジュールなら別の文脈になり、値が届かない)
 import { RouterContext } from 'next/dist/shared/lib/router-context.shared-runtime'
@@ -117,8 +117,11 @@ const CUSTOM_TEAM = DEFAULT_FLOOR_TEAMS[0]
 const CUSTOM_SEATS = DEFAULT_FLOOR_SEED.seats.filter(seat => seat.teamId === CUSTOM_TEAM.id)
 const CUSTOM_LAYOUT_ID = 'integration-custom-layout'
 const CUSTOM_LAYOUT_NAME = 'テスト用レイアウト'
+const OVERLAY_NAME = `${CUSTOM_TEAM.name} 座席配置`
 
 // 種は既定値の穴埋め(lib/layout-persistence.ts の migrateStoredLayout)の前の形、つまり種データのままで保存する。
+// アプリは読み込み口で座席・チームごとに既定値を埋めてから保存し直すので、アプリが書く値は種より何百文字も長い
+// (保存先を一杯にして書き込みを失敗させるテストが、これを当てにしている)
 const customLayoutSeed = (): SeatLayout => ({
   floorId: CUSTOM_LAYOUT_ID,
   floorName: CUSTOM_LAYOUT_NAME,
@@ -144,9 +147,10 @@ const seedReturningAdmin = (customLayout: SeatLayout = customLayoutSeed()) => {
 // 今 localStorage にあるカスタムレイアウト(アプリの読み込み口で読んだもの)
 const storedCustomLayout = () => loadCustomLayout(CUSTOM_LAYOUT_ID, VALID_EMPLOYEE_IDS)
 
-// 利用者へ知らせた文言。地図の保存の成功は
-// 保存トーストに出て、role=status を持つ
+// 利用者へ知らせた文言。チームオーバーレイの知らせは読み上げのライブリージョン、地図の保存の成功は
+// 保存トーストに出て、どちらも role=status を持つ
 const STATUS = { selector: '[role=status]' }
+const findStatus = (message: string) => screen.findByText(message, STATUS, WAIT)
 const querySaveSuccess = () => screen.queryByText(TOAST_MESSAGES.SAVE_SUCCESS, STATUS)
 
 // 画面上部のレイアウト切り替えから、種で作っておいたカスタムレイアウトを選ぶ。選んだ直後は保存分を読み終えるまで
@@ -172,6 +176,55 @@ const deleteEmptySeatOnMap = async (user: UserEvent) => {
   const finish = screen.getByRole('button', { name: '編集を完了' })
   await user.click(finish)
   await waitFor(() => expect(finish.isConnected).toBe(false), WAIT)
+}
+
+// キャンバスのチーム箱を押してチームオーバーレイを開く。開いた直後のパネルは誤タップ防止でポインターを受け付けない
+// (TeamOverlay/utils/overlay-session-timing.ts の CLICK_LOCK_MS)ので、受け付けるまで待つ
+const openTeamOverlay = async (user: UserEvent) => {
+  await user.click(teamBoxOf(CUSTOM_TEAM.idPrefix))
+  const overlay = await screen.findByRole('dialog', { name: OVERLAY_NAME }, WAIT)
+  await waitFor(() => expect(getComputedStyle(overlay).pointerEvents).toBe('auto'), WAIT)
+  return overlay
+}
+
+// オーバーレイの座席編集に入り、フリーアドレス設定を切り替える(保存できる変更を1件作る)
+const switchFreeAddressInOverlay = async (user: UserEvent, overlay: HTMLElement) => {
+  await user.click(within(overlay).getByRole('button', { name: '所属人員を編集' }))
+  const freeAddress = within(overlay).getByRole('switch', { name: 'フリーアドレス設定' })
+  await user.click(freeAddress)
+  expect(freeAddress.getAttribute('aria-checked')).toBe('true')
+}
+
+// 保存できなかったあとも、オーバーレイが開いたまま座席編集の中にいて、切り替えたフリーアドレス設定が残り、
+// 保存ボタンが押せる(変更ありのまま)
+const expectEditKept = (overlay: HTMLElement) => {
+  expect(screen.getByRole('dialog', { name: OVERLAY_NAME })).toBe(overlay)
+  expect(within(overlay).getByText('編集中')).toBeTruthy()
+  const freeAddress = within(overlay).getByRole('switch', { name: 'フリーアドレス設定' })
+  expect(freeAddress.getAttribute('aria-checked')).toBe('true')
+  const save = within(overlay).getByRole('button', { name: '変更を保存' })
+  expect(save.matches(':disabled')).toBe(false)
+}
+
+// 保存先(localStorage)を本物のまま一杯にする(setItem は差し替えない)。大きな塊から入れ、入らなくなったら半分にして
+// 続け、1文字も入らなくなったら止める。残りはキー1つ分にも満たないので、アプリが保存し直す値(種より長い。
+// customLayoutSeed の注釈)は QuotaExceededError で書けない。入れたキーを返す(テストの後で消すため)
+const FILLER_KEY_PREFIX = 'integration-filler-'
+const fillLocalStorage = (): string[] => {
+  const keys: string[] = []
+  let chunk = 'x'.repeat(1024 * 1024)
+  while (chunk.length > 0) {
+    const key = `${FILLER_KEY_PREFIX}${keys.length}`
+    try {
+      window.localStorage.setItem(key, chunk)
+      keys.push(key)
+    } catch (error) {
+      // 容量超過のほかは握りつぶさずに落とす
+      if (!(error instanceof DOMException) || error.name !== 'QuotaExceededError') throw error
+      chunk = chunk.slice(0, Math.floor(chunk.length / 2))
+    }
+  }
+  return keys
 }
 
 beforeEach(() => {
@@ -229,4 +282,47 @@ describe('カスタムレイアウトの保存', () => {
     expect(querySaveSuccess()).not.toBeNull()
     expect(storedCustomLayout()?.seats).toHaveLength(CUSTOM_SEATS.length - 2)
   }, 20_000)
+
+  it('オーバーレイで変えている間に別のタブが同じレイアウトを保存したら、保存せずに警告し、オーバーレイと変更を残す', async () => {
+    const user = userEvent.setup()
+    renderSeatMap()
+    await chooseCustomLayout(user)
+    const overlay = await openTeamOverlay(user)
+    await switchFreeAddressInOverlay(user, overlay)
+
+    // 別のタブの管理者が同じカスタムレイアウトを保存し直す(同じ保存先へ、より新しい保存時刻で書かれる)
+    saveCustomLayout(CUSTOM_LAYOUT_ID, customLayoutSeed())
+    const otherTabSaved = storedCustomLayout()
+    await user.click(within(overlay).getByRole('button', { name: '変更を保存' }))
+
+    // 直す前は照合せずに上書きし、別のタブの保存を黙って消していた
+    expect(await findStatus(TOAST_MESSAGES.CONFLICT_UPDATE)).toBeTruthy()
+    expect(storedCustomLayout()).toEqual(otherTabSaved)
+    expectEditKept(overlay)
+  })
+
+  it('オーバーレイの保存で保存先が一杯で書けなかったら、失敗を知らせ、保存中のまま固まらず、オーバーレイと変更を残す', async () => {
+    const user = userEvent.setup()
+    renderSeatMap()
+    await chooseCustomLayout(user)
+    const overlay = await openTeamOverlay(user)
+    await switchFreeAddressInOverlay(user, overlay)
+
+    const beforeSave = storedCustomLayout()
+    const fillerKeys = fillLocalStorage()
+    onTestFinished(() => fillerKeys.forEach(key => window.localStorage.removeItem(key)))
+    await user.click(within(overlay).getByRole('button', { name: '変更を保存' }))
+
+    // 直す前は書き込みの例外で保存中のまま止まり、知らせも出なかった
+    expect(await findStatus(TOAST_MESSAGES.SAVE_FAILED)).toBeTruthy()
+    // 保存中だけ押せなくなる見出しの「編集を終了」とフリーアドレス設定が押せ、保存ボタンの文字が「保存」へ戻る
+    const exitEdit = within(overlay).getByRole('button', { name: '編集を終了' })
+    const freeAddress = within(overlay).getByRole('switch', { name: 'フリーアドレス設定' })
+    const save = within(overlay).getByRole('button', { name: '変更を保存' })
+    expect(exitEdit.matches(':disabled')).toBe(false)
+    expect(freeAddress.matches(':disabled')).toBe(false)
+    expect(within(save).getByText('保存')).toBeTruthy()
+    expect(storedCustomLayout()).toEqual(beforeSave)
+    expectEditKept(overlay)
+  })
 })
