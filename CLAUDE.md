@@ -12,7 +12,8 @@
 
 - 「完了」はレビューではなく、すべての門を通ったことで言う(下の完了条件)
 - 制約を下げない。下限を下げる・テストを消す・門の対象から外す・テストの境界(`hooks` フォルダに単体テストを
-  置かない・`renderHook` を使わない)を変えるには ADR(`docs/decisions/`)が要る。上げる方向は ADR 無しでよい
+  置かない・`renderHook` を使わない・統合テストはコンテナの隣の `container.browser.test.tsx` だけ)を変えるには
+  ADR(`docs/decisions/`)が要る。上げる方向は ADR 無しでよい
 
 ## 不変ルール(違反したら即中断して報告)
 
@@ -33,11 +34,14 @@
 |---|---|---|
 | dev サーバー(`npm run dev`) | **3000** | ユーザーのみ。エージェントは起動せず、既に上がっている 3000 に接続する |
 | E2E・静的検証(`out/` を `npx serve` で配信) | **4173** | E2E(`playwright.config.ts` の `webServer`)が自分で上げて止める。既に LISTEN 中なら再利用する |
+| 統合テスト(`npm run test:integration`。Vitest Browser Mode のサーバ) | **63315**(vitest の既定 `defaultBrowserPort`) | vitest が実行ごとに自分で上げて止める。`strictPort` が無いので、使用中なら次の空きポートへ移る。各実行は自分が上げたサーバに繋ぐので、4173 のように他のチェックアウトのビルドを検査する恐れは無い |
 
 - 起動前に `ss -ltn | grep -E ':3000|:4173'` で確認する
 - E2E は走る前に、4173 が配っているのがこのチェックアウトの `out/` かを照合し、違えば止まる。別のチェックアウト・
   セッションが 4173 を握っているときは、そのサーバを止めるか `E2E_PORT`(例: 4199)で E2E のポートを分ける。
   それ以外の用途で別ポートへ逃げない。応答しない場合はその事実を報告して指示を仰ぐ
+- 統合テストが次の空きポートへ移るのは vitest 自身の動きで、人やエージェントがポートを選ぶのではない。
+  冒頭の「ポートを増やさない」と上の「別ポートへ逃げない」はこれに掛からず、起動前の確認も要らない
 - 受入検証は dev(3000)ではなく `npm run build` の `out/` に対して行う。配信版(GitHub Pages)と同じ静的書き出しを
   検査するため(`docs/decisions/0001-linux-disk-and-src.md`)
 
@@ -49,7 +53,7 @@ npm run build && npm run test:e2e
 
 何を走らせるかの詳細は `docs/agents/verification.md`。
 
-- `npm run verify` 通過(docs:check → lint → typecheck → format:check → test:coverage → test:boundary → knip → build)
+- `npm run verify` 通過(docs:check → lint → typecheck → format:check → test:coverage → test:boundary → test:integration → knip → build)
 - `npm run test:e2e` 通過(手元の `out/`。反復中は spec を絞り、push の前に全体を1回)
 - 純粋モジュールかそのテストを変えたら `npm run test:mutation` 通過(生き残り0。全体の `-- --force` は週1回)
 - 文書を変えたら `npm run docs:check` 通過

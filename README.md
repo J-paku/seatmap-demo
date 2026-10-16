@@ -112,7 +112,7 @@ SWR の裏側で `localStorage` にキャッシュを持っていますが、バ
 
 「会議室が同じ時間帯に二重予約されていない」はコードの分岐ではなくデータ側の条件なので、型検査でも画面確認でも検出できません。
 
-そのため検証を3系統に分けています。画面は Playwright の E2E が画面状態を作ってから判定スクリプトを注入して確かめ、モックデータの整合性と配布物はそれぞれ専用のスクリプトで見ます。ローカルで PASS しただけでは完了とせず、GitHub Pages の配信版にも同じ E2E を走らせて確認しています。
+そのため検証を4系統に分けています。画面は Playwright の E2E が画面状態を作ってから判定スクリプトを注入して確かめ、画面のコンテナは統合テスト(Vitest Browser Mode)がフック・子と一緒に実際の Chromium でビルド無しに描いて確かめ、モックデータの整合性と配布物はそれぞれ専用のスクリプトで見ます。ローカルで PASS しただけでは完了とせず、GitHub Pages の配信版にも同じ E2E を走らせて確認しています。
 
 判定ロジック(在席状態の解決・氏名の正規化・会議室の占有判定)は純関数として切り出し、ユニットテストで検証しています。純関数の置き場のファイルは1つずつカバレッジ100%と変異テスト100%を門に置き、人がコードを読む代わりに、テストが本当に欠陥を落とせることを機械に確かめさせています。
 
@@ -126,8 +126,8 @@ SWR の裏側で `localStorage` にキャッシュを持っていますが、バ
 | キャッシュ | SWR + シード指紋による自動無効化 |
 | ジェスチャ | ピンチズーム / ポインタ状態機械(TAP 8px・ダブルタップ 300ms・長押し 220ms) |
 | レイアウト編集 | 管理者が画面上で配置を更新。座標は全て JSON 側にあり、配置換えで開発者の手を借りない |
-| 検証 | ユニットテスト(Vitest。純関数の置き場はファイル別カバレッジ100%・変異テスト100%)+ Playwright の E2E + データ・配布物の検査 |
-| CI | typecheck / lint / 書式 / カバレッジ / テストの置き場 / 変異テスト / build / E2E / Lighthouse を直列 + knip を独立ジョブ |
+| 検証 | ユニットテスト(Vitest。純関数の置き場はファイル別カバレッジ100%・変異テスト100%)+ 統合テスト(Vitest Browser Mode。画面のコンテナを実際の Chromium でビルド無しに描く)+ Playwright の E2E + データ・配布物の検査 |
+| CI | typecheck / lint / 書式 / カバレッジ / テストの置き場 / 統合テスト / 変異テスト / build / E2E / Lighthouse を直列 + knip を独立ジョブ |
 | 配信 | 静的 export + GitHub Pages(basePath 切り替え) |
 | データ | モック生成器 + 整合性検査 |
 | 文書 | `AGENTS.md` による文書ルーティング・決定の記録(ADR)・文書の参照の検査 |
@@ -153,7 +153,8 @@ Next.js 16.2.12(Pages Router) / React 19.2.4 / TypeScript 5.9.3 / Tailwind CSS 4
 <br>
 
 ```bash
-npm run verify                               # docs:check・lint・typecheck・format:check・test:coverage・test:boundary・knip・build を順に
+npm run verify                               # docs:check・lint・typecheck・format:check・test:coverage・test:boundary・test:integration・knip・build を順に
+npm run test:integration                     # 統合テスト(Vitest Browser Mode。コンテナを実際の Chromium で描く。ビルド無し)
 npm run test:e2e                             # Playwright の E2E(build した out/ を 4173 で配る)
 npm run test:mutation                        # 変異テスト(既定は変わった変異体だけ。全体は -- --force)
 npm run format                               # Prettier で整形
@@ -180,7 +181,7 @@ npm install
 npm run dev                      # http://localhost:3000
 npm run build                    # 静的export(out/ を生成)
 GITHUB_PAGES=true npm run build  # Pages 向け basePath 付きビルド
-npx playwright install chromium  # E2E のブラウザ(初回だけ)
+npx playwright install chromium  # E2E と統合テストが使うブラウザ(初回だけ。両方この Chromium で走る)
 ```
 
 アクセス解析(GoatCounter)は `NEXT_PUBLIC_GOATCOUNTER_URL`(例: `https://<code>.goatcounter.com/count`)を設定したビルドでだけ有効になります。配信ワークフローはリポジトリの Actions 変数 `GOATCOUNTER_URL` からこれを渡し、未設定なら計測スクリプトは出力されません。

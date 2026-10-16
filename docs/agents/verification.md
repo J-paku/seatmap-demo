@@ -2,7 +2,8 @@
 
 **変更を確かめる前と、「完了」と報告する前に読む。** コマンドの中身の正本は `package.json` の `scripts`。
 なぜこの門なのかは [../decisions/0004-extreme-constraints.md](../decisions/0004-extreme-constraints.md)、
-E2E を置いた経緯は [../decisions/0003-playwright-e2e.md](../decisions/0003-playwright-e2e.md)。
+E2E を置いた経緯は [../decisions/0003-playwright-e2e.md](../decisions/0003-playwright-e2e.md)、
+統合テストを置いた経緯は [../decisions/0007-browser-integration-containers.md](../decisions/0007-browser-integration-containers.md)。
 検証の一般原則(実測の義務・PASS の疑い方・報告の形)は `docs/conventions/02-verifying.md`。
 
 ## 変えたもの → 走らせるもの
@@ -12,8 +13,9 @@ E2E を置いた経緯は [../decisions/0003-playwright-e2e.md](../decisions/000
 | 変えたもの | 走らせるもの |
 |---|---|
 | 純粋モジュール(`src/lib/`・`src/utils/`・コンポーネントの `utils`)。対象の正本は `scripts/gate-targets.mjs` | 隣の `*.test.ts`(`npx vitest run <ファイル>`) → `npm run typecheck` → `npm run test:coverage` → `npm run test:mutation` |
-| `hooks` フォルダの下のファイルを足す・移す | `npm run test:boundary` → その画面に関わる E2E の spec |
-| コンポーネント・フック(画面の振る舞い) | `npm run typecheck` → `npm run lint` → `npm run build` → 関わる E2E の spec |
+| `hooks` フォルダの下のファイルを足す・移す | `npm run test:boundary` → そのフックを使うコンテナの統合テスト(あれば。下の「統合テスト」) → その画面に関わる E2E の spec |
+| コンポーネント・フック(画面の振る舞い) | `npm run typecheck` → `npm run lint` → 関わるコンテナの統合テスト(あれば) → `npm run build` → 関わる E2E の spec |
+| コンテナ(`container.tsx`)・統合テスト(`container.browser.test.tsx`)・コンテナの一覧(`scripts/container-dirs.mjs`) | `npm run test:boundary` → その統合テスト(下の「統合テスト」) |
 | 画面へ注入する判定(`scripts/verify-*.js`) | `npm run build` → それを注入する spec(下の「E2E の3本」) |
 | E2E(`tests/`) | `npm run build` → その spec。新しい判定は一度わざと落として検出力を見てから採る |
 | CSS・色 | `npm run build` → 関わる E2E → 見た目は目で確かめる(規則は `docs/styling.md`) |
@@ -21,6 +23,7 @@ E2E を置いた経緯は [../decisions/0003-playwright-e2e.md](../decisions/000
 | `lighthouserc.json` | `docs/quality/performance.md` の「手元で測る」 |
 | 設定(`next.config.mjs` / `tsconfig.json` / `eslint.config.mjs` / `playwright.config.ts`) | `npm run verify` → `npm run test:e2e` |
 | `vitest.config.ts` / `stryker.config.mjs` / `scripts/gate-targets.mjs` | `npm run verify` → `npm run test:mutation -- --force` |
+| `vitest.integration.config.ts` | `npm run test:integration` → `npm run verify` |
 | 依存の版(`package.json` / `package-lock.json`) | `npm run verify` → `npm run test:mutation -- --force` → `npm run test:e2e` |
 | `.github/workflows/` | 手元で CI と同じ順に: `npm run verify` → `npm run test:mutation` → `npm run test:e2e` |
 | 文書(`docs/`・`*.md`) | `npm run docs:check` |
@@ -36,8 +39,8 @@ E2E を置いた経緯は [../decisions/0003-playwright-e2e.md](../decisions/000
 
 ## commit・push の前
 
-1. `npm run verify` を1回通す。中身は docs:check → lint → typecheck → format:check → test:coverage → test:boundary → knip → build の直列で、
-   前段が落ちたら後段は走らない
+1. `npm run verify` を1回通す。中身は docs:check → lint → typecheck → format:check → test:coverage → test:boundary → test:integration →
+   knip → build の直列で、前段が落ちたら後段は走らない(統合テストの全体はここで1回走る)
 2. 純粋モジュールかそのテストを変えたなら `npm run test:mutation`(生き残り0)
 3. 画面に関わる変更なら、`npm run build` の後に `npm run test:e2e` の全体を1回
 4. 文書を変えたなら `npm run docs:check`
@@ -56,6 +59,30 @@ E2E を置いた経緯は [../decisions/0003-playwright-e2e.md](../decisions/000
 
 走らせられなかった検証は、何を確かめていないかを報告に書く。
 他のエージェント・ワーカーの「直した」は、ファイルか diff を自分で見るまで根拠にしない。
+
+## 統合テスト
+
+正本は `vitest.integration.config.ts` と、コンテナを置くフォルダの一覧 `scripts/container-dirs.mjs`。
+コンテナ(一覧のフォルダの `container.tsx`)を、フック・子と一緒に実際の Chromium(headless)で描く。ビルドは要らない。
+拾うのは `src/**/container.browser.test.tsx` だけで、コンテナごとに1本(置き場の違反は `npm run test:boundary` が落とす)。
+
+書くときの約束:
+
+- 実際の Chromium で、ビルド無しで描く。モックはネットワークと時間だけで、モジュールは差し替えない
+- `localStorage` は本物の保存先を使う。別のタブが保存した状態・保存先が一杯の状態も、本物の保存先に書いて作る
+- 断定は利用者に見えるもの(role・名前・文字・`aria-*`)と、固定の DOM フック(`CLAUDE.md` の不変ルール4)で行う
+- Next のルーターは、Next の本物の `RouterContext` に値を渡す(モジュールのモックにしない)。SWR の覚え(キャッシュ)はテストごとに
+  新しい `Map` にする(新しくページを開いたのと同じ)
+- 環境は画面寸法 1280×900(E2E と同じ)・ブラウザの時間帯 UTC(CI の機器と同じ)に固定してある
+
+```bash
+npm run test:integration                                       # 全体。commit の前に1回(npm run verify にも入っている)
+npm run test:integration -- src/components/SeatMapView/container.browser.test.tsx -t '最初の表示'   # 反復中はファイルと名前で絞る
+npm run test:integration -- --coverage                         # カバレッジ(報告は coverage/integration。下限はまだ無い)
+```
+
+- 反復中は全体を回さない。落ちたファイル・新しく書いたテストだけをファイルと `-t` で絞り、全体は commit の前に1回だけ
+- ブラウザは E2E と同じ `~/.cache/ms-playwright` の Chromium を使う(入れ方の注意は下の「E2E の3本」の最後)
 
 ## E2E の3本
 

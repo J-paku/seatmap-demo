@@ -81,15 +81,17 @@ seatmap-demo/
 
 - 2か所以上が使うようになったら `src/` 直下へ上げる(フックは `src/hooks/`、関数・定数は `src/utils/`・`src/lib/`)。写しを残さない
 - `hooks` フォルダに単体テストを置かない。どのテストでも `renderHook` を使わない(`npm run test:boundary` が落とす)。
-  フックの振る舞いは E2E が見る
+  フックの振る舞いは E2E と、そのフックを使うコンテナがあればその統合テスト(`container.browser.test.tsx`)が見る
 
 ## 5. コンポーネントのフォルダ
 
 - 分ける基準(200行超かつ複数責務)と `index.tsx` の薄さの基準は `docs/authoring.md` 2.・3.
 - フォルダにしたコンポーネントは `src/components/<Name>/` に `index.tsx`(組み立てだけ)・`type.ts`・`components`・`hooks`・`utils` を置く。
   代表例は `src/components/SeatMapCanvas/`・`src/components/TeamOverlay/`
-- 例外はコンテナのフォルダ(今は画面ルートの `src/components/SeatMapView/` だけ)。
+- 例外はコンテナのフォルダ(一覧の正本は `scripts/container-dirs.mjs`。今は画面ルートの `src/components/SeatMapView/` だけ)。
   `index.tsx` を置かず `container.tsx` を入口にし、呼び出し側は `@/components/SeatMapView/container` のように `container` まで書く。
+  隣に統合テスト `container.browser.test.tsx` を1本置く(`container.tsx` と統合テストの置き場の違反は `npm run test:boundary` が落とす。
+  理由は `docs/decisions/0007-browser-integration-containers.md`)
 - 1枚のシート・モーダルだけのものは `index.tsx` と専用の CSS Modules だけの軽い形(例: `src/components/TeamCategorySheet/`)
 - `src/components/edit/` は編集モード専用の単発コンポーネント群で、フォルダにはしていない
 - 単一責務で短い共通部品は `src/components/` 直下に1ファイルで置く(例: `src/components/ZoomControls.tsx`)

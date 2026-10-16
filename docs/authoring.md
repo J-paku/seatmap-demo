@@ -17,7 +17,7 @@
   `utils` フォルダへ、`localStorage` などの保存の読み書きは `src/lib/` へ出す。置き場の規則と実例は
   `docs/structure.md` 4.、決めた理由は `docs/decisions/0005-hooks-hold-only-use.md`
 - `hooks` フォルダに単体テストを置かない。どのテストでも `renderHook` を使わない(`npm run test:boundary` が落とす)。
-  フックの振る舞いは E2E が見る
+  フックの振る舞いは E2E と、そのフックを使うコンテナがあればその統合テスト(`container.browser.test.tsx`)が見る
 - コンポーネント専用フックは `src/components/<Name>/hooks/` へ。2箇所以上で使われたら
   `src/hooks/` へ昇格する
 - 1本のフックを複数責務で分割する時は下記 3.3。**フォルダ化しても `index.ts` は作らない**
@@ -54,8 +54,9 @@
 コンポーネントのフォルダは **公開物がちょうど1つ**(そのコンポーネント)なので、入口を `index.tsx` にする。
 呼び出し側は `@/components/AvatarCustomizer` とだけ書き、内部構造を知らなくてよい。
 
-> 例外: コンテナのフォルダ(今は `src/components/SeatMapView/` だけ)は `index.tsx` を置かず、
-> `container.tsx` を入口にする。呼び出し側は `@/components/SeatMapView/container` と書く。
+> 例外: コンテナのフォルダ(一覧は `scripts/container-dirs.mjs`。今は `src/components/SeatMapView/` だけ)は `index.tsx` を置かず、
+> `container.tsx` を入口にする。呼び出し側は `@/components/SeatMapView/container` と書く。コンテナは統合テストが描く単位で、
+> 隣に `container.browser.test.tsx` を1本置く(置き場は `docs/structure.md` 5.、理由は `docs/decisions/0007-browser-integration-containers.md`)
 
 形の例(2026-08 時点の `src/components/AvatarCustomizer/`。今は `sections` フォルダを持つ別の形に変わったが、
 入口を薄く保つ形の例として当時の姿を残す):

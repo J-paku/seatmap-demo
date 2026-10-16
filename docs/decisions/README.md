@@ -8,9 +8,10 @@
 | [0001](0001-linux-disk-and-src.md) | リポジトリを Linux 側のディスクへ移し、ソースを `src/` の下に集め、モックは `@mocks` で読む | Accepted |
 | [0002](0002-prettier.md) | 書式を Prettier(J-paku.github.io と同じ設定)でそろえ、`format:check` を門に置く | Accepted |
 | [0003](0003-playwright-e2e.md) | 受入検証の運転台を Playwright の E2E へ移す(「Playwright を入れない」方針を覆す) | Accepted |
-| [0004](0004-extreme-constraints.md) | 人がコードを読まない代わりに制約を極端に置く(純粋モジュールのファイル別100%・変異100%・テストの境界) | Accepted |
+| [0004](0004-extreme-constraints.md) | 人がコードを読まない代わりに制約を極端に置く(純粋モジュールのファイル別100%・変異100%・テストの境界) | Accepted(フックの振る舞いを E2E だけが見る部分と、統合テストの側でフックを測らない部分は Superseded by 0007) |
 | [0005](0005-hooks-hold-only-use.md) | フックのファイルには `use` 関数とその型だけを置き、定数まで utils・lib へ出す | Accepted |
 | [0006](0006-lighthouse-ci.md) | Lighthouse CI の測り方と下限 | Accepted |
+| [0007](0007-browser-integration-containers.md) | 画面をコンテナ(`container.tsx`)にし、実ブラウザ(Vitest Browser Mode)で描く統合テストを E2E の手前に置く(段階の1つ目) | Accepted |
 
 ## 書くときの決まり
 

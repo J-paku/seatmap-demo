@@ -17,6 +17,7 @@
 | 構築当初の段階仕様書(不変ルール5. の対象)を確認したい | `~/seatmap-demo-spec/ROUTING.md`(リポジトリ外の参考資料。無くても作業できる) — 指定された段階の文書だけを開く |
 | 自動検査フック(`.claude/code-rules.json`)を変えた | 設定と文書を一組で直す。文書は `docs/authoring.md`(コードスタイル表) |
 | 何を走らせて確かめるか・「完了」と言う前 | `docs/agents/verification.md`(変えたもの別の検査・変異テストの走らせ方・完了の条件・配信版の E2E)。検証の考え方・報告形式は `docs/conventions/02-verifying.md` |
+| 統合テスト(コンテナの隣の `container.browser.test.tsx`)を書く・走らせる・落ちた | `docs/agents/verification.md`(統合テストの約束と走らせ方) |
 | E2E(`tests/`)を足す・直す・落ちた | `docs/agents/verification.md`(E2E の一覧と走らせ方) → `docs/seat-map/testing.md`(注入する判定と各 spec の中身) |
 | チームオーバーレイの受入条件を確かめる(E2E に入っていない検証) | `docs/team-overlay/testing.md` |
 | Lighthouse CI が落ちた・下限を変える | `docs/quality/performance.md` |
